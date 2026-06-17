@@ -57,10 +57,15 @@
   .seg.clickable{cursor:pointer;transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;}
   .seg.clickable:hover{filter:brightness(1.07);transform:translateY(-2px);}
   .seg.clickable.done:hover{box-shadow:0 0 0 3px #b9eccd;}
+  /* étape « en cours » à laquelle on peut revenir quand on révise un exercice précédent */
+  .seg.return{box-shadow:0 0 0 3px rgba(245,158,11,.55);animation:segReturn 1.1s ease-in-out infinite;}
+  @keyframes segReturn{0%,100%{box-shadow:0 0 0 3px rgba(245,158,11,.55);}50%{box-shadow:0 0 0 7px rgba(245,158,11,.12);}}
+  /* exercice actuellement révisé */
+  .seg.viewing{box-shadow:0 0 0 3px #bcd2ff;}
 
   /* ---------- Mission banner ---------- */
   .banner{
-    max-width:1000px;margin:16px auto 0;width:calc(100% - 36px);
+    max-width:1000px;margin:12px auto 0;width:calc(100% - 36px);
     background:#fff;border:2px solid var(--line);border-left:7px solid var(--blue);
     border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
   }
@@ -83,7 +88,7 @@
   .banner .b-btn.ghost{background:#fff;color:var(--muted);}
 
   /* ---------- Editor ---------- */
-  .editor-wrap{max-width:1000px;margin:16px auto;width:calc(100% - 36px);
+  .editor-wrap{max-width:1000px;margin:12px auto;width:calc(100% - 36px);
     background:#fff;border:2px solid var(--line);border-radius:16px;overflow:hidden;
     box-shadow:0 18px 40px -28px rgba(34,48,63,.5);}
   .toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:9px 12px;
@@ -97,6 +102,8 @@
   }
   .t-btn:hover{background:#f1f6ff;border-color:#b9cbe6;}
   .t-btn:active{transform:translateY(1px);}
+  .t-btn:disabled{opacity:.38;cursor:default;background:#fff;border-color:#e2e8f0;}
+  .t-btn:disabled:hover{background:#fff;border-color:#e2e8f0;}
   .t-btn:focus-visible, .t-sel:focus-visible{outline:3px solid var(--blue);outline-offset:2px;}
   .t-btn.bold{font-weight:800;}
   .t-btn.italic{font-style:italic;font-family:Georgia,serif;}
@@ -121,10 +128,10 @@
   .glow{position:relative;z-index:25;animation:glowpulse 1s ease-in-out infinite;border-color:var(--amber)!important;}
   @keyframes glowpulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.55);}50%{box-shadow:0 0 0 9px rgba(245,158,11,0);}}
 
-  .canvas{background:var(--canvas);padding:26px 18px;display:flex;justify-content:center;}
+  .canvas{background:var(--canvas);padding:18px 16px;display:flex;justify-content:center;}
   .page{
-    background:#fff;width:100%;max-width:640px;min-height:300px;border-radius:6px;
-    box-shadow:0 8px 26px -14px rgba(34,48,63,.55);padding:42px 46px;
+    background:#fff;width:100%;max-width:640px;min-height:200px;border-radius:6px;
+    box-shadow:0 8px 26px -14px rgba(34,48,63,.55);padding:30px 40px;
   }
   #editor{outline:none;-webkit-user-select:text;user-select:text;caret-color:var(--blue);}
   #editor .para{white-space:pre-wrap;line-height:1.7;margin:0 0 12px;word-wrap:break-word;}
@@ -139,7 +146,7 @@
   @keyframes flashbad{0%,100%{background:transparent;}20%,60%{background:#ffd0d0;}}
 
   /* ---------- Action bar ---------- */
-  .actions{max-width:1000px;margin:0 auto 30px;width:calc(100% - 36px);display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;}
+  .actions{max-width:1000px;margin:10px auto 22px;width:calc(100% - 36px);display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;}
   .btn{border:none;border-radius:13px;padding:14px 22px;font-weight:800;font-size:1.05rem;display:inline-flex;align-items:center;gap:9px;}
   .btn:active{transform:translateY(1px);}
   .btn-hint{background:#fff;color:var(--amber-d);border:2px solid var(--amber);}
@@ -153,24 +160,25 @@
   .overlay{position:fixed;inset:0;background:rgba(20,30,42,.55);backdrop-filter:blur(2px);
     display:none;align-items:center;justify-content:center;z-index:100;padding:18px;}
   .overlay.open{display:flex;}
-  .modal{background:#fff;border-radius:22px;max-width:520px;width:100%;padding:28px 28px 24px;
-    box-shadow:0 30px 70px -30px rgba(0,0,0,.6);animation:pop .22s ease;max-height:90vh;overflow:auto;}
+  .modal{background:#fff;border-radius:22px;max-width:520px;width:100%;padding:22px 26px 20px;
+    box-shadow:0 30px 70px -30px rgba(0,0,0,.6);animation:pop .22s ease;max-height:92vh;overflow:auto;}
   @keyframes pop{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
-  .modal .m-emoji{font-size:3rem;line-height:1;display:block;margin-bottom:6px;}
-  .modal h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.5rem;margin:0 0 10px;}
-  .modal p{font-size:1.05rem;line-height:1.55;margin:0 0 14px;color:var(--ink);}
+  .modal .m-emoji{font-size:2.5rem;line-height:1;display:block;margin-bottom:4px;}
+  .modal h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.45rem;margin:0 0 9px;}
+  .modal p{font-size:1.03rem;line-height:1.5;margin:0 0 12px;color:var(--ink);}
   .modal .kicker{font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:.78rem;color:var(--blue-d);}
   .modal.test-modal .kicker{color:var(--amber-d);}
-  .howto{background:#f4f8ff;border:2px solid #dbe7ff;border-radius:14px;padding:14px 16px 14px 14px;margin:0 0 18px;}
-  .howto .h-head{font-weight:800;margin:0 0 8px;color:var(--blue-d);}
+  .howto{background:#f4f8ff;border:2px solid #dbe7ff;border-radius:14px;padding:12px 14px;margin:0 0 14px;}
+  .howto .h-head{font-weight:800;margin:0 0 6px;color:var(--blue-d);}
   .howto ol{margin:0;padding-left:22px;}
-  .howto li{margin:6px 0;font-size:1.02rem;line-height:1.45;}
+  .howto li{margin:5px 0;font-size:1.0rem;line-height:1.4;}
   .howto.test{background:#fffaf0;border-color:#fbe2b0;}
   .howto.test .h-head{color:var(--amber-d);}
   .tasklist{list-style:none;margin:0;padding:0;}
   .tasklist li{display:flex;gap:10px;align-items:flex-start;margin:9px 0;font-size:1.05rem;}
   .tasklist li::before{content:"▢";color:var(--amber-d);font-weight:800;}
-  .modal .m-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px;}
+  .modal .m-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px;
+    position:sticky;bottom:-20px;background:#fff;padding-top:8px;}
   .m-btn{border:none;border-radius:13px;padding:13px 22px;font-weight:800;font-size:1.05rem;}
   .m-btn.primary{background:var(--blue);color:#fff;}
   .m-btn.primary:hover{background:var(--blue-d);}
@@ -231,12 +239,16 @@
   .lock-stage{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;
     background:rgba(20,30,42,.72);backdrop-filter:blur(3px);transition:opacity .35s;}
   .lock-stage.fade{opacity:0;}
-  .lock-box{display:flex;flex-direction:column;align-items:center;gap:10px;animation:lockIn .35s ease;}
-  .lock-emoji{font-size:6rem;line-height:1;filter:drop-shadow(0 14px 24px rgba(0,0,0,.4));}
+  .lock-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;animation:lockIn .35s ease;}
+  .lock-emoji{position:relative;z-index:2;font-size:6rem;line-height:1;filter:drop-shadow(0 14px 24px rgba(0,0,0,.4));}
+  .lock-burst{position:absolute;left:50%;top:40px;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;
+    border:7px solid #ffd76a;opacity:0;pointer-events:none;z-index:1;}
+  .lock-burst.go{animation:lockBurst .7s ease-out forwards;}
+  @keyframes lockBurst{0%{opacity:.95;transform:scale(.3);}100%{opacity:0;transform:scale(6);}}
   .lock-cap{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
     background:var(--amber);padding:6px 20px;border-radius:999px;box-shadow:0 8px 20px -8px rgba(0,0,0,.6);}
   @keyframes lockIn{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
-  .lock-box.shake{animation:lockShake .5s ease-in-out 2;}
+  .lock-box.shake{animation:lockShake .42s ease-in-out 3;}
   @keyframes lockShake{0%,100%{transform:rotate(0) translateX(0);}20%{transform:rotate(-9deg) translateX(-6px);}
     40%{transform:rotate(8deg) translateX(6px);}60%{transform:rotate(-6deg) translateX(-4px);}80%{transform:rotate(5deg) translateX(4px);}}
   .lock-box.pop{animation:lockPop .6s cubic-bezier(.18,.9,.32,1.4);}
@@ -252,6 +264,7 @@
     .confetti i{animation:none;display:none;}
     .modal{animation:none;}
     .lock-box,.lock-box.shake,.lock-box.pop{animation:none;}
+    .lock-burst,.seg.return{animation:none;}
   }
 </style>
 </head>
@@ -283,6 +296,11 @@
 
   <div class="editor-wrap">
     <div class="toolbar" id="toolbar">
+      <div class="tgroup">
+        <button class="t-btn" id="btn-undo" title="Annuler (Ctrl+Z)">↶</button>
+        <button class="t-btn" id="btn-redo" title="Rétablir (Ctrl+Y)">↷</button>
+      </div>
+      <span class="divider"></span>
       <div class="tgroup">
         <span class="t-label">Police</span>
         <select class="t-sel" id="sel-font" title="Police d'écriture">
@@ -354,7 +372,7 @@
       </div>
       <span class="divider" data-minlevel="2"></span>
       <div class="tgroup color-wrap" data-minlevel="2">
-        <button class="t-btn color" id="btn-parabg" title="Surlignage du paragraphe">🖍️<span class="bar" id="pbgBar" style="background:#fff3bf"></span></button>
+        <button class="t-btn color" id="btn-parabg" title="Surligner le texte sélectionné">🖍️<span class="bar" id="pbgBar" style="background:#ffef5c"></span></button>
         <div class="swatches" id="swatches-bg"></div>
       </div>
 
@@ -371,8 +389,6 @@
           <option value="check">✅ Coche</option>
           <option value="arrow">➜ Flèche</option>
         </select>
-        <button class="t-btn" id="btn-list-outdent" title="Désindenter (sortir de la sous-liste)">⇤</button>
-        <button class="t-btn" id="btn-list-indent" title="Indenter (imbriquer)">⇥</button>
       </div>
     </div>
     <div class="canvas">
@@ -401,7 +417,7 @@ let FULL = '';
 const DEFAULT = {
   b:false,i:false,u:false,size:16,color:'#22303f',font:'Arial',align:'left',
   /* attributs paragraphe (Niveaux 2 & 3) — valeurs neutres par défaut */
-  lh:1, spb:0, spa:0, indl:0, indr:0, ind1:0, pbg:'transparent',
+  lh:1, spb:0, spa:0, indl:0, indr:0, ind1:0, hl:'transparent',
   list:'none', lvl:0, bul:'disc'
 };
 
@@ -433,10 +449,16 @@ function rangeOf(op){
 }
 // types d'op « paragraphe » : appliqués à toute la plage du paragraphe → clé du modèle
 const PARA_OPS = {align:'align', lh:'lh', spb:'spb', spa:'spa', indl:'indl', indr:'indr',
-                  ind1:'ind1', pbg:'pbg', list:'list', listlevel:'lvl', bullet:'bul'};
+                  ind1:'ind1', list:'list', bullet:'bul'};
+const LEVEL_BULLETS=['disc','circle','square'];   // puce automatique selon le niveau d'imbrication
 function applyOps(d, ops){
   ops.forEach(op=>{
     const [a,b]=rangeOf(op);
+    // niveau de liste : change aussi automatiquement le style de puce (comme Word / LibreOffice)
+    if(op.type==='listlevel'){
+      for(let k=a;k<b;k++){ d[k].lvl=op.value; if(d[k].list==='bullet') d[k].bul=LEVEL_BULLETS[op.value]||'disc'; }
+      return;
+    }
     const pkey=PARA_OPS[op.type];
     if(pkey){ for(let k=a;k<b;k++) d[k][pkey]=op.value; return; }
     for(let k=a;k<b;k++){
@@ -447,12 +469,13 @@ function applyOps(d, ops){
       else if(op.type==='size') ch.size=op.value;
       else if(op.type==='color') ch.color=op.value;
       else if(op.type==='font') ch.font=op.value;
+      else if(op.type==='pbg') ch.hl=op.value;   // surlignage = vrai surligneur, par caractère
     }
   });
   return d;
 }
 function aeq(x,y){ return x.b===y.b&&x.i===y.i&&x.u===y.u&&x.size===y.size&&x.color===y.color&&x.font===y.font&&x.align===y.align
-  &&x.lh===y.lh&&x.spb===y.spb&&x.spa===y.spa&&x.indl===y.indl&&x.indr===y.indr&&x.ind1===y.ind1&&x.pbg===y.pbg
+  &&x.lh===y.lh&&x.spb===y.spb&&x.spa===y.spa&&x.indl===y.indl&&x.indr===y.indr&&x.ind1===y.ind1&&x.hl===y.hl
   &&x.list===y.list&&x.lvl===y.lvl&&x.bul===y.bul; }
 function isSpace(c){ return c===' '; }
 function evaluate(start, goal, cur){
@@ -638,39 +661,39 @@ const LEVEL2_DEFS = [
 
   { kind:'mission', id:'retrait', label:'Mission 5', icon:'➡',
     title:'Décaler avec un retrait',
-    intro:`Un <b>retrait</b> décale le paragraphe vers la droite. On décale le paragraphe du <b>renard</b> : un retrait à gauche <b>et</b> un retrait de première ligne.`,
-    how:[`Clique <b>dans le paragraphe du renard</b>.`,
+    intro:`Un <b>retrait</b> décale le paragraphe vers la droite. On décale le paragraphe du <b>hibou</b> : un retrait à gauche <b>et</b> un retrait de première ligne.`,
+    how:[`Clique <b>dans le paragraphe du hibou</b>.`,
          `Clique une fois sur <b>Augmenter le retrait</b> (retrait gauche).`,
          `Clique sur <b>Retrait 1ʳᵉ ligne</b>, puis sur <b>Valider ma mission</b>.`],
-    ops:[{type:'indl',para:1,value:24},{type:'ind1',para:1,value:24}],
-    hint:{target:'btn-indent-inc', text:`Clique dans le paragraphe du renard, puis utilise <span class="hint-target">Augmenter le retrait</span> et <span class="hint-target">Retrait 1ʳᵉ ligne</span>.`},
-    expect:`décaler le paragraphe du renard (retrait gauche + retrait de première ligne)` },
+    ops:[{type:'indl',para:2,value:24},{type:'ind1',para:2,value:24}],
+    hint:{target:'btn-indent-inc', text:`Clique dans le paragraphe du hibou, puis utilise <span class="hint-target">Augmenter le retrait</span> et <span class="hint-target">Retrait 1ʳᵉ ligne</span>.`},
+    expect:`décaler le paragraphe du hibou (retrait gauche + retrait de première ligne)` },
 
   { kind:'mission', id:'surlignage', label:'Mission 6', icon:'🖍️',
     title:'Surligner un paragraphe',
-    intro:`Le <b>surlignage</b> met une couleur de fond derrière tout le paragraphe pour le faire ressortir. Surligne le paragraphe de l'<b>écureuil</b> en <b>jaune</b>.`,
-    how:[`Clique <b>dans le paragraphe de l'écureuil</b>.`,
-         `Clique sur <b>Surlignage</b>, puis choisis le <b>jaune</b>.`,
+    intro:`Le <b>surligneur</b> ajoute de la couleur <b>derrière le texte</b>, comme un vrai feutre fluo. <b>Sélectionne</b> le texte du paragraphe de l'<b>écureuil</b>, puis surligne-le en <b>jaune</b>.`,
+    how:[`<b>Sélectionne</b> le texte du paragraphe de l'écureuil (clique au début et glisse jusqu'à la fin).`,
+         `Clique sur <b>Surlignage</b> 🖍️, puis choisis le <b>jaune</b>.`,
          `Clique sur <b>Valider ma mission</b>.`],
-    ops:[{type:'pbg',para:3,value:'#fff3bf'}],
-    hint:{target:'btn-parabg', text:`Clique dans le paragraphe de l'écureuil, puis clique sur <span class="hint-target">Surlignage</span> et choisis le <b>jaune</b>.`},
-    expect:`surligner le paragraphe de l'écureuil en jaune` },
+    ops:[{type:'pbg',para:3,value:'#ffef5c'}],
+    hint:{target:'btn-parabg', text:`Sélectionne le texte du paragraphe de l'écureuil, puis clique sur <span class="hint-target">Surlignage</span> 🖍️ et choisis le <b>jaune</b>.`},
+    expect:`surligner le texte du paragraphe de l'écureuil en jaune` },
 
   { kind:'test', id:'test2B', label:'Jalon 2', icon:'🏆',
     title:'La belle mise en page !',
     intro:`Dernier défi du niveau ! Combine tous tes nouveaux pouvoirs sur la page. Valeurs et cibles <b>différentes</b> des exercices. Voici les <b>5 choses</b> à faire :`,
     tasks:[`Mets le paragraphe du <b>renard</b> en interligne <b>double</b>.`,
-           `Ajoute un espace <b>avant</b> et <b>après</b> (24) au paragraphe de l'<b>écureuil</b>.`,
+           `Ajoute un espace <b>avant</b> (24) au paragraphe de l'<b>écureuil</b>.`,
            `Décale le paragraphe du <b>hibou</b> avec un <b>retrait gauche</b>.`,
            `<b>Surligne</b> le <b>titre</b> en jaune.`,
            `<b>Centre</b> le titre.`],
     ops:[{type:'lh',para:1,value:2},
-         {type:'spb',para:3,value:24},{type:'spa',para:3,value:24},
+         {type:'spb',para:3,value:24},
          {type:'indl',para:2,value:24},
-         {type:'pbg',range:'title',value:'#fff3bf'},
+         {type:'pbg',range:'title',value:'#ffef5c'},
          {type:'align',range:'title',value:'center'}],
     replayRefs:['interligne','espacement','retrait','surlignage','justifier'],
-    expect:`interligne double sur le renard, espacement avant/après sur l'écureuil, retrait gauche sur le hibou, et titre centré et surligné en jaune` }
+    expect:`interligne double sur le renard, espace avant sur l'écureuil, retrait gauche sur le hibou, et titre centré et surligné en jaune` }
 ];
 
 /* ---------- NIVEAU 3 — Listes & Structure ---------- */
@@ -699,12 +722,12 @@ const LEVEL3_DEFS = [
 
   { kind:'mission', id:'imbriquer', label:'Mission 3', icon:'⇥',
     title:'Imbriquer une ligne',
-    intro:`<b>Imbriquer</b>, c'est décaler une ligne vers la droite pour en faire une <b>sous-liste</b>. Imbrique la ligne <b>« Une règle »</b>.`,
+    intro:`<b>Imbriquer</b>, c'est décaler une ligne vers la droite pour en faire une <b>sous-liste</b>. La puce <b>change toute seule</b> pour montrer le nouveau niveau. Imbrique la ligne <b>« Une règle »</b>.`,
     how:[`Clique <b>dans la ligne « Une règle »</b> (la dernière).`,
-         `Clique sur le bouton <b>Indenter</b> (imbriquer).`,
+         `Clique sur le bouton <b>Augmenter le retrait</b> ⇥ : la ligne s'imbrique et la puce change.`,
          `Clique sur <b>Valider ma mission</b>.`],
     ops:[{type:'listlevel',para:4,value:1}],
-    hint:{target:'btn-list-indent', text:`Clique dans la ligne « Une règle », puis clique sur le bouton <span class="hint-target">Indenter</span> qui brille.`},
+    hint:{target:'btn-indent-inc', text:`Clique dans la ligne « Une règle », puis clique sur le bouton <span class="hint-target">Augmenter le retrait</span> ⇥ qui brille.`},
     expect:`imbriquer la ligne « Une règle » d'un niveau` },
 
   { kind:'mission', id:'numerotee', label:'Mission 4', icon:'1️⃣',
@@ -799,7 +822,7 @@ const LEVELS = [
     ],
     newTools:[
       {g:'•', n:'Liste à puces'},{g:'1.', n:'Liste numérotée'},
-      {g:'★', n:'Style des puces'},{g:'⇥', n:'Indenter / Désindenter (imbriquer)'}
+      {g:'★', n:'Style des puces'},{g:'⇥', n:'Augmenter / diminuer le retrait (imbriquer les listes)'}
     ],
     defs:LEVEL3_DEFS }
 ];
@@ -824,10 +847,11 @@ const COLORS=[
   {name:'Noir',hex:'#22303f'},{name:'Rouge',hex:'#e11d48'},{name:'Bleu',hex:'#2563eb'},
   {name:'Vert',hex:'#16a34a'},{name:'Orange',hex:'#ea580c'},{name:'Violet',hex:'#7c3aed'}
 ];
-// Couleurs de surlignage (fond de paragraphe)
+// Couleurs de surlignage (vrai surligneur) — teintes fluo plus vives
+const HL_YELLOW='#ffef5c';
 const PBG_COLORS=[
-  {name:'Aucun',hex:'transparent'},{name:'Jaune',hex:'#fff3bf'},{name:'Vert',hex:'#d3f9d8'},
-  {name:'Bleu',hex:'#d0ebff'},{name:'Rose',hex:'#ffdeeb'},{name:'Orange',hex:'#ffe8cc'}
+  {name:'Aucun',hex:'transparent'},{name:'Jaune',hex:HL_YELLOW},{name:'Vert',hex:'#a6f76b'},
+  {name:'Bleu',hex:'#74d4ff'},{name:'Rose',hex:'#ff9ed9'},{name:'Orange',hex:'#ffc14d'}
 ];
 // Styles de puces : token -> glyphe
 const BULLETS={disc:'•',circle:'◦',square:'▪',star:'★',check:'✅',arrow:'➜'};
@@ -842,7 +866,7 @@ let currentStep = null;
 let currentLevel = 1;           // niveau en cours (1..3)
 let replayState = null;         // {savedDoc, returnIndex}
 let pickedColor = '#2563eb';
-let pickedPbg = '#fff3bf';
+let pickedPbg = '#ffef5c';
 
 const editor=document.getElementById('editor');
 const overlay=document.getElementById('overlay');
@@ -872,8 +896,6 @@ function render(){
     para.style.marginBottom=(a.spa||12)+'px';
     para.style.paddingRight=a.indr+'px';
     para.style.textIndent=a.ind1+'px';
-    para.style.background=a.pbg;
-    para.style.borderRadius=(a.pbg && a.pbg!=='transparent')?'6px':'';
     let padLeft=a.indl;
     if(a.list!=='none'){
       para.classList.add('li');
@@ -898,6 +920,7 @@ function render(){
     sp.style.fontSize=a.size+'px';
     sp.style.color=a.color;
     sp.style.fontFamily=a.font;
+    sp.style.background=(a.hl && a.hl!=='transparent')?a.hl:'';   // surlignage par caractère
     if(firstCharOfPara===null) firstCharOfPara=i;
     para.appendChild(sp);
   }
@@ -1036,19 +1059,33 @@ function updateToolbar(){
   setBtnActive('btn-list-bullet', lst==='bullet');
   setBtnActive('btn-list-number', lst==='number');
   const bl=pAttr('bul'); setSelVal('sel-bullet', bl||'disc');
-  const pb=pAttr('pbg'); if(pb && pb!=='transparent'){ pbgBar.style.background=pb; pickedPbg=pb; }
+  const ph=common('hl'); if(ph && ph!=='transparent'){ pbgBar.style.background=ph; pickedPbg=ph; }
 }
 
 /* =========================================================
    6. ACTIONS DE LA BARRE D'OUTILS
    ========================================================= */
 function applyAndRestore(){ render(); editor.focus(); restoreDomSelection(); updateToolbar(); }
+
+/* ---- Historique : Annuler (undo) / Rétablir (redo) ---- */
+let undoStack=[], redoStack=[];
+function updateUndoButtons(){
+  const u=document.getElementById('btn-undo'), r=document.getElementById('btn-redo');
+  if(u) u.disabled=!undoStack.length;
+  if(r) r.disabled=!redoStack.length;
+}
+function pushHistory(){ undoStack.push(clone(doc)); if(undoStack.length>120) undoStack.shift(); redoStack.length=0; updateUndoButtons(); }
+function resetHistory(){ undoStack.length=0; redoStack.length=0; updateUndoButtons(); }
+function undo(){ if(!undoStack.length) return; redoStack.push(clone(doc)); doc=undoStack.pop(); curSel=null; render(); updateToolbar(); updateUndoButtons(); }
+function redo(){ if(!redoStack.length) return; undoStack.push(clone(doc)); doc=redoStack.pop(); curSel=null; render(); updateToolbar(); updateUndoButtons(); }
+
 function needRange(){
   if(!curSel || curSel.type!=='range'){ toast("Sélectionne d'abord du texte : double-clic sur un mot, ou clique-glisse 🖱️"); return true; }
   return false;
 }
 function toggleAttr(attr){
   if(needRange()) return;
+  pushHistory();
   const {a,b}=curSel; let allOn=true;
   for(let k=a;k<b;k++){ if(doc[k].c==='\n'||isSpace(doc[k].c)) continue; if(!doc[k][attr]){ allOn=false; break; } }
   const val=!allOn;
@@ -1057,6 +1094,7 @@ function toggleAttr(attr){
 }
 function setValue(attr,value){
   if(needRange()) return;
+  pushHistory();
   const {a,b}=curSel;
   for(let k=a;k<b;k++){ if(doc[k].c==='\n') continue; doc[k][attr]=value; }
   applyAndRestore();
@@ -1071,6 +1109,7 @@ function setAlign(value){
   }else{
     toast("Place ton curseur dans le texte : clique dessus 🖱️"); return;
   }
+  pushHistory();
   paras.forEach(p=>{ const [s,e]=paraRange(p); for(let k=s;k<e;k++) if(doc[k]) doc[k].align=value; });
   applyAndRestore();
 }
@@ -1090,11 +1129,13 @@ function collectParas(){
 }
 function setParaAttr(attr, value){
   const paras=collectParas(); if(!paras) return;
+  pushHistory();
   paras.forEach(p=>{ const [s,e]=paraRange(p); for(let k=s;k<e;k++) if(doc[k]) doc[k][attr]=value; });
   applyAndRestore();
 }
 function changeIndent(attr, delta){
   const paras=collectParas(); if(!paras) return;
+  pushHistory();
   paras.forEach(p=>{ const [s,e]=paraRange(p);
     const cur=doc[s]?doc[s][attr]:0; const nv=Math.max(0, Math.min(96, cur+delta));
     for(let k=s;k<e;k++) if(doc[k]) doc[k][attr]=nv; });
@@ -1102,6 +1143,7 @@ function changeIndent(attr, delta){
 }
 function toggleParaPx(attr, on){      // bascule 0 <-> on (retrait 1ʳᵉ ligne / droite)
   const paras=collectParas(); if(!paras) return;
+  pushHistory();
   paras.forEach(p=>{ const [s,e]=paraRange(p);
     const nv=(doc[s] && doc[s][attr])?0:on;
     for(let k=s;k<e;k++) if(doc[k]) doc[k][attr]=nv; });
@@ -1109,6 +1151,7 @@ function toggleParaPx(attr, on){      // bascule 0 <-> on (retrait 1ʳᵉ ligne 
 }
 function toggleList(type){            // (ré)activer une liste, ou la retirer si déjà du même type
   const paras=collectParas(); if(!paras) return;
+  pushHistory();
   paras.forEach(p=>{ const [s,e]=paraRange(p);
     const cur=doc[s]?doc[s].list:'none';
     const nv=(cur===type)?'none':type;
@@ -1117,15 +1160,28 @@ function toggleList(type){            // (ré)activer une liste, ou la retirer s
 }
 function setBullet(style){
   const paras=collectParas(); if(!paras) return;
+  pushHistory();
   paras.forEach(p=>{ const [s,e]=paraRange(p); for(let k=s;k<e;k++) if(doc[k]) doc[k].bul=style; });
   applyAndRestore();
 }
 function changeListLevel(delta){
   const paras=collectParas(); if(!paras) return;
+  pushHistory();
   paras.forEach(p=>{ const [s,e]=paraRange(p);
-    const cur=doc[s]?doc[s].lvl:0; const nv=Math.max(0, Math.min(2, cur+delta));
-    for(let k=s;k<e;k++) if(doc[k]) doc[k].lvl=nv; });
+    if(!doc[s] || doc[s].list==='none') return;
+    const cur=doc[s].lvl||0; const nv=Math.max(0, Math.min(2, cur+delta));
+    // comme Word/LibreOffice : la puce suit automatiquement le niveau d'imbrication
+    const autoBul=(doc[s].list==='bullet') ? (LEVEL_BULLETS[nv]||'disc') : doc[s].bul;
+    for(let k=s;k<e;k++) if(doc[k]){ doc[k].lvl=nv; doc[k].bul=autoBul; } });
   applyAndRestore();
+}
+// Boutons « retrait » : sur une liste → change le niveau d'imbrication ; sinon → retrait gauche classique
+function smartIndent(dir){
+  const paras=collectParas(); if(!paras) return;
+  let isList=false;
+  paras.forEach(p=>{ const [s]=paraRange(p); if(doc[s] && doc[s].list!=='none') isList=true; });
+  if(isList) changeListLevel(dir);
+  else changeIndent('indl', dir*24);
 }
 
 document.getElementById('btn-bold').onclick=()=>toggleAttr('b');
@@ -1141,21 +1197,22 @@ document.getElementById('btn-align-justify').onclick=()=>setAlign('justify');
 document.getElementById('sel-linespacing').onchange=e=>setParaAttr('lh', parseFloat(e.target.value));
 document.getElementById('sel-space-before').onchange=e=>setParaAttr('spb', parseInt(e.target.value));
 document.getElementById('sel-space-after').onchange=e=>setParaAttr('spa', parseInt(e.target.value));
-document.getElementById('btn-indent-inc').onclick=()=>changeIndent('indl', 24);
-document.getElementById('btn-indent-dec').onclick=()=>changeIndent('indl', -24);
+document.getElementById('btn-indent-inc').onclick=()=>smartIndent(1);
+document.getElementById('btn-indent-dec').onclick=()=>smartIndent(-1);
 document.getElementById('btn-indent-first').onclick=()=>toggleParaPx('ind1', 24);
 document.getElementById('btn-indent-right').onclick=()=>toggleParaPx('indr', 24);
 // Niveau 3
 document.getElementById('btn-list-bullet').onclick=()=>toggleList('bullet');
 document.getElementById('btn-list-number').onclick=()=>toggleList('number');
 document.getElementById('sel-bullet').onchange=e=>setBullet(e.target.value);
-document.getElementById('btn-list-indent').onclick=()=>changeListLevel(1);
-document.getElementById('btn-list-outdent').onclick=()=>changeListLevel(-1);
+// Annuler / Rétablir
+document.getElementById('btn-undo').onclick=undo;
+document.getElementById('btn-redo').onclick=redo;
 
 // Garde la sélection visible quand on clique un bouton de la barre (ne vole pas le focus)
-['btn-bold','btn-italic','btn-underline','btn-align-left','btn-align-center','btn-align-right','btn-align-justify','btn-color',
+['btn-undo','btn-redo','btn-bold','btn-italic','btn-underline','btn-align-left','btn-align-center','btn-align-right','btn-align-justify','btn-color',
  'btn-indent-inc','btn-indent-dec','btn-indent-first','btn-indent-right','btn-parabg',
- 'btn-list-bullet','btn-list-number','btn-list-indent','btn-list-outdent']
+ 'btn-list-bullet','btn-list-number']
   .forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('mousedown', e=>e.preventDefault()); });
 
 // color popover (couleur du texte)
@@ -1185,7 +1242,7 @@ PBG_COLORS.forEach(c=>{
   b.addEventListener('mousedown', e=>e.preventDefault());
   b.onclick=(ev)=>{ ev.stopPropagation(); pickedPbg=c.hex;
     pbgBar.style.background=(c.hex==='transparent'?'#fff':c.hex);
-    swatchesBg.classList.remove('open'); setParaAttr('pbg', c.hex); };
+    swatchesBg.classList.remove('open'); setValue('hl', c.hex); };  // surligne uniquement la sélection
   swatchesBg.appendChild(b);
 });
 document.getElementById('btn-parabg').onclick=(e)=>{ e.stopPropagation(); swatchesBg.classList.toggle('open'); };
@@ -1205,7 +1262,13 @@ editor.addEventListener('drop', e=>e.preventDefault());
 editor.addEventListener('dragstart', e=>e.preventDefault());
 editor.addEventListener('keydown', e=>{
   const nav=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Shift','Control','Meta','Alt','Tab','Escape'];
-  if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase(); if(k==='a'||k==='c') return; e.preventDefault(); return; }
+  if(e.ctrlKey||e.metaKey){
+    const k=e.key.toLowerCase();
+    if(k==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); return; }
+    if(k==='y'){ e.preventDefault(); redo(); return; }
+    if(k==='a'||k==='c') return;
+    e.preventDefault(); return;
+  }
   if(nav.includes(e.key)) return;
   e.preventDefault();
 });
@@ -1218,6 +1281,7 @@ function startStep(idx){
   currentStep=STEPS[idx];
   doc=clone(currentStep.startDoc);
   curSel=null;
+  resetHistory();
   resetToolbarDefaults();
   render(); updateProgress(); updateBanner();
   store.set('tt_step_l'+currentLevel, String(idx));
@@ -1233,39 +1297,47 @@ function resetToolbarDefaults(){
   // Niveaux 2 & 3
   [['sel-linespacing','1'],['sel-space-before','0'],['sel-space-after','0'],['sel-bullet','disc']]
     .forEach(([id,v])=>{ const el=document.getElementById(id); if(el){ el.value=v; el.classList.remove('active'); } });
-  if(pbgBar){ pbgBar.style.background='#fff3bf'; } pickedPbg='#fff3bf';
+  if(pbgBar){ pbgBar.style.background='#ffef5c'; } pickedPbg='#ffef5c';
 }
 function updateProgress(){
   const track=document.getElementById('track'); track.innerHTML='';
+  const real = replayState ? replayState.returnIndex : stepIndex;   // l'étape réellement « en cours »
+  const viewed = STEPS.indexOf(currentStep);                        // l'étape affichée (révision incluse)
   STEPS.forEach((st,i)=>{
     const d=document.createElement('div');
     const isMile = st.kind==='test';
     d.className='seg'+(isMile?' milestone':'');
     if(i<stepIndex) d.classList.add('done');
-    if(i===stepIndex && !replayState) d.classList.add('current');
-    if(isMile) d.textContent = i<stepIndex ? '🏆' : '🚩';
-    // Navigation : revenir réviser une mission déjà atteinte (sans perdre l'exercice en cours)
-    if(st.kind==='mission' && i<=stepIndex){
+    if(i===real) d.classList.add('current');
+    if(replayState && i===real) d.classList.add('return');     // « reviens à ton étape en cours »
+    if(replayState && i===viewed && i!==real) d.classList.add('viewing'); // étape en cours de révision
+    if(isMile) d.textContent = (replayState && i===real) ? '↩' : (i<stepIndex ? '🏆' : '🚩');
+    // Navigation : missions déjà atteintes (révision) + l'étape en cours (exercice OU jalon), pour y revenir
+    const reachable = i<=stepIndex;
+    if(reachable && (st.kind==='mission' || i===real)){
       d.classList.add('clickable');
-      d.title='Revenir à '+st.label+' : '+st.title+' (ta progression est gardée)';
+      if(replayState && i===real) d.title='↩ Revenir à ton étape en cours';
+      else if(i===real) d.title=(st.kind==='test'?'Revoir les consignes de ce jalon':'Revoir '+st.label+' : '+st.title);
+      else d.title='Revenir à '+st.label+' : '+st.title+' (ta progression est gardée)';
       d.onclick=()=>onSegClick(i);
     }
     track.appendChild(d);
   });
-  const shown=Math.min(stepIndex+1, STEPS.length);
+  const shown=Math.min(real+1, STEPS.length);
   document.getElementById('stepCount').textContent='Niveau '+currentLevel+' · Étape '+shown+' / '+STEPS.length;
 }
 function onSegClick(i){
-  if(i>stepIndex || STEPS[i].kind!=='mission') return;   // pas encore débloqué / pas un exercice
+  if(i>stepIndex) return;                                   // pas encore débloqué
   const real = replayState ? replayState.returnIndex : stepIndex;
   if(i===real){ if(replayState) exitReplay(); else openMissionPopup(); return; }
+  if(STEPS[i].kind!=='mission') return;                     // on ne « rejoue » pas un ancien jalon
   visitStep(i);
 }
 function visitStep(i){
   // Sauvegarde l'état réel une seule fois : préserve le travail en cours sur l'étape actuelle
   if(!replayState) replayState={ savedDoc: clone(doc), returnIndex: stepIndex };
   currentStep=STEPS[i];
-  doc=clone(currentStep.startDoc); curSel=null; resetToolbarDefaults();
+  doc=clone(currentStep.startDoc); curSel=null; resetHistory(); resetToolbarDefaults();
   render(); updateProgress(); updateBanner(); openMissionPopup();
 }
 function updateBanner(){
@@ -1394,7 +1466,7 @@ function onExtra(res){
   document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
 function restartCurrent(){
-  doc=clone(currentStep.startDoc); curSel=null; resetToolbarDefaults(); render();
+  doc=clone(currentStep.startDoc); curSel=null; resetHistory(); resetToolbarDefaults(); render();
 }
 function onSuccess(){
   if(replayState){
@@ -1442,6 +1514,7 @@ function onLevelComplete(){
 }
 function openLevelUnlockedModal(nextN){
   const lvl=LEVELS[nextN-1];
+  confetti();   // confettis en même temps que le popup de passage de niveau
   modal.className='modal good';
   modal.innerHTML=`
     <span class="m-emoji">🎉</span>
@@ -1522,13 +1595,13 @@ function openReplayPanel(){
 function startReplay(mission){
   replayState={ savedDoc: clone(doc), returnIndex: stepIndex };
   currentStep=mission;
-  doc=clone(mission.startDoc); curSel=null; resetToolbarDefaults();
+  doc=clone(mission.startDoc); curSel=null; resetHistory(); resetToolbarDefaults();
   render(); updateProgress(); updateBanner(); openMissionPopup();
 }
 function exitReplay(){
   if(!replayState) return;
   doc=replayState.savedDoc; currentStep=STEPS[replayState.returnIndex]; replayState=null;
-  curSel=null; render(); updateProgress(); updateBanner();
+  curSel=null; resetHistory(); render(); updateProgress(); updateBanner();
 }
 document.getElementById('backToTest').onclick=exitReplay;
 document.getElementById('seeMission').onclick=openMissionPopup;
@@ -1631,18 +1704,23 @@ document.getElementById('levelBtn').onclick=openLevelSelector;
 function playUnlock(nextN, done){
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stage=document.createElement('div'); stage.className='lock-stage';
-  stage.innerHTML=`<div class="lock-box"><div class="lock-emoji">🔒</div><div class="lock-cap">Niveau ${nextN}</div></div>`;
+  stage.innerHTML=`<div class="lock-box"><div class="lock-burst"></div><div class="lock-emoji">🔒</div><div class="lock-cap">Niveau ${nextN}</div></div>`;
   document.body.appendChild(stage);
-  const box=stage.querySelector('.lock-box'), emoji=stage.querySelector('.lock-emoji');
+  const box=stage.querySelector('.lock-box'), emoji=stage.querySelector('.lock-emoji'), burst=stage.querySelector('.lock-burst');
   if(reduce){
     emoji.textContent='🔓'; confetti();
     setTimeout(()=>{ stage.remove(); done&&done(); }, 800);
     return;
   }
+  // 1) le cadenas fermé est secoué plusieurs fois…
   box.classList.add('shake');
-  setTimeout(()=>{ box.classList.remove('shake'); box.classList.add('pop'); emoji.textContent='🔓'; confetti(); }, 1100);
-  setTimeout(()=>{ stage.classList.add('fade'); }, 2100);
-  setTimeout(()=>{ stage.remove(); done&&done(); }, 2500);
+  // 2) …puis d'un coup il s'ouvre avec un éclat lumineux + confettis
+  setTimeout(()=>{
+    box.classList.remove('shake'); box.classList.add('pop');
+    emoji.textContent='🔓'; burst.classList.add('go'); confetti();
+  }, 1350);
+  setTimeout(()=>{ stage.classList.add('fade'); }, 2350);
+  setTimeout(()=>{ stage.remove(); done&&done(); }, 2750);
 }
 
 /* ---- recommence le niveau courant ---- */
