@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier informatique — Mes jeux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#22303f; --muted:#5a6b7b;
+    --blue:#2563eb; --blue-d:#1d4ed8;
+    --amber:#f59e0b; --green:#16a34a;
+    --paper:#ffffff; --line:#d7e0ea;
+    --shell:#e9eff7;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Nunito",system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(900px 500px at 80% -10%, #dbe7ff 0%, transparent 60%),
+      radial-gradient(800px 500px at -10% 110%, #fff0d6 0%, transparent 55%),
+      var(--shell);
+    min-height:100vh;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:48px 24px 80px;}
+  header.hero{text-align:center;margin-bottom:44px;}
+  .eyebrow{
+    display:inline-block;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    font-size:.78rem;color:var(--blue-d);background:#dbe7ff;border-radius:999px;
+    padding:6px 16px;margin-bottom:18px;
+  }
+  h1{
+    font-family:"Fredoka",sans-serif;font-weight:700;
+    font-size:clamp(2rem,5vw,3.1rem);line-height:1.05;margin:0 0 14px;
+    color:var(--ink);
+  }
+  h1 .pop{color:var(--blue);}
+  .sub{font-size:1.18rem;color:var(--muted);margin:0 auto;max-width:560px;font-weight:600;}
+
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:22px;
+  }
+  .card{
+    position:relative;display:block;text-decoration:none;color:inherit;
+    background:var(--paper);border:2px solid var(--line);border-radius:22px;
+    padding:26px 24px 24px;transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    box-shadow:0 10px 24px -18px rgba(34,48,63,.5);
+  }
+  .card .emoji{font-size:2.6rem;line-height:1;display:block;margin-bottom:16px;}
+  .card h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.32rem;margin:0 0 8px;}
+  .card p{margin:0;color:var(--muted);font-weight:600;font-size:.98rem;}
+  .card .go{
+    margin-top:18px;display:inline-flex;align-items:center;gap:8px;
+    font-weight:800;color:var(--blue-d);font-size:1rem;
+  }
+  .card .go svg{transition:transform .18s ease;}
+  .card.active:hover{transform:translateY(-5px);border-color:var(--blue);box-shadow:0 22px 40px -22px rgba(37,99,235,.65);}
+  .card.active:hover .go svg{transform:translateX(4px);}
+  .card.active:focus-visible{outline:3px solid var(--blue);outline-offset:3px;}
+  .card .num{
+    position:absolute;top:18px;right:20px;font-family:"Fredoka",sans-serif;
+    font-size:1.1rem;font-weight:700;color:#c3d1e2;
+  }
+  .card.soon{filter:grayscale(.35);opacity:.78;cursor:not-allowed;}
+  .badge{
+    display:inline-block;margin-top:16px;font-weight:800;font-size:.82rem;
+    color:#8a6d12;background:#fdebc4;border-radius:999px;padding:5px 12px;
+  }
+  .levels{display:flex;gap:7px;margin-top:16px;flex-wrap:wrap;}
+  .lvl-chip{
+    display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:.8rem;
+    border-radius:999px;padding:5px 11px;border:2px solid var(--line);color:var(--muted);background:#fff;
+  }
+  .lvl-chip .ic{font-size:.85rem;}
+  .lvl-chip.done{border-color:var(--green);color:var(--green);background:#f1fbf4;}
+  .lvl-chip.current{border-color:var(--blue);color:var(--blue-d);background:#eef4ff;}
+  .lvl-chip.locked{opacity:.65;}
+  footer{text-align:center;margin-top:54px;color:var(--muted);font-weight:600;font-size:.92rem;}
+  @media (prefers-reduced-motion: reduce){
+    .card,.card .go svg{transition:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <span class="eyebrow">Atelier informatique</span>
+      <h1>Mes jeux pour devenir un <span class="pop">pro de l'ordinateur</span></h1>
+      <p class="sub">Choisis un jeu et entraîne-toi à ton rythme. Tu peux recommencer autant de fois que tu veux !</p>
+    </header>
+
+    <main class="grid">
+      <a class="card active" href="traitement-texte.html">
+        <span class="num">01</span>
+        <span class="emoji">📝</span>
+        <h2>Traitement de texte</h2>
+        <p>Apprends à mettre un texte en forme : gras, couleurs, alignements, listes…</p>
+        <div class="levels" id="ttLevels">
+          <span class="lvl-chip" data-n="1"><span class="ic">•</span>Niveau 1</span>
+          <span class="lvl-chip" data-n="2"><span class="ic">•</span>Niveau 2</span>
+          <span class="lvl-chip" data-n="3"><span class="ic">•</span>Niveau 3</span>
+        </div>
+        <span class="go">Commencer
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <div class="card soon" aria-disabled="true">
+        <span class="num">02</span>
+        <span class="emoji">⌨️</span>
+        <h2>Le clavier</h2>
+        <p>Trouve les touches et écris de plus en plus vite.</p>
+        <span class="badge">Bientôt disponible</span>
+      </div>
+
+      <div class="card soon" aria-disabled="true">
+        <span class="num">03</span>
+        <span class="emoji">🖱️</span>
+        <h2>La souris</h2>
+        <p>Clique, double-clique et glisse-dépose comme un champion.</p>
+        <span class="badge">Bientôt disponible</span>
+      </div>
+
+      <div class="card soon" aria-disabled="true">
+        <span class="num">04</span>
+        <span class="emoji">🗂️</span>
+        <h2>Dossiers et fichiers</h2>
+        <p>Range, renomme et retrouve tes documents.</p>
+        <span class="badge">Bientôt disponible</span>
+      </div>
+
+      <div class="card soon" aria-disabled="true">
+        <span class="num">05</span>
+        <span class="emoji">🌐</span>
+        <h2>Naviguer sur internet</h2>
+        <p>Utilise un navigateur et fais des recherches.</p>
+        <span class="badge">Bientôt disponible</span>
+      </div>
+    </main>
+
+    <footer>Atelier informatique · clique sur un jeu pour démarrer</footer>
+  </div>
+<script>
+  // Reflète l'avancement du jeu « Traitement de texte » (lu depuis localStorage)
+  (function(){
+    function read(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+    let unlocked=parseInt(read('tt_unlocked')||'1',10); if(isNaN(unlocked)||unlocked<1) unlocked=1;
+    let cur=parseInt(read('tt_curlevel')||'1',10); if(isNaN(cur)||cur<1) cur=1;
+    document.querySelectorAll('#ttLevels .lvl-chip').forEach(chip=>{
+      const n=+chip.getAttribute('data-n');
+      const ic=chip.querySelector('.ic');
+      if(n>unlocked){ chip.classList.add('locked'); ic.textContent='🔒'; }
+      else if(n<cur){ chip.classList.add('done'); ic.textContent='✓'; }
+      else if(n===cur){ chip.classList.add('current'); ic.textContent='▶'; }
+      else { ic.textContent='•'; }   // débloqué mais pas encore atteint
+    });
+  })();
+</script>
+</body>
+</html>

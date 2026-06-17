@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traitement de texte — Atelier informatique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#22303f; --muted:#5a6b7b;
+    --blue:#2563eb; --blue-d:#1d4ed8;
+    --amber:#f59e0b; --amber-d:#b45309;
+    --green:#16a34a; --green-d:#15803d;
+    --red:#ef4444; --red-d:#b91c1c;
+    --paper:#ffffff; --line:#d7e0ea; --line-2:#e7eef6;
+    --shell:#e9eff7; --canvas:#dde6f1;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:"Nunito",system-ui,sans-serif;color:var(--ink);
+    background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
+  }
+  button{font-family:inherit;cursor:pointer;}
+  .display{font-family:"Fredoka",sans-serif;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    background:#fff;border-bottom:2px solid var(--line);
+    display:flex;align-items:center;gap:16px;padding:10px 18px;flex-wrap:wrap;
+  }
+  .back{
+    display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--blue-d);
+    font-weight:800;font-size:.98rem;padding:8px 12px;border-radius:10px;
+  }
+  .back:hover{background:#eef4ff;}
+  .topbar h1{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.15rem;margin:0;flex:1;}
+  .topbar h1 .dot{color:var(--blue);}
+  .step-count{font-weight:800;color:var(--muted);font-size:.95rem;}
+  .reset-btn{
+    border:2px solid var(--line);background:#fff;color:var(--muted);font-weight:700;
+    border-radius:10px;padding:7px 11px;font-size:.85rem;
+  }
+  .reset-btn:hover{border-color:var(--red);color:var(--red-d);}
+
+  /* ---------- Progress ---------- */
+  .progress-wrap{background:#fff;padding:8px 18px 14px;border-bottom:2px solid var(--line);}
+  .track{display:flex;gap:6px;align-items:center;max-width:1000px;margin:0 auto;}
+  .seg{position:relative;flex:1;height:14px;border-radius:8px;background:var(--line-2);overflow:visible;}
+  .seg.done{background:var(--green);}
+  .seg.current{background:var(--blue);box-shadow:0 0 0 3px #bcd2ff;}
+  .seg.milestone{flex:1;height:20px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;background:#fdebc4;}
+  .seg.milestone.done{background:#facc15;}
+  .seg.milestone.current{background:var(--amber);box-shadow:0 0 0 3px #fde2a8;}
+  .seg.clickable{cursor:pointer;transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;}
+  .seg.clickable:hover{filter:brightness(1.07);transform:translateY(-2px);}
+  .seg.clickable.done:hover{box-shadow:0 0 0 3px #b9eccd;}
+
+  /* ---------- Mission banner ---------- */
+  .banner{
+    max-width:1000px;margin:16px auto 0;width:calc(100% - 36px);
+    background:#fff;border:2px solid var(--line);border-left:7px solid var(--blue);
+    border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  }
+  .banner.test{border-left-color:var(--amber);}
+  .banner.replay{border-left-color:var(--green);}
+  .banner .b-emoji{font-size:1.8rem;line-height:1;}
+  .banner .b-txt{flex:1;min-width:200px;}
+  .banner .b-title{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.08rem;}
+  .banner .b-sub{color:#3a4a59;font-weight:700;font-size:1rem;margin-top:4px;line-height:1.45;}
+  .banner .b-goal-label{font-weight:800;color:var(--blue-d);margin-right:3px;}
+  .banner.test .b-goal-label{color:var(--amber-d);}
+  .mini-task{display:inline-block;background:#fff6e6;border:1.5px solid #f6d68a;color:#7a5300;
+    border-radius:999px;padding:3px 11px;margin:5px 5px 0 0;font-size:.9rem;font-weight:700;line-height:1.25;}
+  .mini-task b{color:var(--amber-d);font-weight:800;}
+  .banner .b-btn{
+    border:2px solid var(--line);background:#f5f9ff;color:var(--blue-d);font-weight:800;
+    border-radius:10px;padding:8px 13px;font-size:.9rem;white-space:nowrap;
+  }
+  .banner .b-btn:hover{border-color:var(--blue);}
+  .banner .b-btn.ghost{background:#fff;color:var(--muted);}
+
+  /* ---------- Editor ---------- */
+  .editor-wrap{max-width:1000px;margin:16px auto;width:calc(100% - 36px);
+    background:#fff;border:2px solid var(--line);border-radius:16px;overflow:hidden;
+    box-shadow:0 18px 40px -28px rgba(34,48,63,.5);}
+  .toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:9px 12px;
+    background:linear-gradient(#fbfcfe,#eef3fa);border-bottom:2px solid var(--line);}
+  .tgroup{display:flex;align-items:center;gap:5px;}
+  .divider{width:2px;height:30px;background:var(--line);margin:0 5px;border-radius:2px;}
+  .t-btn{
+    min-width:38px;height:38px;padding:0 9px;border:2px solid #d4ddea;background:#fff;border-radius:9px;
+    font-size:1.05rem;font-weight:700;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;
+    transition:border-color .12s,background .12s,transform .08s;
+  }
+  .t-btn:hover{background:#f1f6ff;border-color:#b9cbe6;}
+  .t-btn:active{transform:translateY(1px);}
+  .t-btn:focus-visible, .t-sel:focus-visible{outline:3px solid var(--blue);outline-offset:2px;}
+  .t-btn.bold{font-weight:800;}
+  .t-btn.italic{font-style:italic;font-family:Georgia,serif;}
+  .t-btn.under{text-decoration:underline;}
+  .t-btn.active{background:#dbeafe;border-color:var(--blue);color:var(--blue);box-shadow:inset 0 2px 5px -2px rgba(37,99,235,.5);}
+  .t-btn.active:hover{background:#cfe0ff;}
+  .t-sel.active{border-color:var(--blue);background:#eff5ff;color:var(--blue);}
+  .t-btn svg{width:20px;height:20px;}
+  .t-sel{height:38px;border:2px solid #d4ddea;border-radius:9px;background:#fff;font-family:inherit;
+    font-weight:700;font-size:.95rem;color:var(--ink);padding:0 8px;cursor:pointer;}
+  .t-label{font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-right:2px;}
+  .color-wrap{position:relative;}
+  .t-btn.color .bar{display:block;width:20px;height:5px;border-radius:2px;margin-top:-3px;}
+  .swatches{position:absolute;top:46px;left:0;z-index:30;background:#fff;border:2px solid var(--line);
+    border-radius:12px;padding:10px;display:none;grid-template-columns:repeat(3,1fr);gap:8px;
+    box-shadow:0 14px 30px -16px rgba(34,48,63,.5);}
+  .swatches.open{display:grid;}
+  .swatch{width:34px;height:34px;border-radius:8px;border:2px solid #fff;box-shadow:0 0 0 2px var(--line);cursor:pointer;}
+  .swatch:hover{transform:scale(1.08);}
+
+  /* glow on hint */
+  .glow{position:relative;z-index:25;animation:glowpulse 1s ease-in-out infinite;border-color:var(--amber)!important;}
+  @keyframes glowpulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.55);}50%{box-shadow:0 0 0 9px rgba(245,158,11,0);}}
+
+  .canvas{background:var(--canvas);padding:26px 18px;display:flex;justify-content:center;}
+  .page{
+    background:#fff;width:100%;max-width:640px;min-height:300px;border-radius:6px;
+    box-shadow:0 8px 26px -14px rgba(34,48,63,.55);padding:42px 46px;
+  }
+  #editor{outline:none;-webkit-user-select:text;user-select:text;caret-color:var(--blue);}
+  #editor .para{white-space:pre-wrap;line-height:1.7;margin:0 0 12px;word-wrap:break-word;}
+  #editor .para:last-child{margin-bottom:0;}
+  #editor .ch{border-radius:2px;}
+  #editor .para.li{padding-top:1px;padding-bottom:1px;}
+  #editor .li-marker{display:inline-block;min-width:1.4em;margin-right:.35em;text-indent:0;
+    font-weight:700;color:var(--blue-d);user-select:none;-webkit-user-select:none;}
+  #editor ::selection{background:#bcd4ff;}
+  #editor .ch::selection{background:#bcd4ff;}
+  #editor .ch.flash-bad{animation:flashbad 1.5s ease;}
+  @keyframes flashbad{0%,100%{background:transparent;}20%,60%{background:#ffd0d0;}}
+
+  /* ---------- Action bar ---------- */
+  .actions{max-width:1000px;margin:0 auto 30px;width:calc(100% - 36px);display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;}
+  .btn{border:none;border-radius:13px;padding:14px 22px;font-weight:800;font-size:1.05rem;display:inline-flex;align-items:center;gap:9px;}
+  .btn:active{transform:translateY(1px);}
+  .btn-hint{background:#fff;color:var(--amber-d);border:2px solid var(--amber);}
+  .btn-hint:hover{background:#fff8ec;}
+  .btn-restart{background:#fff;color:var(--muted);border:2px solid var(--line);font-size:.95rem;padding:12px 16px;}
+  .btn-restart:hover{border-color:var(--red);color:var(--red-d);}
+  .btn-validate{background:var(--green);color:#fff;box-shadow:0 10px 22px -12px rgba(22,163,74,.9);}
+  .btn-validate:hover{background:var(--green-d);}
+
+  /* ---------- Modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(20,30,42,.55);backdrop-filter:blur(2px);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:18px;}
+  .overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:22px;max-width:520px;width:100%;padding:28px 28px 24px;
+    box-shadow:0 30px 70px -30px rgba(0,0,0,.6);animation:pop .22s ease;max-height:90vh;overflow:auto;}
+  @keyframes pop{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .modal .m-emoji{font-size:3rem;line-height:1;display:block;margin-bottom:6px;}
+  .modal h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.5rem;margin:0 0 10px;}
+  .modal p{font-size:1.05rem;line-height:1.55;margin:0 0 14px;color:var(--ink);}
+  .modal .kicker{font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:.78rem;color:var(--blue-d);}
+  .modal.test-modal .kicker{color:var(--amber-d);}
+  .howto{background:#f4f8ff;border:2px solid #dbe7ff;border-radius:14px;padding:14px 16px 14px 14px;margin:0 0 18px;}
+  .howto .h-head{font-weight:800;margin:0 0 8px;color:var(--blue-d);}
+  .howto ol{margin:0;padding-left:22px;}
+  .howto li{margin:6px 0;font-size:1.02rem;line-height:1.45;}
+  .howto.test{background:#fffaf0;border-color:#fbe2b0;}
+  .howto.test .h-head{color:var(--amber-d);}
+  .tasklist{list-style:none;margin:0;padding:0;}
+  .tasklist li{display:flex;gap:10px;align-items:flex-start;margin:9px 0;font-size:1.05rem;}
+  .tasklist li::before{content:"▢";color:var(--amber-d);font-weight:800;}
+  .modal .m-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px;}
+  .m-btn{border:none;border-radius:13px;padding:13px 22px;font-weight:800;font-size:1.05rem;}
+  .m-btn.primary{background:var(--blue);color:#fff;}
+  .m-btn.primary:hover{background:var(--blue-d);}
+  .m-btn.primary.test{background:var(--amber);}
+  .m-btn.primary.test:hover{background:var(--amber-d);}
+  .m-btn.primary.green{background:var(--green);}
+  .m-btn.primary.green:hover{background:var(--green-d);}
+  .m-btn.ghost{background:#eef2f7;color:var(--muted);}
+  .m-btn.ghost:hover{background:#e2e8f0;}
+
+  .modal.good{border-top:8px solid var(--green);}
+  .modal.bad{border-top:8px solid var(--red);}
+  .modal.warn{border-top:8px solid var(--amber);}
+
+  /* replay panel */
+  .replay-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 18px;}
+  .replay-card{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
+    border:2px solid var(--line);background:#fbfdff;border-radius:14px;padding:14px 10px;font-weight:800;color:var(--ink);}
+  .replay-card .rc-emoji{font-size:2rem;}
+  .replay-card .rc-title{font-size:.95rem;line-height:1.2;}
+  .replay-card:hover{border-color:var(--green);background:#f1fbf4;transform:translateY(-2px);}
+
+  /* hint popup pointer text */
+  .hint-target{font-weight:800;color:var(--amber-d);}
+
+  /* confetti */
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden;}
+  .confetti i{position:absolute;top:-10px;width:10px;height:14px;opacity:.9;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg);}}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;font-weight:700;padding:12px 18px;border-radius:12px;
+    opacity:0;transition:.25s;z-index:120;max-width:90%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ---------- Intro de niveau : nouveaux outils ---------- */
+  .newtools{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .newtools li{display:flex;align-items:center;gap:9px;background:#f4f8ff;border:2px solid #dbe7ff;
+    border-radius:12px;padding:9px 11px;font-weight:700;font-size:.95rem;color:var(--ink);}
+  .ni-glyph{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;
+    background:#fff;border:2px solid #c7d8f2;border-radius:8px;font-weight:800;color:var(--blue-d);flex:0 0 auto;}
+
+  /* ---------- Sélecteur de niveaux ---------- */
+  .lvl-grid{display:grid;gap:12px;margin:6px 0 18px;}
+  .lvl-card{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:14px;align-items:center;
+    text-align:left;border:2px solid var(--line);background:#fbfdff;border-radius:14px;padding:14px 16px;color:var(--ink);}
+  .lvl-card .lc-badge{grid-row:1 / span 2;font-size:1.6rem;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+    background:#eef4ff;border-radius:12px;}
+  .lvl-card .lc-n{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.05rem;}
+  .lvl-card .lc-t{color:var(--muted);font-weight:700;font-size:.9rem;}
+  .lvl-card:not(.locked):hover{border-color:var(--blue);background:#f1f6ff;transform:translateY(-2px);}
+  .lvl-card.current{border-color:var(--green);background:#f1fbf4;}
+  .lvl-card.current .lc-badge{background:#d8f5e3;}
+  .lvl-card.locked{opacity:.6;cursor:not-allowed;filter:grayscale(.3);}
+
+  /* ---------- Animation cadenas (déblocage) ---------- */
+  .lock-stage{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;
+    background:rgba(20,30,42,.72);backdrop-filter:blur(3px);transition:opacity .35s;}
+  .lock-stage.fade{opacity:0;}
+  .lock-box{display:flex;flex-direction:column;align-items:center;gap:10px;animation:lockIn .35s ease;}
+  .lock-emoji{font-size:6rem;line-height:1;filter:drop-shadow(0 14px 24px rgba(0,0,0,.4));}
+  .lock-cap{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
+    background:var(--amber);padding:6px 20px;border-radius:999px;box-shadow:0 8px 20px -8px rgba(0,0,0,.6);}
+  @keyframes lockIn{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .lock-box.shake{animation:lockShake .5s ease-in-out 2;}
+  @keyframes lockShake{0%,100%{transform:rotate(0) translateX(0);}20%{transform:rotate(-9deg) translateX(-6px);}
+    40%{transform:rotate(8deg) translateX(6px);}60%{transform:rotate(-6deg) translateX(-4px);}80%{transform:rotate(5deg) translateX(4px);}}
+  .lock-box.pop{animation:lockPop .6s cubic-bezier(.18,.9,.32,1.4);}
+  @keyframes lockPop{0%{transform:scale(1);}35%{transform:scale(1.35) rotate(-6deg);}100%{transform:scale(1.12) rotate(0);}}
+
+  @media (max-width:560px){
+    .page{padding:28px 22px;}
+    .btn{flex:1;justify-content:center;}
+    .replay-grid{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .glow{animation:none;border-color:var(--amber)!important;box-shadow:0 0 0 5px rgba(245,158,11,.4);}
+    .confetti i{animation:none;display:none;}
+    .modal{animation:none;}
+    .lock-box,.lock-box.shake,.lock-box.pop{animation:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="back" href="index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      Accueil
+    </a>
+    <h1 class="display" id="lvlTitle">Traitement de texte <span class="dot">·</span> les bases</h1>
+    <span class="step-count" id="stepCount">Niveau 1 · Étape 1 / 9</span>
+    <button class="reset-btn" id="levelBtn" title="Voir les niveaux / changer de niveau">🗺️ Niveau 1/3</button>
+    <button class="reset-btn" id="resetBtn" title="Recommencer ce niveau">↺ Recommencer</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="track" id="track"></div>
+  </div>
+
+  <div class="banner" id="banner">
+    <span class="b-emoji" id="bEmoji">📝</span>
+    <div class="b-txt">
+      <div class="b-title" id="bTitle">Mission</div>
+      <div class="b-sub" id="bSub"></div>
+    </div>
+    <button class="b-btn" id="seeMission">📋 Voir la mission</button>
+    <button class="b-btn ghost" id="backToTest" style="display:none">← Revenir au test</button>
+  </div>
+
+  <div class="editor-wrap">
+    <div class="toolbar" id="toolbar">
+      <div class="tgroup">
+        <span class="t-label">Police</span>
+        <select class="t-sel" id="sel-font" title="Police d'écriture">
+          <option value="Arial">Arial</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Comic Sans MS">Comic Sans MS</option>
+          <option value="Verdana">Verdana</option>
+        </select>
+        <select class="t-sel" id="sel-size" title="Taille du texte">
+          <option value="12">12</option>
+          <option value="14">14</option>
+          <option value="16" selected>16</option>
+          <option value="18">18</option>
+          <option value="22">22</option>
+          <option value="28">28</option>
+          <option value="36">36</option>
+        </select>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup">
+        <button class="t-btn bold" id="btn-bold" title="Gras">G</button>
+        <button class="t-btn italic" id="btn-italic" title="Italique">I</button>
+        <button class="t-btn under" id="btn-underline" title="Souligné">S</button>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup color-wrap">
+        <button class="t-btn color" id="btn-color" title="Couleur du texte">A<span class="bar" id="colorBar" style="background:#2563eb"></span></button>
+        <div class="swatches" id="swatches"></div>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup">
+        <button class="t-btn" id="btn-align-left" title="Aligner à gauche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 5h18M3 10h11M3 15h18M3 20h11"/></svg></button>
+        <button class="t-btn" id="btn-align-center" title="Centrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 5h18M6 10h12M3 15h18M6 20h12"/></svg></button>
+      </div>
+
+      <!-- ===== NIVEAU 2 ===== -->
+      <span class="divider" data-minlevel="2"></span>
+      <div class="tgroup" data-minlevel="2">
+        <button class="t-btn" id="btn-align-right" title="Aligner à droite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 5h18M10 10h11M3 15h18M10 20h11"/></svg></button>
+        <button class="t-btn" id="btn-align-justify" title="Justifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 5h18M3 10h18M3 15h18M3 20h18"/></svg></button>
+      </div>
+      <span class="divider" data-minlevel="2"></span>
+      <div class="tgroup" data-minlevel="2">
+        <span class="t-label">Interligne</span>
+        <select class="t-sel" id="sel-linespacing" title="Espace entre les lignes">
+          <option value="1">1</option>
+          <option value="1.5">1,5</option>
+          <option value="2">2</option>
+        </select>
+      </div>
+      <span class="divider" data-minlevel="2"></span>
+      <div class="tgroup" data-minlevel="2">
+        <span class="t-label">Avant</span>
+        <select class="t-sel" id="sel-space-before" title="Espace avant le paragraphe">
+          <option value="0">0</option><option value="6">6</option><option value="12">12</option><option value="24">24</option>
+        </select>
+        <span class="t-label">Après</span>
+        <select class="t-sel" id="sel-space-after" title="Espace après le paragraphe">
+          <option value="0">0</option><option value="6">6</option><option value="12">12</option><option value="24">24</option>
+        </select>
+      </div>
+      <span class="divider" data-minlevel="2"></span>
+      <div class="tgroup" data-minlevel="2">
+        <button class="t-btn" id="btn-indent-dec" title="Diminuer le retrait (gauche)">⇤</button>
+        <button class="t-btn" id="btn-indent-inc" title="Augmenter le retrait (gauche)">⇥</button>
+        <button class="t-btn" id="btn-indent-first" title="Retrait de première ligne">⇱</button>
+        <button class="t-btn" id="btn-indent-right" title="Retrait à droite">⇲</button>
+      </div>
+      <span class="divider" data-minlevel="2"></span>
+      <div class="tgroup color-wrap" data-minlevel="2">
+        <button class="t-btn color" id="btn-parabg" title="Surlignage du paragraphe">🖍️<span class="bar" id="pbgBar" style="background:#fff3bf"></span></button>
+        <div class="swatches" id="swatches-bg"></div>
+      </div>
+
+      <!-- ===== NIVEAU 3 ===== -->
+      <span class="divider" data-minlevel="3"></span>
+      <div class="tgroup" data-minlevel="3">
+        <button class="t-btn" id="btn-list-bullet" title="Liste à puces">☰•</button>
+        <button class="t-btn" id="btn-list-number" title="Liste numérotée">1.</button>
+        <select class="t-sel" id="sel-bullet" title="Style de puce">
+          <option value="disc">● Point</option>
+          <option value="circle">◦ Cercle</option>
+          <option value="square">▪ Carré</option>
+          <option value="star">★ Étoile</option>
+          <option value="check">✅ Coche</option>
+          <option value="arrow">➜ Flèche</option>
+        </select>
+        <button class="t-btn" id="btn-list-outdent" title="Désindenter (sortir de la sous-liste)">⇤</button>
+        <button class="t-btn" id="btn-list-indent" title="Indenter (imbriquer)">⇥</button>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="page"><div id="editor" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true"></div></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-hint" id="hintBtn">💡 J'ai besoin d'un indice</button>
+    <button class="btn btn-restart" id="restartBtn">↺ Réinitialiser</button>
+    <button class="btn btn-validate" id="validateBtn">✅ Valider ma mission</button>
+  </div>
+
+  <!-- Overlay / modal -->
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modal"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   1. DOCUMENT MODEL  (verified logic)
+   ========================================================= */
+let PARAS = [];          // texte du niveau courant (réaffecté par loadLevel)
+let FULL = '';
+const DEFAULT = {
+  b:false,i:false,u:false,size:16,color:'#22303f',font:'Arial',align:'left',
+  /* attributs paragraphe (Niveaux 2 & 3) — valeurs neutres par défaut */
+  lh:1, spb:0, spa:0, indl:0, indr:0, ind1:0, pbg:'transparent',
+  list:'none', lvl:0, bul:'disc'
+};
+
+function buildDoc(){
+  const arr=[];
+  for(const ch of FULL){ arr.push(Object.assign({c:ch}, DEFAULT)); }
+  return arr;
+}
+function clone(d){ return d.map(o=>Object.assign({},o)); }
+function paraRange(idx){
+  let start=0,p=0;
+  for(let i=0;i<FULL.length;i++){
+    if(p===idx && FULL[i]==='\n') return [start,i];
+    if(FULL[i]==='\n'){ p++; if(p===idx) start=i+1; }
+  }
+  return [start, FULL.length];
+}
+function paraIndexOf(i){ let p=0; for(let k=0;k<i;k++){ if(FULL[k]==='\n') p++; } return p; }
+function findWord(word, occ=1){
+  let from=0,count=0,idx;
+  while((idx=FULL.indexOf(word,from))!==-1){ count++; if(count===occ) return [idx, idx+word.length]; from=idx+1; }
+  throw new Error('mot introuvable: '+word);
+}
+function rangeOf(op){
+  if(op.range==='title') return paraRange(0);
+  if(typeof op.para==='number') return paraRange(op.para);
+  if(op.word) return findWord(op.word, op.occ||1);
+  return op.range;
+}
+// types d'op « paragraphe » : appliqués à toute la plage du paragraphe → clé du modèle
+const PARA_OPS = {align:'align', lh:'lh', spb:'spb', spa:'spa', indl:'indl', indr:'indr',
+                  ind1:'ind1', pbg:'pbg', list:'list', listlevel:'lvl', bullet:'bul'};
+function applyOps(d, ops){
+  ops.forEach(op=>{
+    const [a,b]=rangeOf(op);
+    const pkey=PARA_OPS[op.type];
+    if(pkey){ for(let k=a;k<b;k++) d[k][pkey]=op.value; return; }
+    for(let k=a;k<b;k++){
+      const ch=d[k];
+      if(op.type==='bold') ch.b=true;
+      else if(op.type==='italic') ch.i=true;
+      else if(op.type==='underline') ch.u=true;
+      else if(op.type==='size') ch.size=op.value;
+      else if(op.type==='color') ch.color=op.value;
+      else if(op.type==='font') ch.font=op.value;
+    }
+  });
+  return d;
+}
+function aeq(x,y){ return x.b===y.b&&x.i===y.i&&x.u===y.u&&x.size===y.size&&x.color===y.color&&x.font===y.font&&x.align===y.align
+  &&x.lh===y.lh&&x.spb===y.spb&&x.spa===y.spa&&x.indl===y.indl&&x.indr===y.indr&&x.ind1===y.ind1&&x.pbg===y.pbg
+  &&x.list===y.list&&x.lvl===y.lvl&&x.bul===y.bul; }
+function isSpace(c){ return c===' '; }
+function evaluate(start, goal, cur){
+  const missing=[], extra=[]; let startedTask=false;
+  for(let i=0;i<cur.length;i++){
+    if(cur[i].c==='\n' || isSpace(cur[i].c)) continue; // newline + space tolerance
+    const g=goal[i], s=start[i], c=cur[i];
+    const required=!aeq(g,s);
+    if(required){ if(!aeq(c,s)) startedTask=true; if(!aeq(c,g)) missing.push(i); }
+    else { if(!aeq(c,s)) extra.push(i); }
+  }
+  let status;
+  if(missing.length===0 && extra.length===0) status='success';
+  else if(missing.length===0) status='extra';
+  else status='error';
+  return {status, missing, extra, startedTask};
+}
+
+/* =========================================================
+   2. NIVEAUX (chaque niveau = texte + outils + missions/jalons)
+   ========================================================= */
+const LEVEL1_DEFS = [
+  { kind:'mission', id:'gras', label:'Mission 1', icon:'🅰️',
+    title:'Mettre en gras',
+    intro:`Le mot <b>« précieuse »</b> est très important dans le texte. On va le mettre en <b>gras</b> pour bien le voir.`,
+    how:[`<b>Double-clique</b> sur le mot <b>précieuse</b> pour le sélectionner (il devient bleu).`,
+         `Clique sur le bouton <b>G</b> (Gras) dans la barre d'outils.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'bold',word:'précieuse'}],
+    hint:{target:'btn-bold', text:`Sélectionne le mot <b>« précieuse »</b> (double-clic), puis clique sur le bouton <span class="hint-target">G</span> qui brille.`},
+    expect:`mettre le mot « précieuse » en gras` },
+
+  { kind:'mission', id:'italique', label:'Mission 2', icon:'✒️',
+    title:'Mettre en italique',
+    intro:`Le mot <b>« voyage »</b> montre que l'eau bouge. On va l'écrire en <b>italique</b> (les lettres sont penchées).`,
+    how:[`<b>Double-clique</b> sur le mot <b>voyage</b>.`,
+         `Clique sur le bouton <b>I</b> (Italique).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'italic',word:'voyage'}],
+    hint:{target:'btn-italic', text:`Sélectionne le mot <b>« voyage »</b>, puis clique sur le bouton <span class="hint-target">I</span> qui brille.`},
+    expect:`mettre le mot « voyage » en italique` },
+
+  { kind:'mission', id:'souligne', label:'Mission 3', icon:'✏️',
+    title:'Souligner un mot',
+    intro:`On va <b>souligner</b> le mot <b>« nuages »</b> : un trait apparaît sous le mot.`,
+    how:[`<b>Double-clique</b> sur le mot <b>nuages</b>.`,
+         `Clique sur le bouton <b>S</b> (Souligné).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'underline',word:'nuages'}],
+    hint:{target:'btn-underline', text:`Sélectionne le mot <b>« nuages »</b>, puis clique sur le bouton <span class="hint-target">S</span> qui brille.`},
+    expect:`souligner le mot « nuages »` },
+
+  { kind:'test', id:'testA', label:'Jalon 1', icon:'🏆',
+    title:'La météo des mots !',
+    intro:`Bravo, tu connais le <b>gras</b>, l'<b>italique</b> et le <b>souligné</b> ! Cette fois, ce ne sont <b>plus les mêmes mots</b> et il y en a <b>plus à faire</b>. Lis bien chaque consigne. Voici les <b>5 choses</b> à réussir :`,
+    tasks:[`Mets le mot <b>soleil</b> en <b>gras</b>.`,
+           `Mets le mot <b>pluie</b> en <b>gras</b>.`,
+           `Mets le mot <b>océans</b> en <b>italique</b>.`,
+           `<b>Souligne</b> le mot <b>ciel</b>.`,
+           `<b>Souligne</b> le mot <b>Terre</b>.`],
+    ops:[{type:'bold',word:'soleil'},
+         {type:'bold',word:'pluie'},
+         {type:'italic',word:'océans'},
+         {type:'underline',word:'ciel'},
+         {type:'underline',word:'Terre'}],
+    replayRefs:['gras','italique','souligne'],
+    expect:`mettre « soleil » et « pluie » en gras, « océans » en italique, et souligner « ciel » et « Terre »` },
+
+  { kind:'mission', id:'taille', label:'Mission 4', icon:'🔠',
+    title:'Changer la taille',
+    intro:`Un titre doit être plus <b>grand</b> que le reste. On agrandit le titre <b>« Le cycle de l'eau »</b> en taille <b>28</b>.`,
+    how:[`Sélectionne tout le titre : clique juste avant le <b>L</b> et <b>glisse</b> jusqu'après le <b>u</b>.`,
+         `Dans le menu des tailles, choisis <b>28</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'size',range:'title',value:28}],
+    hint:{target:'sel-size', text:`Sélectionne tout le titre, puis ouvre le menu des <span class="hint-target">tailles</span> et choisis <b>28</b>.`},
+    expect:`mettre le titre « Le cycle de l'eau » en taille 28` },
+
+  { kind:'mission', id:'couleur', label:'Mission 5', icon:'🎨',
+    title:'Changer la couleur',
+    intro:`On met le titre en <b>bleu</b> pour le rendre joli.`,
+    how:[`Sélectionne tout le titre <b>« Le cycle de l'eau »</b>.`,
+         `Clique sur le bouton <b>A</b> (Couleur), puis choisis le <b>bleu</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'color',range:'title',value:'#2563eb'}],
+    hint:{target:'btn-color', text:`Sélectionne le titre, clique sur le bouton <span class="hint-target">A</span> (Couleur) qui brille, puis choisis le <b>bleu</b>.`},
+    expect:`mettre le titre en bleu` },
+
+  { kind:'mission', id:'centrer', label:'Mission 6', icon:'🎯',
+    title:'Centrer le titre',
+    intro:`Un titre est souvent au <b>milieu</b> de la page. On va <b>centrer</b> le titre.`,
+    how:[`Sélectionne le titre <b>« Le cycle de l'eau »</b>.`,
+         `Clique sur le bouton <b>Centrer</b> (les traits sont au milieu).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'align',range:'title',value:'center'}],
+    hint:{target:'btn-align-center', text:`Sélectionne le titre, puis clique sur le bouton <span class="hint-target">Centrer</span> qui brille (les traits sont au milieu).`},
+    expect:`centrer le titre` },
+
+  { kind:'mission', id:'police', label:'Mission 7', icon:'🔤',
+    title:'Changer la police',
+    intro:`On change le <b>style des lettres</b> du titre. On choisit la police <b>Georgia</b>.`,
+    how:[`Sélectionne le titre <b>« Le cycle de l'eau »</b>.`,
+         `Dans le menu des <b>polices</b>, choisis <b>Georgia</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'font',range:'title',value:'Georgia'}],
+    hint:{target:'sel-font', text:`Sélectionne le titre, puis ouvre le menu des <span class="hint-target">polices</span> et choisis <b>Georgia</b>.`},
+    expect:`mettre le titre en police Georgia` },
+
+  { kind:'test', id:'testB', label:'Jalon 2', icon:'🏆',
+    title:'La mise en page complète !',
+    intro:`Dernier défi du niveau ! Ici on ne refait pas les exercices à l'identique : <b>nouvelles valeurs</b> et <b>plus d'étapes</b>. Mets en page le titre comme un pro. Voici les <b>6 choses</b> à faire :`,
+    tasks:[`<b>Centre</b> le titre <b>« Le cycle de l'eau »</b>.`,
+           `Mets le titre en taille <b>36</b>.`,
+           `Mets le titre en police <b>Verdana</b>.`,
+           `Mets le titre en couleur <b>verte</b>.`,
+           `Mets le titre en <b>gras</b>.`,
+           `Mets le mot <b>nuages</b> en <b>italique</b>.`],
+    ops:[{type:'align',range:'title',value:'center'},
+         {type:'size',range:'title',value:36},
+         {type:'font',range:'title',value:'Verdana'},
+         {type:'color',range:'title',value:'#16a34a'},
+         {type:'bold',range:'title'},
+         {type:'italic',word:'nuages'}],
+    replayRefs:['centrer','taille','police','couleur','gras','italique'],
+    expect:`centrer le titre, le mettre en taille 36, en police Verdana, en vert et en gras, et mettre « nuages » en italique` }
+];
+
+/* ---------- NIVEAU 2 — Paragraphes & Alignements ---------- */
+const LEVEL2_DEFS = [
+  { kind:'mission', id:'droite', label:'Mission 1', icon:'➡️',
+    title:'Aligner à droite',
+    intro:`Nouveau pouvoir débloqué ! On peut coller un paragraphe contre le <b>bord droit</b>. Aligne à droite le paragraphe de <b>l'écureuil</b>.`,
+    how:[`Clique <b>dans le paragraphe de l'écureuil</b> (le dernier).`,
+         `Clique sur le bouton <b>Aligner à droite</b> dans la barre d'outils.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'align',para:3,value:'right'}],
+    hint:{target:'btn-align-right', text:`Clique dans le paragraphe de l'écureuil, puis clique sur le bouton <span class="hint-target">Aligner à droite</span> qui brille.`},
+    expect:`aligner à droite le paragraphe de l'écureuil` },
+
+  { kind:'mission', id:'justifier', label:'Mission 2', icon:'☰',
+    title:'Justifier le texte',
+    intro:`<b>Justifier</b>, c'est étaler le texte pour que les deux bords soient bien droits, comme dans un journal. Justifie le paragraphe du <b>hibou</b>.`,
+    how:[`Clique <b>dans le paragraphe du hibou</b>.`,
+         `Clique sur le bouton <b>Justifier</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'align',para:2,value:'justify'}],
+    hint:{target:'btn-align-justify', text:`Clique dans le paragraphe du hibou, puis clique sur le bouton <span class="hint-target">Justifier</span> qui brille.`},
+    expect:`justifier le paragraphe du hibou` },
+
+  { kind:'mission', id:'interligne', label:'Mission 3', icon:'↕️',
+    title:"Changer l'interligne",
+    intro:`L'<b>interligne</b>, c'est l'espace entre les lignes. On aère le paragraphe du <b>renard</b> en mettant un interligne <b>double</b>.`,
+    how:[`Clique <b>dans le paragraphe du renard</b>.`,
+         `Dans le menu <b>Interligne</b>, choisis <b>2</b> (double).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'lh',para:1,value:2}],
+    hint:{target:'sel-linespacing', text:`Clique dans le paragraphe du renard, puis ouvre le menu <span class="hint-target">Interligne</span> et choisis <b>2</b>.`},
+    expect:`mettre le paragraphe du renard en interligne double` },
+
+  { kind:'test', id:'test2A', label:'Jalon 1', icon:'🏆',
+    title:'Le rangement des paragraphes !',
+    intro:`Montre que tu sais placer les paragraphes ! Cette fois les cibles et les valeurs <b>changent</b>. Voici les <b>4 choses</b> à réussir :`,
+    tasks:[`<b>Centre</b> le titre <b>« Les animaux de la forêt »</b>.`,
+           `<b>Justifie</b> le paragraphe de l'<b>écureuil</b>.`,
+           `Aligne à <b>droite</b> le paragraphe du <b>renard</b>.`,
+           `Mets le paragraphe du <b>hibou</b> en interligne <b>1,5</b>.`],
+    ops:[{type:'align',range:'title',value:'center'},
+         {type:'align',para:3,value:'justify'},
+         {type:'align',para:1,value:'right'},
+         {type:'lh',para:2,value:1.5}],
+    replayRefs:['droite','justifier','interligne'],
+    expect:`centrer le titre, justifier l'écureuil, aligner le renard à droite et mettre le hibou en interligne 1,5` },
+
+  { kind:'mission', id:'espacement', label:'Mission 4', icon:'⤓',
+    title:'Espacer les paragraphes',
+    intro:`On peut ajouter du <b>vide avant et après</b> un paragraphe pour qu'il respire. Ajoute de l'espace <b>avant</b> et <b>après</b> le paragraphe du <b>hibou</b>.`,
+    how:[`Clique <b>dans le paragraphe du hibou</b>.`,
+         `Mets <b>Espace avant : 24</b> puis <b>Espace après : 24</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'spb',para:2,value:24},{type:'spa',para:2,value:24}],
+    hint:{target:'sel-space-before', text:`Clique dans le paragraphe du hibou, puis règle <span class="hint-target">Espace avant</span> et <span class="hint-target">Espace après</span> sur <b>24</b>.`},
+    expect:`mettre un espace de 24 avant et après le paragraphe du hibou` },
+
+  { kind:'mission', id:'retrait', label:'Mission 5', icon:'➡',
+    title:'Décaler avec un retrait',
+    intro:`Un <b>retrait</b> décale le paragraphe vers la droite. On décale le paragraphe du <b>renard</b> : un retrait à gauche <b>et</b> un retrait de première ligne.`,
+    how:[`Clique <b>dans le paragraphe du renard</b>.`,
+         `Clique une fois sur <b>Augmenter le retrait</b> (retrait gauche).`,
+         `Clique sur <b>Retrait 1ʳᵉ ligne</b>, puis sur <b>Valider ma mission</b>.`],
+    ops:[{type:'indl',para:1,value:24},{type:'ind1',para:1,value:24}],
+    hint:{target:'btn-indent-inc', text:`Clique dans le paragraphe du renard, puis utilise <span class="hint-target">Augmenter le retrait</span> et <span class="hint-target">Retrait 1ʳᵉ ligne</span>.`},
+    expect:`décaler le paragraphe du renard (retrait gauche + retrait de première ligne)` },
+
+  { kind:'mission', id:'surlignage', label:'Mission 6', icon:'🖍️',
+    title:'Surligner un paragraphe',
+    intro:`Le <b>surlignage</b> met une couleur de fond derrière tout le paragraphe pour le faire ressortir. Surligne le paragraphe de l'<b>écureuil</b> en <b>jaune</b>.`,
+    how:[`Clique <b>dans le paragraphe de l'écureuil</b>.`,
+         `Clique sur <b>Surlignage</b>, puis choisis le <b>jaune</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'pbg',para:3,value:'#fff3bf'}],
+    hint:{target:'btn-parabg', text:`Clique dans le paragraphe de l'écureuil, puis clique sur <span class="hint-target">Surlignage</span> et choisis le <b>jaune</b>.`},
+    expect:`surligner le paragraphe de l'écureuil en jaune` },
+
+  { kind:'test', id:'test2B', label:'Jalon 2', icon:'🏆',
+    title:'La belle mise en page !',
+    intro:`Dernier défi du niveau ! Combine tous tes nouveaux pouvoirs sur la page. Valeurs et cibles <b>différentes</b> des exercices. Voici les <b>5 choses</b> à faire :`,
+    tasks:[`Mets le paragraphe du <b>renard</b> en interligne <b>double</b>.`,
+           `Ajoute un espace <b>avant</b> et <b>après</b> (24) au paragraphe de l'<b>écureuil</b>.`,
+           `Décale le paragraphe du <b>hibou</b> avec un <b>retrait gauche</b>.`,
+           `<b>Surligne</b> le <b>titre</b> en jaune.`,
+           `<b>Centre</b> le titre.`],
+    ops:[{type:'lh',para:1,value:2},
+         {type:'spb',para:3,value:24},{type:'spa',para:3,value:24},
+         {type:'indl',para:2,value:24},
+         {type:'pbg',range:'title',value:'#fff3bf'},
+         {type:'align',range:'title',value:'center'}],
+    replayRefs:['interligne','espacement','retrait','surlignage','justifier'],
+    expect:`interligne double sur le renard, espacement avant/après sur l'écureuil, retrait gauche sur le hibou, et titre centré et surligné en jaune` }
+];
+
+/* ---------- NIVEAU 3 — Listes & Structure ---------- */
+const LEVEL3_DEFS = [
+  { kind:'mission', id:'puces', label:'Mission 1', icon:'•',
+    title:'Créer une liste à puces',
+    intro:`Une <b>liste à puces</b> met un petit point devant chaque ligne. Transforme les <b>4 lignes</b> de courses en liste à puces.`,
+    how:[`Sélectionne les <b>4 lignes</b> (de « Un cahier rouge » jusqu'à « Une règle ») : clique au début et <b>glisse</b> jusqu'en bas.`,
+         `Clique sur le bouton <b>Liste à puces</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'list',para:1,value:'bullet'},{type:'list',para:2,value:'bullet'},
+         {type:'list',para:3,value:'bullet'},{type:'list',para:4,value:'bullet'}],
+    hint:{target:'btn-list-bullet', text:`Sélectionne les 4 lignes, puis clique sur le bouton <span class="hint-target">Liste à puces</span> qui brille.`},
+    expect:`transformer les 4 lignes en liste à puces` },
+
+  { kind:'mission', id:'puce-style', label:'Mission 2', icon:'★',
+    title:'Changer le style des puces',
+    intro:`On peut remplacer le petit point par une autre forme. Mets des puces en forme d'<b>étoile ★</b> sur toute la liste.`,
+    how:[`Sélectionne les <b>4 lignes</b> de la liste.`,
+         `Dans le menu <b>Puce</b>, choisis l'<b>étoile ★</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'bullet',para:1,value:'star'},{type:'bullet',para:2,value:'star'},
+         {type:'bullet',para:3,value:'star'},{type:'bullet',para:4,value:'star'}],
+    hint:{target:'sel-bullet', text:`Sélectionne les 4 lignes, puis ouvre le menu <span class="hint-target">Puce</span> et choisis l'<b>étoile ★</b>.`},
+    expect:`mettre des puces en forme d'étoile sur la liste` },
+
+  { kind:'mission', id:'imbriquer', label:'Mission 3', icon:'⇥',
+    title:'Imbriquer une ligne',
+    intro:`<b>Imbriquer</b>, c'est décaler une ligne vers la droite pour en faire une <b>sous-liste</b>. Imbrique la ligne <b>« Une règle »</b>.`,
+    how:[`Clique <b>dans la ligne « Une règle »</b> (la dernière).`,
+         `Clique sur le bouton <b>Indenter</b> (imbriquer).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'listlevel',para:4,value:1}],
+    hint:{target:'btn-list-indent', text:`Clique dans la ligne « Une règle », puis clique sur le bouton <span class="hint-target">Indenter</span> qui brille.`},
+    expect:`imbriquer la ligne « Une règle » d'un niveau` },
+
+  { kind:'mission', id:'numerotee', label:'Mission 4', icon:'1️⃣',
+    title:'Créer une liste numérotée',
+    intro:`Une <b>liste numérotée</b> met 1, 2, 3… devant chaque ligne, parfait pour des étapes. Transforme la liste en <b>liste numérotée</b>.`,
+    how:[`Sélectionne les <b>4 lignes</b> de la liste.`,
+         `Clique sur le bouton <b>Liste numérotée</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'list',para:1,value:'number'},{type:'list',para:2,value:'number'},
+         {type:'list',para:3,value:'number'},{type:'list',para:4,value:'number'}],
+    hint:{target:'btn-list-number', text:`Sélectionne les 4 lignes, puis clique sur le bouton <span class="hint-target">Liste numérotée</span> qui brille.`},
+    expect:`transformer la liste en liste numérotée` },
+
+  { kind:'mission', id:'convertir', label:'Mission 5', icon:'🔄',
+    title:'Reconvertir en texte',
+    intro:`Une liste peut <b>redevenir du texte normal</b>. Re-clique sur le bouton de la liste pour enlever les numéros et retrouver un texte simple.`,
+    how:[`Sélectionne les <b>4 lignes</b> de la liste.`,
+         `Clique à nouveau sur <b>Liste numérotée</b> pour la <b>désactiver</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'list',para:1,value:'none'},{type:'list',para:2,value:'none'},
+         {type:'list',para:3,value:'none'},{type:'list',para:4,value:'none'}],
+    hint:{target:'btn-list-number', text:`Sélectionne les 4 lignes, puis re-clique sur <span class="hint-target">Liste numérotée</span> pour revenir au texte.`},
+    expect:`reconvertir la liste en texte normal` },
+
+  { kind:'test', id:'test3A', label:'Jalon 1', icon:'🏆',
+    title:'La liste bien décorée !',
+    intro:`Montre que tu maîtrises les listes à puces ! Cibles et style <b>différents</b> des exercices. Voici les <b>3 choses</b> à faire :`,
+    tasks:[`Transforme les <b>4 lignes</b> en <b>liste à puces</b>.`,
+           `Mets des puces en forme de <b>flèche ➜</b>.`,
+           `<b>Imbrique</b> la ligne <b>« Une trousse »</b>.`],
+    ops:[{type:'list',para:1,value:'bullet'},{type:'list',para:2,value:'bullet'},
+         {type:'list',para:3,value:'bullet'},{type:'list',para:4,value:'bullet'},
+         {type:'bullet',para:1,value:'arrow'},{type:'bullet',para:2,value:'arrow'},
+         {type:'bullet',para:3,value:'arrow'},{type:'bullet',para:4,value:'arrow'},
+         {type:'listlevel',para:2,value:1}],
+    replayRefs:['puces','puce-style','imbriquer'],
+    expect:`mettre les 4 lignes en liste à puces flèche et imbriquer « Une trousse »` },
+
+  { kind:'test', id:'test3B', label:'Jalon 2', icon:'🏆',
+    title:'La liste de pro !',
+    intro:`Dernier défi du parcours ! Tu combines listes, structure et mise en forme. Voici les <b>4 choses</b> à faire :`,
+    tasks:[`Transforme les <b>4 lignes</b> en <b>liste numérotée</b>.`,
+           `<b>Imbrique</b> la ligne <b>« Des crayons de couleur »</b>.`,
+           `<b>Centre</b> le titre <b>« Ma liste pour l'école »</b>.`,
+           `Mets le titre en <b>gras</b>.`],
+    ops:[{type:'list',para:1,value:'number'},{type:'list',para:2,value:'number'},
+         {type:'list',para:3,value:'number'},{type:'list',para:4,value:'number'},
+         {type:'listlevel',para:3,value:1},
+         {type:'align',range:'title',value:'center'},
+         {type:'bold',range:'title'}],
+    replayRefs:['numerotee','imbriquer','puces'],
+    expect:`mettre les 4 lignes en liste numérotée, imbriquer « Des crayons de couleur », et centrer le titre en gras` }
+];
+
+/* ---------- Table des niveaux ---------- */
+const LEVELS = [
+  { n:1, title:'Les bases', subtitle:'les bases',
+    paras:[
+      "Le cycle de l'eau",
+      "L'eau est précieuse. Elle voyage sans arrêt.",
+      "Le soleil chauffe l'eau des océans. L'eau monte dans le ciel et forme les nuages.",
+      "Ensuite, la pluie tombe. L'eau revient sur la Terre."
+    ],
+    newTools:[
+      {g:'G', n:'Gras'},{g:'I', n:'Italique'},{g:'S', n:'Souligné'},
+      {g:'🔠', n:'Taille du texte'},{g:'🎨', n:'Couleur du texte'},
+      {g:'≡', n:'Aligner à gauche / Centrer'},{g:'🔤', n:'Police d\'écriture'}
+    ],
+    defs:LEVEL1_DEFS },
+  { n:2, title:'Paragraphes & Alignements', subtitle:'paragraphes & alignements',
+    paras:[
+      "Les animaux de la forêt",
+      "Le renard est très malin. Il a un beau pelage roux et une longue queue touffue.",
+      "Le hibou dort le jour. La nuit, il ouvre grand les yeux et chasse sans faire le moindre bruit.",
+      "L'écureuil adore les noisettes. Il saute d'arbre en arbre toute la journée sans s'arrêter."
+    ],
+    newTools:[
+      {g:'➡️', n:'Aligner à droite'},{g:'☰', n:'Justifier'},
+      {g:'↕️', n:'Interligne (espace entre les lignes)'},
+      {g:'⤓', n:'Espacement avant / après'},
+      {g:'➡', n:'Retraits (gauche, droite, 1ʳᵉ ligne)'},
+      {g:'🖍️', n:'Surlignage de paragraphe'}
+    ],
+    defs:LEVEL2_DEFS },
+  { n:3, title:'Listes & Structure', subtitle:'listes & structure',
+    paras:[
+      "Ma liste pour l'école",
+      "Un cahier rouge",
+      "Une trousse",
+      "Des crayons de couleur",
+      "Une règle"
+    ],
+    newTools:[
+      {g:'•', n:'Liste à puces'},{g:'1.', n:'Liste numérotée'},
+      {g:'★', n:'Style des puces'},{g:'⇥', n:'Indenter / Désindenter (imbriquer)'}
+    ],
+    defs:LEVEL3_DEFS }
+];
+
+// Construit les STEPS d'un jeu de définitions (chaînage des docs start/goal)
+let STEPS=[]; let MISSIONS={};
+function buildSteps(defs){
+  const steps=[], missions={};
+  const base=buildDoc(); let prevGoal=clone(base);
+  defs.forEach(def=>{
+    const from = def.kind==='test' ? clone(base) : clone(prevGoal);
+    const goal = applyOps(clone(from), def.ops);
+    const step = Object.assign({}, def, {startDoc:from, goalDoc:goal});
+    steps.push(step);
+    if(def.kind==='mission') missions[def.id]=step;
+    prevGoal = goal;
+  });
+  return {steps, missions};
+}
+
+const COLORS=[
+  {name:'Noir',hex:'#22303f'},{name:'Rouge',hex:'#e11d48'},{name:'Bleu',hex:'#2563eb'},
+  {name:'Vert',hex:'#16a34a'},{name:'Orange',hex:'#ea580c'},{name:'Violet',hex:'#7c3aed'}
+];
+// Couleurs de surlignage (fond de paragraphe)
+const PBG_COLORS=[
+  {name:'Aucun',hex:'transparent'},{name:'Jaune',hex:'#fff3bf'},{name:'Vert',hex:'#d3f9d8'},
+  {name:'Bleu',hex:'#d0ebff'},{name:'Rose',hex:'#ffdeeb'},{name:'Orange',hex:'#ffe8cc'}
+];
+// Styles de puces : token -> glyphe
+const BULLETS={disc:'•',circle:'◦',square:'▪',star:'★',check:'✅',arrow:'➜'};
+
+/* =========================================================
+   3. STATE + DOM
+   ========================================================= */
+let doc = [];
+let curSel = null;              // {type:'range',a,b} (b exclusive) | {type:'caret',pos} ; pos in 0..doc.length
+let stepIndex = 0;
+let currentStep = null;
+let currentLevel = 1;           // niveau en cours (1..3)
+let replayState = null;         // {savedDoc, returnIndex}
+let pickedColor = '#2563eb';
+let pickedPbg = '#fff3bf';
+
+const editor=document.getElementById('editor');
+const overlay=document.getElementById('overlay');
+const modal=document.getElementById('modal');
+
+/* ---- storage (safe in any environment) ---- */
+const store={
+  get(k){ try{return localStorage.getItem(k);}catch(e){return this._m&&this._m[k];} },
+  set(k,v){ try{localStorage.setItem(k,v);}catch(e){ (this._m=this._m||{})[k]=v; } },
+  _m:{}
+};
+
+/* =========================================================
+   4. RENDER
+   ========================================================= */
+function render(){
+  editor.innerHTML='';
+  let counters=[];                    // compteurs de numérotation par niveau d'imbrication
+  let para=document.createElement('div'); para.className='para';
+  let firstCharOfPara=null;
+  function flush(){
+    if(firstCharOfPara===null){ para.style.textAlign='left'; editor.appendChild(para); counters=[]; return; }
+    const a=doc[firstCharOfPara];
+    para.style.textAlign=a.align;
+    para.style.lineHeight=a.lh;
+    para.style.marginTop=a.spb+'px';
+    para.style.marginBottom=(a.spa||12)+'px';
+    para.style.paddingRight=a.indr+'px';
+    para.style.textIndent=a.ind1+'px';
+    para.style.background=a.pbg;
+    para.style.borderRadius=(a.pbg && a.pbg!=='transparent')?'6px':'';
+    let padLeft=a.indl;
+    if(a.list!=='none'){
+      para.classList.add('li');
+      padLeft += 6 + a.lvl*26;
+      const mk=document.createElement('span'); mk.className='li-marker'; mk.setAttribute('contenteditable','false');
+      if(a.list==='number'){ counters[a.lvl]=(counters[a.lvl]||0)+1; counters.length=a.lvl+1; mk.textContent=counters[a.lvl]+'.'; }
+      else { counters=[]; mk.textContent=(BULLETS[a.bul]||'•'); }
+      para.insertBefore(mk, para.firstChild);
+    } else {
+      counters=[];
+    }
+    para.style.paddingLeft=padLeft+'px';
+    editor.appendChild(para);
+  }
+  for(let i=0;i<doc.length;i++){
+    if(doc[i].c==='\n'){ flush(); para=document.createElement('div'); para.className='para'; firstCharOfPara=null; continue; }
+    const sp=document.createElement('span'); sp.className='ch'; sp.dataset.i=i; sp.textContent=doc[i].c;
+    const a=doc[i];
+    sp.style.fontWeight=a.b?'700':'400';
+    sp.style.fontStyle=a.i?'italic':'normal';
+    sp.style.textDecoration=a.u?'underline':'none';
+    sp.style.fontSize=a.size+'px';
+    sp.style.color=a.color;
+    sp.style.fontFamily=a.font;
+    if(firstCharOfPara===null) firstCharOfPara=i;
+    para.appendChild(sp);
+  }
+  flush();
+}
+
+/* =========================================================
+   5. CURSEUR & SÉLECTION (modèle « traitement de texte »)
+   ========================================================= */
+const colorBar=document.getElementById('colorBar');
+function spanOf(i){ return editor.querySelector('.ch[data-i="'+i+'"]'); }
+function paraAlign(p){ if(p==null||p<0) return 'left'; const [s]=paraRange(p); return (doc[s]&&doc[s].align)||'left'; }
+
+/* DOM (node,offset) -> position curseur dans le modèle (0..doc.length), index du caractère à droite */
+function pointToCaret(node, offset){
+  if(node.nodeType===3){
+    const sp=node.parentElement;
+    if(sp && sp.classList && sp.classList.contains('ch')){ const i=+sp.dataset.i; return offset<=0? i : i+1; }
+    node = sp || node;
+  }
+  if(node.nodeType===1){
+    const el=node;
+    if(el.classList && el.classList.contains('ch')){ const i=+el.dataset.i; return offset<=0? i : i+1; }
+    if(el.classList && el.classList.contains('para')){
+      const kids=el.querySelectorAll('.ch');
+      if(!kids.length) return null;
+      // l'offset compte tous les enfants (marqueur de liste inclus) -> on le ramène aux .ch
+      const hasMarker = el.firstChild && el.firstChild.classList && el.firstChild.classList.contains('li-marker');
+      let off = offset - (hasMarker?1:0);
+      if(off<=0) return +kids[0].dataset.i;
+      if(off>=kids.length) return (+kids[kids.length-1].dataset.i)+1;
+      return +kids[off].dataset.i;
+    }
+    if(el===editor){
+      const paras=el.querySelectorAll('.para');
+      if(!paras.length) return 0;
+      if(offset<=0){ const f=paras[0].querySelector('.ch'); return f? +f.dataset.i : 0; }
+      if(offset>=paras.length){ const last=paras[paras.length-1].querySelectorAll('.ch'); return last.length? (+last[last.length-1].dataset.i)+1 : doc.length; }
+      const f=paras[offset].querySelector('.ch'); return f? +f.dataset.i : 0;
+    }
+  }
+  return null;
+}
+
+/* Lit la sélection native -> curSel ({type:'caret',pos} ou {type:'range',a,b}) */
+function readDomSelection(){
+  const s=window.getSelection();
+  if(!s || s.rangeCount===0) return;
+  const r=s.getRangeAt(0);
+  if(!editor.contains(r.commonAncestorContainer)) return;
+  const p1=pointToCaret(r.startContainer, r.startOffset);
+  const p2=pointToCaret(r.endContainer, r.endOffset);
+  if(p1==null || p2==null) return;
+  const a=Math.min(p1,p2), b=Math.max(p1,p2);
+  curSel = (a===b) ? {type:'caret', pos:a} : {type:'range', a, b};
+}
+
+/* Position curseur (modèle) -> [node, offset] pour reconstruire la sélection native */
+function caretBoundary(pos){
+  let sp=(pos<doc.length)? spanOf(pos) : null;
+  if(sp) return [sp.firstChild||sp, 0];
+  let j=pos-1;
+  while(j>=0 && !spanOf(j)) j--;
+  if(j>=0){ const psp=spanOf(j); return [psp.firstChild||psp, 1]; }
+  return [editor, 0];
+}
+function restoreDomSelection(){
+  if(!curSel) return;
+  const s=window.getSelection(); if(!s) return;
+  const r=document.createRange();
+  if(curSel.type==='caret'){
+    const [n,o]=caretBoundary(curSel.pos); r.setStart(n,o); r.setEnd(n,o);
+  }else{
+    const [n1,o1]=caretBoundary(curSel.a); const [n2,o2]=caretBoundary(curSel.b);
+    r.setStart(n1,o1); r.setEnd(n2,o2);
+  }
+  try{ s.removeAllRanges(); s.addRange(r); }catch(e){}
+}
+
+document.addEventListener('selectionchange', ()=>{
+  const s=window.getSelection();
+  if(!s || s.rangeCount===0) return;
+  if(!editor.contains(s.getRangeAt(0).commonAncestorContainer)) return;
+  readDomSelection();
+  updateToolbar();
+});
+
+/* ---- Reflet de la mise en forme dans la barre d'outils ---- */
+function setBtnActive(id,on){ const el=document.getElementById(id); if(el) el.classList.toggle('active',!!on); }
+function setSelVal(id,val){
+  const el=document.getElementById(id); if(!el) return;
+  let found=false;
+  for(const o of el.options){ if(o.value===val){ found=true; break; } }
+  if(found){ el.value=val; el.classList.add('active'); }
+  else { el.selectedIndex=-1; el.classList.remove('active'); }
+}
+function clearToolbarActive(){
+  ['btn-bold','btn-italic','btn-underline','btn-align-left','btn-align-center','btn-align-right','btn-align-justify',
+   'btn-indent-first','btn-indent-right','btn-list-bullet','btn-list-number']
+    .forEach(id=>setBtnActive(id,false));
+}
+function updateToolbar(){
+  let idxs=[], paraForAlign=null;
+  if(curSel && curSel.type==='range'){
+    for(let k=curSel.a;k<curSel.b;k++){ if(doc[k] && doc[k].c!=='\n') idxs.push(k); }
+    paraForAlign=paraIndexOf(Math.min(curSel.a, doc.length-1));
+  }else if(curSel && curSel.type==='caret'){
+    let p=curSel.pos, ref=p-1;
+    if(ref<0 || !doc[ref] || doc[ref].c==='\n') ref=p;          // début de ligne -> caractère de droite
+    if(doc[ref] && doc[ref].c!=='\n') idxs.push(ref);
+    paraForAlign=paraIndexOf(Math.min(p, doc.length-1));
+  }else{
+    clearToolbarActive(); return;
+  }
+  const consider=idxs.filter(k=>!isSpace(doc[k].c));
+  const set=consider.length?consider:idxs;
+  const all=attr=> set.length>0 && set.every(k=>doc[k][attr]);
+  const common=attr=>{ if(!set.length) return null; const v=doc[set[0]][attr]; return set.every(k=>doc[k][attr]===v)?v:null; };
+  setBtnActive('btn-bold', all('b'));
+  setBtnActive('btn-italic', all('i'));
+  setBtnActive('btn-underline', all('u'));
+  const sz=common('size'); setSelVal('sel-size', sz==null?'':String(sz));
+  const ft=common('font'); setSelVal('sel-font', ft==null?'':ft);
+  const col=common('color'); if(col){ colorBar.style.background=col; pickedColor=col; }
+  const al=paraAlign(paraForAlign);
+  ['left','center','right','justify'].forEach(a=>setBtnActive('btn-align-'+a, a===al));
+  // Reflets paragraphe (Niveaux 2 & 3) : on lit le premier paragraphe touché
+  const pp=paraForAlign;
+  const pAttr=(k)=>{ if(pp==null) return null; const [s]=paraRange(pp); return doc[s]?doc[s][k]:null; };
+  const lh=pAttr('lh'); setSelVal('sel-linespacing', lh==null?'':String(lh));
+  const sb=pAttr('spb'); setSelVal('sel-space-before', sb==null?'':String(sb));
+  const sa=pAttr('spa'); setSelVal('sel-space-after', sa==null?'':String(sa));
+  setBtnActive('btn-indent-first', pAttr('ind1'));
+  setBtnActive('btn-indent-right', pAttr('indr'));
+  const lst=pAttr('list');
+  setBtnActive('btn-list-bullet', lst==='bullet');
+  setBtnActive('btn-list-number', lst==='number');
+  const bl=pAttr('bul'); setSelVal('sel-bullet', bl||'disc');
+  const pb=pAttr('pbg'); if(pb && pb!=='transparent'){ pbgBar.style.background=pb; pickedPbg=pb; }
+}
+
+/* =========================================================
+   6. ACTIONS DE LA BARRE D'OUTILS
+   ========================================================= */
+function applyAndRestore(){ render(); editor.focus(); restoreDomSelection(); updateToolbar(); }
+function needRange(){
+  if(!curSel || curSel.type!=='range'){ toast("Sélectionne d'abord du texte : double-clic sur un mot, ou clique-glisse 🖱️"); return true; }
+  return false;
+}
+function toggleAttr(attr){
+  if(needRange()) return;
+  const {a,b}=curSel; let allOn=true;
+  for(let k=a;k<b;k++){ if(doc[k].c==='\n'||isSpace(doc[k].c)) continue; if(!doc[k][attr]){ allOn=false; break; } }
+  const val=!allOn;
+  for(let k=a;k<b;k++){ if(doc[k].c==='\n') continue; doc[k][attr]=val; }
+  applyAndRestore();
+}
+function setValue(attr,value){
+  if(needRange()) return;
+  const {a,b}=curSel;
+  for(let k=a;k<b;k++){ if(doc[k].c==='\n') continue; doc[k][attr]=value; }
+  applyAndRestore();
+}
+function setAlign(value){
+  const paras=new Set();
+  if(curSel && curSel.type==='range'){
+    for(let k=curSel.a;k<curSel.b;k++){ if(doc[k] && doc[k].c!=='\n') paras.add(paraIndexOf(k)); }
+    if(!paras.size) paras.add(paraIndexOf(Math.min(curSel.a, doc.length-1)));
+  }else if(curSel && curSel.type==='caret'){
+    paras.add(paraIndexOf(Math.min(curSel.pos, doc.length-1)));
+  }else{
+    toast("Place ton curseur dans le texte : clique dessus 🖱️"); return;
+  }
+  paras.forEach(p=>{ const [s,e]=paraRange(p); for(let k=s;k<e;k++) if(doc[k]) doc[k].align=value; });
+  applyAndRestore();
+}
+
+/* ---- Actions paragraphe (Niveaux 2 & 3) ---- */
+function collectParas(){
+  const paras=new Set();
+  if(curSel && curSel.type==='range'){
+    for(let k=curSel.a;k<curSel.b;k++){ if(doc[k] && doc[k].c!=='\n') paras.add(paraIndexOf(k)); }
+    if(!paras.size) paras.add(paraIndexOf(Math.min(curSel.a, doc.length-1)));
+  }else if(curSel && curSel.type==='caret'){
+    paras.add(paraIndexOf(Math.min(curSel.pos, doc.length-1)));
+  }else{
+    toast("Place ton curseur dans le texte : clique dessus 🖱️"); return null;
+  }
+  return paras;
+}
+function setParaAttr(attr, value){
+  const paras=collectParas(); if(!paras) return;
+  paras.forEach(p=>{ const [s,e]=paraRange(p); for(let k=s;k<e;k++) if(doc[k]) doc[k][attr]=value; });
+  applyAndRestore();
+}
+function changeIndent(attr, delta){
+  const paras=collectParas(); if(!paras) return;
+  paras.forEach(p=>{ const [s,e]=paraRange(p);
+    const cur=doc[s]?doc[s][attr]:0; const nv=Math.max(0, Math.min(96, cur+delta));
+    for(let k=s;k<e;k++) if(doc[k]) doc[k][attr]=nv; });
+  applyAndRestore();
+}
+function toggleParaPx(attr, on){      // bascule 0 <-> on (retrait 1ʳᵉ ligne / droite)
+  const paras=collectParas(); if(!paras) return;
+  paras.forEach(p=>{ const [s,e]=paraRange(p);
+    const nv=(doc[s] && doc[s][attr])?0:on;
+    for(let k=s;k<e;k++) if(doc[k]) doc[k][attr]=nv; });
+  applyAndRestore();
+}
+function toggleList(type){            // (ré)activer une liste, ou la retirer si déjà du même type
+  const paras=collectParas(); if(!paras) return;
+  paras.forEach(p=>{ const [s,e]=paraRange(p);
+    const cur=doc[s]?doc[s].list:'none';
+    const nv=(cur===type)?'none':type;
+    for(let k=s;k<e;k++) if(doc[k]) doc[k].list=nv; });
+  applyAndRestore();
+}
+function setBullet(style){
+  const paras=collectParas(); if(!paras) return;
+  paras.forEach(p=>{ const [s,e]=paraRange(p); for(let k=s;k<e;k++) if(doc[k]) doc[k].bul=style; });
+  applyAndRestore();
+}
+function changeListLevel(delta){
+  const paras=collectParas(); if(!paras) return;
+  paras.forEach(p=>{ const [s,e]=paraRange(p);
+    const cur=doc[s]?doc[s].lvl:0; const nv=Math.max(0, Math.min(2, cur+delta));
+    for(let k=s;k<e;k++) if(doc[k]) doc[k].lvl=nv; });
+  applyAndRestore();
+}
+
+document.getElementById('btn-bold').onclick=()=>toggleAttr('b');
+document.getElementById('btn-italic').onclick=()=>toggleAttr('i');
+document.getElementById('btn-underline').onclick=()=>toggleAttr('u');
+document.getElementById('sel-size').onchange=e=>setValue('size', parseInt(e.target.value));
+document.getElementById('sel-font').onchange=e=>setValue('font', e.target.value);
+document.getElementById('btn-align-left').onclick=()=>setAlign('left');
+document.getElementById('btn-align-center').onclick=()=>setAlign('center');
+document.getElementById('btn-align-right').onclick=()=>setAlign('right');
+document.getElementById('btn-align-justify').onclick=()=>setAlign('justify');
+// Niveau 2
+document.getElementById('sel-linespacing').onchange=e=>setParaAttr('lh', parseFloat(e.target.value));
+document.getElementById('sel-space-before').onchange=e=>setParaAttr('spb', parseInt(e.target.value));
+document.getElementById('sel-space-after').onchange=e=>setParaAttr('spa', parseInt(e.target.value));
+document.getElementById('btn-indent-inc').onclick=()=>changeIndent('indl', 24);
+document.getElementById('btn-indent-dec').onclick=()=>changeIndent('indl', -24);
+document.getElementById('btn-indent-first').onclick=()=>toggleParaPx('ind1', 24);
+document.getElementById('btn-indent-right').onclick=()=>toggleParaPx('indr', 24);
+// Niveau 3
+document.getElementById('btn-list-bullet').onclick=()=>toggleList('bullet');
+document.getElementById('btn-list-number').onclick=()=>toggleList('number');
+document.getElementById('sel-bullet').onchange=e=>setBullet(e.target.value);
+document.getElementById('btn-list-indent').onclick=()=>changeListLevel(1);
+document.getElementById('btn-list-outdent').onclick=()=>changeListLevel(-1);
+
+// Garde la sélection visible quand on clique un bouton de la barre (ne vole pas le focus)
+['btn-bold','btn-italic','btn-underline','btn-align-left','btn-align-center','btn-align-right','btn-align-justify','btn-color',
+ 'btn-indent-inc','btn-indent-dec','btn-indent-first','btn-indent-right','btn-parabg',
+ 'btn-list-bullet','btn-list-number','btn-list-indent','btn-list-outdent']
+  .forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('mousedown', e=>e.preventDefault()); });
+
+// color popover (couleur du texte)
+const swatches=document.getElementById('swatches');
+COLORS.forEach(c=>{
+  const b=document.createElement('button');
+  b.className='swatch'; b.style.background=c.hex; b.title=c.name;
+  b.addEventListener('mousedown', e=>e.preventDefault());
+  b.onclick=(ev)=>{ ev.stopPropagation(); pickedColor=c.hex; colorBar.style.background=c.hex;
+    swatches.classList.remove('open'); setValue('color', c.hex); };
+  swatches.appendChild(b);
+});
+document.getElementById('btn-color').onclick=(e)=>{ e.stopPropagation(); swatches.classList.toggle('open'); };
+document.addEventListener('click',()=>swatches.classList.remove('open'));
+
+// popover surlignage (fond de paragraphe)
+const pbgBar=document.getElementById('pbgBar');
+const swatchesBg=document.getElementById('swatches-bg');
+PBG_COLORS.forEach(c=>{
+  const b=document.createElement('button');
+  b.className='swatch'; b.title=c.name;
+  if(c.hex==='transparent'){
+    b.style.background='#fff';
+    b.style.backgroundImage='linear-gradient(45deg,#e0e0e0 25%,transparent 25%,transparent 75%,#e0e0e0 75%),linear-gradient(45deg,#e0e0e0 25%,#fff 25%,#fff 75%,#e0e0e0 75%)';
+    b.style.backgroundSize='12px 12px'; b.style.backgroundPosition='0 0,6px 6px';
+  } else { b.style.background=c.hex; }
+  b.addEventListener('mousedown', e=>e.preventDefault());
+  b.onclick=(ev)=>{ ev.stopPropagation(); pickedPbg=c.hex;
+    pbgBar.style.background=(c.hex==='transparent'?'#fff':c.hex);
+    swatchesBg.classList.remove('open'); setParaAttr('pbg', c.hex); };
+  swatchesBg.appendChild(b);
+});
+document.getElementById('btn-parabg').onclick=(e)=>{ e.stopPropagation(); swatchesBg.classList.toggle('open'); };
+document.addEventListener('click',()=>swatchesBg.classList.remove('open'));
+
+// Affiche/masque les groupes d'outils selon le niveau atteint
+function applyToolbarForLevel(n){
+  document.querySelectorAll('#toolbar [data-minlevel]').forEach(el=>{
+    el.style.display = (n >= +el.getAttribute('data-minlevel')) ? '' : 'none';
+  });
+}
+
+/* ---- Bloque la saisie : on garde un curseur libre, mais pas d'édition de texte ---- */
+editor.addEventListener('beforeinput', e=>e.preventDefault());
+editor.addEventListener('paste', e=>e.preventDefault());
+editor.addEventListener('drop', e=>e.preventDefault());
+editor.addEventListener('dragstart', e=>e.preventDefault());
+editor.addEventListener('keydown', e=>{
+  const nav=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Shift','Control','Meta','Alt','Tab','Escape'];
+  if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase(); if(k==='a'||k==='c') return; e.preventDefault(); return; }
+  if(nav.includes(e.key)) return;
+  e.preventDefault();
+});
+
+/* =========================================================
+   7. FLOW
+   ========================================================= */
+function startStep(idx){
+  stepIndex=idx; replayState=null;
+  currentStep=STEPS[idx];
+  doc=clone(currentStep.startDoc);
+  curSel=null;
+  resetToolbarDefaults();
+  render(); updateProgress(); updateBanner();
+  store.set('tt_step_l'+currentLevel, String(idx));
+  openMissionPopup();
+}
+function resetToolbarDefaults(){
+  document.getElementById('sel-size').value='16';
+  document.getElementById('sel-font').value='Arial';
+  document.getElementById('sel-size').classList.remove('active');
+  document.getElementById('sel-font').classList.remove('active');
+  clearToolbarActive();
+  colorBar.style.background='#2563eb'; pickedColor='#2563eb';
+  // Niveaux 2 & 3
+  [['sel-linespacing','1'],['sel-space-before','0'],['sel-space-after','0'],['sel-bullet','disc']]
+    .forEach(([id,v])=>{ const el=document.getElementById(id); if(el){ el.value=v; el.classList.remove('active'); } });
+  if(pbgBar){ pbgBar.style.background='#fff3bf'; } pickedPbg='#fff3bf';
+}
+function updateProgress(){
+  const track=document.getElementById('track'); track.innerHTML='';
+  STEPS.forEach((st,i)=>{
+    const d=document.createElement('div');
+    const isMile = st.kind==='test';
+    d.className='seg'+(isMile?' milestone':'');
+    if(i<stepIndex) d.classList.add('done');
+    if(i===stepIndex && !replayState) d.classList.add('current');
+    if(isMile) d.textContent = i<stepIndex ? '🏆' : '🚩';
+    // Navigation : revenir réviser une mission déjà atteinte (sans perdre l'exercice en cours)
+    if(st.kind==='mission' && i<=stepIndex){
+      d.classList.add('clickable');
+      d.title='Revenir à '+st.label+' : '+st.title+' (ta progression est gardée)';
+      d.onclick=()=>onSegClick(i);
+    }
+    track.appendChild(d);
+  });
+  const shown=Math.min(stepIndex+1, STEPS.length);
+  document.getElementById('stepCount').textContent='Niveau '+currentLevel+' · Étape '+shown+' / '+STEPS.length;
+}
+function onSegClick(i){
+  if(i>stepIndex || STEPS[i].kind!=='mission') return;   // pas encore débloqué / pas un exercice
+  const real = replayState ? replayState.returnIndex : stepIndex;
+  if(i===real){ if(replayState) exitReplay(); else openMissionPopup(); return; }
+  visitStep(i);
+}
+function visitStep(i){
+  // Sauvegarde l'état réel une seule fois : préserve le travail en cours sur l'étape actuelle
+  if(!replayState) replayState={ savedDoc: clone(doc), returnIndex: stepIndex };
+  currentStep=STEPS[i];
+  doc=clone(currentStep.startDoc); curSel=null; resetToolbarDefaults();
+  render(); updateProgress(); updateBanner(); openMissionPopup();
+}
+function updateBanner(){
+  const banner=document.getElementById('banner');
+  banner.className='banner'+(currentStep.kind==='test'?' test':'')+(replayState?' replay':'');
+  document.getElementById('bEmoji').textContent=currentStep.icon;
+  document.getElementById('seeMission').style.display='';
+  const backBtn=document.getElementById('backToTest');
+  backBtn.style.display = replayState ? '' : 'none';
+  const bSub=document.getElementById('bSub');
+  if(replayState){
+    const back=STEPS[replayState.returnIndex];
+    const where = back.kind==='test' ? 'au test' : ('à '+back.label);
+    backBtn.textContent='← Revenir '+where;
+    document.getElementById('bTitle').textContent='Révision : '+currentStep.title;
+    bSub.innerHTML='Refais cet exercice tranquillement, puis reviens '+where+'. <b>Ta progression est gardée.</b>';
+  }else{
+    document.getElementById('bTitle').textContent=currentStep.label+' : '+currentStep.title;
+    if(currentStep.kind==='test'){
+      const chips=currentStep.tasks.map(t=>`<span class="mini-task">${t}</span>`).join('');
+      bSub.innerHTML='<span class="b-goal-label">Tes '+currentStep.tasks.length+' objectifs :</span> '+chips;
+    }else{
+      bSub.innerHTML='<span class="b-goal-label">Ta mission :</span> '+stripTags(currentStep.expect)+'.';
+    }
+  }
+}
+function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
+
+/* ---- mission popup ---- */
+function openMissionPopup(){
+  const s=currentStep;
+  if(s.kind==='test' && !replayState){
+    modal.className='modal test-modal';
+    modal.innerHTML=`
+      <span class="m-emoji">${s.icon}</span>
+      <div class="kicker">${s.label}</div>
+      <h2>${s.title}</h2>
+      <p>${s.intro}</p>
+      <div class="howto test">
+        <p class="h-head">✅ À réussir :</p>
+        <ul class="tasklist">${s.tasks.map(t=>`<li>${t}</li>`).join('')}</ul>
+      </div>
+      <p style="font-size:.95rem;color:var(--muted)">Astuce : si tu as oublié comment faire, clique sur <b>💡 Indice</b> : tu pourras refaire un exercice de ton choix.</p>
+      <div class="m-actions"><button class="m-btn primary test" id="goBtn">Je me lance ! 🚀</button></div>`;
+  }else{
+    modal.className='modal';
+    modal.innerHTML=`
+      <span class="m-emoji">${s.icon}</span>
+      <div class="kicker">${replayState?'Entraînement':s.label}</div>
+      <h2>${s.title}</h2>
+      <p>${s.intro}</p>
+      <div class="howto">
+        <p class="h-head">👉 Comment faire :</p>
+        <ol>${s.how.map(h=>`<li>${h}</li>`).join('')}</ol>
+      </div>
+      <div class="m-actions"><button class="m-btn primary" id="goBtn">C'est parti ! 🚀</button></div>`;
+  }
+  openOverlay();
+  document.getElementById('goBtn').onclick=closeOverlay;
+}
+
+/* ---- validation ---- */
+document.getElementById('validateBtn').onclick=onValidate;
+document.getElementById('restartBtn').onclick=()=>{
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">↺</span>
+    <h2>Réinitialiser cet exercice ?</h2>
+    <p>Le texte de cet exercice sera remis <b>comme au début</b>. Ton travail sur cette étape sera perdu, mais ta <b>progression générale est conservée</b>.</p>
+    <div class="m-actions">
+      <button class="m-btn ghost" id="cancelRestart">Annuler</button>
+      <button class="m-btn primary test" id="doRestart">↺ Réinitialiser</button>
+    </div>`;
+  openOverlay();
+  document.getElementById('cancelRestart').onclick=closeOverlay;
+  document.getElementById('doRestart').onclick=()=>{ closeOverlay(); restartCurrent(); };
+};
+function onValidate(){
+  const res=evaluate(currentStep.startDoc, currentStep.goalDoc, doc);
+  if(res.status==='success') return onSuccess();
+  if(res.status==='extra')  return onExtra(res);
+  return onError(res);
+}
+function flashBad(indices){
+  indices.forEach(i=>{ const sp=editor.querySelector('.ch[data-i="'+i+'"]'); if(sp){ sp.classList.add('flash-bad'); setTimeout(()=>sp.classList.remove('flash-bad'),1500); } });
+}
+function onError(res){
+  if(res.extra.length){
+    // Modifications non demandées ET tâche non finie → "Oh oh"
+    flashBad(res.extra);
+    modal.className='modal warn';
+    modal.innerHTML=`
+      <span class="m-emoji">😬</span>
+      <h2>Oh oh, tu as modifié autre chose !</h2>
+      <p>Tu as changé des choses qui n'étaient <b>pas demandées</b>. Il faut faire <b>seulement</b> ce qui est demandé dans la mission.</p>
+      <p>Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
+      <div class="m-actions"><button class="m-btn primary test" id="retry">↺ Je réessaie</button></div>`;
+    openOverlay();
+    document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
+    return;
+  }
+  // Rien de fait ou tâche incomplète, sans modifications parasites
+  flashBad(res.missing);
+  let body=`Ta mission : <b>${currentStep.expect}</b>.`;
+  if(!res.startedTask) body+=` Tu n'as pas encore commencé : <b>sélectionne le texte</b> avec la souris, puis clique sur le bon bouton.`;
+  body+=` Besoin d'aide ? Clique sur <b>💡 Indice</b>.`;
+  modal.className='modal bad';
+  modal.innerHTML=`
+    <span class="m-emoji">🧐</span>
+    <h2>Pas encore…</h2>
+    <p>${body}</p>
+    <div class="m-actions"><button class="m-btn primary" id="retry">Je réessaie</button></div>`;
+  openOverlay();
+  document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
+}
+function onExtra(res){
+  flashBad(res.extra);
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">🤏</span>
+    <h2>Presque !</h2>
+    <p>Tu as bien réussi la mission… mais tu as aussi modifié <b>quelque chose qui n'était pas demandé</b>.</p>
+    <p>La règle d'or : <b>on fait seulement ce que la mission demande</b>. On recommence cette mission, tu vas y arriver !</p>
+    <div class="m-actions"><button class="m-btn primary test" id="redo">Je recommence</button></div>`;
+  openOverlay();
+  document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
+}
+function restartCurrent(){
+  doc=clone(currentStep.startDoc); curSel=null; resetToolbarDefaults(); render();
+}
+function onSuccess(){
+  if(replayState){
+    const back=STEPS[replayState.returnIndex];
+    const where = back.kind==='test' ? 'au test' : ('à '+back.label);
+    modal.className='modal good';
+    modal.innerHTML=`
+      <span class="m-emoji">💪</span>
+      <h2>Bien joué !</h2>
+      <p>Tu as réussi cette révision. On revient ${where} : tu retrouves ton travail <b>là où tu l'avais laissé</b>.</p>
+      <div class="m-actions"><button class="m-btn primary green" id="back">Revenir ${where}</button></div>`;
+    openOverlay();
+    document.getElementById('back').onclick=()=>{ closeOverlay(); exitReplay(); };
+    return;
+  }
+  const isTest = currentStep.kind==='test';
+  const isLast = stepIndex===STEPS.length-1;
+  if(isLast) return onLevelComplete();
+  modal.className='modal good';
+  if(isTest){
+    confetti();
+    modal.innerHTML=`
+      <span class="m-emoji">🏆</span>
+      <h2>Jalon réussi !</h2>
+      <p>Super ! Tu as réussi à <b>combiner plusieurs choses</b> en même temps. Tu deviens un vrai pro de la mise en page !</p>
+      <div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>`;
+  }else{
+    modal.innerHTML=`
+      <span class="m-emoji">✅</span>
+      <h2>Bravo !</h2>
+      <p>Mission réussie. Tu peux passer à la suite.</p>
+      <div class="m-actions"><button class="m-btn primary green" id="next">Mission suivante →</button></div>`;
+  }
+  openOverlay();
+  document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(stepIndex+1); };
+}
+function onLevelComplete(){
+  updateProgressFinished();
+  if(currentLevel>=LEVELS.length) return onCourseFinish();
+  const nextN=currentLevel+1;
+  store.set('tt_unlocked', String(Math.max(getUnlocked(), nextN)));
+  store.set('tt_step_l'+nextN, '0');
+  refreshLevelBtn();
+  playUnlock(nextN, ()=>openLevelUnlockedModal(nextN));
+}
+function openLevelUnlockedModal(nextN){
+  const lvl=LEVELS[nextN-1];
+  modal.className='modal good';
+  modal.innerHTML=`
+    <span class="m-emoji">🎉</span>
+    <div class="kicker" style="color:var(--green-d)">Niveau ${nextN} débloqué</div>
+    <h2>Bravo, tu passes au Niveau ${nextN} !</h2>
+    <p>Tu as terminé le <b>Niveau ${currentLevel}</b>. Un tout nouveau niveau s'ouvre à toi : <b>${lvl.title}</b>, avec de <b>nouveaux boutons</b> à découvrir !</p>
+    <div class="m-actions">
+      <a class="m-btn ghost" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a>
+      <button class="m-btn primary green" id="goNextLvl">Aller au Niveau ${nextN} →</button>
+    </div>`;
+  openOverlay();
+  document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN, 0, true); };
+}
+function onCourseFinish(){
+  confetti(); confetti();
+  modal.className='modal good';
+  modal.innerHTML=`
+    <span class="m-emoji">🏅</span>
+    <h2>Parcours terminé !</h2>
+    <p>Incroyable ! Tu as fini les <b>3 niveaux</b> du <b>Traitement de texte</b> : la mise en forme, les paragraphes et les listes. Tu es devenu un vrai <b>pro de l'ordinateur</b> ! 👏</p>
+    <div class="m-actions">
+      <button class="m-btn ghost" id="again">↺ Tout recommencer</button>
+      <a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Retour à l'accueil</a>
+    </div>`;
+  openOverlay();
+  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1, 0, true); };
+}
+function updateProgressFinished(){
+  stepIndex=STEPS.length; updateProgress();
+}
+
+/* =========================================================
+   8. HINT
+   ========================================================= */
+document.getElementById('hintBtn').onclick=onHint;
+function onHint(){
+  if(currentStep.kind==='test' && !replayState) return openReplayPanel();
+  // exercise hint: glow the right button + popup
+  const h=currentStep.hint;
+  const target=document.getElementById(h.target);
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">💡</span>
+    <h2>L'indice</h2>
+    <p>${h.text}</p>
+    <p style="font-size:.95rem;color:var(--muted)">Regarde la barre d'outils : le bon bouton <b>brille en orange</b> ✨.</p>
+    <div class="m-actions"><button class="m-btn primary" id="okHint">J'ai compris</button></div>`;
+  openOverlay();
+  document.getElementById('okHint').onclick=()=>{
+    closeOverlay();
+    if(target){
+      target.classList.add('glow');
+      target.scrollIntoView({block:'nearest', inline:'center', behavior:'smooth'});
+      setTimeout(()=>target.classList.remove('glow'), 4500);
+    }
+  };
+}
+function openReplayPanel(){
+  const refs=currentStep.replayRefs.map(id=>MISSIONS[id]);
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">💡</span>
+    <h2>Tu veux t'entraîner ?</h2>
+    <p>Choisis un exercice à <b>refaire</b> pour te rappeler comment faire. Tu reviendras ensuite au test, sans rien perdre.</p>
+    <div class="replay-grid" id="replayGrid"></div>
+    <div class="m-actions"><button class="m-btn ghost" id="closeHint">Non merci, je continue le test</button></div>`;
+  openOverlay();
+  const grid=document.getElementById('replayGrid');
+  refs.forEach(m=>{
+    const b=document.createElement('button');
+    b.className='replay-card';
+    b.innerHTML=`<span class="rc-emoji">${m.icon}</span><span class="rc-title">${m.title}</span>`;
+    b.onclick=()=>{ closeOverlay(); startReplay(m); };
+    grid.appendChild(b);
+  });
+  document.getElementById('closeHint').onclick=closeOverlay;
+}
+function startReplay(mission){
+  replayState={ savedDoc: clone(doc), returnIndex: stepIndex };
+  currentStep=mission;
+  doc=clone(mission.startDoc); curSel=null; resetToolbarDefaults();
+  render(); updateProgress(); updateBanner(); openMissionPopup();
+}
+function exitReplay(){
+  if(!replayState) return;
+  doc=replayState.savedDoc; currentStep=STEPS[replayState.returnIndex]; replayState=null;
+  curSel=null; render(); updateProgress(); updateBanner();
+}
+document.getElementById('backToTest').onclick=exitReplay;
+document.getElementById('seeMission').onclick=openMissionPopup;
+
+/* =========================================================
+   9. OVERLAY / TOAST / CONFETTI
+   ========================================================= */
+function openOverlay(){ overlay.classList.add('open'); }
+function closeOverlay(){ overlay.classList.remove('open'); }
+
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function confetti(){
+  const wrap=document.createElement('div'); wrap.className='confetti';
+  const cols=['#2563eb','#f59e0b','#16a34a','#e11d48','#7c3aed'];
+  for(let i=0;i<70;i++){
+    const p=document.createElement('i');
+    p.style.left=Math.random()*100+'%';
+    p.style.background=cols[i%cols.length];
+    p.style.animationDuration=(2.4+Math.random()*1.6)+'s';
+    p.style.animationDelay=(Math.random()*.5)+'s';
+    p.style.transform='rotate('+Math.random()*360+'deg)';
+    wrap.appendChild(p);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(()=>wrap.remove(),4200);
+}
+
+/* =========================================================
+   10. NIVEAUX : chargement, intro, déblocage, navigation
+   ========================================================= */
+function getUnlocked(){ let u=parseInt(store.get('tt_unlocked')||'1',10); if(isNaN(u)||u<1) u=1; return Math.min(u, LEVELS.length); }
+function getSavedStep(n){ let s=parseInt(store.get('tt_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
+
+function loadLevel(n, stepIdx, showIntro){
+  n=Math.max(1, Math.min(LEVELS.length, n));
+  const lvl=LEVELS[n-1];
+  currentLevel=n;
+  PARAS=lvl.paras.slice(); FULL=PARAS.join('\n');
+  const built=buildSteps(lvl.defs); STEPS=built.steps; MISSIONS=built.missions;
+  applyToolbarForLevel(n);
+  document.getElementById('lvlTitle').innerHTML='Traitement de texte <span class="dot">·</span> '+lvl.subtitle;
+  store.set('tt_curlevel', String(n));
+  refreshLevelBtn();
+  let idx=(typeof stepIdx==='number')?stepIdx:getSavedStep(n);
+  if(isNaN(idx)||idx<0||idx>=STEPS.length) idx=0;
+  if(showIntro && idx===0){ openLevelIntro(n, ()=>startStep(0)); }
+  else startStep(idx);
+}
+
+function openLevelIntro(n, cont){
+  const lvl=LEVELS[n-1];
+  const tools=lvl.newTools.map(t=>`<li><span class="ni-glyph">${t.g}</span> ${t.n}</li>`).join('');
+  modal.className='modal';
+  modal.innerHTML=`
+    <span class="m-emoji">🎁</span>
+    <div class="kicker">Niveau ${n}</div>
+    <h2>${lvl.title}</h2>
+    <p>Bienvenue au <b>Niveau ${n}</b> ! Voici les <b>nouveaux boutons</b> que tu viens de débloquer :</p>
+    <ul class="newtools">${tools}</ul>
+    <p style="font-size:.95rem;color:var(--muted)">Ils sont apparus dans ta barre d'outils, tout en haut. À toi de jouer !</p>
+    <div class="m-actions"><button class="m-btn primary green" id="lvlGo">C'est parti ! 🚀</button></div>`;
+  openOverlay();
+  document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); cont&&cont(); };
+}
+
+function refreshLevelBtn(){
+  const b=document.getElementById('levelBtn'); if(b) b.textContent='🗺️ Niveau '+currentLevel+'/'+LEVELS.length;
+}
+function openLevelSelector(){
+  const unlocked=getUnlocked();
+  modal.className='modal';
+  const cards=LEVELS.map(lv=>{
+    const locked=lv.n>unlocked, cur=lv.n===currentLevel;
+    const badge=locked?'🔒':(lv.n<currentLevel?'✓':'▶');
+    return `<button class="lvl-card${locked?' locked':''}${cur?' current':''}" data-n="${lv.n}" ${locked?'disabled':''}>
+      <span class="lc-badge">${badge}</span>
+      <span class="lc-n">Niveau ${lv.n}</span>
+      <span class="lc-t">${lv.title}</span>
+    </button>`;
+  }).join('');
+  modal.innerHTML=`
+    <span class="m-emoji">🗺️</span>
+    <h2>Choisis ton niveau</h2>
+    <p>Reviens sur un niveau déjà débloqué quand tu veux : ta progression dans chaque niveau est <b>gardée</b>.</p>
+    <div class="lvl-grid">${cards}</div>
+    <div class="m-actions"><button class="m-btn ghost" id="closeLvls">Fermer</button></div>`;
+  openOverlay();
+  modal.querySelectorAll('.lvl-card:not(.locked)').forEach(c=>{
+    c.onclick=()=>{ const n=+c.getAttribute('data-n'); closeOverlay(); loadLevel(n, undefined, n!==currentLevel); };
+  });
+  document.getElementById('closeLvls').onclick=closeOverlay;
+}
+document.getElementById('levelBtn').onclick=openLevelSelector;
+
+// Animation du cadenas qui se déverrouille
+function playUnlock(nextN, done){
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stage=document.createElement('div'); stage.className='lock-stage';
+  stage.innerHTML=`<div class="lock-box"><div class="lock-emoji">🔒</div><div class="lock-cap">Niveau ${nextN}</div></div>`;
+  document.body.appendChild(stage);
+  const box=stage.querySelector('.lock-box'), emoji=stage.querySelector('.lock-emoji');
+  if(reduce){
+    emoji.textContent='🔓'; confetti();
+    setTimeout(()=>{ stage.remove(); done&&done(); }, 800);
+    return;
+  }
+  box.classList.add('shake');
+  setTimeout(()=>{ box.classList.remove('shake'); box.classList.add('pop'); emoji.textContent='🔓'; confetti(); }, 1100);
+  setTimeout(()=>{ stage.classList.add('fade'); }, 2100);
+  setTimeout(()=>{ stage.remove(); done&&done(); }, 2500);
+}
+
+/* ---- recommence le niveau courant ---- */
+document.getElementById('resetBtn').onclick=()=>{
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">↺</span>
+    <h2>Recommencer ce niveau ?</h2>
+    <p>Tu vas repartir de la <b>première mission du Niveau ${currentLevel}</b>. Les autres niveaux et tes déblocages ne changent pas.</p>
+    <div class="m-actions">
+      <button class="m-btn ghost" id="cancelReset">Annuler</button>
+      <button class="m-btn primary" id="doReset">Oui, recommencer</button>
+    </div>`;
+  openOverlay();
+  document.getElementById('cancelReset').onclick=closeOverlay;
+  document.getElementById('doReset').onclick=()=>{ closeOverlay(); store.set('tt_step_l'+currentLevel,'0'); startStep(0); };
+};
+
+/* =========================================================
+   11. INIT
+   ========================================================= */
+(function init(){
+  // migration douce de l'ancienne clé mono-niveau
+  const old=store.get('tt_step'); if(old!=null && store.get('tt_step_l1')==null) store.set('tt_step_l1', old);
+  let lvl=parseInt(store.get('tt_curlevel')||'1',10);
+  if(isNaN(lvl)||lvl<1||lvl>LEVELS.length) lvl=1;
+  lvl=Math.min(lvl, getUnlocked());
+  loadLevel(lvl, getSavedStep(lvl), true);
+})();
+</script>
+</body>
+</html>
