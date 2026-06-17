@@ -137,9 +137,13 @@
   @keyframes tcBad{0%,100%{background:transparent;}40%{background:#ffd0d0;}}
   .type-text .tc.scorch{background:#ffe1cc;color:#9a3412;}
   .type-text .tc.lavahead{background:#fb7185;color:#fff;box-shadow:0 0 12px 2px rgba(244,63,94,.6);}
-  .lava-row{max-width:780px;margin:16px auto 0;height:16px;border-radius:9px;background:#e2e8f0;position:relative;overflow:hidden;}
-  .lava-row > .me{position:absolute;top:0;bottom:0;left:0;background:var(--green);border-radius:9px;transition:width .12s linear;}
-  .lava-row > .fire{position:absolute;top:0;bottom:0;left:0;background:repeating-linear-gradient(90deg,#f97316,#ef4444 10px);border-radius:9px;opacity:.85;}
+  .lava-row{max-width:780px;margin:20px auto 0;height:18px;border-radius:9px;background:#e2e8f0;position:relative;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.12);}
+  .lava-row > .fire{position:absolute;top:0;bottom:0;left:0;width:0;
+    background:repeating-linear-gradient(45deg,#fb923c 0 8px,#ef4444 8px 16px);
+    transition:width .12s linear;box-shadow:0 0 12px 3px rgba(239,68,68,.55);}
+  .lava-row > .me{position:absolute;top:-3px;bottom:-3px;width:6px;left:0;background:var(--green);
+    border-radius:4px;transform:translateX(-50%);transition:left .12s linear;z-index:2;
+    box-shadow:0 0 0 2px #fff,0 0 7px rgba(22,163,74,.7);}
   .type-stats{max-width:780px;margin:14px auto 0;display:flex;gap:18px;color:var(--muted);font-weight:800;font-size:.95rem;}
 
   /* ---------- Action bar ---------- */
@@ -321,7 +325,25 @@ const SYMTIP={
   '+':'Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur '+kbd('=')+' (tout en haut à droite).',
   '-':'Appuie sur la touche '+kbd('-')+' (la touche du 6).'
 };
+// Accents : é è à ç ù sont des touches DIRECTES sur AZERTY ; ê/ë… passent par une touche morte
+const ACCENT_TIP={
+  'é':'Accent aigu : appuie directement sur la touche '+kbd('é')+' (la touche du '+kbd('2')+', en haut à gauche). C\'est une touche toute prête !',
+  'è':'Accent grave : appuie directement sur la touche '+kbd('è')+' (la touche du '+kbd('7')+').',
+  'à':'Accent grave : appuie directement sur la touche '+kbd('à')+' (la touche du '+kbd('0')+').',
+  'ù':'Accent grave : appuie directement sur la touche '+kbd('ù')+' (juste à droite de la touche '+kbd('M')+').',
+  'ç':'Cédille : appuie directement sur la touche '+kbd('ç')+' (la touche du '+kbd('9')+').',
+  'â':'Accent circonflexe : appuie d\'abord sur la touche morte '+kbd('^')+' (à droite du '+kbd('P')+'), <b>relâche</b>, puis appuie sur '+kbd('A')+'. Le chapeau se pose sur la lettre !',
+  'ê':'Accent circonflexe : appuie sur la touche '+kbd('^')+' (à droite du '+kbd('P')+'), puis sur '+kbd('E')+'.',
+  'î':'Accent circonflexe : appuie sur la touche '+kbd('^')+' (à droite du '+kbd('P')+'), puis sur '+kbd('I')+'.',
+  'ô':'Accent circonflexe : appuie sur la touche '+kbd('^')+' (à droite du '+kbd('P')+'), puis sur '+kbd('O')+'.',
+  'û':'Accent circonflexe : appuie sur la touche '+kbd('^')+' (à droite du '+kbd('P')+'), puis sur '+kbd('U')+'.',
+  'ë':'Tréma (deux points) : appuie sur '+kbd('Maj ⇧')+' + '+kbd('^')+' (à droite du '+kbd('P')+'), puis sur '+kbd('E')+'.',
+  'ï':'Tréma (deux points) : appuie sur '+kbd('Maj ⇧')+' + '+kbd('^')+', puis sur '+kbd('I')+'.',
+  'ü':'Tréma (deux points) : appuie sur '+kbd('Maj ⇧')+' + '+kbd('^')+', puis sur '+kbd('U')+'.'
+};
+const ACCENT_CHARS=new Set(Object.keys(ACCENT_TIP).concat(['É','È','À','Ç','Ù','Â','Ê','Î','Ô','Û','Ë','Ï','Ü']));
 function tipFor(ch){
+  if(ACCENT_TIP[ch]) return ACCENT_TIP[ch];
   if(/^[a-z]$/.test(ch)) return 'Appuie simplement sur la touche '+kbd(ch.toUpperCase())+'.';
   if(/^[A-Z]$/.test(ch)) return 'Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur '+kbd(ch)+'. Autre option : appuie une fois sur '+kbd('⇪ Caps Lock')+' pour tout mettre en majuscules, tape ta lettre, puis rappuie sur '+kbd('⇪ Caps Lock')+' pour revenir aux minuscules.';
   if(/^[0-9]$/.test(ch)) return 'Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur la touche '+kbd(KCAP[ch])+' (rangée du haut). Tu peux aussi utiliser le '+kbd('pavé numérique')+' à droite du clavier.';
@@ -336,6 +358,7 @@ const KB_ROWS=[
   [['q'],['s'],['d'],['f'],['g'],['h'],['j'],['k'],['l'],['m'],['ù'],['*']],
   [['<'],['w'],['x'],['c'],['v'],['b'],['n'],[','],[';'],[':'],['!']]
 ];
+const ACCENT_KEYS=new Set(['é','è','à','ç','ù']);   // accents en accès direct sur AZERTY
 function buildKeyboard(hl){
   hl=hl||{}; const keys=hl.keys||new Set();
   let html='<div class="kbd-board">';
@@ -343,11 +366,13 @@ function buildKeyboard(hl){
     html+='<div class="kbd-row">';
     row.forEach(k=>{
       const main=k[0], sub=k[1];
-      let on=false;
+      let on=false, mod=false;
       if(hl.letters && /^[a-z]$/.test(main)) on=true;
       if(hl.digits && sub && /^[0-9]$/.test(sub)) on=true;
+      if(hl.accents && ACCENT_KEYS.has(main)) on=true;
+      if(hl.accents && main==='^') mod=true;   // touche morte circonflexe / tréma
       if(keys.has(main) || (sub && keys.has(sub))) on=true;
-      html+='<div class="key'+(on?' hl':'')+'">'+main.toUpperCase()+(sub?'<span class="sub">'+sub+'</span>':'')+'</div>';
+      html+='<div class="key'+(on?' hl':'')+(mod?' modhl':'')+'">'+main.toUpperCase()+(sub?'<span class="sub">'+sub+'</span>':'')+'</div>';
     });
     html+='</div>';
   });
@@ -407,7 +432,34 @@ const LEVELS=[
        pool:('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz').split(''),target:26,lives:4,speed:88,spawnMs:1100}
     ]},
 
-  { n:3, title:'Le parachute — les chiffres', subtitle:'le parachute · les chiffres', game:'parachute',
+  { n:3, title:'Le parachute — les accents', subtitle:'le parachute · les accents', game:'parachute',
+    intro:{ emoji:'🔤',
+      lead:'En français, beaucoup de lettres portent un <b>accent</b> : é, è, à, ç… Voici comment les taper !',
+      teach:'Il existe plusieurs accents :<br>'
+        +'• <b>Accent aigu</b> ( é ) : touche <b>directe</b> '+kbd('é')+' (la touche du '+kbd('2')+').<br>'
+        +'• <b>Accent grave</b> ( è à ù ) : touches <b>directes</b> '+kbd('è')+' '+kbd('à')+' '+kbd('ù')+'.<br>'
+        +'• <b>Cédille</b> ( ç ) : touche <b>directe</b> '+kbd('ç')+' (la touche du '+kbd('9')+').<br>'
+        +'• <b>Accent circonflexe</b> ( ê â ô… le « chapeau » ) : appuie sur la touche morte '+kbd('^')+' (à droite du '+kbd('P')+'), <b>relâche</b>, puis appuie sur la lettre.<br>'
+        +'• <b>Tréma</b> ( ë ï ü, les « deux points » ) : appuie sur '+kbd('Maj ⇧')+' + '+kbd('^')+', puis sur la lettre.',
+      kb:{accents:true},
+      legend:['é','è','à','ç','ù','ê','â','ë'],
+      tools:[{g:'é',n:'Accents directs'},{g:'^',n:'La touche morte'}] },
+    rounds:[
+      {kind:'mission',label:'Manche 1',emoji:'é',title:'Aigu et grave',
+       desc:'Les accents directs '+kbd('é')+' '+kbd('è')+' '+kbd('à')+'. Une seule touche à chaque fois !',
+       pool:['é','è','à'],target:10,lives:6,speed:54,spawnMs:1700,showTips:true},
+      {kind:'mission',label:'Manche 2',emoji:'ç',title:'Cédille et accent sur le u',
+       desc:'On ajoute '+kbd('ç')+' et '+kbd('ù')+', toujours en touches directes.',
+       pool:['ç','ù','é','è','à'],target:12,lives:6,speed:62,spawnMs:1550,showTips:true},
+      {kind:'mission',label:'Manche 3',emoji:'ê',title:'Le chapeau (circonflexe)',
+       desc:'La touche morte '+kbd('^')+' puis la lettre. Prends ton temps, c\'est un peu plus difficile !',
+       pool:['ê','â','ô','î','û'],target:10,lives:7,speed:46,spawnMs:2100,showTips:true},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tous les accents',
+       desc:'Accents directs et chapeaux mélangés. Montre que tu sais tous les faire !',
+       pool:['é','è','à','ç','ù','ê','â','ô'],target:14,lives:5,speed:70,spawnMs:1350,showTips:true}
+    ]},
+
+  { n:4, title:'Le parachute — les chiffres', subtitle:'le parachute · les chiffres', game:'parachute',
     intro:{ emoji:'🔢',
       lead:'Des <b>chiffres</b> tombent du ciel !',
       teach:'Sur la rangée du haut, garde '+kbd('Maj ⇧')+' enfoncé et appuie sur la touche du chiffre. Si ton clavier a un <b>pavé numérique</b> à droite, tu peux aussi taper les chiffres directement dessus.',
@@ -422,7 +474,7 @@ const LEVELS=[
        pool:'0123456789'.split(''),target:22,lives:4,speed:98,spawnMs:980}
     ]},
 
-  { n:4, title:'Le parachute — les symboles', subtitle:'le parachute · les symboles', game:'parachute',
+  { n:5, title:'Le parachute — les symboles', subtitle:'le parachute · les symboles', game:'parachute',
     intro:{ emoji:'✨',
       lead:'Les symboles sont des touches « secrètes » : il faut souvent appuyer sur <b>deux touches en même temps</b>.',
       teach:'Deux touches magiques :<br>• '+kbd('Maj ⇧')+' pour la ponctuation du haut (comme '+kbd('?')+').<br>• '+kbd('AltGr')+' (à droite de la barre espace) pour des symboles comme '+kbd('@')+' ou '+kbd('#')+'.<br>Regarde bien l\'astuce de chaque symbole sur l\'écran de jeu !',
@@ -434,27 +486,27 @@ const LEVELS=[
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tout mélangé',desc:'Ponctuation et symboles spéciaux tombent ensemble. Garde les astuces en tête !',pool:['.',',','?','!','@','#','€','+'],target:12,lives:5,speed:72,spawnMs:1350,showTips:true}
     ]},
 
-  { n:5, title:'Frappe libre', subtitle:'frappe libre', game:'dactylo',
+  { n:6, title:'Frappe libre', subtitle:'frappe libre', game:'dactylo',
     intro:{ emoji:'⌨️',
       lead:'Recopie le texte affiché en gris, <b>lettre par lettre</b>, à ton rythme. Pas de chrono, pas de pression !',
-      teach:'La lettre à taper est <b>encadrée en bleu</b>. Quand tu tapes la bonne touche, elle devient <b>verte</b> et on passe à la suivante. Si tu te trompes, rien n\'avance : réessaie tranquillement. Tu peux utiliser '+kbd('⌫ Effacer')+' pour revenir en arrière. Ici, <b>pas de chrono qui stresse</b> : prends ton temps !',
+      teach:'La lettre à taper est <b>encadrée en bleu</b>. Quand tu tapes la bonne touche, elle devient <b>verte</b> et on passe à la suivante. Si tu te trompes, rien n\'avance : réessaie tranquillement. Tu peux utiliser '+kbd('⌫ Effacer')+' pour revenir en arrière. Pense aux <b>accents</b> : é è à ç sont des touches directes, et le chapeau ( ê ) se fait avec '+kbd('^')+' puis la lettre. Ici, <b>pas de chrono qui stresse</b> : prends ton temps !',
       tools:[{g:'⌨️',n:'Taper un vrai texte'},{g:'🎯',n:'La précision'}] },
     rounds:[
       {kind:'mission',label:'Texte 1',emoji:'🐱',title:'Une petite phrase',desc:'Recopie cette phrase tout en minuscules.',text:'le petit chat joue dans le jardin avec une balle rouge'},
-      {kind:'mission',label:'Texte 2',emoji:'🌲',title:'Avec des majuscules',desc:'Attention aux majuscules au début des phrases : '+kbd('Maj ⇧')+' + la lettre.',text:'La foret est calme. Les oiseaux chantent dans les grands arbres verts.'},
-      {kind:'mission',label:'Texte 3',emoji:'❓',title:'Avec de la ponctuation',desc:'Recopie en faisant bien la ponctuation et les espaces.',text:'Quel beau voyage ! As-tu vu la mer, les bateaux et les poissons ?'},
-      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand texte',desc:'Un texte plus long pour devenir un vrai pro du clavier.',text:"Chaque matin, Lea allume son ordinateur et ecrit une histoire d'un dragon gentil qui adore les fraises."}
+      {kind:'mission',label:'Texte 2',emoji:'🌲',title:'Avec des accents',desc:'Pense aux accents directs : é è à se tapent d\'une seule touche.',text:'la forêt est très calme et les oiseaux chantent près des arbres verts'},
+      {kind:'mission',label:'Texte 3',emoji:'❓',title:'Majuscules et ponctuation',desc:'Recopie en soignant les majuscules, la ponctuation et les espaces.',text:'Quel beau voyage ! As-tu vu la mer, les bateaux et les poissons ?'},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand texte',desc:'Un texte plus long, avec des accents, pour devenir un vrai pro du clavier.',text:"Chaque matin, Léa allume son ordinateur et écrit l'histoire d'un dragon très gentil qui adore les fraises."}
     ]},
 
-  { n:6, title:'La chasse à la lave', subtitle:'la chasse à la lave', game:'dactylo',
+  { n:7, title:'La chasse à la lave', subtitle:'la chasse à la lave', game:'dactylo',
     intro:{ emoji:'🔥',
       lead:'Le grand défi final ! Tape le texte <b>avant que la vague de lave</b> 🔥 ne te rattrape.',
-      teach:'La <b>barre verte</b> montre où tu en es. La <b>barre de lave rouge</b> avance toute seule derrière toi. Tape vite et bien pour rester devant elle ! Si elle te rattrape, on recommence la manche. Plus le niveau monte, plus la lave est rapide.',
+      teach:'Le <b>repère vert</b> montre où tu en es. La <b>lave rouge</b> avance toute seule derrière toi : reste devant elle ! Si elle te rattrape, on recommence la manche. Plus le niveau monte, plus la lave est rapide.',
       tools:[{g:'🔥',n:'Rester devant la lave'},{g:'⚡',n:'La vitesse de frappe'}] },
     rounds:[
       {kind:'mission',label:'Poursuite 1',emoji:'🐢',title:'En douceur',desc:'La lave avance lentement. Tape la phrase avant qu\'elle te rattrape.',text:'je tape vite et je reste devant la vague de lave',pursuit:2.0,grace:2600,lead:5},
-      {kind:'mission',label:'Poursuite 2',emoji:'🐇',title:'Ça accélère',desc:'La lave va plus vite ! Reste bien concentré.',text:'La course continue et la lave monte de plus en plus vite.',pursuit:2.8,grace:2200,lead:4},
-      {kind:'jalon',label:'Défi final',emoji:'🏆',title:'La lave en folie',desc:'Dernier défi du parcours : majuscules, ponctuation et lave rapide !',text:'Bravo champion ! Tu tapes 100 mots sans peur de la lave, avec le sourire ?',pursuit:3.4,grace:1900,lead:4}
+      {kind:'mission',label:'Poursuite 2',emoji:'🐇',title:'Ça accélère',desc:'La lave va plus vite ! Reste bien concentré.',text:'la course continue et la lave brûlante monte de plus en plus vite',pursuit:2.8,grace:2200,lead:4},
+      {kind:'jalon',label:'Défi final',emoji:'🏆',title:'La lave en folie',desc:'Dernier défi du parcours : majuscules, accents, ponctuation et lave rapide !',text:'Bravo champion ! Tu écris déjà très bien, sans avoir peur de la lave ?',pursuit:3.4,grace:1900,lead:4}
     ]}
 ];
 
@@ -552,7 +604,7 @@ function spawnP(){
   if(P.items.length>=5) return;
   const ch=P.pool[Math.floor(Math.random()*P.pool.length)];
   const el=document.createElement('div');
-  const isSym=!/^[a-zA-Z0-9]$/.test(ch);
+  const isSym=!/^[a-zA-Z0-9]$/.test(ch) && !ACCENT_CHARS.has(ch);
   el.className='drop'+(isSym?' sym':'');
   el.innerHTML='<span class="para">🪂</span><span class="cap">'+ch+'</span>';
   const x=6+Math.random()*84;
@@ -681,7 +733,7 @@ function renderType(){
   const pe=document.getElementById('stProg'); if(pe) pe.textContent=pct+' %';
   const ee=document.getElementById('stErr'); if(ee) ee.textContent=D.errors+(D.errors>1?' erreurs':' erreur');
   if(D.pursuit){
-    const me=document.getElementById('lavaMe'); if(me) me.style.width=(D.i/D.text.length*100)+'%';
+    const me=document.getElementById('lavaMe'); if(me) me.style.left=(D.i/D.text.length*100)+'%';
     const fire=document.getElementById('lavaFire'); if(fire) fire.style.width=(Math.max(0,D.chaser)/D.text.length*100)+'%';
   }
 }
@@ -883,7 +935,7 @@ function courseFinish(){
   confetti(); confetti();
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
-    +'<p>Incroyable ! Tu as fini les <b>6 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les chiffres, les symboles, la frappe libre et la chasse à la lave. Tu tapes comme un pro ! 👏</p>'
+    +'<p>Incroyable ! Tu as fini les <b>7 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les accents, les chiffres, les symboles, la frappe libre et la chasse à la lave. Tu tapes comme un pro ! 👏</p>'
     +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   openOverlay();
@@ -912,12 +964,11 @@ function openLevelSelector(){
 }
 document.getElementById('levelBtn').onclick=openLevelSelector;
 
-/* ---- animation cadenas ---- */
+/* ---- animation cadenas (Web Animations API : déterministe, sans conflit CSS) ---- */
 function playUnlock(nextN, done){
   const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const st=document.createElement('div'); st.className='lock-stage';
-  // box démarre invisible via style inline (évite un flash avant l'animation)
-  st.innerHTML='<div class="lock-box" style="opacity:0;transform:scale(.3)">'
+  st.innerHTML='<div class="lock-box">'
     +'<div class="lock-glow"></div><div class="lock-burst"></div><div class="lock-burst lb2"></div>'
     +'<div class="lock-emoji">🔒</div><div class="lock-cap">Niveau '+nextN+' débloqué !</div></div>';
   document.body.appendChild(st);
@@ -925,30 +976,8 @@ function playUnlock(nextN, done){
   const bursts=st.querySelectorAll('.lock-burst'), glow=st.querySelector('.lock-glow');
   const cols=['#ffd76a','#ff9a30','#ff6b6b','#a78bfa','#34d399','#60a5fa','#f472b6','#fff'];
 
-  if(reduce){
-    // version sans animation : montre quand même le changement cadenas fermé → ouvert
-    setTimeout(()=>{ emoji.textContent='🔓'; confetti(); beep('win'); }, 500);
-    setTimeout(()=>st.classList.add('fade'), 1400);
-    setTimeout(()=>{ st.remove(); done&&done(); }, 1800);
-    return;
-  }
-
-  // Phase 1 : apparition (lockIn)
-  // force reflow pour que l'animation parte bien depuis l'état initial
-  box.getBoundingClientRect();
-  box.style.animation='lockIn .38s cubic-bezier(.18,.9,.32,1.3) forwards';
-
-  // Phase 2 : secousses (après lockIn)
-  setTimeout(()=>{
-    // lockIn terminé — on fige à scale(1) opacity(1) via style, puis on lance lockShake
-    box.style.opacity=''; box.style.transform='';
-    box.style.animation='lockShake .44s ease-in-out 3';
-  }, 420);
-
-  // Phase 3 : déverrouillage et explosion
-  setTimeout(()=>{
+  function explode(){
     emoji.textContent='🔓';
-    box.style.animation='lockPop .7s cubic-bezier(.18,.9,.32,1.4) forwards';
     bursts.forEach((b,i)=>setTimeout(()=>b.classList.add('go'),i*150));
     glow.classList.add('go');
     for(let i=0;i<18;i++){
@@ -962,10 +991,40 @@ function playUnlock(nextN, done){
       box.appendChild(s);
     }
     confetti(); beep('win');
-  }, 1860); // 420 + 3×440(=1320) + 120ms de marge
+  }
+  function finish(){ setTimeout(()=>st.classList.add('fade'),900); setTimeout(()=>{ st.remove(); done&&done(); },1300); }
 
-  setTimeout(()=>st.classList.add('fade'), 2900);
-  setTimeout(()=>{ st.remove(); done&&done(); }, 3300);
+  // Repli si la Web Animations API n'est pas disponible (ou mouvement réduit)
+  if(reduce || typeof box.animate!=='function'){
+    setTimeout(()=>{ explode(); }, 450);
+    finish();
+    return;
+  }
+
+  const back='cubic-bezier(.18,.9,.32,1.3)';
+  // Phase 1 : le cadenas FERMÉ apparaît
+  box.animate(
+    [{transform:'scale(.3)',opacity:0},{transform:'scale(1)',opacity:1}],
+    {duration:380,easing:back,fill:'both'}
+  ).finished.then(()=>
+    // Phase 2 : il tremble (3 secousses)
+    box.animate([
+      {transform:'rotate(0deg) translateX(0)'},
+      {transform:'rotate(-12deg) translateX(-8px)'},
+      {transform:'rotate(10deg) translateX(8px)'},
+      {transform:'rotate(-8deg) translateX(-5px)'},
+      {transform:'rotate(7deg) translateX(5px)'},
+      {transform:'rotate(0deg) translateX(0)'}
+    ],{duration:1100,easing:'ease-in-out'}).finished
+  ).then(()=>{
+    // Phase 3 : il s'OUVRE avec l'explosion
+    explode();
+    return box.animate([
+      {transform:'scale(1)'},
+      {transform:'scale(1.45) rotate(-8deg)',offset:.4},
+      {transform:'scale(1.12) rotate(0deg)'}
+    ],{duration:700,easing:back,fill:'forwards'}).finished;
+  }).then(finish).catch(finish);
 }
 
 /* ---- recommencer le niveau ---- */
