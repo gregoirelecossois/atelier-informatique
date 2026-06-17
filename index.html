@@ -113,13 +113,23 @@
         </span>
       </a>
 
-      <div class="card soon" aria-disabled="true">
+      <a class="card active" href="le-clavier.html">
         <span class="num">02</span>
         <span class="emoji">⌨️</span>
         <h2>Le clavier</h2>
-        <p>Trouve les touches et écris de plus en plus vite.</p>
-        <span class="badge">Bientôt disponible</span>
-      </div>
+        <p>Trouve les touches et écris de plus en plus vite : parachute de lettres et poursuite dactylo.</p>
+        <div class="levels" id="kbLevels">
+          <span class="lvl-chip" data-n="1"><span class="ic">•</span>Niv. 1</span>
+          <span class="lvl-chip" data-n="2"><span class="ic">•</span>Niv. 2</span>
+          <span class="lvl-chip" data-n="3"><span class="ic">•</span>Niv. 3</span>
+          <span class="lvl-chip" data-n="4"><span class="ic">•</span>Niv. 4</span>
+          <span class="lvl-chip" data-n="5"><span class="ic">•</span>Niv. 5</span>
+          <span class="lvl-chip" data-n="6"><span class="ic">•</span>Niv. 6</span>
+        </div>
+        <span class="go">Commencer
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
 
       <div class="card soon" aria-disabled="true">
         <span class="num">03</span>
@@ -149,18 +159,24 @@
     <footer>Atelier informatique · clique sur un jeu pour démarrer</footer>
   </div>
 <script>
+  // Reflète l'avancement de chaque jeu (lu depuis localStorage)
   (function(){
     function read(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
-    let unlocked=parseInt(read('tt_unlocked')||'1',10); if(isNaN(unlocked)||unlocked<1) unlocked=1;
-    let cur=parseInt(read('tt_curlevel')||'1',10); if(isNaN(cur)||cur<1) cur=1;
-    document.querySelectorAll('#ttLevels .lvl-chip').forEach(chip=>{
-      const n=+chip.getAttribute('data-n');
-      const ic=chip.querySelector('.ic');
-      if(n>unlocked){ chip.classList.add('locked'); ic.textContent='🔒'; }
-      else if(n<cur){ chip.classList.add('done'); ic.textContent='✓'; }
-      else if(n===cur){ chip.classList.add('current'); ic.textContent='▶'; }
-      else { ic.textContent='•'; }
-    });
+    function paint(sel, unlockedKey, curKey){
+      let unlocked=parseInt(read(unlockedKey)||'1',10); if(isNaN(unlocked)||unlocked<1) unlocked=1;
+      let cur=parseInt(read(curKey)||'1',10); if(isNaN(cur)||cur<1) cur=1;
+      document.querySelectorAll(sel+' .lvl-chip').forEach(chip=>{
+        const n=+chip.getAttribute('data-n');
+        const ic=chip.querySelector('.ic');
+        chip.classList.remove('locked','done','current');
+        if(n>unlocked){ chip.classList.add('locked'); ic.textContent='🔒'; }
+        else if(n<cur){ chip.classList.add('done'); ic.textContent='✓'; }
+        else if(n===cur){ chip.classList.add('current'); ic.textContent='▶'; }
+        else { ic.textContent='•'; }
+      });
+    }
+    paint('#ttLevels','tt_unlocked','tt_curlevel');
+    paint('#kbLevels','kb_unlocked','kb_curlevel');
   })();
 </script>
 </body>

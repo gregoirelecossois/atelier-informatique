@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le clavier — Atelier informatique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#22303f; --muted:#5a6b7b;
+    --blue:#2563eb; --blue-d:#1d4ed8;
+    --amber:#f59e0b; --amber-d:#b45309;
+    --green:#16a34a; --green-d:#15803d;
+    --red:#ef4444; --red-d:#b91c1c;
+    --paper:#ffffff; --line:#d7e0ea; --line-2:#e7eef6;
+    --shell:#e9eff7; --canvas:#dde6f1; --sky:#eaf3ff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Nunito",system-ui,sans-serif;color:var(--ink);
+    background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
+  }
+  button{font-family:inherit;cursor:pointer;}
+  .display{font-family:"Fredoka",sans-serif;}
+  kbd{
+    display:inline-flex;align-items:center;justify-content:center;min-width:24px;
+    font-family:"Fredoka",sans-serif;font-weight:600;font-size:.86em;line-height:1;
+    padding:4px 8px;border-radius:7px;background:#fff;border:2px solid #c7d4e6;
+    border-bottom-width:3px;color:var(--ink);box-shadow:0 1px 0 #e7eef6;margin:0 1px;white-space:nowrap;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{background:#fff;border-bottom:2px solid var(--line);
+    display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap;}
+  .back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--blue-d);
+    font-weight:800;font-size:.98rem;padding:8px 12px;border-radius:10px;}
+  .back:hover{background:#eef4ff;}
+  .topbar h1{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.15rem;margin:0;flex:1;}
+  .topbar h1 .dot{color:var(--blue);}
+  .step-count{font-weight:800;color:var(--muted);font-size:.95rem;}
+  .reset-btn{border:2px solid var(--line);background:#fff;color:var(--muted);font-weight:700;
+    border-radius:10px;padding:7px 11px;font-size:.85rem;}
+  .reset-btn:hover{border-color:var(--blue);color:var(--blue-d);}
+  .reset-btn.danger:hover{border-color:var(--red);color:var(--red-d);}
+
+  /* ---------- Progress ---------- */
+  .progress-wrap{background:#fff;padding:8px 18px 14px;border-bottom:2px solid var(--line);}
+  .track{display:flex;gap:6px;align-items:center;max-width:1000px;margin:0 auto;}
+  .seg{position:relative;flex:1;height:14px;border-radius:8px;background:var(--line-2);}
+  .seg.done{background:var(--green);}
+  .seg.current{background:var(--blue);box-shadow:0 0 0 3px #bcd2ff;}
+  .seg.milestone{height:20px;display:flex;align-items:center;justify-content:center;font-size:1rem;background:#fdebc4;}
+  .seg.milestone.done{background:#facc15;}
+  .seg.milestone.current{background:var(--amber);box-shadow:0 0 0 3px #fde2a8;}
+  .seg.clickable{cursor:pointer;transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;}
+  .seg.clickable:hover{filter:brightness(1.07);transform:translateY(-2px);}
+  .seg.clickable.done:hover{box-shadow:0 0 0 3px #b9eccd;}
+
+  /* ---------- Mission banner ---------- */
+  .banner{max-width:1000px;margin:12px auto 0;width:calc(100% - 36px);
+    background:#fff;border:2px solid var(--line);border-left:7px solid var(--blue);
+    border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .banner.test{border-left-color:var(--amber);}
+  .banner.review{border-left-color:var(--green);}
+  .banner .b-emoji{font-size:1.8rem;line-height:1;}
+  .banner .b-txt{flex:1;min-width:200px;}
+  .banner .b-title{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.08rem;}
+  .banner .b-sub{color:#3a4a59;font-weight:700;font-size:1rem;margin-top:4px;line-height:1.45;}
+  .banner .b-goal-label{font-weight:800;color:var(--blue-d);margin-right:3px;}
+  .banner.test .b-goal-label{color:var(--amber-d);}
+  .banner .b-btn{border:2px solid var(--line);background:#f5f9ff;color:var(--blue-d);font-weight:800;
+    border-radius:10px;padding:8px 13px;font-size:.9rem;white-space:nowrap;}
+  .banner .b-btn:hover{border-color:var(--blue);}
+  .banner .b-btn.ghost{background:#fff;color:var(--muted);}
+
+  /* ---------- Stage (game area) ---------- */
+  .stage-wrap{max-width:1000px;margin:12px auto;width:calc(100% - 36px);
+    background:#fff;border:2px solid var(--line);border-radius:16px;overflow:hidden;
+    box-shadow:0 18px 40px -28px rgba(34,48,63,.5);}
+  .hud{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 16px;
+    background:linear-gradient(#fbfcfe,#eef3fa);border-bottom:2px solid var(--line);}
+  .hud .lives{font-size:1.15rem;letter-spacing:2px;}
+  .hud .lives .lost{filter:grayscale(1);opacity:.35;}
+  .hud .meter{flex:1;min-width:140px;height:14px;background:#e2e8f0;border-radius:8px;overflow:hidden;}
+  .hud .meter > i{display:block;height:100%;width:0;background:var(--green);border-radius:8px;transition:width .2s ease;}
+  .hud .count{font-weight:800;color:var(--muted);font-size:.95rem;white-space:nowrap;}
+  .tip-pill{display:inline-flex;align-items:center;gap:8px;background:#fff6e6;border:1.5px solid #f6d68a;
+    color:#7a5300;border-radius:999px;padding:5px 12px;font-weight:700;font-size:.9rem;}
+
+  /* parachute field */
+  .field{position:relative;height:clamp(360px,52vh,540px);overflow:hidden;
+    background:linear-gradient(#eaf3ff,#dbeafe 78%,#cfe6d6 78%,#bfe0c7);}
+  .field.shake{animation:fieldShake .25s;}
+  @keyframes fieldShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+  .ground{position:absolute;left:0;right:0;bottom:0;height:22%;
+    background:repeating-linear-gradient(90deg,#bfe0c7 0 22px,#b6dabd 22px 44px);
+    border-top:3px dashed #7bbf8c;}
+  .drop{position:absolute;top:0;display:flex;flex-direction:column;align-items:center;
+    will-change:transform;}
+  .drop .para{font-size:1.5rem;line-height:1;filter:drop-shadow(0 3px 2px rgba(0,0,0,.15));}
+  .drop .cap{margin-top:-6px;min-width:46px;height:46px;display:flex;align-items:center;justify-content:center;
+    font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:var(--ink);
+    background:#fff;border:3px solid var(--blue);border-radius:12px;box-shadow:0 4px 0 #c7d4e6;}
+  .drop.sym .cap{border-color:var(--amber);color:var(--amber-d);}
+  .drop.pop .cap{animation:dropPop .25s ease forwards;}
+  @keyframes dropPop{to{transform:scale(1.5);opacity:0;}}
+  .drop.miss .cap{border-color:var(--red);color:var(--red-d);animation:dropMiss .3s ease forwards;}
+  @keyframes dropMiss{to{transform:translateY(14px) scale(.6);opacity:0;}}
+
+  /* dactylo text */
+  .type-area{padding:26px 26px 30px;background:#fbfdff;}
+  .type-text{font-family:"Fredoka",sans-serif;font-weight:500;font-size:clamp(1.3rem,3.2vw,1.9rem);
+    line-height:1.85;letter-spacing:.5px;color:#c2ccd8;max-width:780px;margin:0 auto;}
+  .type-text .tc{position:relative;border-radius:4px;padding:1px 0;transition:color .08s,background .08s;}
+  .type-text .tc.done{color:var(--green-d);}
+  .type-text .tc.cur{color:var(--ink);background:#dbeafe;box-shadow:0 0 0 2px var(--blue);}
+  .type-text .tc.cur.sp{background:#bcd4ff;}
+  .type-text .tc.bad{animation:tcBad .3s;}
+  @keyframes tcBad{0%,100%{background:transparent;}40%{background:#ffd0d0;}}
+  .type-text .tc.scorch{background:#ffe1cc;color:#9a3412;}
+  .type-text .tc.lavahead{background:#fb7185;color:#fff;box-shadow:0 0 12px 2px rgba(244,63,94,.6);}
+  .lava-row{max-width:780px;margin:16px auto 0;height:16px;border-radius:9px;background:#e2e8f0;position:relative;overflow:hidden;}
+  .lava-row > .me{position:absolute;top:0;bottom:0;left:0;background:var(--green);border-radius:9px;transition:width .12s linear;}
+  .lava-row > .fire{position:absolute;top:0;bottom:0;left:0;background:repeating-linear-gradient(90deg,#f97316,#ef4444 10px);border-radius:9px;opacity:.85;}
+  .type-stats{max-width:780px;margin:14px auto 0;display:flex;gap:18px;color:var(--muted);font-weight:800;font-size:.95rem;}
+
+  /* ---------- Action bar ---------- */
+  .actions{max-width:1000px;margin:10px auto 22px;width:calc(100% - 36px);display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap;}
+  .btn{border:none;border-radius:13px;padding:13px 20px;font-weight:800;font-size:1.02rem;display:inline-flex;align-items:center;gap:9px;}
+  .btn:active{transform:translateY(1px);}
+  .btn-hint{background:#fff;color:var(--amber-d);border:2px solid var(--amber);}
+  .btn-hint:hover{background:#fff8ec;}
+  .btn-restart{background:#fff;color:var(--muted);border:2px solid var(--line);}
+  .btn-restart:hover{border-color:var(--blue);color:var(--blue-d);}
+
+  /* ---------- Modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(20,30,42,.55);backdrop-filter:blur(2px);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:18px;}
+  .overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:22px;max-width:560px;width:100%;padding:22px 26px 20px;
+    box-shadow:0 30px 70px -30px rgba(0,0,0,.6);animation:pop .22s ease;max-height:92vh;overflow:auto;}
+  @keyframes pop{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .modal .m-emoji{font-size:2.5rem;line-height:1;display:block;margin-bottom:4px;}
+  .modal h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.45rem;margin:0 0 9px;}
+  .modal p{font-size:1.03rem;line-height:1.55;margin:0 0 12px;color:var(--ink);}
+  .modal .kicker{font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:.78rem;color:var(--blue-d);}
+  .modal.test-modal .kicker{color:var(--amber-d);}
+  .howto{background:#f4f8ff;border:2px solid #dbe7ff;border-radius:14px;padding:13px 15px;margin:0 0 14px;}
+  .howto .h-head{font-weight:800;margin:0 0 6px;color:var(--blue-d);}
+  .howto p{margin:0;font-size:1rem;line-height:1.6;}
+  .howto.test{background:#fffaf0;border-color:#fbe2b0;}
+  .howto.test .h-head{color:var(--amber-d);}
+  .legend{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:1fr;gap:7px;}
+  .legend li{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:10px;padding:7px 11px;font-size:.97rem;}
+  .legend .lg-ch{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.25rem;min-width:30px;text-align:center;color:var(--amber-d);}
+  .modal .m-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px;
+    position:sticky;bottom:0;background:#fff;padding-top:10px;border-top:1px solid var(--line-2);}
+  .m-btn{border:none;border-radius:13px;padding:13px 22px;font-weight:800;font-size:1.05rem;}
+  .m-btn.primary{background:var(--blue);color:#fff;}
+  .m-btn.primary:hover{background:var(--blue-d);}
+  .m-btn.primary.test{background:var(--amber);}
+  .m-btn.primary.test:hover{background:var(--amber-d);}
+  .m-btn.primary.green{background:var(--green);}
+  .m-btn.primary.green:hover{background:var(--green-d);}
+  .m-btn.ghost{background:#eef2f7;color:var(--muted);}
+  .m-btn.ghost:hover{background:#e2e8f0;}
+  .modal.good{border-top:8px solid var(--green);}
+  .modal.bad{border-top:8px solid var(--red);}
+  .modal.warn{border-top:8px solid var(--amber);}
+
+  .newtools{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .newtools li{display:flex;align-items:center;gap:9px;background:#f4f8ff;border:2px solid #dbe7ff;
+    border-radius:12px;padding:9px 11px;font-weight:700;font-size:.95rem;color:var(--ink);}
+  .ni-glyph{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:30px;
+    background:#fff;border:2px solid #c7d8f2;border-radius:8px;font-weight:800;color:var(--blue-d);flex:0 0 auto;font-size:.9rem;}
+
+  /* level selector */
+  .lvl-grid{display:grid;gap:10px;margin:6px 0 18px;}
+  .lvl-card{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:14px;align-items:center;
+    text-align:left;border:2px solid var(--line);background:#fbfdff;border-radius:14px;padding:13px 16px;color:var(--ink);}
+  .lvl-card .lc-badge{grid-row:1 / span 2;font-size:1.5rem;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+    background:#eef4ff;border-radius:12px;}
+  .lvl-card .lc-n{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.02rem;}
+  .lvl-card .lc-t{color:var(--muted);font-weight:700;font-size:.88rem;}
+  .lvl-card:not(.locked):hover{border-color:var(--blue);background:#f1f6ff;transform:translateY(-2px);}
+  .lvl-card.current{border-color:var(--green);background:#f1fbf4;}
+  .lvl-card.current .lc-badge{background:#d8f5e3;}
+  .lvl-card.locked{opacity:.6;cursor:not-allowed;filter:grayscale(.3);}
+
+  /* ---------- Mini clavier (pédagogie) ---------- */
+  .kbd-board{margin:6px auto 14px;max-width:480px;background:#eef3fa;border:2px solid var(--line);
+    border-radius:12px;padding:8px;user-select:none;}
+  .kbd-row{display:flex;gap:4px;margin:4px 0;justify-content:center;}
+  .key{flex:1;min-width:0;height:34px;border-radius:7px;background:#fff;border:2px solid #d4ddea;border-bottom-width:3px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:#46586b;position:relative;}
+  .key .sub{font-size:.6rem;color:#9aa8b8;line-height:1;}
+  .key.wide{flex:2.4;font-size:.72rem;}
+  .key.space{flex:6;}
+  .key.hl{background:#dbeafe;border-color:var(--blue);color:var(--blue-d);box-shadow:0 0 0 2px #bcd2ff;}
+  .key.modhl{background:#fef3c7;border-color:var(--amber);color:var(--amber-d);box-shadow:0 0 0 2px #fde2a8;}
+
+  /* ---------- toast / confetti ---------- */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;font-weight:700;padding:12px 18px;border-radius:12px;
+    opacity:0;transition:.25s;z-index:120;max-width:90%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:140;overflow:hidden;}
+  .confetti i{position:absolute;top:-10px;width:10px;height:14px;opacity:.9;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg);}}
+
+  /* ---------- Animation cadenas (déblocage) ---------- */
+  .lock-stage{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;
+    background:rgba(14,22,34,.82);backdrop-filter:blur(5px);transition:opacity .4s;}
+  .lock-stage.fade{opacity:0;}
+  .lock-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;
+    animation:lockIn .38s cubic-bezier(.18,.9,.32,1.3) forwards;}
+  .lock-emoji{position:relative;z-index:2;font-size:6.5rem;line-height:1;
+    filter:drop-shadow(0 0 18px rgba(255,220,60,.6)) drop-shadow(0 14px 24px rgba(0,0,0,.5));}
+  .lock-glow{position:absolute;left:50%;top:44%;width:220px;height:220px;margin:-110px 0 0 -110px;
+    border-radius:50%;background:radial-gradient(circle,rgba(255,230,80,.85) 0%,rgba(255,140,30,.5) 40%,transparent 70%);
+    opacity:0;pointer-events:none;z-index:1;transform:scale(0);}
+  .lock-glow.go{animation:lockGlow .95s ease-out forwards;}
+  @keyframes lockGlow{0%{opacity:0;transform:scale(.2);}25%{opacity:1;}100%{opacity:0;transform:scale(3.5);}}
+  .lock-burst{position:absolute;left:50%;top:44%;width:90px;height:90px;margin:-45px 0 0 -45px;
+    border-radius:50%;border:6px solid rgba(255,215,80,.95);opacity:0;pointer-events:none;z-index:3;}
+  .lock-burst.lb2{width:130px;height:130px;margin:-65px 0 0 -65px;border-color:rgba(255,140,40,.8);border-width:5px;}
+  .lock-burst.go{animation:lockBurst .95s ease-out forwards;}
+  .lock-burst.lb2.go{animation:lockBurst 1s .18s ease-out forwards;}
+  @keyframes lockBurst{0%{opacity:.95;transform:scale(.15);}100%{opacity:0;transform:scale(7.5);}}
+  .lock-cap{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
+    background:var(--amber);padding:6px 20px;border-radius:999px;box-shadow:0 8px 20px -8px rgba(0,0,0,.6);}
+  @keyframes lockIn{from{transform:scale(.3);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .lock-box.shake{animation:lockShake .44s ease-in-out 3;}
+  @keyframes lockShake{0%,100%{transform:rotate(0) translateX(0);}22%{transform:rotate(-12deg) translateX(-8px);}
+    44%{transform:rotate(10deg) translateX(8px);}66%{transform:rotate(-8deg) translateX(-5px);}88%{transform:rotate(7deg) translateX(5px);}}
+  .lock-box.pop{animation:lockPop .7s cubic-bezier(.18,.9,.32,1.4) forwards;}
+  @keyframes lockPop{0%{transform:scale(1);}40%{transform:scale(1.45) rotate(-8deg);}100%{transform:scale(1.12) rotate(0);}}
+  .lock-star{position:absolute;left:calc(50% - 5px);top:calc(50% - 5px);width:10px;height:10px;
+    pointer-events:none;z-index:4;animation:starFly var(--dur,.7s) var(--delay,0ms) ease-out forwards;}
+  @keyframes starFly{0%{opacity:1;transform:rotate(var(--angle,0deg)) translateX(6px) scale(1.4);}
+    70%{opacity:.85;}100%{opacity:0;transform:rotate(var(--angle,0deg)) translateX(140px) scale(.1);}}
+
+  @media (max-width:560px){
+    .newtools{grid-template-columns:1fr;}
+    .btn{flex:1;justify-content:center;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .confetti i{animation:none;display:none;}
+    .modal{animation:none;}
+    .lock-box,.lock-box.shake,.lock-box.pop{animation:none;}
+    .lock-burst,.lock-glow,.lock-star{animation:none;}
+    .drop.pop .cap,.drop.miss .cap,.field.shake{animation:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="back" href="index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      Accueil
+    </a>
+    <h1 class="display" id="lvlTitle">Le clavier <span class="dot">·</span> le parachute</h1>
+    <span class="step-count" id="stepCount">Niveau 1 · Manche 1 / 4</span>
+    <button class="reset-btn" id="soundBtn" title="Activer / couper le son">🔊 Son</button>
+    <button class="reset-btn" id="levelBtn" title="Voir les niveaux">🗺️ Niveau 1/6</button>
+    <button class="reset-btn danger" id="resetBtn" title="Recommencer ce niveau">↺ Recommencer</button>
+  </div>
+
+  <div class="progress-wrap"><div class="track" id="track"></div></div>
+
+  <div class="banner" id="banner">
+    <span class="b-emoji" id="bEmoji">🪂</span>
+    <div class="b-txt">
+      <div class="b-title" id="bTitle">Manche</div>
+      <div class="b-sub" id="bSub"></div>
+    </div>
+    <button class="b-btn" id="seeMission">📋 Revoir la consigne</button>
+  </div>
+
+  <div class="stage-wrap"><div id="stage"></div></div>
+
+  <div class="actions">
+    <button class="btn btn-hint" id="hintBtn">💡 Astuce</button>
+    <button class="btn btn-restart" id="restartBtn">↺ Recommencer la manche</button>
+  </div>
+
+  <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   1. CLAVIER AZERTY — pédagogie (astuces + mini-clavier)
+   ========================================================= */
+function kbd(s){ return '<kbd>'+s+'</kbd>'; }
+const KCAP={'1':'&','2':'é','3':'"','4':"'",'5':'(','6':'-','7':'è','8':'_','9':'ç','0':'à'};
+const SYMTIP={
+  '.':'Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur la touche '+kbd(';')+' (en bas, à droite des lettres).',
+  ',':'Appuie simplement sur la touche '+kbd(',')+' (en bas, à droite des lettres).',
+  '?':'Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur la touche '+kbd(',')+'.',
+  '!':'Appuie sur la touche '+kbd('!')+' (tout en bas à droite des lettres).',
+  ';':'Appuie sur la touche '+kbd(';')+'.',
+  ':':'Appuie sur la touche '+kbd(':')+'.',
+  "'":'Appuie sur la touche '+kbd("'")+' (la touche du 4).',
+  '@':'Garde '+kbd('AltGr')+' enfoncé (à droite de la barre espace) et appuie sur '+kbd('à')+' (la touche du 0).',
+  '#':'Garde '+kbd('AltGr')+' enfoncé et appuie sur '+kbd('"')+' (la touche du 3).',
+  '€':'Garde '+kbd('AltGr')+' enfoncé et appuie sur '+kbd('E')+'.',
+  '+':'Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur '+kbd('=')+' (tout en haut à droite).',
+  '-':'Appuie sur la touche '+kbd('-')+' (la touche du 6).'
+};
+function tipFor(ch){
+  if(/^[a-z]$/.test(ch)) return 'Appuie simplement sur la touche '+kbd(ch.toUpperCase())+'.';
+  if(/^[A-Z]$/.test(ch)) return 'Garde '+kbd('Maj ⇧')+' enfoncé avec un doigt, puis appuie sur '+kbd(ch)+' avec un autre doigt.';
+  if(/^[0-9]$/.test(ch)) return 'Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur la touche '+kbd(KCAP[ch])+' (rangée du haut). Tu peux aussi utiliser le '+kbd('pavé numérique')+' à droite du clavier.';
+  return SYMTIP[ch] || ('Appuie sur la touche '+kbd(ch)+'.');
+}
+function niceChar(ch){ return ch===' ' ? 'espace' : ch; }
+
+// Disposition AZERTY pour le mini-clavier : [étiquette principale, chiffre secondaire?]
+const KB_ROWS=[
+  [['&','1'],['é','2'],['"','3'],["'",'4'],['(','5'],['-','6'],['è','7'],['_','8'],['ç','9'],['à','0'],[')'],['=']],
+  [['a'],['z'],['e'],['r'],['t'],['y'],['u'],['i'],['o'],['p'],['^'],['$']],
+  [['q'],['s'],['d'],['f'],['g'],['h'],['j'],['k'],['l'],['m'],['ù'],['*']],
+  [['<'],['w'],['x'],['c'],['v'],['b'],['n'],[','],[';'],[':'],['!']]
+];
+function buildKeyboard(hl){
+  hl=hl||{}; const keys=hl.keys||new Set();
+  let html='<div class="kbd-board">';
+  KB_ROWS.forEach(row=>{
+    html+='<div class="kbd-row">';
+    row.forEach(k=>{
+      const main=k[0], sub=k[1];
+      let on=false;
+      if(hl.letters && /^[a-z]$/.test(main)) on=true;
+      if(hl.digits && sub && /^[0-9]$/.test(sub)) on=true;
+      if(keys.has(main) || (sub && keys.has(sub))) on=true;
+      html+='<div class="key'+(on?' hl':'')+'">'+main.toUpperCase()+(sub?'<span class="sub">'+sub+'</span>':'')+'</div>';
+    });
+    html+='</div>';
+  });
+  // rangée du bas : Maj — espace — AltGr — Maj
+  const maj=hl.maj?' modhl':'', alt=hl.altgr?' modhl':'';
+  html+='<div class="kbd-row">'
+    +'<div class="key wide'+maj+'">Maj ⇧</div>'
+    +'<div class="key space">espace</div>'
+    +'<div class="key wide'+alt+'">AltGr</div>'
+    +'<div class="key wide'+maj+'">Maj ⇧</div>'
+    +'</div>';
+  html+='</div>';
+  return html;
+}
+
+/* =========================================================
+   2. NIVEAUX
+   ========================================================= */
+const LEVELS=[
+  { n:1, title:'Le parachute — les lettres', subtitle:'le parachute · les lettres', game:'parachute',
+    intro:{ emoji:'🪂',
+      lead:'Des lettres descendent en parachute ! Appuie sur la bonne touche pour les faire éclater <b>avant qu\'elles touchent l\'herbe</b>.',
+      teach:'Pose tes mains sur le clavier. Quand une lettre descend, appuie simplement sur <b>la même lettre</b>. Pas besoin d\'appuyer fort : un petit tap suffit !',
+      kb:{letters:true},
+      tools:[{g:'⌨️',n:'Trouver les lettres'},{g:'🪂',n:'Taper avant le sol'}] },
+    rounds:[
+      {kind:'mission',label:'Manche 1',emoji:'🟢',title:'Les touches du milieu',
+       desc:'Fais éclater les lettres '+kbd('f')+' '+kbd('j')+' '+kbd('d')+' '+kbd('k')+' '+kbd('s')+' '+kbd('l')+'. Ce sont les touches du milieu, là où on pose les doigts.',
+       pool:['f','j','d','k','s','l'],target:10,lives:5,speed:62,spawnMs:1500},
+      {kind:'mission',label:'Manche 2',emoji:'✋',title:'La main gauche',
+       desc:'Maintenant les lettres '+kbd('a')+' '+kbd('z')+' '+kbd('e')+' '+kbd('r')+' '+kbd('t')+', tapées avec la main gauche.',
+       pool:['a','z','e','r','t'],target:12,lives:5,speed:72,spawnMs:1380},
+      {kind:'mission',label:'Manche 3',emoji:'🤚',title:'La main droite',
+       desc:'Les lettres '+kbd('u')+' '+kbd('i')+' '+kbd('o')+' '+kbd('p')+' '+kbd('m')+', tapées avec la main droite.',
+       pool:['u','i','o','p','m'],target:12,lives:4,speed:80,spawnMs:1300},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Toutes les lettres !',
+       desc:'Le grand défi : <b>toutes les lettres</b> de l\'alphabet tombent, un peu plus vite. Montre que tu les connais !',
+       pool:'abcdefghijklmnopqrstuvwxyz'.split(''),target:16,lives:4,speed:96,spawnMs:1050}
+    ]},
+
+  { n:2, title:'Le parachute — les majuscules', subtitle:'le parachute · les majuscules', game:'parachute',
+    intro:{ emoji:'⬆️',
+      lead:'Cette fois, ce sont des <b>GRANDES lettres</b> (les majuscules) qui descendent !',
+      teach:'Pour écrire une majuscule : garde la touche '+kbd('Maj ⇧')+' enfoncée avec un doigt, et appuie sur la lettre avec un autre doigt. Puis relâche '+kbd('Maj ⇧')+'.',
+      kb:{maj:true,letters:true},
+      tools:[{g:'⇧',n:'La touche Maj'},{g:'AB',n:'Les majuscules'}] },
+    rounds:[
+      {kind:'mission',label:'Manche 1',emoji:'🔠',title:'Premières majuscules',
+       desc:'Fais éclater '+kbd('F')+' '+kbd('J')+' '+kbd('D')+' '+kbd('K')+'. Souviens-toi : '+kbd('Maj ⇧')+' + la lettre.',
+       pool:['F','J','D','K'],target:8,lives:6,speed:54,spawnMs:1750},
+      {kind:'mission',label:'Manche 2',emoji:'🔡',title:'Encore des majuscules',
+       desc:'Les majuscules '+kbd('A')+' '+kbd('Z')+' '+kbd('E')+' '+kbd('R')+' '+kbd('T')+' avec '+kbd('Maj ⇧')+'.',
+       pool:['A','Z','E','R','T'],target:10,lives:5,speed:70,spawnMs:1500},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Pluie de majuscules',
+       desc:'Plein de majuscules tombent ! Garde un doigt prêt sur '+kbd('Maj ⇧')+'.',
+       pool:'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),target:14,lives:4,speed:90,spawnMs:1100}
+    ]},
+
+  { n:3, title:'Le parachute — les chiffres', subtitle:'le parachute · les chiffres', game:'parachute',
+    intro:{ emoji:'🔢',
+      lead:'Des <b>chiffres</b> tombent du ciel !',
+      teach:'Sur la rangée du haut, garde '+kbd('Maj ⇧')+' enfoncé et appuie sur la touche du chiffre. Si ton clavier a un <b>pavé numérique</b> à droite, tu peux aussi taper les chiffres directement dessus.',
+      kb:{maj:true,digits:true},
+      tools:[{g:'123',n:'La rangée des chiffres'},{g:'🔢',n:'Le pavé numérique'}] },
+    rounds:[
+      {kind:'mission',label:'Manche 1',emoji:'1️⃣',title:'1 · 2 · 3',desc:'Fais éclater '+kbd('1')+' '+kbd('2')+' '+kbd('3')+'.',pool:['1','2','3'],target:9,lives:6,speed:60,spawnMs:1650},
+      {kind:'mission',label:'Manche 2',emoji:'5️⃣',title:'4 · 5 · 6 · 7',desc:'Continue avec '+kbd('4')+' '+kbd('5')+' '+kbd('6')+' '+kbd('7')+'.',pool:['4','5','6','7'],target:10,lives:5,speed:70,spawnMs:1500},
+      {kind:'mission',label:'Manche 3',emoji:'9️⃣',title:'8 · 9 · 0',desc:'Et '+kbd('8')+' '+kbd('9')+' '+kbd('0')+'.',pool:['8','9','0'],target:10,lives:4,speed:80,spawnMs:1400},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tous les chiffres',desc:'Tous les chiffres de '+kbd('0')+' à '+kbd('9')+' tombent !',pool:'0123456789'.split(''),target:14,lives:4,speed:95,spawnMs:1050}
+    ]},
+
+  { n:4, title:'Le parachute — les symboles', subtitle:'le parachute · les symboles', game:'parachute',
+    intro:{ emoji:'✨',
+      lead:'Les symboles sont des touches « secrètes » : il faut souvent appuyer sur <b>deux touches en même temps</b>.',
+      teach:'Deux touches magiques :<br>• '+kbd('Maj ⇧')+' pour la ponctuation du haut (comme '+kbd('?')+').<br>• '+kbd('AltGr')+' (à droite de la barre espace) pour des symboles comme '+kbd('@')+' ou '+kbd('#')+'.<br>Regarde bien l\'astuce de chaque symbole sur l\'écran de jeu !',
+      legend:['.',',','?','!','@','#','€','+'],
+      tools:[{g:'⇧',n:'Maj + touche'},{g:'AltGr',n:'AltGr + touche'}] },
+    rounds:[
+      {kind:'mission',label:'Manche 1',emoji:'❓',title:'La ponctuation',desc:'Les signes '+kbd('.')+' '+kbd(',')+' '+kbd('?')+' '+kbd('!')+'. Les astuces sont affichées pendant le jeu.',pool:['.',',','?','!'],target:8,lives:7,speed:52,spawnMs:1950,showTips:true},
+      {kind:'mission',label:'Manche 2',emoji:'＠',title:'Les symboles spéciaux',desc:'Les symboles '+kbd('@')+' '+kbd('#')+' '+kbd('€')+' '+kbd('+')+' avec '+kbd('AltGr')+' ou '+kbd('Maj ⇧')+'.',pool:['@','#','€','+'],target:8,lives:7,speed:52,spawnMs:2050,showTips:true},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tout mélangé',desc:'Ponctuation et symboles spéciaux tombent ensemble. Garde les astuces en tête !',pool:['.',',','?','!','@','#','€','+'],target:12,lives:5,speed:72,spawnMs:1350,showTips:true}
+    ]},
+
+  { n:5, title:'Expédition dactylo', subtitle:'expédition dactylo', game:'dactylo',
+    intro:{ emoji:'⌨️',
+      lead:'Bienvenue en expédition dactylo ! Recopie le texte affiché en gris, <b>lettre par lettre</b>.',
+      teach:'La lettre à taper est <b>encadrée en bleu</b>. Quand tu tapes la bonne touche, elle devient <b>verte</b> et on passe à la suivante. Si tu te trompes, rien n\'avance : réessaie tranquillement. Tu peux utiliser '+kbd('⌫ Effacer')+' pour revenir en arrière. Ici, <b>pas de chrono qui stresse</b> : prends ton temps !',
+      tools:[{g:'⌨️',n:'Taper un vrai texte'},{g:'🎯',n:'La précision'}] },
+    rounds:[
+      {kind:'mission',label:'Texte 1',emoji:'🐱',title:'Une petite phrase',desc:'Recopie cette phrase tout en minuscules.',text:'le petit chat joue dans le jardin avec une balle rouge'},
+      {kind:'mission',label:'Texte 2',emoji:'🌲',title:'Avec des majuscules',desc:'Attention aux majuscules au début des phrases : '+kbd('Maj ⇧')+' + la lettre.',text:'La foret est calme. Les oiseaux chantent dans les grands arbres verts.'},
+      {kind:'mission',label:'Texte 3',emoji:'❓',title:'Avec de la ponctuation',desc:'Recopie en faisant bien la ponctuation et les espaces.',text:'Quel beau voyage ! As-tu vu la mer, les bateaux et les poissons ?'},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand texte',desc:'Un texte plus long pour devenir un vrai pro du clavier.',text:"Chaque matin, Lea allume son ordinateur et ecrit une histoire d'un dragon gentil qui adore les fraises."}
+    ]},
+
+  { n:6, title:'La poursuite dactylo', subtitle:'la poursuite dactylo', game:'dactylo',
+    intro:{ emoji:'🔥',
+      lead:'Le grand défi final ! Tape le texte <b>avant que la vague de lave</b> 🔥 ne te rattrape.',
+      teach:'La <b>barre verte</b> montre où tu en es. La <b>barre de lave rouge</b> avance toute seule derrière toi. Tape vite et bien pour rester devant elle ! Si elle te rattrape, on recommence la manche. Plus le niveau monte, plus la lave est rapide.',
+      tools:[{g:'🔥',n:'Rester devant la lave'},{g:'⚡',n:'La vitesse de frappe'}] },
+    rounds:[
+      {kind:'mission',label:'Poursuite 1',emoji:'🐢',title:'En douceur',desc:'La lave avance lentement. Tape la phrase avant qu\'elle te rattrape.',text:'je tape vite et je reste devant la vague de lave',pursuit:2.0,grace:2600,lead:5},
+      {kind:'mission',label:'Poursuite 2',emoji:'🐇',title:'Ça accélère',desc:'La lave va plus vite ! Reste bien concentré.',text:'La course continue et la lave monte de plus en plus vite.',pursuit:2.8,grace:2200,lead:4},
+      {kind:'jalon',label:'Défi final',emoji:'🏆',title:'La lave en folie',desc:'Dernier défi du parcours : majuscules, ponctuation et lave rapide !',text:'Bravo champion ! Tu tapes 100 mots sans peur de la lave, avec le sourire ?',pursuit:3.4,grace:1900,lead:4}
+    ]}
+];
+
+/* =========================================================
+   3. ÉTAT + STOCKAGE
+   ========================================================= */
+let currentLevel=1, STEPS=[], progressIdx=0, playIdx=0, currentStep=null;
+const stage=document.getElementById('stage');
+const overlay=document.getElementById('overlay');
+const modal=document.getElementById('modal');
+
+const store={
+  get(k){ try{return localStorage.getItem(k);}catch(e){return this._m&&this._m[k];} },
+  set(k,v){ try{localStorage.setItem(k,v);}catch(e){ (this._m=this._m||{})[k]=v; } },
+  _m:{}
+};
+function getUnlocked(){ let u=parseInt(store.get('kb_unlocked')||'1',10); if(isNaN(u)||u<1)u=1; return Math.min(u,LEVELS.length); }
+function getSavedStep(n){ let s=parseInt(store.get('kb_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
+function saveProgress(){ store.set('kb_step_l'+currentLevel, String(progressIdx)); }
+
+let soundOn = (store.get('kb_sound')||'1')==='1';
+
+/* =========================================================
+   4. SON (WebAudio, sans fichier externe)
+   ========================================================= */
+let actx=null;
+function audioCtx(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } } return actx; }
+function beep(kind){
+  if(!soundOn) return; const a=audioCtx(); if(!a) return;
+  const now=a.currentTime;
+  function tone(freq,dur,type,vol,delay){
+    const o=a.createOscillator(),g=a.createGain();
+    o.type=type||'sine'; o.frequency.value=freq;
+    o.connect(g); g.connect(a.destination);
+    const t=now+(delay||0); g.gain.setValueAtTime(vol||.12,t);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.start(t); o.stop(t+dur);
+  }
+  if(kind==='key'){ tone(280+Math.random()*40,.05,'square',.05); tone(1600,.03,'triangle',.04); } // clic machine à écrire
+  else if(kind==='good'){ tone(740,.09,'sine',.12); tone(1180,.09,'sine',.08,.02); }
+  else if(kind==='bad'){ tone(150,.16,'square',.12); }
+  else if(kind==='ding'){ tone(880,.12,'sine',.12); tone(1320,.16,'sine',.1,.08); }
+  else if(kind==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.12,i*.09)); }
+}
+function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
+document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('kb_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); } };
+
+/* =========================================================
+   5. MOTEUR DE JEU — abstraction
+   ========================================================= */
+let activeGame=null;   // {onKey(e), stop()}
+function stopGame(){ if(activeGame){ try{activeGame.stop();}catch(e){} activeGame=null; } }
+
+document.addEventListener('keydown', e=>{
+  if(overlay.classList.contains('open')) return;     // jeu en pause quand une popup est ouverte
+  if(!activeGame) return;
+  activeGame.onKey(e);
+});
+
+/* ---- Parachute ---- */
+const P={};
+function startParachute(step){
+  stopGame();
+  stage.innerHTML=
+    '<div class="hud">'
+    + '<span class="lives" id="hudLives"></span>'
+    + '<span class="count" id="hudCount"></span>'
+    + '<div class="meter"><i id="hudMeter"></i></div>'
+    + (step.showTips? '<span class="tip-pill" id="hudTip">💡</span>' : '')
+    + '</div>'
+    + '<div class="field" id="field"><div class="ground"></div></div>';
+  const field=document.getElementById('field');
+  Object.assign(P,{
+    step, field, items:[], cleared:0, lives:step.lives, target:step.target,
+    speed:step.speed, spawnMs:step.spawnMs, pool:step.pool, running:true,
+    last:0, nextSpawn:0, groundY:0, raf:0, tipChar:null
+  });
+  P.groundY=field.clientHeight - 58;
+  updateHud();
+  if(step.showTips) showTipFor(P.pool[0]);
+  activeGame={ onKey:onKeyP, stop:stopP };
+  P.raf=requestAnimationFrame(loopP);
+}
+function updateHud(){
+  let h=''; for(let i=0;i<P.step.lives;i++) h+= (i<P.lives?'❤️':'<span class="lost">🖤</span>');
+  document.getElementById('hudLives').innerHTML=h;
+  document.getElementById('hudCount').textContent=P.cleared+' / '+P.target+' réussies';
+  document.getElementById('hudMeter').style.width=Math.min(100,P.cleared/P.target*100)+'%';
+}
+function showTipFor(ch){
+  const el=document.getElementById('hudTip'); if(!el) return;
+  P.tipChar=ch; el.innerHTML='💡 '+kbd(niceChar(ch))+' : '+tipFor(ch);
+}
+function spawnP(){
+  if(P.items.length>=5) return;
+  const ch=P.pool[Math.floor(Math.random()*P.pool.length)];
+  const el=document.createElement('div');
+  const isSym=!/^[a-zA-Z0-9]$/.test(ch);
+  el.className='drop'+(isSym?' sym':'');
+  el.innerHTML='<span class="para">🪂</span><span class="cap">'+ch+'</span>';
+  const x=6+Math.random()*84;
+  el.style.left=x+'%';
+  el.style.transform='translate(-50%,0)';
+  P.field.appendChild(el);
+  P.items.push({el,ch,y:0});
+}
+function loopP(ts){
+  if(!P.running) return;
+  if(!P.last) P.last=ts;
+  const dt=Math.min(.05,(ts-P.last)/1000); P.last=ts;
+  if(ts>=P.nextSpawn){ spawnP(); P.nextSpawn=ts+P.spawnMs; }
+  for(const it of P.items.slice()){
+    it.y+=P.speed*dt;
+    it.el.style.transform='translate(-50%,'+it.y+'px)';
+    if(it.y>=P.groundY){ missP(it); }
+  }
+  P.raf=requestAnimationFrame(loopP);
+}
+function removeItem(it){ const i=P.items.indexOf(it); if(i>=0) P.items.splice(i,1); }
+function missP(it){
+  removeItem(it);
+  it.el.classList.add('miss'); const el=it.el; setTimeout(()=>el.remove(),300);
+  P.lives--; beep('bad');
+  P.field.classList.add('shake'); setTimeout(()=>P.field.classList.remove('shake'),250);
+  updateHud();
+  if(P.lives<=0) failP();
+}
+function onKeyP(e){
+  if(e.key.length!==1) return;          // ignore Maj, AltGr, Flèches, etc.
+  e.preventDefault();
+  // cherche la cible correspondante la plus basse (la plus urgente)
+  let best=null;
+  for(const it of P.items){ if(it.ch===e.key){ if(!best||it.y>best.y) best=it; } }
+  if(best){
+    removeItem(best); best.el.classList.add('pop'); const el=best.el; setTimeout(()=>el.remove(),250);
+    P.cleared++; beep('good'); updateHud();
+    if(P.step.showTips){ const next=P.items[0]; if(next) showTipFor(next.ch); }
+    if(P.cleared>=P.target) winP();
+  } else {
+    beep('key');
+    if(P.step.showTips){
+      // aide : si la touche tapée ne correspond à rien, rappelle l'astuce de la lettre la plus basse
+      let low=null; for(const it of P.items){ if(!low||it.y>low.y) low=it; }
+      if(low) showTipFor(low.ch);
+    }
+  }
+}
+function stopP(){ P.running=false; cancelAnimationFrame(P.raf); }
+function winP(){ stopP(); beep('win'); onWin(); }
+function failP(){
+  stopP();
+  const tip = P.step.showTips
+    ? 'Regarde bien l\'astuce de chaque symbole : elle te dit quelles touches presser.'
+    : tipFor(P.pool[0]);
+  onFail('Trop de parachutes ont touché le sol !', 'Astuce : '+tip+' Vise la lettre la plus basse en premier.');
+}
+
+/* ---- Dactylo (avec poursuite optionnelle) ---- */
+const D={};
+function startDactylo(step){
+  stopGame();
+  const pursuit=!!step.pursuit;
+  stage.innerHTML=
+    '<div class="type-area">'
+    + '<div class="type-text" id="typeText"></div>'
+    + (pursuit? '<div class="lava-row"><div class="fire" id="lavaFire"></div><div class="me" id="lavaMe"></div></div>' : '')
+    + '<div class="type-stats"><span id="stProg">0 %</span>'+(pursuit?'<span id="stChase">🔥 reste devant la lave !</span>':'<span id="stErr">0 erreur</span>')+'</div>'
+    + '</div>';
+  Object.assign(D,{
+    step, text:step.text, i:0, errors:0, running:true,
+    pursuit, chaser:-(step.lead||4), startTs:0, lastTs:0, started:false, grace:step.grace||0, raf:0
+  });
+  renderType();
+  activeGame={ onKey:onKeyD, stop:stopD };
+  if(pursuit) D.raf=requestAnimationFrame(loopD);
+}
+function renderType(){
+  const c=document.getElementById('typeText'); let html='';
+  const lavaIdx=D.pursuit?Math.max(0,Math.floor(D.chaser)):-1;
+  for(let k=0;k<D.text.length;k++){
+    const ch=D.text[k]; const sp=ch===' ';
+    let cls='tc'+(sp?' sp':'');
+    if(k<D.i) cls+=' done';
+    else if(k===D.i) cls+=' cur';
+    if(D.pursuit && k<lavaIdx && k>=D.i) cls+=' scorch';
+    if(D.pursuit && k===lavaIdx && k>=D.i) cls+=' lavahead';
+    html+='<span class="'+cls+'" data-k="'+k+'">'+(sp?'&nbsp;':escapeHtml(ch))+'</span>';
+  }
+  c.innerHTML=html;
+  const pct=Math.round(D.i/D.text.length*100);
+  const pe=document.getElementById('stProg'); if(pe) pe.textContent=pct+' %';
+  const ee=document.getElementById('stErr'); if(ee) ee.textContent=D.errors+(D.errors>1?' erreurs':' erreur');
+  if(D.pursuit){
+    const me=document.getElementById('lavaMe'); if(me) me.style.width=(D.i/D.text.length*100)+'%';
+    const fire=document.getElementById('lavaFire'); if(fire) fire.style.width=(Math.max(0,D.chaser)/D.text.length*100)+'%';
+  }
+}
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function onKeyD(e){
+  const ignore=['Shift','Control','Alt','AltGraph','Meta','CapsLock','Dead','Tab','Escape','Enter','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'];
+  if(ignore.includes(e.key)) return;
+  if(e.key==='Backspace'){ e.preventDefault(); if(D.i>0){ D.i--; renderType(); } return; }
+  if(e.key.length!==1) return;
+  e.preventDefault();
+  const expected=D.text[D.i];
+  if(e.key===expected){
+    if(D.pursuit && !D.started){ D.started=true; D.startTs=performance.now(); }
+    D.i++; beep('key'); renderType();
+    if(D.i>=D.text.length) winD();
+  } else {
+    D.errors++; beep('bad');
+    const cur=document.querySelector('#typeText .tc.cur');
+    if(cur){ cur.classList.add('bad'); setTimeout(()=>cur.classList.remove('bad'),300); }
+    renderType();
+  }
+}
+function loopD(ts){
+  if(!D.running) return;
+  if(!D.lastTs) D.lastTs=ts;
+  const dt=(ts-D.lastTs)/1000; D.lastTs=ts;
+  if(!D.started){ D.raf=requestAnimationFrame(loopD); return; }   // la lave attend que tu commences
+  if(D.grace>0){ D.grace-=dt*1000; D.raf=requestAnimationFrame(loopD); renderType(); return; }
+  D.chaser+=D.step.pursuit*dt;
+  renderType();
+  if(D.chaser>=D.i && D.i<D.text.length){ caughtD(); return; }
+  D.raf=requestAnimationFrame(loopD);
+}
+function stopD(){ D.running=false; cancelAnimationFrame(D.raf); }
+function winD(){
+  stopD(); beep('win');
+  if(D.pursuit){ onWin(); return; }
+  const secs=D.startTs?0:0; // pas de chrono affiché en mode expédition
+  onWin();
+}
+function caughtD(){
+  stopD();
+  onFail('La lave t\'a rattrapé ! 🔥', 'Astuce : ne regarde pas tes doigts, regarde l\'écran. Tape la lettre encadrée en bleu sans t\'arrêter pour garder de l\'avance.');
+}
+
+/* =========================================================
+   6. DÉROULÉ (flow)
+   ========================================================= */
+function reviewing(){ return playIdx<progressIdx; }
+function startStep(idx){
+  playIdx=idx; currentStep=STEPS[idx];
+  stopGame(); renderIdle();
+  updateProgress(); updateBanner();
+  openRoundPopup();
+}
+function renderIdle(){
+  stage.innerHTML='<div class="type-area" style="text-align:center;color:var(--muted);font-weight:800;padding:48px 20px;">'
+    + '<div style="font-size:2.4rem;margin-bottom:8px;">'+currentStep.emoji+'</div>'
+    + 'Prépare tes doigts… puis clique sur <b>C\'est parti&nbsp;!</b>'
+    + '</div>';
+}
+function updateProgress(){
+  const track=document.getElementById('track'); track.innerHTML='';
+  STEPS.forEach((st,i)=>{
+    const d=document.createElement('div');
+    const mile=st.kind==='jalon';
+    d.className='seg'+(mile?' milestone':'');
+    if(i<progressIdx) d.classList.add('done');
+    if(i===playIdx) d.classList.add('current');
+    if(mile) d.textContent = (i<progressIdx?'🏆':'🚩');
+    if(i<=progressIdx){
+      d.classList.add('clickable');
+      d.title = (i===playIdx?'Manche en cours : ':'Revenir à ')+st.label+' · '+st.title;
+      d.onclick=()=>{ if(i<=progressIdx) startStep(i); };
+    }
+    track.appendChild(d);
+  });
+  const shown=Math.min(playIdx+1, STEPS.length);
+  document.getElementById('stepCount').textContent='Niveau '+currentLevel+' · '+STEPS[playIdx].label+' ('+shown+'/'+STEPS.length+')';
+}
+function updateBanner(){
+  const b=document.getElementById('banner');
+  b.className='banner'+(currentStep.kind==='jalon'?' test':'')+(reviewing()?' review':'');
+  document.getElementById('bEmoji').textContent=currentStep.emoji;
+  document.getElementById('bTitle').textContent=(reviewing()?'Révision · ':'')+currentStep.label+' : '+currentStep.title;
+  document.getElementById('bSub').innerHTML='<span class="b-goal-label">Objectif :</span> '+stripTags(currentStep.desc);
+}
+function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
+
+function openRoundPopup(){
+  const s=currentStep, jalon=s.kind==='jalon';
+  modal.className='modal'+(jalon?' test-modal':'');
+  modal.innerHTML=
+    '<span class="m-emoji">'+s.emoji+'</span>'
+    + '<div class="kicker">'+(reviewing()?'Entraînement':s.label)+'</div>'
+    + '<h2>'+s.title+'</h2>'
+    + '<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta manche :')+'</p><p>'+s.desc+'</p></div>'
+    + '<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
+  openOverlay();
+  document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
+}
+function launchGame(){
+  if(LEVELS[currentLevel-1].game==='parachute') startParachute(currentStep);
+  else startDactylo(currentStep);
+}
+function onWin(){
+  if(reviewing()){
+    modal.className='modal good';
+    modal.innerHTML='<span class="m-emoji">💪</span><h2>Bien joué !</h2>'
+      +'<p>Tu as refait cette manche. On revient à <b>ta manche en cours</b>, ta progression est gardée.</p>'
+      +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma manche</button></div>';
+    openOverlay();
+    document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
+    return;
+  }
+  const last = playIdx===STEPS.length-1;
+  if(last){ progressIdx=STEPS.length; saveProgress(); return levelComplete(); }
+  progressIdx=Math.max(progressIdx, playIdx+1); saveProgress();
+  const jalon=currentStep.kind==='jalon';
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">'+(jalon?'🏆':'✅')+'</span>'
+    +'<h2>'+(jalon?'Défi réussi !':'Manche réussie !')+'</h2>'
+    +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la manche suivante !')+'</p>'
+    +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
+  openOverlay(); if(jalon) confetti();
+  document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
+}
+function onFail(reason, tip){
+  modal.className='modal bad';
+  modal.innerHTML='<span class="m-emoji">🙈</span><h2>'+reason+'</h2>'
+    +'<div class="howto test" style="margin-top:4px"><p class="h-head">💡 Astuce</p><p>'+tip+'</p></div>'
+    +'<div class="m-actions"><button class="m-btn primary" id="retry">↺ Je réessaie</button></div>';
+  openOverlay();
+  document.getElementById('retry').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
+}
+
+/* =========================================================
+   7. NIVEAUX : chargement, intro, déblocage
+   ========================================================= */
+function loadLevel(n, stepIdx, showIntro){
+  n=Math.max(1,Math.min(LEVELS.length,n));
+  currentLevel=n; const lvl=LEVELS[n-1];
+  STEPS=lvl.rounds;
+  progressIdx = (typeof stepIdx==='number') ? stepIdx : getSavedStep(n);
+  if(isNaN(progressIdx)||progressIdx<0) progressIdx=0;
+  if(progressIdx>STEPS.length) progressIdx=STEPS.length;
+  document.getElementById('lvlTitle').innerHTML='Le clavier <span class="dot">·</span> '+lvl.subtitle;
+  store.set('kb_curlevel', String(n));
+  refreshLevelBtn();
+  const startIdx=Math.min(progressIdx, STEPS.length-1);
+  if(showIntro) openLevelIntro(n, ()=>startStep(startIdx));
+  else startStep(startIdx);
+}
+function openLevelIntro(n, cont){
+  const lvl=LEVELS[n-1], it=lvl.intro;
+  let extra='';
+  if(it.kb) extra+=buildKeyboard(it.kb);
+  if(it.legend){
+    extra+='<ul class="legend">'+it.legend.map(c=>'<li><span class="lg-ch">'+c+'</span><span>'+tipFor(c)+'</span></li>').join('')+'</ul>';
+  }
+  const tools=(it.tools||[]).map(t=>'<li><span class="ni-glyph">'+t.g+'</span> '+t.n+'</li>').join('');
+  modal.className='modal';
+  modal.innerHTML=
+    '<span class="m-emoji">'+it.emoji+'</span>'
+    + '<div class="kicker">Niveau '+n+'</div>'
+    + '<h2>'+lvl.title+'</h2>'
+    + '<p>'+it.lead+'</p>'
+    + '<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p>'+extra+'</div>'
+    + (tools?'<ul class="newtools">'+tools+'</ul>':'')
+    + '<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
+  openOverlay();
+  document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
+}
+function refreshLevelBtn(){ const b=document.getElementById('levelBtn'); if(b) b.textContent='🗺️ Niveau '+currentLevel+'/'+LEVELS.length; }
+
+function levelComplete(){
+  stopGame();
+  if(currentLevel>=LEVELS.length) return courseFinish();
+  const nextN=currentLevel+1;
+  store.set('kb_unlocked', String(Math.max(getUnlocked(), nextN)));
+  store.set('kb_step_l'+nextN, '0');
+  refreshLevelBtn();
+  playUnlock(nextN, ()=>openLevelUnlockedModal(nextN));
+}
+function openLevelUnlockedModal(nextN){
+  const lvl=LEVELS[nextN-1]; confetti();
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">🎉</span>'
+    +'<div class="kicker" style="color:var(--green-d)">Niveau '+nextN+' débloqué</div>'
+    +'<h2>Bravo, tu passes au Niveau '+nextN+' !</h2>'
+    +'<p>Tu as terminé le <b>Niveau '+currentLevel+'</b>. Un nouveau jeu s\'ouvre : <b>'+lvl.title+'</b> !</p>'
+    +'<div class="m-actions">'
+    +'<a class="m-btn ghost" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a>'
+    +'<button class="m-btn primary green" id="goNextLvl">Aller au Niveau '+nextN+' →</button></div>';
+  openOverlay();
+  document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
+}
+function courseFinish(){
+  confetti(); confetti();
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
+    +'<p>Incroyable ! Tu as fini les <b>6 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les chiffres, les symboles et la dactylo. Tu tapes comme un pro ! 👏</p>'
+    +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
+    +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+  openOverlay();
+  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
+}
+
+/* ---- sélecteur de niveaux ---- */
+function openLevelSelector(){
+  const unlocked=getUnlocked();
+  modal.className='modal';
+  const cards=LEVELS.map(lv=>{
+    const locked=lv.n>unlocked, cur=lv.n===currentLevel;
+    const badge=locked?'🔒':(lv.n<currentLevel?'✓':'▶');
+    return '<button class="lvl-card'+(locked?' locked':'')+(cur?' current':'')+'" data-n="'+lv.n+'" '+(locked?'disabled':'')+'>'
+      +'<span class="lc-badge">'+badge+'</span><span class="lc-n">Niveau '+lv.n+'</span><span class="lc-t">'+lv.title+'</span></button>';
+  }).join('');
+  modal.innerHTML='<span class="m-emoji">🗺️</span><h2>Choisis ton niveau</h2>'
+    +'<p>Reviens sur un niveau déjà débloqué quand tu veux : ta progression est <b>gardée</b>.</p>'
+    +'<div class="lvl-grid">'+cards+'</div>'
+    +'<div class="m-actions"><button class="m-btn ghost" id="closeLvls">Fermer</button></div>';
+  openOverlay();
+  modal.querySelectorAll('.lvl-card:not(.locked)').forEach(c=>{
+    c.onclick=()=>{ const n=+c.getAttribute('data-n'); closeOverlay(); loadLevel(n, undefined, n!==currentLevel); };
+  });
+  document.getElementById('closeLvls').onclick=closeOverlay;
+}
+document.getElementById('levelBtn').onclick=openLevelSelector;
+
+/* ---- animation cadenas ---- */
+function playUnlock(nextN, done){
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const st=document.createElement('div'); st.className='lock-stage';
+  st.innerHTML='<div class="lock-box"><div class="lock-glow"></div><div class="lock-burst"></div><div class="lock-burst lb2"></div>'
+    +'<div class="lock-emoji">🔒</div><div class="lock-cap">Niveau '+nextN+' débloqué !</div></div>';
+  document.body.appendChild(st);
+  const box=st.querySelector('.lock-box'), emoji=st.querySelector('.lock-emoji');
+  const bursts=st.querySelectorAll('.lock-burst'), glow=st.querySelector('.lock-glow');
+  if(reduce){ emoji.textContent='🔓'; confetti(); setTimeout(()=>{ st.remove(); done&&done(); },800); return; }
+  setTimeout(()=>box.classList.add('shake'),420);
+  setTimeout(()=>{
+    box.classList.remove('shake'); box.classList.add('pop'); emoji.textContent='🔓';
+    bursts.forEach((b,i)=>setTimeout(()=>b.classList.add('go'),i*150));
+    glow.classList.add('go');
+    const cols=['#ffd76a','#ff9a30','#ff6b6b','#a78bfa','#34d399','#60a5fa','#f472b6','#fff'];
+    for(let i=0;i<18;i++){
+      const s=document.createElement('div'); s.className='lock-star';
+      s.style.setProperty('--angle',(i/18*360)+'deg');
+      s.style.setProperty('--delay',(i*18)+'ms');
+      s.style.setProperty('--dur',(.5+Math.random()*.5)+'s');
+      s.style.background=cols[i%cols.length];
+      s.style.borderRadius=(i%3===0?'2px':'50%');
+      s.style.width=(7+Math.random()*6)+'px'; s.style.height=s.style.width;
+      box.appendChild(s);
+    }
+    confetti(); beep('win');
+  },1780);
+  setTimeout(()=>st.classList.add('fade'),2900);
+  setTimeout(()=>{ st.remove(); done&&done(); },3300);
+}
+
+/* ---- recommencer le niveau ---- */
+document.getElementById('resetBtn').onclick=()=>{
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">↺</span><h2>Recommencer ce niveau ?</h2>'
+    +'<p>Tu repartiras de la <b>première manche du Niveau '+currentLevel+'</b>. Les autres niveaux ne changent pas.</p>'
+    +'<div class="m-actions"><button class="m-btn ghost" id="cR">Annuler</button>'
+    +'<button class="m-btn primary" id="dR">Oui, recommencer</button></div>';
+  openOverlay();
+  document.getElementById('cR').onclick=closeOverlay;
+  document.getElementById('dR').onclick=()=>{ closeOverlay(); progressIdx=0; saveProgress(); startStep(0); };
+};
+
+/* ---- boutons action ---- */
+document.getElementById('seeMission').onclick=openRoundPopup;
+document.getElementById('restartBtn').onclick=()=>{ if(currentStep){ audioCtx(); launchGame(); } };
+document.getElementById('hintBtn').onclick=()=>{
+  const lvl=LEVELS[currentLevel-1];
+  let body=lvl.intro.teach;
+  if(lvl.game==='parachute' && currentStep && currentStep.showTips){
+    body+='<ul class="legend">'+currentStep.pool.map(c=>'<li><span class="lg-ch">'+c+'</span><span>'+tipFor(c)+'</span></li>').join('')+'</ul>';
+  } else if(lvl.intro.kb){
+    body+=buildKeyboard(lvl.intro.kb);
+  }
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">💡</span><h2>L\'astuce</h2>'
+    +'<div class="howto test"><p class="h-head">Comment s\'y prendre</p><p>'+body+'</p></div>'
+    +'<div class="m-actions"><button class="m-btn primary" id="okHint">J\'ai compris</button></div>';
+  openOverlay();
+  document.getElementById('okHint').onclick=closeOverlay;
+};
+
+/* =========================================================
+   8. OVERLAY / TOAST / CONFETTI
+   ========================================================= */
+function openOverlay(){ overlay.classList.add('open'); }
+function closeOverlay(){ overlay.classList.remove('open'); }
+let toastTimer=null;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2000); }
+function confetti(){
+  const wrap=document.createElement('div'); wrap.className='confetti';
+  const cols=['#2563eb','#f59e0b','#16a34a','#e11d48','#7c3aed'];
+  for(let i=0;i<70;i++){
+    const p=document.createElement('i');
+    p.style.left=Math.random()*100+'%'; p.style.background=cols[i%cols.length];
+    p.style.animationDuration=(2.4+Math.random()*1.6)+'s';
+    p.style.animationDelay=(Math.random()*.5)+'s';
+    p.style.transform='rotate('+Math.random()*360+'deg)';
+    wrap.appendChild(p);
+  }
+  document.body.appendChild(wrap); setTimeout(()=>wrap.remove(),4200);
+}
+
+/* =========================================================
+   9. INIT
+   ========================================================= */
+(function init(){
+  refreshSoundBtn();
+  let lvl=parseInt(store.get('kb_curlevel')||'1',10);
+  if(isNaN(lvl)||lvl<1||lvl>LEVELS.length) lvl=1;
+  lvl=Math.min(lvl, getUnlocked());
+  loadLevel(lvl, getSavedStep(lvl), true);
+})();
+</script>
+</body>
+</html>
