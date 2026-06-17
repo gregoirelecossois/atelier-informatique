@@ -123,8 +123,12 @@
 
   /* dactylo text */
   .type-area{padding:26px 26px 30px;background:#fbfdff;}
-  .type-text{font-family:"Fredoka",sans-serif;font-weight:500;font-size:clamp(1.3rem,3.2vw,1.9rem);
-    line-height:1.85;letter-spacing:.5px;color:#c2ccd8;max-width:780px;margin:0 auto;}
+  .type-text{font-family:"Fredoka",sans-serif;font-weight:500;font-size:clamp(1.15rem,2.8vw,1.7rem);
+    line-height:1.9;letter-spacing:.5px;color:#c2ccd8;max-width:780px;margin:0 auto;
+    text-align:center;word-spacing:2px;}
+  /* chaque mot reste insécable, la coupure ne se fait qu'entre les mots */
+  .type-text .word{display:inline-block;white-space:nowrap;vertical-align:top;}
+  .type-text .tc.sp{white-space:pre-wrap;}
   .type-text .tc{position:relative;border-radius:4px;padding:1px 0;transition:color .08s,background .08s;}
   .type-text .tc.done{color:var(--green-d);}
   .type-text .tc.cur{color:var(--ink);background:#dbeafe;box-shadow:0 0 0 2px var(--blue);}
@@ -654,6 +658,7 @@ function startDactylo(step){
 function renderType(){
   const c=document.getElementById('typeText'); let html='';
   const lavaIdx=D.pursuit?Math.max(0,Math.floor(D.chaser)):-1;
+  let inWord=false;
   for(let k=0;k<D.text.length;k++){
     const ch=D.text[k]; const sp=ch===' ';
     let cls='tc'+(sp?' sp':'');
@@ -661,8 +666,16 @@ function renderType(){
     else if(k===D.i) cls+=' cur';
     if(D.pursuit && k<lavaIdx && k>=D.i) cls+=' scorch';
     if(D.pursuit && k===lavaIdx && k>=D.i) cls+=' lavahead';
-    html+='<span class="'+cls+'" data-k="'+k+'">'+(sp?'&nbsp;':escapeHtml(ch))+'</span>';
+    const span='<span class="'+cls+'" data-k="'+k+'">'+(sp?' ':escapeHtml(ch))+'</span>';
+    if(sp){
+      if(inWord){ html+='</span>'; inWord=false; }   // ferme le mot courant
+      html+=span;                                     // l'espace = point de coupure entre mots
+    } else {
+      if(!inWord){ html+='<span class="word">'; inWord=true; }
+      html+=span;
+    }
   }
+  if(inWord) html+='</span>';
   c.innerHTML=html;
   const pct=Math.round(D.i/D.text.length*100);
   const pe=document.getElementById('stProg'); if(pe) pe.textContent=pct+' %';
