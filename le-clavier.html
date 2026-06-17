@@ -77,7 +77,7 @@
 
   /* ---------- Stage (game area) ---------- */
   .stage-wrap{max-width:1000px;margin:12px auto;width:calc(100% - 36px);
-    background:#fff;border:2px solid var(--line);border-radius:16px;overflow:hidden;
+    background:#fff;border:2px solid var(--line);border-radius:16px;
     box-shadow:0 18px 40px -28px rgba(34,48,63,.5);}
   .hud{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 16px;
     background:linear-gradient(#fbfcfe,#eef3fa);border-bottom:2px solid var(--line);}
@@ -226,8 +226,7 @@
   .lock-stage{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;
     background:rgba(14,22,34,.82);backdrop-filter:blur(5px);transition:opacity .4s;}
   .lock-stage.fade{opacity:0;}
-  .lock-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;
-    animation:lockIn .38s cubic-bezier(.18,.9,.32,1.3) forwards;}
+  .lock-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;}
   .lock-emoji{position:relative;z-index:2;font-size:6.5rem;line-height:1;
     filter:drop-shadow(0 0 18px rgba(255,220,60,.6)) drop-shadow(0 14px 24px rgba(0,0,0,.5));}
   .lock-glow{position:absolute;left:50%;top:44%;width:220px;height:220px;margin:-110px 0 0 -110px;
@@ -244,10 +243,8 @@
   .lock-cap{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
     background:var(--amber);padding:6px 20px;border-radius:999px;box-shadow:0 8px 20px -8px rgba(0,0,0,.6);}
   @keyframes lockIn{from{transform:scale(.3);opacity:0;}to{transform:scale(1);opacity:1;}}
-  .lock-box.shake{animation:lockShake .44s ease-in-out 3;}
   @keyframes lockShake{0%,100%{transform:rotate(0) translateX(0);}22%{transform:rotate(-12deg) translateX(-8px);}
     44%{transform:rotate(10deg) translateX(8px);}66%{transform:rotate(-8deg) translateX(-5px);}88%{transform:rotate(7deg) translateX(5px);}}
-  .lock-box.pop{animation:lockPop .7s cubic-bezier(.18,.9,.32,1.4) forwards;}
   @keyframes lockPop{0%{transform:scale(1);}40%{transform:scale(1.45) rotate(-8deg);}100%{transform:scale(1.12) rotate(0);}}
   .lock-star{position:absolute;left:calc(50% - 5px);top:calc(50% - 5px);width:10px;height:10px;
     pointer-events:none;z-index:4;animation:starFly var(--dur,.7s) var(--delay,0ms) ease-out forwards;}
@@ -261,7 +258,6 @@
   @media (prefers-reduced-motion: reduce){
     .confetti i{animation:none;display:none;}
     .modal{animation:none;}
-    .lock-box,.lock-box.shake,.lock-box.pop{animation:none;}
     .lock-burst,.lock-glow,.lock-star{animation:none;}
     .drop.pop .cap,.drop.miss .cap,.field.shake{animation:none;}
   }
@@ -323,7 +319,7 @@ const SYMTIP={
 };
 function tipFor(ch){
   if(/^[a-z]$/.test(ch)) return 'Appuie simplement sur la touche '+kbd(ch.toUpperCase())+'.';
-  if(/^[A-Z]$/.test(ch)) return 'Garde '+kbd('Maj ⇧')+' enfoncé avec un doigt, puis appuie sur '+kbd(ch)+' avec un autre doigt.';
+  if(/^[A-Z]$/.test(ch)) return 'Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur '+kbd(ch)+'. Autre option : appuie une fois sur '+kbd('⇪ Caps Lock')+' pour tout mettre en majuscules, tape ta lettre, puis rappuie sur '+kbd('⇪ Caps Lock')+' pour revenir aux minuscules.';
   if(/^[0-9]$/.test(ch)) return 'Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur la touche '+kbd(KCAP[ch])+' (rangée du haut). Tu peux aussi utiliser le '+kbd('pavé numérique')+' à droite du clavier.';
   return SYMTIP[ch] || ('Appuie sur la touche '+kbd(ch)+'.');
 }
@@ -351,10 +347,11 @@ function buildKeyboard(hl){
     });
     html+='</div>';
   });
-  // rangée du bas : Maj — espace — AltGr — Maj
-  const maj=hl.maj?' modhl':'', alt=hl.altgr?' modhl':'';
+  // rangée du bas : Maj — Caps Lock — espace — AltGr — Maj
+  const maj=hl.maj?' modhl':'', alt=hl.altgr?' modhl':'', caps=hl.caps?' modhl':'';
   html+='<div class="kbd-row">'
     +'<div class="key wide'+maj+'">Maj ⇧</div>'
+    +'<div class="key wide'+caps+'">⇪ Caps</div>'
     +'<div class="key space">espace</div>'
     +'<div class="key wide'+alt+'">AltGr</div>'
     +'<div class="key wide'+maj+'">Maj ⇧</div>'
@@ -391,19 +388,19 @@ const LEVELS=[
   { n:2, title:'Le parachute — les majuscules', subtitle:'le parachute · les majuscules', game:'parachute',
     intro:{ emoji:'⬆️',
       lead:'Cette fois, ce sont des <b>GRANDES lettres</b> (les majuscules) qui descendent !',
-      teach:'Pour écrire une majuscule : garde la touche '+kbd('Maj ⇧')+' enfoncée avec un doigt, et appuie sur la lettre avec un autre doigt. Puis relâche '+kbd('Maj ⇧')+'.',
-      kb:{maj:true,letters:true},
-      tools:[{g:'⇧',n:'La touche Maj'},{g:'AB',n:'Les majuscules'}] },
+      teach:'Pour écrire une majuscule, tu as deux façons :<br>• '+kbd('Maj ⇧')+' : garde-la enfoncée avec un doigt, appuie sur la lettre, puis relâche.<br>• '+kbd('⇪ Caps Lock')+' : appuie une fois pour passer en mode majuscules, tape toutes tes lettres, puis rappuie sur '+kbd('⇪ Caps Lock')+' pour revenir aux minuscules.',
+      kb:{maj:true,caps:true,letters:true},
+      tools:[{g:'⇧',n:'La touche Maj'},{g:'⇪',n:'Caps Lock'}] },
     rounds:[
       {kind:'mission',label:'Manche 1',emoji:'🔠',title:'Premières majuscules',
-       desc:'Fais éclater '+kbd('F')+' '+kbd('J')+' '+kbd('D')+' '+kbd('K')+'. Souviens-toi : '+kbd('Maj ⇧')+' + la lettre.',
-       pool:['F','J','D','K'],target:8,lives:6,speed:54,spawnMs:1750},
-      {kind:'mission',label:'Manche 2',emoji:'🔡',title:'Encore des majuscules',
-       desc:'Les majuscules '+kbd('A')+' '+kbd('Z')+' '+kbd('E')+' '+kbd('R')+' '+kbd('T')+' avec '+kbd('Maj ⇧')+'.',
-       pool:['A','Z','E','R','T'],target:10,lives:5,speed:70,spawnMs:1500},
-      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Pluie de majuscules',
-       desc:'Plein de majuscules tombent ! Garde un doigt prêt sur '+kbd('Maj ⇧')+'.',
-       pool:'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),target:14,lives:4,speed:90,spawnMs:1100}
+       desc:'Fais éclater les majuscules '+kbd('F')+' '+kbd('J')+' '+kbd('D')+' '+kbd('K')+' '+kbd('S')+' '+kbd('L')+'. Souviens-toi : '+kbd('Maj ⇧')+' enfoncé + la lettre.',
+       pool:['F','J','D','K','S','L'],target:10,lives:6,speed:54,spawnMs:1750},
+      {kind:'mission',label:'Manche 2',emoji:'🔡',title:'Majuscules et minuscules mélangées',
+       desc:'Attention : des majuscules <b>et</b> des minuscules tombent ensemble ! Lis bien chaque lettre avant de taper.',
+       pool:['A','a','Z','z','E','e','R','r','T','t','I','i','O','o','N','n'],target:18,lives:5,speed:68,spawnMs:1450},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Grand mélange — de A à Z',
+       desc:'Toutes les lettres tombent : majuscules <b>et</b> minuscules mélangées. Sois rapide et précis !',
+       pool:('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz').split(''),target:26,lives:4,speed:88,spawnMs:1100}
     ]},
 
   { n:3, title:'Le parachute — les chiffres', subtitle:'le parachute · les chiffres', game:'parachute',
@@ -413,10 +410,12 @@ const LEVELS=[
       kb:{maj:true,digits:true},
       tools:[{g:'123',n:'La rangée des chiffres'},{g:'🔢',n:'Le pavé numérique'}] },
     rounds:[
-      {kind:'mission',label:'Manche 1',emoji:'1️⃣',title:'1 · 2 · 3',desc:'Fais éclater '+kbd('1')+' '+kbd('2')+' '+kbd('3')+'.',pool:['1','2','3'],target:9,lives:6,speed:60,spawnMs:1650},
-      {kind:'mission',label:'Manche 2',emoji:'5️⃣',title:'4 · 5 · 6 · 7',desc:'Continue avec '+kbd('4')+' '+kbd('5')+' '+kbd('6')+' '+kbd('7')+'.',pool:['4','5','6','7'],target:10,lives:5,speed:70,spawnMs:1500},
-      {kind:'mission',label:'Manche 3',emoji:'9️⃣',title:'8 · 9 · 0',desc:'Et '+kbd('8')+' '+kbd('9')+' '+kbd('0')+'.',pool:['8','9','0'],target:10,lives:4,speed:80,spawnMs:1400},
-      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tous les chiffres',desc:'Tous les chiffres de '+kbd('0')+' à '+kbd('9')+' tombent !',pool:'0123456789'.split(''),target:14,lives:4,speed:95,spawnMs:1050}
+      {kind:'mission',label:'Manche 1',emoji:'🔢',title:'Tous les chiffres d\'un coup',
+       desc:'Tous les chiffres de '+kbd('0')+' à '+kbd('9')+' tombent mélangés. Montre que tu les retrouves tous !',
+       pool:'0123456789'.split(''),target:15,lives:5,speed:66,spawnMs:1550},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Chiffres en rafale',
+       desc:'Tous les chiffres tombent vite et en rafale. Reste concentré !',
+       pool:'0123456789'.split(''),target:22,lives:4,speed:98,spawnMs:980}
     ]},
 
   { n:4, title:'Le parachute — les symboles', subtitle:'le parachute · les symboles', game:'parachute',
@@ -431,9 +430,9 @@ const LEVELS=[
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tout mélangé',desc:'Ponctuation et symboles spéciaux tombent ensemble. Garde les astuces en tête !',pool:['.',',','?','!','@','#','€','+'],target:12,lives:5,speed:72,spawnMs:1350,showTips:true}
     ]},
 
-  { n:5, title:'Expédition dactylo', subtitle:'expédition dactylo', game:'dactylo',
+  { n:5, title:'Frappe libre', subtitle:'frappe libre', game:'dactylo',
     intro:{ emoji:'⌨️',
-      lead:'Bienvenue en expédition dactylo ! Recopie le texte affiché en gris, <b>lettre par lettre</b>.',
+      lead:'Recopie le texte affiché en gris, <b>lettre par lettre</b>, à ton rythme. Pas de chrono, pas de pression !',
       teach:'La lettre à taper est <b>encadrée en bleu</b>. Quand tu tapes la bonne touche, elle devient <b>verte</b> et on passe à la suivante. Si tu te trompes, rien n\'avance : réessaie tranquillement. Tu peux utiliser '+kbd('⌫ Effacer')+' pour revenir en arrière. Ici, <b>pas de chrono qui stresse</b> : prends ton temps !',
       tools:[{g:'⌨️',n:'Taper un vrai texte'},{g:'🎯',n:'La précision'}] },
     rounds:[
@@ -443,7 +442,7 @@ const LEVELS=[
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand texte',desc:'Un texte plus long pour devenir un vrai pro du clavier.',text:"Chaque matin, Lea allume son ordinateur et ecrit une histoire d'un dragon gentil qui adore les fraises."}
     ]},
 
-  { n:6, title:'La poursuite dactylo', subtitle:'la poursuite dactylo', game:'dactylo',
+  { n:6, title:'La chasse à la lave', subtitle:'la chasse à la lave', game:'dactylo',
     intro:{ emoji:'🔥',
       lead:'Le grand défi final ! Tape le texte <b>avant que la vague de lave</b> 🔥 ne te rattrape.',
       teach:'La <b>barre verte</b> montre où tu en es. La <b>barre de lave rouge</b> avance toute seule derrière toi. Tape vite et bien pour rester devant elle ! Si elle te rattrape, on recommence la manche. Plus le niveau monte, plus la lave est rapide.',
@@ -871,7 +870,7 @@ function courseFinish(){
   confetti(); confetti();
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
-    +'<p>Incroyable ! Tu as fini les <b>6 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les chiffres, les symboles et la dactylo. Tu tapes comme un pro ! 👏</p>'
+    +'<p>Incroyable ! Tu as fini les <b>6 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les chiffres, les symboles, la frappe libre et la chasse à la lave. Tu tapes comme un pro ! 👏</p>'
     +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   openOverlay();
@@ -904,18 +903,41 @@ document.getElementById('levelBtn').onclick=openLevelSelector;
 function playUnlock(nextN, done){
   const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const st=document.createElement('div'); st.className='lock-stage';
-  st.innerHTML='<div class="lock-box"><div class="lock-glow"></div><div class="lock-burst"></div><div class="lock-burst lb2"></div>'
+  // box démarre invisible via style inline (évite un flash avant l'animation)
+  st.innerHTML='<div class="lock-box" style="opacity:0;transform:scale(.3)">'
+    +'<div class="lock-glow"></div><div class="lock-burst"></div><div class="lock-burst lb2"></div>'
     +'<div class="lock-emoji">🔒</div><div class="lock-cap">Niveau '+nextN+' débloqué !</div></div>';
   document.body.appendChild(st);
   const box=st.querySelector('.lock-box'), emoji=st.querySelector('.lock-emoji');
   const bursts=st.querySelectorAll('.lock-burst'), glow=st.querySelector('.lock-glow');
-  if(reduce){ emoji.textContent='🔓'; confetti(); setTimeout(()=>{ st.remove(); done&&done(); },800); return; }
-  setTimeout(()=>box.classList.add('shake'),420);
+  const cols=['#ffd76a','#ff9a30','#ff6b6b','#a78bfa','#34d399','#60a5fa','#f472b6','#fff'];
+
+  if(reduce){
+    // version sans animation : montre quand même le changement cadenas fermé → ouvert
+    setTimeout(()=>{ emoji.textContent='🔓'; confetti(); beep('win'); }, 500);
+    setTimeout(()=>st.classList.add('fade'), 1400);
+    setTimeout(()=>{ st.remove(); done&&done(); }, 1800);
+    return;
+  }
+
+  // Phase 1 : apparition (lockIn)
+  // force reflow pour que l'animation parte bien depuis l'état initial
+  box.getBoundingClientRect();
+  box.style.animation='lockIn .38s cubic-bezier(.18,.9,.32,1.3) forwards';
+
+  // Phase 2 : secousses (après lockIn)
   setTimeout(()=>{
-    box.classList.remove('shake'); box.classList.add('pop'); emoji.textContent='🔓';
+    // lockIn terminé — on fige à scale(1) opacity(1) via style, puis on lance lockShake
+    box.style.opacity=''; box.style.transform='';
+    box.style.animation='lockShake .44s ease-in-out 3';
+  }, 420);
+
+  // Phase 3 : déverrouillage et explosion
+  setTimeout(()=>{
+    emoji.textContent='🔓';
+    box.style.animation='lockPop .7s cubic-bezier(.18,.9,.32,1.4) forwards';
     bursts.forEach((b,i)=>setTimeout(()=>b.classList.add('go'),i*150));
     glow.classList.add('go');
-    const cols=['#ffd76a','#ff9a30','#ff6b6b','#a78bfa','#34d399','#60a5fa','#f472b6','#fff'];
     for(let i=0;i<18;i++){
       const s=document.createElement('div'); s.className='lock-star';
       s.style.setProperty('--angle',(i/18*360)+'deg');
@@ -923,13 +945,14 @@ function playUnlock(nextN, done){
       s.style.setProperty('--dur',(.5+Math.random()*.5)+'s');
       s.style.background=cols[i%cols.length];
       s.style.borderRadius=(i%3===0?'2px':'50%');
-      s.style.width=(7+Math.random()*6)+'px'; s.style.height=s.style.width;
+      const sz=(7+Math.random()*6)+'px'; s.style.width=sz; s.style.height=sz;
       box.appendChild(s);
     }
     confetti(); beep('win');
-  },1780);
-  setTimeout(()=>st.classList.add('fade'),2900);
-  setTimeout(()=>{ st.remove(); done&&done(); },3300);
+  }, 1860); // 420 + 3×440(=1320) + 120ms de marge
+
+  setTimeout(()=>st.classList.add('fade'), 2900);
+  setTimeout(()=>{ st.remove(); done&&done(); }, 3300);
 }
 
 /* ---- recommencer le niveau ---- */
