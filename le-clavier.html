@@ -109,6 +109,18 @@
   .drop.miss .cap{border-color:var(--red);color:var(--red-d);animation:dropMiss .3s ease forwards;}
   @keyframes dropMiss{to{transform:translateY(14px) scale(.6);opacity:0;}}
 
+  /* burst particles */
+  .drop-burst{position:absolute;pointer-events:none;z-index:20;}
+  .spark{
+    position:absolute;width:8px;height:8px;border-radius:50%;
+    top:0;left:0;transform:translate(-50%,-50%);
+    animation:sparkFly .45s ease-out forwards;
+  }
+  @keyframes sparkFly{
+    0%{transform:translate(-50%,-50%) scale(1);opacity:1;}
+    100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(0);opacity:0;}
+  }
+
   /* dactylo text */
   .type-area{padding:26px 26px 30px;background:#fbfdff;}
   .type-text{font-family:"Fredoka",sans-serif;font-weight:500;font-size:clamp(1.3rem,3.2vw,1.9rem);
@@ -559,6 +571,27 @@ function loopP(ts){
   P.raf=requestAnimationFrame(loopP);
 }
 function removeItem(it){ const i=P.items.indexOf(it); if(i>=0) P.items.splice(i,1); }
+function burstAt(xPx, yPx){
+  const COLORS=['#2563eb','#f59e0b','#16a34a','#ef4444','#a78bfa','#fb923c','#34d399','#f472b6'];
+  const N=12;
+  const burst=document.createElement('div');
+  burst.className='drop-burst';
+  burst.style.left=xPx+'px';
+  burst.style.top=yPx+'px';
+  for(let i=0;i<N;i++){
+    const angle=(i/N)*2*Math.PI;
+    const dist=38+Math.random()*32;
+    const sp=document.createElement('div');
+    sp.className='spark';
+    sp.style.setProperty('--dx',(Math.cos(angle)*dist)+'px');
+    sp.style.setProperty('--dy',(Math.sin(angle)*dist)+'px');
+    sp.style.background=COLORS[i%COLORS.length];
+    sp.style.animationDelay=(Math.random()*0.06)+'s';
+    burst.appendChild(sp);
+  }
+  P.field.appendChild(burst);
+  setTimeout(()=>burst.remove(),500);
+}
 function missP(it){
   removeItem(it);
   it.el.classList.add('miss'); const el=it.el; setTimeout(()=>el.remove(),300);
@@ -574,6 +607,9 @@ function onKeyP(e){
   let best=null;
   for(const it of P.items){ if(it.ch===e.key){ if(!best||it.y>best.y) best=it; } }
   if(best){
+    const xPx=P.field.clientWidth*parseFloat(best.el.style.left)/100;
+    const yPx=best.y+28;
+    burstAt(xPx, yPx);
     removeItem(best); best.el.classList.add('pop'); const el=best.el; setTimeout(()=>el.remove(),250);
     P.cleared++; beep('good'); updateHud();
     if(P.step.showTips){ const next=P.items[0]; if(next) showTipFor(next.ch); }
