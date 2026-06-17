@@ -18,7 +18,7 @@
     --shell:#e9eff7; --canvas:#dde6f1;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;}
+  html,body{margin:0;padding:0;}
   body{
     font-family:"Nunito",system-ui,sans-serif;color:var(--ink);
     background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
@@ -175,10 +175,11 @@
   .howto.test{background:#fffaf0;border-color:#fbe2b0;}
   .howto.test .h-head{color:var(--amber-d);}
   .tasklist{list-style:none;margin:0;padding:0;}
-  .tasklist li{display:flex;gap:10px;align-items:flex-start;margin:9px 0;font-size:1.05rem;}
-  .tasklist li::before{content:"▢";color:var(--amber-d);font-weight:800;}
-  .modal .m-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px;
-    position:sticky;bottom:-20px;background:#fff;padding-top:8px;}
+  .tasklist li{position:relative;padding-left:26px;margin:8px 0;font-size:1.05rem;line-height:1.45;}
+  .tasklist li::before{content:"▢";color:var(--amber-d);font-weight:800;position:absolute;left:2px;top:1px;}
+  .modal .m-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px;
+    position:sticky;bottom:0;background:#fff;padding-top:10px;padding-bottom:2px;
+    border-top:1px solid var(--line-2);}
   .m-btn{border:none;border-radius:13px;padding:13px 22px;font-weight:800;font-size:1.05rem;}
   .m-btn.primary{background:var(--blue);color:#fff;}
   .m-btn.primary:hover{background:var(--blue-d);}
@@ -205,7 +206,7 @@
   .hint-target{font-weight:800;color:var(--amber-d);}
 
   /* confetti */
-  .confetti{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden;}
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:140;overflow:hidden;}
   .confetti i{position:absolute;top:-10px;width:10px;height:14px;opacity:.9;animation:fall linear forwards;}
   @keyframes fall{to{transform:translateY(110vh) rotate(540deg);}}
 
@@ -237,22 +238,43 @@
 
   /* ---------- Animation cadenas (déblocage) ---------- */
   .lock-stage{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;
-    background:rgba(20,30,42,.72);backdrop-filter:blur(3px);transition:opacity .35s;}
+    background:rgba(14,22,34,.82);backdrop-filter:blur(5px);transition:opacity .4s;}
   .lock-stage.fade{opacity:0;}
-  .lock-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;animation:lockIn .35s ease;}
-  .lock-emoji{position:relative;z-index:2;font-size:6rem;line-height:1;filter:drop-shadow(0 14px 24px rgba(0,0,0,.4));}
-  .lock-burst{position:absolute;left:50%;top:40px;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;
-    border:7px solid #ffd76a;opacity:0;pointer-events:none;z-index:1;}
-  .lock-burst.go{animation:lockBurst .7s ease-out forwards;}
-  @keyframes lockBurst{0%{opacity:.95;transform:scale(.3);}100%{opacity:0;transform:scale(6);}}
+  .lock-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;
+    animation:lockIn .38s cubic-bezier(.18,.9,.32,1.3) forwards;}
+  .lock-emoji{position:relative;z-index:2;font-size:6.5rem;line-height:1;
+    filter:drop-shadow(0 0 18px rgba(255,220,60,.6)) drop-shadow(0 14px 24px rgba(0,0,0,.5));}
+  /* Lueur radiale au déblocage */
+  .lock-glow{position:absolute;left:50%;top:44%;width:220px;height:220px;margin:-110px 0 0 -110px;
+    border-radius:50%;background:radial-gradient(circle,rgba(255,230,80,.85) 0%,rgba(255,140,30,.5) 40%,transparent 70%);
+    opacity:0;pointer-events:none;z-index:1;transform:scale(0);}
+  .lock-glow.go{animation:lockGlow .95s ease-out forwards;}
+  @keyframes lockGlow{0%{opacity:0;transform:scale(.2);}25%{opacity:1;}100%{opacity:0;transform:scale(3.5);}}
+  /* Anneaux d'expansion */
+  .lock-burst{position:absolute;left:50%;top:44%;width:90px;height:90px;margin:-45px 0 0 -45px;
+    border-radius:50%;border:6px solid rgba(255,215,80,.95);opacity:0;pointer-events:none;z-index:3;}
+  .lock-burst.lb2{width:130px;height:130px;margin:-65px 0 0 -65px;
+    border-color:rgba(255,140,40,.8);border-width:5px;}
+  .lock-burst.go{animation:lockBurst .95s ease-out forwards;}
+  .lock-burst.lb2.go{animation:lockBurst 1s .18s ease-out forwards;}
+  @keyframes lockBurst{0%{opacity:.95;transform:scale(.15);}100%{opacity:0;transform:scale(7.5);}}
   .lock-cap{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
     background:var(--amber);padding:6px 20px;border-radius:999px;box-shadow:0 8px 20px -8px rgba(0,0,0,.6);}
-  @keyframes lockIn{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
-  .lock-box.shake{animation:lockShake .42s ease-in-out 3;}
-  @keyframes lockShake{0%,100%{transform:rotate(0) translateX(0);}20%{transform:rotate(-9deg) translateX(-6px);}
-    40%{transform:rotate(8deg) translateX(6px);}60%{transform:rotate(-6deg) translateX(-4px);}80%{transform:rotate(5deg) translateX(4px);}}
-  .lock-box.pop{animation:lockPop .6s cubic-bezier(.18,.9,.32,1.4);}
-  @keyframes lockPop{0%{transform:scale(1);}35%{transform:scale(1.35) rotate(-6deg);}100%{transform:scale(1.12) rotate(0);}}
+  @keyframes lockIn{from{transform:scale(.3);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .lock-box.shake{animation:lockShake .44s ease-in-out 3;}
+  @keyframes lockShake{0%,100%{transform:rotate(0) translateX(0);}22%{transform:rotate(-12deg) translateX(-8px);}
+    44%{transform:rotate(10deg) translateX(8px);}66%{transform:rotate(-8deg) translateX(-5px);}88%{transform:rotate(7deg) translateX(5px);}}
+  .lock-box.pop{animation:lockPop .7s cubic-bezier(.18,.9,.32,1.4) forwards;}
+  @keyframes lockPop{0%{transform:scale(1);}40%{transform:scale(1.45) rotate(-8deg);}100%{transform:scale(1.12) rotate(0);}}
+  /* Particules étoilées */
+  .lock-star{position:absolute;left:calc(50% - 5px);top:calc(50% - 5px);width:10px;height:10px;
+    pointer-events:none;z-index:4;
+    animation:starFly var(--dur,.7s) var(--delay,0ms) ease-out forwards;}
+  @keyframes starFly{
+    0%{opacity:1;transform:rotate(var(--angle,0deg)) translateX(6px) scale(1.4);}
+    70%{opacity:.85;}
+    100%{opacity:0;transform:rotate(var(--angle,0deg)) translateX(140px) scale(0.1);}
+  }
 
   @media (max-width:560px){
     .page{padding:28px 22px;}
@@ -264,7 +286,7 @@
     .confetti i{animation:none;display:none;}
     .modal{animation:none;}
     .lock-box,.lock-box.shake,.lock-box.pop{animation:none;}
-    .lock-burst,.seg.return{animation:none;}
+    .lock-burst,.lock-glow,.lock-star,.seg.return{animation:none;}
   }
 </style>
 </head>
@@ -1702,25 +1724,43 @@ document.getElementById('levelBtn').onclick=openLevelSelector;
 
 // Animation du cadenas qui se déverrouille
 function playUnlock(nextN, done){
-  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stage=document.createElement('div'); stage.className='lock-stage';
-  stage.innerHTML=`<div class="lock-box"><div class="lock-burst"></div><div class="lock-emoji">🔒</div><div class="lock-cap">Niveau ${nextN}</div></div>`;
+  stage.innerHTML=`<div class="lock-box">
+    <div class="lock-glow"></div>
+    <div class="lock-burst"></div>
+    <div class="lock-burst lb2"></div>
+    <div class="lock-emoji">🔒</div>
+    <div class="lock-cap">Niveau ${nextN} débloqué !</div>
+  </div>`;
   document.body.appendChild(stage);
-  const box=stage.querySelector('.lock-box'), emoji=stage.querySelector('.lock-emoji'), burst=stage.querySelector('.lock-burst');
-  if(reduce){
-    emoji.textContent='🔓'; confetti();
-    setTimeout(()=>{ stage.remove(); done&&done(); }, 800);
-    return;
-  }
-  // 1) le cadenas fermé est secoué plusieurs fois…
-  box.classList.add('shake');
-  // 2) …puis d'un coup il s'ouvre avec un éclat lumineux + confettis
+  const box=stage.querySelector('.lock-box'), emoji=stage.querySelector('.lock-emoji');
+  const bursts=stage.querySelectorAll('.lock-burst'), glow=stage.querySelector('.lock-glow');
+  if(reduce){ emoji.textContent='🔓'; confetti(); setTimeout(()=>{ stage.remove(); done&&done(); },800); return; }
+  // Attend la fin de lockIn (~380ms) puis secoue 3 fois
+  setTimeout(()=>box.classList.add('shake'), 420);
+  // Après les 3 secousses (420 + 3×440 = 1740ms) : ouvre + éclat + étoiles + confettis
   setTimeout(()=>{
     box.classList.remove('shake'); box.classList.add('pop');
-    emoji.textContent='🔓'; burst.classList.add('go'); confetti();
-  }, 1350);
-  setTimeout(()=>{ stage.classList.add('fade'); }, 2350);
-  setTimeout(()=>{ stage.remove(); done&&done(); }, 2750);
+    emoji.textContent='🔓';
+    bursts.forEach((b,i)=>setTimeout(()=>b.classList.add('go'), i*150));
+    glow.classList.add('go');
+    const starCols=['#ffd76a','#ff9a30','#ff6b6b','#a78bfa','#34d399','#60a5fa','#f472b6','#fff'];
+    for(let i=0;i<18;i++){
+      const s=document.createElement('div'); s.className='lock-star';
+      s.style.setProperty('--angle',(i/18*360)+'deg');
+      s.style.setProperty('--delay',(i*18)+'ms');
+      s.style.setProperty('--dur',(.5+Math.random()*.5)+'s');
+      s.style.background=starCols[i%starCols.length];
+      s.style.borderRadius=(i%3===0?'2px':'50%');
+      s.style.width=(7+Math.random()*6)+'px';
+      s.style.height=(7+Math.random()*6)+'px';
+      box.appendChild(s);
+    }
+    confetti();
+  }, 1780);
+  setTimeout(()=>stage.classList.add('fade'), 2900);
+  setTimeout(()=>{ stage.remove(); done&&done(); }, 3300);
 }
 
 /* ---- recommence le niveau courant ---- */

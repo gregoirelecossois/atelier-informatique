@@ -59,7 +59,7 @@
     font-weight:800;color:var(--blue-d);font-size:1rem;
   }
   .card .go svg{transition:transform .18s ease;}
-  .card.active:hover{transform:translateY(-5px);border-color:var(--blue);box-shadow:0 22px 40px -22px rgba(37,99,235,.65);}
+  .card.active:hover{transform:translateY(-3px);box-shadow:0 16px 36px -18px rgba(34,48,63,.22);}
   .card.active:hover .go svg{transform:translateX(4px);}
   .card.active:focus-visible{outline:3px solid var(--blue);outline-offset:3px;}
   .card .num{
@@ -67,6 +67,9 @@
     font-size:1.1rem;font-weight:700;color:#c3d1e2;
   }
   .card.soon{filter:grayscale(.35);opacity:.78;cursor:not-allowed;}
+  .card.soon::after{content:'';position:absolute;inset:0;background:rgba(100,110,130,.1);
+    border-radius:22px;opacity:0;transition:opacity .22s ease;}
+  .card.soon:hover::after{opacity:1;}
   .badge{
     display:inline-block;margin-top:16px;font-weight:800;font-size:.82rem;
     color:#8a6d12;background:#fdebc4;border-radius:999px;padding:5px 12px;
