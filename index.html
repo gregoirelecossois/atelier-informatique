@@ -107,6 +107,9 @@
           <span class="lvl-chip" data-n="1"><span class="ic">•</span>Niveau 1</span>
           <span class="lvl-chip" data-n="2"><span class="ic">•</span>Niveau 2</span>
           <span class="lvl-chip" data-n="3"><span class="ic">•</span>Niveau 3</span>
+          <span class="lvl-chip" data-n="4"><span class="ic">•</span>Niveau 4</span>
+          <span class="lvl-chip" data-n="5"><span class="ic">•</span>Niveau 5</span>
+          <span class="lvl-chip" data-n="6"><span class="ic">•</span>Niveau 6</span>
         </div>
         <span class="go">Commencer
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -178,6 +181,64 @@
     }
     paint('#ttLevels','tt_unlocked','tt_curlevel');
     paint('#kbLevels','kb_unlocked','kb_curlevel');
+  })();
+
+  /* ===== Accès développeur (raccourcis vers chaque niveau) ===== */
+  (function devkit(){
+    const GAMES=[
+      {file:'traitement-texte.html', name:'📝 Traitement de texte', unlock:'tt_unlocked', cur:'tt_curlevel', stepN:6,
+       levels:['Les bases','Paragraphes & Alignements','Listes & Structure','Le clavier magique','Écrire et déplacer','Les tableaux']},
+      {file:'le-clavier.html', name:'⌨️ Le clavier', unlock:'kb_unlocked', cur:'kb_curlevel', stepN:7,
+       levels:['Les lettres','Les majuscules','Les accents','Les chiffres','Les symboles','Frappe libre','La chasse à la lave']}
+    ];
+    const css=`
+    #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,sans-serif;}
+    #devkit .dk-toggle{display:inline-flex;align-items:center;gap:6px;background:#1e2733;color:#e7eef6;border:none;
+      border-radius:999px;padding:9px 14px;font-weight:800;font-size:.85rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.28);}
+    #devkit .dk-toggle:hover{background:#2a3645;}
+    #devkit .dk-panel{display:none;position:absolute;right:0;bottom:48px;width:312px;max-height:72vh;overflow:auto;
+      background:#1e2733;color:#e7eef6;border-radius:14px;padding:12px 12px 14px;box-shadow:0 16px 40px rgba(0,0,0,.42);}
+    #devkit.open .dk-panel{display:block;}
+    #devkit .dk-head{font-weight:800;font-size:.95rem;margin:0 0 2px;}
+    #devkit .dk-note{color:#9fb0c4;font-size:.72rem;margin:0 0 6px;line-height:1.35;}
+    #devkit .dk-lv{font-weight:800;color:#9fc3ff;margin:11px 0 4px;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;}
+    #devkit .dk-step{display:block;width:100%;text-align:left;text-decoration:none;background:#2b3949;color:#e7eef6;border:1px solid #3a4a5c;
+      border-radius:8px;padding:6px 9px;margin:3px 0;cursor:pointer;font-size:.78rem;line-height:1.3;}
+    #devkit .dk-step:hover{background:#37485c;border-color:#5a7088;}
+    #devkit .dk-step b{color:#ffd479;}
+    #devkit .dk-actions{display:flex;gap:6px;margin-top:12px;}
+    #devkit .dk-act{flex:1;background:#33455a;color:#e7eef6;border:1px solid #44586e;border-radius:8px;padding:7px;
+      font-weight:700;font-size:.74rem;cursor:pointer;}
+    #devkit .dk-act:hover{background:#3d5167;}`;
+    const style=document.createElement('style'); style.textContent=css; document.head.appendChild(style);
+
+    const root=document.createElement('div'); root.id='devkit';
+    let html='<button class="dk-toggle" id="dkToggle">🛠️ Dev</button>'
+      +'<div class="dk-panel"><p class="dk-head">🛠️ Accès développeur</p>'
+      +'<p class="dk-note">Va directement à un niveau : tout ce qui précède est considéré comme réussi.</p>';
+    GAMES.forEach(g=>{
+      html+='<div class="dk-lv">'+g.name+'</div>';
+      g.levels.forEach((t,i)=>{
+        html+='<a class="dk-step" href="'+g.file+'?go='+(i+1)+'"><b>Niveau '+(i+1)+'</b> · '+t+'</a>';
+      });
+    });
+    html+='<div class="dk-actions"><button class="dk-act" id="dkUnlockAll">🔓 Tout débloquer</button>'
+      +'<button class="dk-act" id="dkReset">🧹 Reset complet</button></div></div>';
+    root.innerHTML=html;
+    document.body.appendChild(root);
+
+    document.getElementById('dkToggle').onclick=()=>root.classList.toggle('open');
+    function set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+    function del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+    document.getElementById('dkUnlockAll').onclick=()=>{
+      GAMES.forEach(g=>set(g.unlock, String(g.stepN)));
+      location.reload();
+    };
+    document.getElementById('dkReset').onclick=()=>{
+      GAMES.forEach(g=>{ del(g.unlock); del(g.cur); for(let i=1;i<=g.stepN;i++) del((g.unlock.startsWith('tt')?'tt_step_l':'kb_step_l')+i); });
+      del('tt_step');
+      location.reload();
+    };
   })();
 </script>
 </body>

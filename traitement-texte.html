@@ -104,6 +104,37 @@
   .t-btn:active{transform:translateY(1px);}
   .t-btn:disabled{opacity:.38;cursor:default;background:#fff;border-color:#e2e8f0;}
   .t-btn:disabled:hover{background:#fff;border-color:#e2e8f0;}
+  .t-btn.tool-locked{position:relative;opacity:.5;background:#f3f5f8;border-color:#e2e8f0;color:#9aa8b8;cursor:not-allowed;}
+  .t-btn.tool-locked:hover{background:#f3f5f8;border-color:#e2e8f0;}
+  .t-btn.tool-locked::after{content:'🔒';position:absolute;top:-7px;right:-7px;font-size:.72rem;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
+  .ch.tab{display:inline-block;width:2.6em;}
+  .ctx-menu{position:fixed;z-index:140;background:#fff;border:2px solid var(--line);border-radius:12px;
+    box-shadow:0 14px 34px rgba(20,30,42,.28);padding:6px;min-width:148px;display:flex;flex-direction:column;gap:2px;}
+  .ctx-item{display:block;width:100%;text-align:left;background:none;border:none;border-radius:8px;
+    padding:9px 12px;font-family:inherit;font-weight:700;font-size:.98rem;color:var(--ink);cursor:pointer;}
+  .ctx-item:hover{background:#eef4ff;}
+  .ctx-item.off{opacity:.4;cursor:default;}
+  .ctx-item.off:hover{background:none;}
+  #tableArea{padding:10px 4px;min-height:220px;}
+  .tbl-empty{text-align:center;color:var(--muted);padding:42px 16px;font-weight:700;line-height:1.5;}
+  .tbl-empty .tbl-empty-ic{font-size:2.8rem;color:#c3d1e2;margin-bottom:6px;}
+  .gwrap{display:flex;align-items:flex-start;justify-content:center;gap:0;margin:8px auto;width:max-content;max-width:100%;}
+  .rgutter{display:flex;flex-direction:column;flex:0 0 auto;}
+  .rowhandle{width:14px;border:1px solid transparent;border-right:none;background:transparent;
+    cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M2 8h11M9 4l4 4-4 4' stroke='%2322303f' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 2 8, e-resize;
+    border-radius:0;margin:0 0 -1px 0;}
+  .rowhandle:hover{background:transparent;}
+  .rowhandle.on{background:transparent;border-color:transparent;}
+  .gtable{border-collapse:collapse;table-layout:fixed;}
+  .gtable td{position:relative;vertical-align:top;padding:0;background:#fff;}
+  .gtable .cell-in{padding:7px 9px;min-height:1.2em;outline:none;font-size:15px;}
+  .gtable td.sel{outline:3px solid var(--blue);outline-offset:-3px;}
+  .gtable td.blink{animation:cellBlink .65s ease;}
+  @keyframes cellBlink{0%,100%{box-shadow:inset 0 0 0 0 rgba(245,158,11,0);}40%{box-shadow:inset 0 0 0 4px var(--amber);}}
+  .col-grip{position:absolute;top:0;right:-3px;width:8px;height:100%;cursor:col-resize;z-index:3;}
+  .row-grip{position:absolute;left:0;bottom:-3px;height:8px;width:100%;cursor:row-resize;z-index:3;}
+  .col-grip:hover,.row-grip:hover{background:rgba(37,99,235,.28);}
+  .t-btn.t-wide{width:auto;min-width:0;padding:0 12px;font-size:.92rem;}
   .t-btn:focus-visible, .t-sel:focus-visible{outline:3px solid var(--blue);outline-offset:2px;}
   .t-btn.bold{font-weight:800;}
   .t-btn.italic{font-style:italic;font-family:Georgia,serif;}
@@ -413,8 +444,37 @@
         </select>
       </div>
     </div>
+    <!-- ===== NIVEAU 6 : barre d'outils tableau ===== -->
+    <div class="toolbar" id="table-toolbar" style="display:none">
+      <span class="t-label" style="font-weight:800;color:var(--blue-d)">Tableau :</span>
+      <div class="tgroup">
+        <button class="t-btn t-wide" id="tb-insert" title="Insérer un tableau">➕ Tableau</button>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup color-wrap">
+        <button class="t-btn color" id="tb-fill" title="Couleur de fond des cellules">🪣<span class="bar" id="tbFillBar" style="background:#ffef5c"></span></button>
+        <div class="swatches" id="tb-swatches"></div>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup">
+        <button class="t-btn t-wide" id="tb-merge" title="Fusionner les cellules sélectionnées">⛶ Fusionner</button>
+        <button class="t-btn t-wide" id="tb-split" title="Fractionner la cellule">⤲ Fractionner</button>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup">
+        <span class="t-label">Bordures</span>
+        <select class="t-sel" id="tb-border" title="Style des bordures">
+          <option value="none">Aucune</option>
+          <option value="thin" selected>Fines</option>
+          <option value="thick">Épaisses</option>
+        </select>
+      </div>
+    </div>
     <div class="canvas">
-      <div class="page"><div id="editor" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true"></div></div>
+      <div class="page">
+        <div id="editor" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true"></div>
+        <div id="tableArea" style="display:none"></div>
+      </div>
     </div>
   </div>
 
@@ -449,6 +509,29 @@ function buildDoc(){
   return arr;
 }
 function clone(d){ return d.map(o=>Object.assign({},o)); }
+
+/* ---- Édition de CONTENU (Niveaux « écrire ») : texte ⟷ doc, comparaison, transformations ---- */
+function textOf(d){ let s=''; for(const o of d) s+=o.c; return s; }
+function docFromText(text){ const arr=[]; for(const ch of text) arr.push(Object.assign({c:ch}, DEFAULT)); return arr; }
+function syncFull(){ FULL=textOf(doc); PARAS=FULL.split('\n'); }
+// normalise pour comparer le contenu : tab→⇥ (significatif), espaces multiples→1, on enlève les bords ; les retours à la ligne comptent
+function normContent(text){
+  return text.split('\n').map(l => l.replace(/\t/g,'⇥').replace(/ +/g,' ').trim()).join('\n');
+}
+function applyOneTextTransform(text, t){
+  if(t.op==='insertAfter'){ const i=text.indexOf(t.anchor); if(i<0) throw new Error('ancre introuvable: '+t.anchor); const at=i+t.anchor.length; return text.slice(0,at)+t.ins+text.slice(at); }
+  if(t.op==='insertBefore'){ const i=text.indexOf(t.anchor); if(i<0) throw new Error('ancre introuvable: '+t.anchor); return text.slice(0,i)+t.ins+text.slice(i); }
+  if(t.op==='copyPhrase' || t.op==='movePhrase'){
+    const i=text.indexOf(t.phrase); if(i<0) throw new Error('phrase introuvable: '+t.phrase);
+    let work = (t.op==='movePhrase') ? (text.slice(0,i)+text.slice(i+t.phrase.length)) : text;
+    const j=work.indexOf(t.toAfter); if(j<0) throw new Error('ancre introuvable: '+t.toAfter);
+    const at=j+t.toAfter.length;
+    return work.slice(0,at)+(t.sep||'')+t.phrase+(t.endSep||'')+work.slice(at);
+  }
+  throw new Error('transformation inconnue: '+t.op);
+}
+function applyTextTransforms(text, transforms){ (transforms||[]).forEach(t=>{ text=applyOneTextTransform(text,t); }); return text; }
+
 function paraRange(idx){
   let start=0,p=0;
   for(let i=0;i<FULL.length;i++){
@@ -466,6 +549,7 @@ function findWord(word, occ=1){
 function rangeOf(op){
   if(op.range==='title') return paraRange(0);
   if(typeof op.para==='number') return paraRange(op.para);
+  if(op.phrase) return findWord(op.phrase, op.occ||1);   // plusieurs mots / phrase entière (sous-chaîne)
   if(op.word) return findWord(op.word, op.occ||1);
   return op.range;
 }
@@ -500,19 +584,30 @@ function aeq(x,y){ return x.b===y.b&&x.i===y.i&&x.u===y.u&&x.size===y.size&&x.co
   &&x.lh===y.lh&&x.spb===y.spb&&x.spa===y.spa&&x.indl===y.indl&&x.indr===y.indr&&x.ind1===y.ind1&&x.hl===y.hl
   &&x.list===y.list&&x.lvl===y.lvl&&x.bul===y.bul; }
 function isSpace(c){ return c===' '; }
+const ATTRS=['b','i','u','size','color','font','align','lh','spb','spa','indl','indr','ind1','hl','list','lvl','bul'];
+// Comparaison ATTRIBUT PAR ATTRIBUT : faire « plus que demandé » sur la bonne cible compte comme « en trop » (→ Presque), pas comme « manquant ».
 function evaluate(start, goal, cur){
   const missing=[], extra=[]; let startedTask=false;
   for(let i=0;i<cur.length;i++){
     if(cur[i].c==='\n' || isSpace(cur[i].c)) continue; // newline + space tolerance
     const g=goal[i], s=start[i], c=cur[i];
-    const required=!aeq(g,s);
-    if(required){ if(!aeq(c,s)) startedTask=true; if(!aeq(c,g)) missing.push(i); }
-    else { if(!aeq(c,s)) extra.push(i); }
+    let miss=false, ext=false, started=false;
+    for(const a of ATTRS){
+      if(g[a]!==s[a]){               // attribut qu'il FAUT changer
+        if(c[a]!==s[a]) started=true;
+        if(c[a]!==g[a]) miss=true;
+      }else{                         // attribut qu'il NE FAUT PAS toucher
+        if(c[a]!==s[a]) ext=true;
+      }
+    }
+    if(started) startedTask=true;
+    if(miss) missing.push(i);
+    if(ext) extra.push(i);
   }
   let status;
   if(missing.length===0 && extra.length===0) status='success';
-  else if(missing.length===0) status='extra';
-  else status='error';
+  else if(missing.length===0) status='extra';   // tout le requis est fait + des extras → Presque
+  else status='error';                           // requis incomplet (onError départage Oh oh / Pas encore selon extra)
   return {status, missing, extra, startedTask};
 }
 
@@ -530,7 +625,17 @@ const LEVEL1_DEFS = [
     hint:{target:'btn-bold', text:`Sélectionne le mot <b>« précieuse »</b> (double-clic), puis clique sur le bouton <span class="hint-target">G</span> qui brille.`},
     expect:`mettre le mot « précieuse » en gras` },
 
-  { kind:'mission', id:'italique', label:'Mission 2', icon:'✒️',
+  { kind:'mission', id:'gras-phrase', label:'Mission 2', icon:'🅱️',
+    title:'Gras sur plusieurs mots',
+    intro:`On peut mettre <b>plusieurs mots d'affilée</b> en gras d'un seul coup. Sélectionne les deux mots <b>« sans arrêt »</b> et mets-les en gras.`,
+    how:[`Clique <b>juste avant</b> le mot <b>sans</b> et <b>glisse</b> jusqu'à la fin du mot <b>arrêt</b> (les deux mots deviennent bleus).`,
+         `Clique sur le bouton <b>G</b> (Gras).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'bold',phrase:'sans arrêt'}],
+    hint:{target:'btn-bold', text:`Sélectionne les deux mots <b>« sans arrêt »</b> en glissant, puis clique sur le bouton <span class="hint-target">G</span>.`},
+    expect:`mettre les deux mots « sans arrêt » en gras` },
+
+  { kind:'mission', id:'italique', label:'Mission 3', icon:'✒️',
     title:'Mettre en italique',
     intro:`Le mot <b>« voyage »</b> montre que l'eau bouge. On va l'écrire en <b>italique</b> (les lettres sont penchées).`,
     how:[`<b>Double-clique</b> sur le mot <b>voyage</b>.`,
@@ -540,7 +645,17 @@ const LEVEL1_DEFS = [
     hint:{target:'btn-italic', text:`Sélectionne le mot <b>« voyage »</b>, puis clique sur le bouton <span class="hint-target">I</span> qui brille.`},
     expect:`mettre le mot « voyage » en italique` },
 
-  { kind:'mission', id:'souligne', label:'Mission 3', icon:'✏️',
+  { kind:'mission', id:'italique-phrase', label:'Mission 4', icon:'🖋️',
+    title:'Italique sur une phrase',
+    intro:`Cette fois, on met <b>toute une phrase</b> en italique. Sélectionne la phrase <b>« Le soleil chauffe l'eau des océans. »</b> en entier, puis mets-la en italique.`,
+    how:[`Clique <b>juste avant</b> le <b>L</b> de « Le soleil » et <b>glisse</b> jusqu'au <b>point</b> après « océans ».`,
+         `Clique sur le bouton <b>I</b> (Italique).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'italic',phrase:`Le soleil chauffe l'eau des océans.`}],
+    hint:{target:'btn-italic', text:`Sélectionne toute la phrase <b>« Le soleil chauffe l'eau des océans. »</b> (jusqu'au point), puis clique sur <span class="hint-target">I</span>.`},
+    expect:`mettre la phrase « Le soleil chauffe l'eau des océans. » en italique` },
+
+  { kind:'mission', id:'souligne', label:'Mission 5', icon:'✏️',
     title:'Souligner un mot',
     intro:`On va <b>souligner</b> le mot <b>« nuages »</b> : un trait apparaît sous le mot.`,
     how:[`<b>Double-clique</b> sur le mot <b>nuages</b>.`,
@@ -550,23 +665,35 @@ const LEVEL1_DEFS = [
     hint:{target:'btn-underline', text:`Sélectionne le mot <b>« nuages »</b>, puis clique sur le bouton <span class="hint-target">S</span> qui brille.`},
     expect:`souligner le mot « nuages »` },
 
+  { kind:'mission', id:'souligne-phrase', label:'Mission 6', icon:'📏',
+    title:'Souligner plusieurs mots',
+    intro:`On souligne <b>plusieurs mots à la suite</b>. Sélectionne <b>« la pluie tombe »</b> et souligne ces trois mots.`,
+    how:[`Clique <b>juste avant</b> le mot <b>la</b> et <b>glisse</b> jusqu'à la fin de <b>tombe</b>.`,
+         `Clique sur le bouton <b>S</b> (Souligné).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'underline',phrase:'la pluie tombe'}],
+    hint:{target:'btn-underline', text:`Sélectionne les trois mots <b>« la pluie tombe »</b> en glissant, puis clique sur le bouton <span class="hint-target">S</span>.`},
+    expect:`souligner les trois mots « la pluie tombe »` },
+
   { kind:'test', id:'testA', label:'Jalon 1', icon:'🏆',
     title:'La météo des mots !',
-    intro:`Bravo, tu connais le <b>gras</b>, l'<b>italique</b> et le <b>souligné</b> ! Cette fois, ce ne sont <b>plus les mêmes mots</b> et il y en a <b>plus à faire</b>. Lis bien chaque consigne. Voici les <b>5 choses</b> à réussir :`,
+    intro:`Bravo, tu sais mettre en <b>gras</b>, en <b>italique</b> et <b>souligner</b>, sur <b>un mot ou plusieurs</b> ! Cette fois, ce ne sont <b>plus les mêmes mots</b>. Voici les <b>6 choses</b> à réussir :`,
     tasks:[`Mets le mot <b>soleil</b> en <b>gras</b>.`,
            `Mets le mot <b>pluie</b> en <b>gras</b>.`,
            `Mets le mot <b>océans</b> en <b>italique</b>.`,
            `<b>Souligne</b> le mot <b>ciel</b>.`,
-           `<b>Souligne</b> le mot <b>Terre</b>.`],
+           `<b>Souligne</b> le mot <b>Terre</b>.`,
+           `Mets toute la phrase <b>« Elle voyage sans arrêt. »</b> en <b>gras</b>.`],
     ops:[{type:'bold',word:'soleil'},
          {type:'bold',word:'pluie'},
          {type:'italic',word:'océans'},
          {type:'underline',word:'ciel'},
-         {type:'underline',word:'Terre'}],
-    replayRefs:['gras','italique','souligne'],
-    expect:`mettre « soleil » et « pluie » en gras, « océans » en italique, et souligner « ciel » et « Terre »` },
+         {type:'underline',word:'Terre'},
+         {type:'bold',phrase:'Elle voyage sans arrêt.'}],
+    replayRefs:['gras','gras-phrase','italique','souligne'],
+    expect:`mettre « soleil », « pluie » et la phrase « Elle voyage sans arrêt. » en gras, « océans » en italique, et souligner « ciel » et « Terre »` },
 
-  { kind:'mission', id:'taille', label:'Mission 4', icon:'🔠',
+  { kind:'mission', id:'taille', label:'Mission 7', icon:'🔠',
     title:'Changer la taille',
     intro:`Un titre doit être plus <b>grand</b> que le reste. On agrandit le titre <b>« Le cycle de l'eau »</b> en taille <b>28</b>.`,
     how:[`Sélectionne tout le titre : clique juste avant le <b>L</b> et <b>glisse</b> jusqu'après le <b>u</b>.`,
@@ -576,7 +703,7 @@ const LEVEL1_DEFS = [
     hint:{target:'sel-size', text:`Sélectionne tout le titre, puis ouvre le menu des <span class="hint-target">tailles</span> et choisis <b>28</b>.`},
     expect:`mettre le titre « Le cycle de l'eau » en taille 28` },
 
-  { kind:'mission', id:'couleur', label:'Mission 5', icon:'🎨',
+  { kind:'mission', id:'couleur', label:'Mission 8', icon:'🎨',
     title:'Changer la couleur',
     intro:`On met le titre en <b>bleu</b> pour le rendre joli.`,
     how:[`Sélectionne tout le titre <b>« Le cycle de l'eau »</b>.`,
@@ -586,7 +713,17 @@ const LEVEL1_DEFS = [
     hint:{target:'btn-color', text:`Sélectionne le titre, clique sur le bouton <span class="hint-target">A</span> (Couleur) qui brille, puis choisis le <b>bleu</b>.`},
     expect:`mettre le titre en bleu` },
 
-  { kind:'mission', id:'centrer', label:'Mission 6', icon:'🎯',
+  { kind:'mission', id:'couleur-phrase', label:'Mission 9', icon:'🌈',
+    title:'Colorer une phrase',
+    intro:`La couleur marche aussi sur <b>une phrase entière</b> du texte. Sélectionne la phrase <b>« L'eau revient sur la Terre. »</b> et mets-la en <b>vert</b>.`,
+    how:[`Clique <b>juste avant</b> le <b>L</b> de « L'eau » et <b>glisse</b> jusqu'au <b>point</b> après « Terre ».`,
+         `Clique sur le bouton <b>A</b> (Couleur), puis choisis le <b>vert</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'color',phrase:`L'eau revient sur la Terre.`,value:'#16a34a'}],
+    hint:{target:'btn-color', text:`Sélectionne toute la phrase <b>« L'eau revient sur la Terre. »</b>, puis choisis le <b>vert</b> avec le bouton <span class="hint-target">A</span>.`},
+    expect:`mettre la phrase « L'eau revient sur la Terre. » en vert` },
+
+  { kind:'mission', id:'centrer', label:'Mission 10', icon:'🎯',
     title:'Centrer le titre',
     intro:`Un titre est souvent au <b>milieu</b> de la page. On va <b>centrer</b> le titre.`,
     how:[`Sélectionne le titre <b>« Le cycle de l'eau »</b>.`,
@@ -596,7 +733,7 @@ const LEVEL1_DEFS = [
     hint:{target:'btn-align-center', text:`Sélectionne le titre, puis clique sur le bouton <span class="hint-target">Centrer</span> qui brille (les traits sont au milieu).`},
     expect:`centrer le titre` },
 
-  { kind:'mission', id:'police', label:'Mission 7', icon:'🔤',
+  { kind:'mission', id:'police', label:'Mission 11', icon:'🔤',
     title:'Changer la police',
     intro:`On change le <b>style des lettres</b> du titre. On choisit la police <b>Georgia</b>.`,
     how:[`Sélectionne le titre <b>« Le cycle de l'eau »</b>.`,
@@ -608,21 +745,23 @@ const LEVEL1_DEFS = [
 
   { kind:'test', id:'testB', label:'Jalon 2', icon:'🏆',
     title:'La mise en page complète !',
-    intro:`Dernier défi du niveau ! Ici on ne refait pas les exercices à l'identique : <b>nouvelles valeurs</b> et <b>plus d'étapes</b>. Mets en page le titre comme un pro. Voici les <b>6 choses</b> à faire :`,
+    intro:`Dernier défi du niveau ! Ici on ne refait pas les exercices à l'identique : <b>nouvelles valeurs</b> et <b>plus d'étapes</b>. Mets en page le titre comme un pro. Voici les <b>7 choses</b> à faire :`,
     tasks:[`<b>Centre</b> le titre <b>« Le cycle de l'eau »</b>.`,
            `Mets le titre en taille <b>36</b>.`,
            `Mets le titre en police <b>Verdana</b>.`,
            `Mets le titre en couleur <b>verte</b>.`,
            `Mets le titre en <b>gras</b>.`,
-           `Mets le mot <b>nuages</b> en <b>italique</b>.`],
+           `Mets le mot <b>nuages</b> en <b>italique</b>.`,
+           `<b>Souligne</b> toute la phrase <b>« Le soleil chauffe l'eau des océans. »</b>.`],
     ops:[{type:'align',range:'title',value:'center'},
          {type:'size',range:'title',value:36},
          {type:'font',range:'title',value:'Verdana'},
          {type:'color',range:'title',value:'#16a34a'},
          {type:'bold',range:'title'},
-         {type:'italic',word:'nuages'}],
-    replayRefs:['centrer','taille','police','couleur','gras','italique'],
-    expect:`centrer le titre, le mettre en taille 36, en police Verdana, en vert et en gras, et mettre « nuages » en italique` }
+         {type:'italic',word:'nuages'},
+         {type:'underline',phrase:`Le soleil chauffe l'eau des océans.`}],
+    replayRefs:['centrer','taille','police','couleur','souligne-phrase'],
+    expect:`centrer le titre, le mettre en taille 36, police Verdana, vert et gras, mettre « nuages » en italique, et souligner la phrase « Le soleil chauffe l'eau des océans. »` }
 ];
 
 /* ---------- NIVEAU 2 — Paragraphes & Alignements ---------- */
@@ -647,7 +786,18 @@ const LEVEL2_DEFS = [
     hint:{target:'btn-align-justify', text:`Clique dans le paragraphe du hibou, puis clique sur le bouton <span class="hint-target">Justifier</span> qui brille.`},
     expect:`justifier le paragraphe du hibou` },
 
-  { kind:'mission', id:'interligne', label:'Mission 3', icon:'↕️',
+  { kind:'mission', id:'droite-tout', label:'Mission 3', icon:'➡️',
+    title:'Tout aligner à droite',
+    intro:`Cette fois, on aligne <b>tout le texte</b> d'un seul coup. <b>Sélectionne tout</b> (le titre et les paragraphes) puis aligne le tout à droite.`,
+    how:[`<b>Sélectionne tout le texte</b> : clique tout au début du titre et <b>glisse</b> jusqu'à la fin du dernier paragraphe (ou appuie sur <b>Ctrl + A</b>).`,
+         `Clique sur le bouton <b>Aligner à droite</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'align',para:0,value:'right'},{type:'align',para:1,value:'right'},
+         {type:'align',para:2,value:'right'},{type:'align',para:3,value:'right'}],
+    hint:{target:'btn-align-right', text:`Sélectionne <b>tout le texte</b> (ou <b>Ctrl + A</b>), puis clique sur <span class="hint-target">Aligner à droite</span>.`},
+    expect:`sélectionner tout le texte et l'aligner à droite` },
+
+  { kind:'mission', id:'interligne', label:'Mission 4', icon:'↕️',
     title:"Changer l'interligne",
     intro:`L'<b>interligne</b>, c'est l'espace entre les lignes. On aère le paragraphe du <b>renard</b> en mettant un interligne <b>double</b>.`,
     how:[`Clique <b>dans le paragraphe du renard</b>.`,
@@ -657,21 +807,33 @@ const LEVEL2_DEFS = [
     hint:{target:'sel-linespacing', text:`Clique dans le paragraphe du renard, puis ouvre le menu <span class="hint-target">Interligne</span> et choisis <b>2</b>.`},
     expect:`mettre le paragraphe du renard en interligne double` },
 
+  { kind:'mission', id:'interligne-hibou', label:'Mission 5', icon:'↕️',
+    title:"Interligne 1,5 (encore)",
+    intro:`On refait un interligne, mais avec une <b>autre valeur</b> et sur un <b>autre paragraphe</b>. Mets le paragraphe du <b>hibou</b> en interligne <b>1,5</b>.`,
+    how:[`Clique <b>dans le paragraphe du hibou</b>.`,
+         `Dans le menu <b>Interligne</b>, choisis <b>1,5</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'lh',para:2,value:1.5}],
+    hint:{target:'sel-linespacing', text:`Clique dans le paragraphe du hibou, puis choisis <b>1,5</b> dans le menu <span class="hint-target">Interligne</span>.`},
+    expect:`mettre le paragraphe du hibou en interligne 1,5` },
+
   { kind:'test', id:'test2A', label:'Jalon 1', icon:'🏆',
     title:'Le rangement des paragraphes !',
-    intro:`Montre que tu sais placer les paragraphes ! Cette fois les cibles et les valeurs <b>changent</b>. Voici les <b>4 choses</b> à réussir :`,
+    intro:`Montre que tu sais placer les paragraphes ! Cette fois les cibles et les valeurs <b>changent</b>. Voici les <b>5 choses</b> à réussir :`,
     tasks:[`<b>Centre</b> le titre <b>« Les animaux de la forêt »</b>.`,
            `<b>Justifie</b> le paragraphe de l'<b>écureuil</b>.`,
            `Aligne à <b>droite</b> le paragraphe du <b>renard</b>.`,
-           `Mets le paragraphe du <b>hibou</b> en interligne <b>1,5</b>.`],
+           `Mets le paragraphe du <b>hibou</b> en interligne <b>1,5</b>.`,
+           `Mets le paragraphe de l'<b>écureuil</b> en interligne <b>double</b>.`],
     ops:[{type:'align',range:'title',value:'center'},
          {type:'align',para:3,value:'justify'},
          {type:'align',para:1,value:'right'},
-         {type:'lh',para:2,value:1.5}],
-    replayRefs:['droite','justifier','interligne'],
-    expect:`centrer le titre, justifier l'écureuil, aligner le renard à droite et mettre le hibou en interligne 1,5` },
+         {type:'lh',para:2,value:1.5},
+         {type:'lh',para:3,value:2}],
+    replayRefs:['droite','droite-tout','justifier','interligne','interligne-hibou'],
+    expect:`centrer le titre, justifier et aérer l'écureuil, aligner le renard à droite et mettre le hibou en interligne 1,5` },
 
-  { kind:'mission', id:'espacement', label:'Mission 4', icon:'⤓',
+  { kind:'mission', id:'espacement', label:'Mission 6', icon:'⤓',
     title:'Espacer les paragraphes',
     intro:`On peut ajouter du <b>vide avant et après</b> un paragraphe pour qu'il respire. Ajoute de l'espace <b>avant</b> et <b>après</b> le paragraphe du <b>hibou</b>.`,
     how:[`Clique <b>dans le paragraphe du hibou</b>.`,
@@ -681,7 +843,7 @@ const LEVEL2_DEFS = [
     hint:{target:'sel-space-before', text:`Clique dans le paragraphe du hibou, puis règle <span class="hint-target">Espace avant</span> et <span class="hint-target">Espace après</span> sur <b>24</b>.`},
     expect:`mettre un espace de 24 avant et après le paragraphe du hibou` },
 
-  { kind:'mission', id:'retrait', label:'Mission 5', icon:'➡',
+  { kind:'mission', id:'retrait', label:'Mission 7', icon:'➡',
     title:'Décaler avec un retrait',
     intro:`Un <b>retrait</b> décale le paragraphe vers la droite. On décale le paragraphe du <b>hibou</b> : un retrait à gauche <b>et</b> un retrait de première ligne.`,
     how:[`Clique <b>dans le paragraphe du hibou</b>.`,
@@ -691,7 +853,7 @@ const LEVEL2_DEFS = [
     hint:{target:'btn-indent-inc', text:`Clique dans le paragraphe du hibou, puis utilise <span class="hint-target">Augmenter le retrait</span> et <span class="hint-target">Retrait 1ʳᵉ ligne</span>.`},
     expect:`décaler le paragraphe du hibou (retrait gauche + retrait de première ligne)` },
 
-  { kind:'mission', id:'surlignage', label:'Mission 6', icon:'🖍️',
+  { kind:'mission', id:'surlignage', label:'Mission 8', icon:'🖍️',
     title:'Surligner un paragraphe',
     intro:`Le <b>surligneur</b> ajoute de la couleur <b>derrière le texte</b>, comme un vrai feutre fluo. <b>Sélectionne</b> le texte du paragraphe de l'<b>écureuil</b>, puis surligne-le en <b>jaune</b>.`,
     how:[`<b>Sélectionne</b> le texte du paragraphe de l'écureuil (clique au début et glisse jusqu'à la fin).`,
@@ -701,107 +863,587 @@ const LEVEL2_DEFS = [
     hint:{target:'btn-parabg', text:`Sélectionne le texte du paragraphe de l'écureuil, puis clique sur <span class="hint-target">Surlignage</span> 🖍️ et choisis le <b>jaune</b>.`},
     expect:`surligner le texte du paragraphe de l'écureuil en jaune` },
 
+  { kind:'mission', id:'surlignage-renard', label:'Mission 9', icon:'🖍️',
+    title:'Surligner une phrase',
+    intro:`Le surligneur marche aussi sur <b>une seule phrase</b>. Sélectionne la phrase <b>« Le renard est très malin. »</b> et surligne-la en <b>vert</b>.`,
+    how:[`<b>Sélectionne</b> la phrase « Le renard est très malin. » (clique avant <b>Le</b> et glisse jusqu'au <b>point</b>).`,
+         `Clique sur <b>Surlignage</b> 🖍️, puis choisis le <b>vert</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'pbg',phrase:'Le renard est très malin.',value:'#b9f6ca'}],
+    hint:{target:'btn-parabg', text:`Sélectionne la phrase <b>« Le renard est très malin. »</b>, puis clique sur <span class="hint-target">Surlignage</span> 🖍️ et choisis le <b>vert</b>.`},
+    expect:`surligner la phrase « Le renard est très malin. » en vert` },
+
+  { kind:'mission', id:'surlignage-hibou', label:'Mission 10', icon:'🖍️',
+    title:'Surligner une phrase (encore)',
+    intro:`On recommence avec une <b>autre phrase</b> et une <b>autre couleur</b>. Sélectionne <b>« Le hibou dort le jour. »</b> et surligne-la en <b>rose</b>.`,
+    how:[`<b>Sélectionne</b> la phrase « Le hibou dort le jour. » en glissant.`,
+         `Clique sur <b>Surlignage</b> 🖍️, puis choisis le <b>rose</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'pbg',phrase:'Le hibou dort le jour.',value:'#ffd6e7'}],
+    hint:{target:'btn-parabg', text:`Sélectionne la phrase <b>« Le hibou dort le jour. »</b>, puis surligne-la en <b>rose</b> avec <span class="hint-target">Surlignage</span> 🖍️.`},
+    expect:`surligner la phrase « Le hibou dort le jour. » en rose` },
+
   { kind:'test', id:'test2B', label:'Jalon 2', icon:'🏆',
     title:'La belle mise en page !',
-    intro:`Dernier défi du niveau ! Combine tous tes nouveaux pouvoirs sur la page. Valeurs et cibles <b>différentes</b> des exercices. Voici les <b>5 choses</b> à faire :`,
+    intro:`Dernier défi du niveau ! Combine tous tes nouveaux pouvoirs sur la page. Valeurs et cibles <b>différentes</b> des exercices. Voici les <b>6 choses</b> à faire :`,
     tasks:[`Mets le paragraphe du <b>renard</b> en interligne <b>double</b>.`,
            `Ajoute un espace <b>avant</b> (24) au paragraphe de l'<b>écureuil</b>.`,
            `Décale le paragraphe du <b>hibou</b> avec un <b>retrait gauche</b>.`,
            `<b>Surligne</b> le <b>titre</b> en jaune.`,
-           `<b>Centre</b> le titre.`],
+           `<b>Centre</b> le titre.`,
+           `<b>Surligne</b> la phrase <b>« L'écureuil adore les noisettes. »</b> en vert.`],
     ops:[{type:'lh',para:1,value:2},
          {type:'spb',para:3,value:24},
          {type:'indl',para:2,value:24},
          {type:'pbg',range:'title',value:'#ffef5c'},
-         {type:'align',range:'title',value:'center'}],
-    replayRefs:['interligne','espacement','retrait','surlignage','justifier'],
-    expect:`interligne double sur le renard, espace avant sur l'écureuil, retrait gauche sur le hibou, et titre centré et surligné en jaune` }
+         {type:'align',range:'title',value:'center'},
+         {type:'pbg',phrase:`L'écureuil adore les noisettes.`,value:'#b9f6ca'}],
+    replayRefs:['interligne','espacement','retrait','surlignage','surlignage-renard'],
+    expect:`interligne double sur le renard, espace avant sur l'écureuil, retrait gauche sur le hibou, titre centré et surligné en jaune, et la phrase de l'écureuil surlignée en vert` }
 ];
 
 /* ---------- NIVEAU 3 — Listes & Structure ---------- */
 const LEVEL3_DEFS = [
   { kind:'mission', id:'puces', label:'Mission 1', icon:'•',
     title:'Créer une liste à puces',
-    intro:`Une <b>liste à puces</b> met un petit point devant chaque ligne. Transforme les <b>4 lignes</b> de courses en liste à puces.`,
-    how:[`Sélectionne les <b>4 lignes</b> (de « Un cahier rouge » jusqu'à « Une règle ») : clique au début et <b>glisse</b> jusqu'en bas.`,
+    intro:`Une <b>liste à puces</b> met un petit point devant chaque ligne. Transforme les <b>6 lignes</b> de courses en liste à puces.`,
+    how:[`Sélectionne les <b>6 lignes</b> (de « Un cahier rouge » jusqu'à « Une gomme blanche ») : clique au début et <b>glisse</b> jusqu'en bas.`,
          `Clique sur le bouton <b>Liste à puces</b>.`,
          `Clique sur <b>Valider ma mission</b>.`],
     ops:[{type:'list',para:1,value:'bullet'},{type:'list',para:2,value:'bullet'},
-         {type:'list',para:3,value:'bullet'},{type:'list',para:4,value:'bullet'}],
-    hint:{target:'btn-list-bullet', text:`Sélectionne les 4 lignes, puis clique sur le bouton <span class="hint-target">Liste à puces</span> qui brille.`},
-    expect:`transformer les 4 lignes en liste à puces` },
+         {type:'list',para:3,value:'bullet'},{type:'list',para:4,value:'bullet'},
+         {type:'list',para:5,value:'bullet'},{type:'list',para:6,value:'bullet'}],
+    hint:{target:'btn-list-bullet', text:`Sélectionne les 6 lignes, puis clique sur le bouton <span class="hint-target">Liste à puces</span> qui brille.`},
+    expect:`transformer les 6 lignes en liste à puces` },
 
   { kind:'mission', id:'puce-style', label:'Mission 2', icon:'★',
     title:'Changer le style des puces',
-    intro:`On peut remplacer le petit point par une autre forme. Mets des puces en forme d'<b>étoile ★</b> sur toute la liste.`,
-    how:[`Sélectionne les <b>4 lignes</b> de la liste.`,
+    intro:`On peut remplacer le petit point par une autre forme. <b>Sélectionne toute la liste</b> et mets des puces en forme d'<b>étoile ★</b>.`,
+    how:[`Sélectionne les <b>6 lignes</b> de la liste.`,
          `Dans le menu <b>Puce</b>, choisis l'<b>étoile ★</b>.`,
          `Clique sur <b>Valider ma mission</b>.`],
     ops:[{type:'bullet',para:1,value:'star'},{type:'bullet',para:2,value:'star'},
-         {type:'bullet',para:3,value:'star'},{type:'bullet',para:4,value:'star'}],
-    hint:{target:'sel-bullet', text:`Sélectionne les 4 lignes, puis ouvre le menu <span class="hint-target">Puce</span> et choisis l'<b>étoile ★</b>.`},
+         {type:'bullet',para:3,value:'star'},{type:'bullet',para:4,value:'star'},
+         {type:'bullet',para:5,value:'star'},{type:'bullet',para:6,value:'star'}],
+    hint:{target:'sel-bullet', text:`Sélectionne les 6 lignes, puis ouvre le menu <span class="hint-target">Puce</span> et choisis l'<b>étoile ★</b>.`},
     expect:`mettre des puces en forme d'étoile sur la liste` },
 
-  { kind:'mission', id:'imbriquer', label:'Mission 3', icon:'⇥',
+  { kind:'mission', id:'puce-carre', label:'Mission 3', icon:'▪️',
+    title:'Un autre style de puces',
+    intro:`On recommence avec une <b>autre forme</b>. Sélectionne encore les <b>6 lignes</b> et mets des puces <b>carrées ▪</b>.`,
+    how:[`Sélectionne les <b>6 lignes</b> de la liste.`,
+         `Dans le menu <b>Puce</b>, choisis le <b>carré ▪</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'bullet',para:1,value:'square'},{type:'bullet',para:2,value:'square'},
+         {type:'bullet',para:3,value:'square'},{type:'bullet',para:4,value:'square'},
+         {type:'bullet',para:5,value:'square'},{type:'bullet',para:6,value:'square'}],
+    hint:{target:'sel-bullet', text:`Sélectionne les 6 lignes, puis choisis le <b>carré ▪</b> dans le menu <span class="hint-target">Puce</span>.`},
+    expect:`mettre des puces carrées sur la liste` },
+
+  { kind:'mission', id:'imbriquer', label:'Mission 4', icon:'⇥',
     title:'Imbriquer une ligne',
     intro:`<b>Imbriquer</b>, c'est décaler une ligne vers la droite pour en faire une <b>sous-liste</b>. La puce <b>change toute seule</b> pour montrer le nouveau niveau. Imbrique la ligne <b>« Une règle »</b>.`,
-    how:[`Clique <b>dans la ligne « Une règle »</b> (la dernière).`,
+    how:[`Clique <b>dans la ligne « Une règle »</b>.`,
          `Clique sur le bouton <b>Augmenter le retrait</b> ⇥ : la ligne s'imbrique et la puce change.`,
          `Clique sur <b>Valider ma mission</b>.`],
     ops:[{type:'listlevel',para:4,value:1}],
     hint:{target:'btn-indent-inc', text:`Clique dans la ligne « Une règle », puis clique sur le bouton <span class="hint-target">Augmenter le retrait</span> ⇥ qui brille.`},
     expect:`imbriquer la ligne « Une règle » d'un niveau` },
 
-  { kind:'mission', id:'numerotee', label:'Mission 4', icon:'1️⃣',
+  { kind:'mission', id:'imbriquer-gomme', label:'Mission 5', icon:'⇥',
+    title:'Imbriquer une autre ligne',
+    intro:`On répète l'imbrication sur une <b>autre ligne</b>. Imbrique la ligne <b>« Une gomme blanche »</b> (la dernière).`,
+    how:[`Clique <b>dans la ligne « Une gomme blanche »</b> (la dernière).`,
+         `Clique sur le bouton <b>Augmenter le retrait</b> ⇥.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'listlevel',para:6,value:1}],
+    hint:{target:'btn-indent-inc', text:`Clique dans la ligne « Une gomme blanche », puis clique sur <span class="hint-target">Augmenter le retrait</span> ⇥.`},
+    expect:`imbriquer la ligne « Une gomme blanche » d'un niveau` },
+
+  { kind:'mission', id:'numerotee', label:'Mission 6', icon:'1️⃣',
     title:'Créer une liste numérotée',
-    intro:`Une <b>liste numérotée</b> met 1, 2, 3… devant chaque ligne, parfait pour des étapes. Transforme la liste en <b>liste numérotée</b>.`,
-    how:[`Sélectionne les <b>4 lignes</b> de la liste.`,
+    intro:`Une <b>liste numérotée</b> met 1, 2, 3… devant chaque ligne, parfait pour des étapes. <b>Sélectionne les 6 lignes</b> et transforme-les en <b>liste numérotée</b>.`,
+    how:[`Sélectionne les <b>6 lignes</b> de la liste.`,
          `Clique sur le bouton <b>Liste numérotée</b>.`,
          `Clique sur <b>Valider ma mission</b>.`],
     ops:[{type:'list',para:1,value:'number'},{type:'list',para:2,value:'number'},
-         {type:'list',para:3,value:'number'},{type:'list',para:4,value:'number'}],
-    hint:{target:'btn-list-number', text:`Sélectionne les 4 lignes, puis clique sur le bouton <span class="hint-target">Liste numérotée</span> qui brille.`},
+         {type:'list',para:3,value:'number'},{type:'list',para:4,value:'number'},
+         {type:'list',para:5,value:'number'},{type:'list',para:6,value:'number'}],
+    hint:{target:'btn-list-number', text:`Sélectionne les 6 lignes, puis clique sur le bouton <span class="hint-target">Liste numérotée</span> qui brille.`},
     expect:`transformer la liste en liste numérotée` },
 
-  { kind:'mission', id:'convertir', label:'Mission 5', icon:'🔄',
+  { kind:'mission', id:'convertir', label:'Mission 7', icon:'🔄',
     title:'Reconvertir en texte',
-    intro:`Une liste peut <b>redevenir du texte normal</b>. Re-clique sur le bouton de la liste pour enlever les numéros et retrouver un texte simple.`,
-    how:[`Sélectionne les <b>4 lignes</b> de la liste.`,
+    intro:`Une liste peut <b>redevenir du texte normal</b>. Sélectionne les 6 lignes et re-clique sur le bouton de la liste pour enlever les numéros.`,
+    how:[`Sélectionne les <b>6 lignes</b> de la liste.`,
          `Clique à nouveau sur <b>Liste numérotée</b> pour la <b>désactiver</b>.`,
          `Clique sur <b>Valider ma mission</b>.`],
     ops:[{type:'list',para:1,value:'none'},{type:'list',para:2,value:'none'},
-         {type:'list',para:3,value:'none'},{type:'list',para:4,value:'none'}],
-    hint:{target:'btn-list-number', text:`Sélectionne les 4 lignes, puis re-clique sur <span class="hint-target">Liste numérotée</span> pour revenir au texte.`},
+         {type:'list',para:3,value:'none'},{type:'list',para:4,value:'none'},
+         {type:'list',para:5,value:'none'},{type:'list',para:6,value:'none'}],
+    hint:{target:'btn-list-number', text:`Sélectionne les 6 lignes, puis re-clique sur <span class="hint-target">Liste numérotée</span> pour revenir au texte.`},
     expect:`reconvertir la liste en texte normal` },
 
   { kind:'test', id:'test3A', label:'Jalon 1', icon:'🏆',
     title:'La liste bien décorée !',
-    intro:`Montre que tu maîtrises les listes à puces ! Cibles et style <b>différents</b> des exercices. Voici les <b>3 choses</b> à faire :`,
-    tasks:[`Transforme les <b>4 lignes</b> en <b>liste à puces</b>.`,
+    intro:`Montre que tu maîtrises les listes à puces ! Cibles et style <b>différents</b> des exercices. Voici les <b>4 choses</b> à faire :`,
+    tasks:[`Transforme les <b>6 lignes</b> en <b>liste à puces</b>.`,
            `Mets des puces en forme de <b>flèche ➜</b>.`,
-           `<b>Imbrique</b> la ligne <b>« Une trousse »</b>.`],
+           `<b>Imbrique</b> la ligne <b>« Une trousse »</b>.`,
+           `<b>Imbrique</b> aussi la ligne <b>« Une gomme blanche »</b>.`],
     ops:[{type:'list',para:1,value:'bullet'},{type:'list',para:2,value:'bullet'},
          {type:'list',para:3,value:'bullet'},{type:'list',para:4,value:'bullet'},
+         {type:'list',para:5,value:'bullet'},{type:'list',para:6,value:'bullet'},
          {type:'bullet',para:1,value:'arrow'},{type:'bullet',para:2,value:'arrow'},
          {type:'bullet',para:3,value:'arrow'},{type:'bullet',para:4,value:'arrow'},
-         {type:'listlevel',para:2,value:1}],
-    replayRefs:['puces','puce-style','imbriquer'],
-    expect:`mettre les 4 lignes en liste à puces flèche et imbriquer « Une trousse »` },
+         {type:'bullet',para:5,value:'arrow'},{type:'bullet',para:6,value:'arrow'},
+         {type:'listlevel',para:2,value:1},
+         {type:'listlevel',para:6,value:1}],
+    replayRefs:['puces','puce-style','imbriquer','imbriquer-gomme'],
+    expect:`mettre les 6 lignes en liste à puces flèche, et imbriquer « Une trousse » et « Une gomme blanche »` },
 
   { kind:'test', id:'test3B', label:'Jalon 2', icon:'🏆',
     title:'La liste de pro !',
-    intro:`Dernier défi du parcours ! Tu combines listes, structure et mise en forme. Voici les <b>4 choses</b> à faire :`,
-    tasks:[`Transforme les <b>4 lignes</b> en <b>liste numérotée</b>.`,
+    intro:`Dernier défi du parcours ! Tu combines listes, structure et mise en forme. Voici les <b>5 choses</b> à faire :`,
+    tasks:[`Transforme les <b>6 lignes</b> en <b>liste numérotée</b>.`,
            `<b>Imbrique</b> la ligne <b>« Des crayons de couleur »</b>.`,
+           `<b>Imbrique</b> aussi la ligne <b>« Un grand classeur »</b>.`,
            `<b>Centre</b> le titre <b>« Ma liste pour l'école »</b>.`,
            `Mets le titre en <b>gras</b>.`],
     ops:[{type:'list',para:1,value:'number'},{type:'list',para:2,value:'number'},
          {type:'list',para:3,value:'number'},{type:'list',para:4,value:'number'},
+         {type:'list',para:5,value:'number'},{type:'list',para:6,value:'number'},
          {type:'listlevel',para:3,value:1},
+         {type:'listlevel',para:5,value:1},
          {type:'align',range:'title',value:'center'},
          {type:'bold',range:'title'}],
-    replayRefs:['numerotee','imbriquer','puces'],
-    expect:`mettre les 4 lignes en liste numérotée, imbriquer « Des crayons de couleur », et centrer le titre en gras` }
+    replayRefs:['numerotee','imbriquer','imbriquer-gomme','puces'],
+    expect:`mettre les 6 lignes en liste numérotée, imbriquer « Des crayons de couleur » et « Un grand classeur », et centrer le titre en gras` }
+];
+
+/* ---------- NIVEAU 4 — Le clavier magique (raccourcis, boutons bloqués) ---------- */
+const LEVEL4_DEFS = [
+  { kind:'mission', id:'gras-clavier', label:'Mission 1', icon:'⌨️',
+    title:'Le gras au clavier',
+    intro:`Surprise : les boutons <b>G</b>, <b>I</b> et <b>S</b> sont <b>🔒 bloqués</b> dans ce niveau ! On va faire le gras <b>avec le clavier</b>. Mets le mot <b>« raccourci »</b> en gras avec <b>Ctrl + B</b>.`,
+    how:[`<b>Double-clique</b> sur le mot <b>raccourci</b>.`,
+         `Garde la touche <b>Ctrl</b> enfoncée et appuie sur <b>B</b> (Ctrl + B).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'bold',word:'raccourci'}],
+    hint:{target:'btn-bold', text:`Sélectionne <b>« raccourci »</b>, puis appuie sur <b>Ctrl + B</b> (le bouton G est bloqué !).`},
+    expect:`mettre « raccourci » en gras avec Ctrl + B` },
+
+  { kind:'mission', id:'italique-clavier', label:'Mission 2', icon:'⌨️',
+    title:"L'italique au clavier",
+    intro:`Pour l'italique, c'est <b>Ctrl + I</b>. Mets le mot <b>« ordinateur »</b> en italique avec le clavier.`,
+    how:[`<b>Double-clique</b> sur le mot <b>ordinateur</b>.`,
+         `Garde <b>Ctrl</b> enfoncé et appuie sur <b>I</b> (Ctrl + I).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'italic',word:'ordinateur'}],
+    hint:{target:'btn-italic', text:`Sélectionne <b>« ordinateur »</b>, puis appuie sur <b>Ctrl + I</b>.`},
+    expect:`mettre « ordinateur » en italique avec Ctrl + I` },
+
+  { kind:'mission', id:'souligne-clavier', label:'Mission 3', icon:'⌨️',
+    title:'Le souligné au clavier',
+    intro:`Pour souligner, c'est <b>Ctrl + U</b>. Souligne le mot <b>« pratique »</b> avec le clavier.`,
+    how:[`<b>Double-clique</b> sur le mot <b>pratique</b>.`,
+         `Garde <b>Ctrl</b> enfoncé et appuie sur <b>U</b> (Ctrl + U).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'underline',word:'pratique'}],
+    hint:{target:'btn-underline', text:`Sélectionne <b>« pratique »</b>, puis appuie sur <b>Ctrl + U</b>.`},
+    expect:`souligner « pratique » avec Ctrl + U` },
+
+  { kind:'mission', id:'gras-phrase-clavier', label:'Mission 4', icon:'⌨️',
+    title:'Plusieurs mots au clavier',
+    intro:`Le raccourci marche aussi sur <b>plusieurs mots</b>. Sélectionne <b>« deux touches suffisent »</b> et mets-les en gras avec <b>Ctrl + B</b>.`,
+    how:[`Clique <b>juste avant</b> « deux » et <b>glisse</b> jusqu'à la fin de « suffisent ».`,
+         `Appuie sur <b>Ctrl + B</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'bold',phrase:'deux touches suffisent'}],
+    hint:{target:'btn-bold', text:`Sélectionne <b>« deux touches suffisent »</b>, puis appuie sur <b>Ctrl + B</b>.`},
+    expect:`mettre « deux touches suffisent » en gras avec Ctrl + B` },
+
+  { kind:'mission', id:'italique-clavier-2', label:'Mission 5', icon:'⌨️',
+    title:'Encore de l\'italique',
+    intro:`On répète l'italique au clavier. Mets le mot <b>« vite »</b> en italique avec <b>Ctrl + I</b>.`,
+    how:[`<b>Double-clique</b> sur le mot <b>vite</b>.`,
+         `Garde <b>Ctrl</b> enfoncé et appuie sur <b>I</b> (Ctrl + I).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'italic',word:'vite'}],
+    hint:{target:'btn-italic', text:`Sélectionne <b>« vite »</b>, puis appuie sur <b>Ctrl + I</b>.`},
+    expect:`mettre « vite » en italique avec Ctrl + I` },
+
+  { kind:'mission', id:'souligne-clavier-2', label:'Mission 6', icon:'⌨️',
+    title:'Encore du souligné',
+    intro:`On répète le souligné au clavier. Souligne le mot <b>« Ctrl »</b> avec <b>Ctrl + U</b>.`,
+    how:[`<b>Double-clique</b> sur le mot <b>Ctrl</b>.`,
+         `Garde <b>Ctrl</b> enfoncé et appuie sur <b>U</b> (Ctrl + U).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'underline',word:'Ctrl'}],
+    hint:{target:'btn-underline', text:`Sélectionne <b>« Ctrl »</b>, puis appuie sur <b>Ctrl + U</b>.`},
+    expect:`souligner « Ctrl » avec Ctrl + U` },
+
+  { kind:'mission', id:'gras-clavier-2', label:'Mission 7', icon:'⌨️',
+    title:'Encore du gras',
+    intro:`On répète le gras au clavier. Mets le mot <b>« magique »</b> en gras avec <b>Ctrl + B</b>.`,
+    how:[`<b>Double-clique</b> sur le mot <b>magique</b>.`,
+         `Garde <b>Ctrl</b> enfoncé et appuie sur <b>B</b> (Ctrl + B).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'bold',word:'magique'}],
+    hint:{target:'btn-bold', text:`Sélectionne <b>« magique »</b>, puis appuie sur <b>Ctrl + B</b>.`},
+    expect:`mettre « magique » en gras avec Ctrl + B` },
+
+  { kind:'mission', id:'souligne-phrase-clavier', label:'Mission 8', icon:'⌨️',
+    title:'Souligner plusieurs mots',
+    intro:`Le souligné marche aussi sur <b>plusieurs mots</b>. Sélectionne <b>« C'est très pratique »</b> et souligne avec <b>Ctrl + U</b>.`,
+    how:[`Clique <b>juste avant</b> « C'est » et <b>glisse</b> jusqu'à la fin de « pratique ».`,
+         `Appuie sur <b>Ctrl + U</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    ops:[{type:'underline',phrase:`C'est très pratique`}],
+    hint:{target:'btn-underline', text:`Sélectionne <b>« C'est très pratique »</b>, puis appuie sur <b>Ctrl + U</b>.`},
+    expect:`souligner « C'est très pratique » avec Ctrl + U` },
+
+  { kind:'test', id:'test4A', label:'Jalon 1', icon:'🏆',
+    title:'Le champion du clavier !',
+    intro:`Montre que tu maîtrises les raccourcis ! Les boutons restent <b>bloqués</b> : tout au clavier. Voici les <b>4 choses</b> à faire :`,
+    tasks:[`Mets le mot <b>Ctrl</b> en <b>gras</b> (Ctrl + B).`,
+           `Mets <b>« deux touches suffisent »</b> en <b>italique</b> (Ctrl + I).`,
+           `<b>Souligne</b> le mot <b>lettre</b> (Ctrl + U).`,
+           `Mets <b>« raccourci clavier »</b> en <b>gras</b> (Ctrl + B).`],
+    ops:[{type:'bold',word:'Ctrl'},
+         {type:'italic',phrase:'deux touches suffisent'},
+         {type:'underline',word:'lettre'},
+         {type:'bold',phrase:'raccourci clavier'}],
+    replayRefs:['gras-clavier','italique-clavier','souligne-clavier','gras-phrase-clavier'],
+    expect:`mettre « Ctrl » et « raccourci clavier » en gras, « deux touches suffisent » en italique, et souligner « lettre », le tout au clavier` }
+];
+
+/* ---------- NIVEAU 5 — Écrire et déplacer (édition de contenu) ---------- */
+const LEVEL5_DEFS = [
+  { kind:'mission', id:'entree-ligne', label:'Mission 1', icon:'⏎', contentMode:true,
+    title:'Sauter une ligne',
+    intro:`La touche <b>Entrée ⏎</b> fait passer à la ligne. Mets <b>« Je joue dans le sable. »</b> sur une <b>nouvelle ligne</b> : place ton curseur <b>juste après « voyage. »</b> et appuie sur <b>Entrée</b>.`,
+    how:[`Clique <b>juste après le point</b> de « Je pars en voyage. ».`,
+         `Appuie sur la touche <b>Entrée ⏎</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    transforms:[{op:'insertAfter', anchor:'Je pars en voyage.', ins:'\n'}],
+    hint:{target:'editor', text:`Place le curseur après « voyage. », puis appuie sur <b>Entrée</b> pour aller à la ligne.`},
+    expect:`passer à la ligne après « Je pars en voyage. » avec Entrée` },
+
+  { kind:'mission', id:'entree-vide', label:'Mission 2', icon:'⏎', contentMode:true,
+    title:'Laisser une ligne vide',
+    intro:`Appuie <b>deux fois</b> sur <b>Entrée</b> pour laisser une <b>ligne vide</b>. Place ton curseur <b>après « sable. »</b> et appuie deux fois sur Entrée.`,
+    how:[`Clique <b>juste après le point</b> de « Je joue dans le sable. ».`,
+         `Appuie <b>deux fois</b> sur <b>Entrée ⏎</b> (une ligne vide apparaît).`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    transforms:[{op:'insertAfter', anchor:'Je joue dans le sable.', ins:'\n\n'}],
+    hint:{target:'editor', text:`Curseur après « sable. », puis <b>Entrée</b> deux fois pour une ligne vide.`},
+    expect:`laisser une ligne vide après « Je joue dans le sable. »` },
+
+  { kind:'mission', id:'tab-decaler', label:'Mission 3', icon:'⇥', contentMode:true,
+    title:'Décaler avec Tab',
+    intro:`La touche <b>Tab ⇥</b> décale le texte vers la droite. Place ton curseur <b>tout au début</b> de « Je pars en voyage. » et appuie sur <b>Tab</b>.`,
+    how:[`Clique <b>tout au début</b> de la phrase « Je pars en voyage. » (juste avant le <b>J</b>).`,
+         `Appuie sur la touche <b>Tab ⇥</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    transforms:[{op:'insertBefore', anchor:'Je pars en voyage.', ins:'\t'}],
+    hint:{target:'editor', text:`Curseur juste avant le <b>J</b> de « Je pars… », puis appuie sur <b>Tab ⇥</b>.`},
+    expect:`décaler le début de « Je pars en voyage. » avec Tab` },
+
+  { kind:'mission', id:'copier-coller', label:'Mission 4', icon:'📋', contentMode:true,
+    title:'Copier-coller',
+    intro:`<b>Copier</b>, c'est garder une copie pour la coller ailleurs. Copie la phrase <b>« Je joue dans le sable. »</b> et colle-la une 2ᵉ fois à la fin, sur une nouvelle ligne.`,
+    how:[`<b>Sélectionne</b> la phrase « Je joue dans le sable. » (clic-glissé).`,
+         `Fais un <b>clic droit → Copier</b>.`,
+         `Clique <b>tout à la fin</b> du texte, appuie sur <b>Entrée</b>, puis <b>clic droit → Coller</b>. Valide !`],
+    transforms:[{op:'copyPhrase', phrase:'Je joue dans le sable.', toAfter:'Je rentre à la maison.', sep:'\n'}],
+    hint:{target:'editor', text:`Sélectionne « Je joue dans le sable. », puis <b>clic droit → Copier</b>. Va à la fin, <b>Entrée</b>, puis <b>clic droit → Coller</b>.`},
+    expect:`copier « Je joue dans le sable. » et la coller sur une nouvelle ligne à la fin` },
+
+  { kind:'mission', id:'couper-coller', label:'Mission 5', icon:'✂️', contentMode:true,
+    title:'Couper-coller pour déplacer',
+    intro:`<b>Couper</b>, c'est enlever le texte pour le <b>déplacer</b> ailleurs. Déplace la phrase <b>« Je pars en voyage. »</b> tout à la fin.`,
+    how:[`<b>Sélectionne</b> la phrase « Je pars en voyage. ».`,
+         `Fais un <b>clic droit → Couper</b> : la phrase disparaît.`,
+         `Clique <b>à la fin</b> du texte, appuie sur <b>Entrée</b>, puis <b>clic droit → Coller</b>. Valide !`],
+    transforms:[{op:'movePhrase', phrase:'Je pars en voyage.', toAfter:'Je rentre à la maison.', sep:'\n'}],
+    hint:{target:'editor', text:`Sélectionne « Je pars en voyage. », <b>clic droit → Couper</b>. Va à la fin, <b>Entrée</b>, <b>clic droit → Coller</b>.`},
+    expect:`déplacer « Je pars en voyage. » à la fin (couper-coller)` },
+
+  { kind:'mission', id:'entree-ligne-2', label:'Mission 6', icon:'⏎', contentMode:true,
+    title:'Sauter des lignes (encore)',
+    intro:`On répète les sauts de ligne, mais cette fois <b>à deux endroits</b> ! Mets <b>chacune des trois phrases</b> sur sa propre ligne.`,
+    how:[`Clique <b>juste après le point</b> de « Je pars en voyage. » et appuie sur <b>Entrée ⏎</b>.`,
+         `Clique <b>juste après le point</b> de « Je joue dans le sable. » et appuie sur <b>Entrée ⏎</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    transforms:[
+      {op:'insertAfter', anchor:'Je pars en voyage.', ins:'\n'},
+      {op:'insertAfter', anchor:'Je joue dans le sable.', ins:'\n'}],
+    hint:{target:'editor', text:`Curseur après « voyage. » → <b>Entrée</b>. Puis curseur après « sable. » → <b>Entrée</b>.`},
+    expect:`mettre chaque phrase sur sa propre ligne avec Entrée (2 fois)` },
+
+  { kind:'mission', id:'tab-decaler-2', label:'Mission 7', icon:'⇥', contentMode:true,
+    title:'Décaler avec Tab (encore)',
+    intro:`On répète le décalage. Place ton curseur <b>tout au début</b> de « Je rentre à la maison. » et appuie sur <b>Tab</b>.`,
+    how:[`Clique <b>tout au début</b> de « Je rentre à la maison. » (juste avant le <b>J</b>).`,
+         `Appuie sur la touche <b>Tab ⇥</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    transforms:[{op:'insertBefore', anchor:'Je rentre à la maison.', ins:'\t'}],
+    hint:{target:'editor', text:`Curseur avant le <b>J</b> de « Je rentre… », puis <b>Tab ⇥</b>.`},
+    expect:`décaler le début de « Je rentre à la maison. » avec Tab` },
+
+  { kind:'mission', id:'copier-coller-2', label:'Mission 8', icon:'📋', contentMode:true,
+    title:'Copier-coller (encore)',
+    intro:`On répète le copier-coller. Copie la phrase <b>« Je pars en voyage. »</b> et colle-la une 2ᵉ fois à la fin, sur une nouvelle ligne.`,
+    how:[`<b>Sélectionne</b> la phrase « Je pars en voyage. ».`,
+         `<b>Clic droit → Copier</b> (ou <b>Ctrl + C</b>).`,
+         `Clique <b>à la fin</b> du texte, appuie sur <b>Entrée</b>, puis <b>colle</b> (Ctrl + V). Valide !`],
+    transforms:[{op:'copyPhrase', phrase:'Je pars en voyage.', toAfter:'Je rentre à la maison.', sep:'\n'}],
+    hint:{target:'editor', text:`Sélectionne la phrase, <b>Ctrl+C</b>. Va à la fin, <b>Entrée</b>, <b>Ctrl+V</b>.`},
+    expect:`copier « Je pars en voyage. » et la coller sur une nouvelle ligne à la fin` },
+
+  { kind:'mission', id:'couper-coller-2', label:'Mission 9', icon:'✂️', contentMode:true,
+    title:'Couper-coller (encore)',
+    intro:`On répète le couper-coller. Déplace la phrase <b>« Je joue dans le sable. »</b> tout à la fin.`,
+    how:[`<b>Sélectionne</b> la phrase « Je joue dans le sable. ».`,
+         `<b>Clic droit → Couper</b> (ou <b>Ctrl + X</b>).`,
+         `Clique <b>à la fin</b> du texte, appuie sur <b>Entrée</b>, puis <b>colle</b> (Ctrl + V). Valide !`],
+    transforms:[{op:'movePhrase', phrase:'Je joue dans le sable.', toAfter:'Je rentre à la maison.', sep:'\n'}],
+    hint:{target:'editor', text:`Sélectionne « Je joue dans le sable. », <b>Ctrl+X</b>. Va à la fin, <b>Entrée</b>, <b>Ctrl+V</b>.`},
+    expect:`déplacer « Je joue dans le sable. » à la fin (couper-coller)` },
+
+  { kind:'mission', id:'copier-clavier', label:'Mission 10', icon:'⌨️', contentMode:true, blockContextMenu:true,
+    title:'Copier avec le clavier (plusieurs fois)',
+    intro:`Le <b>clic droit est bloqué</b> ! Tu dois utiliser les <b>touches du clavier</b> : <b>Ctrl+C</b> pour copier et <b>Ctrl+V</b> pour coller. Fais <b>deux copier-coller</b> d'affilée.`,
+    how:[`<b>Sélectionne</b> « Je pars en voyage. » → appuie sur <b>Ctrl+C</b>.`,
+         `Va <b>à la fin</b> du texte, appuie sur <b>Entrée</b>, puis <b>Ctrl+V</b> pour coller.`,
+         `<b>Sélectionne</b> « Je joue dans le sable. » → <b>Ctrl+C</b>.`,
+         `Va <b>à la fin</b>, appuie sur <b>Entrée</b>, puis <b>Ctrl+V</b>. Valide !`],
+    transforms:[
+      {op:'copyPhrase', phrase:'Je pars en voyage.', toAfter:'Je rentre à la maison.', sep:'\n'},
+      {op:'copyPhrase', phrase:'Je joue dans le sable.', toAfter:'Je rentre à la maison.\nJe pars en voyage.', sep:'\n'}],
+    hint:{target:'editor', text:`Sélectionne « Je pars en voyage. », <b>Ctrl+C</b>, va à la fin, <b>Entrée</b>, <b>Ctrl+V</b>. Recommence avec « Je joue dans le sable. ».`},
+    expect:`copier « Je pars en voyage. » puis « Je joue dans le sable. » avec Ctrl+C / Ctrl+V` },
+
+  { kind:'mission', id:'couper-clavier', label:'Mission 11', icon:'⌨️', contentMode:true, blockContextMenu:true,
+    title:'Couper avec le clavier (plusieurs fois)',
+    intro:`Le <b>clic droit est bloqué</b> ! Utilise <b>Ctrl+X</b> pour couper et <b>Ctrl+V</b> pour coller. Déplace <b>deux phrases</b> à la fin.`,
+    how:[`<b>Sélectionne</b> « Je pars en voyage. » → appuie sur <b>Ctrl+X</b> : la phrase disparaît.`,
+         `Va <b>à la fin</b> du texte, appuie sur <b>Entrée</b>, puis <b>Ctrl+V</b> pour coller.`,
+         `<b>Sélectionne</b> « Je joue dans le sable. » → <b>Ctrl+X</b>.`,
+         `Va <b>à la fin</b>, appuie sur <b>Entrée</b>, puis <b>Ctrl+V</b>. Valide !`],
+    transforms:[
+      {op:'movePhrase', phrase:'Je pars en voyage.', toAfter:'Je rentre à la maison.', sep:'\n'},
+      {op:'movePhrase', phrase:'Je joue dans le sable.', toAfter:'Je rentre à la maison.\nJe pars en voyage.', sep:'\n'}],
+    hint:{target:'editor', text:`Sélectionne « Je pars en voyage. », <b>Ctrl+X</b>, va à la fin, <b>Entrée</b>, <b>Ctrl+V</b>. Recommence avec « Je joue dans le sable. ».`},
+    expect:`déplacer « Je pars en voyage. » puis « Je joue dans le sable. » avec Ctrl+X / Ctrl+V` },
+
+  { kind:'test', id:'test5A', label:'Jalon 1', icon:'🏆', contentMode:true,
+    title:'Le texte bien rangé !',
+    intro:`Montre tout ce que tu sais faire ! Voici les <b>4 choses</b> à accomplir :`,
+    tasks:[`Mets <b>« Je pars en voyage. »</b> sur sa propre ligne (curseur après le point, <b>Entrée</b>).`,
+           `Décale <b>« Je rentre à la maison. »</b> avec <b>Tab</b> (curseur tout au début de la phrase).`,
+           `<b>Copie</b> « Je pars en voyage. » et colle-la sur une <b>nouvelle ligne à la fin</b> (<b>Ctrl+C</b> / <b>Ctrl+V</b> ou clic droit).`,
+           `<b>Coupe</b> « Je joue dans le sable. » et colle-la sur une <b>nouvelle ligne tout à la fin</b> (<b>Ctrl+X</b> / <b>Ctrl+V</b> ou clic droit).`],
+    transforms:[
+      {op:'copyPhrase', phrase:'Je pars en voyage.', toAfter:'Je rentre à la maison.', sep:'\n'},
+      {op:'movePhrase', phrase:'Je joue dans le sable.', toAfter:'Je rentre à la maison.\nJe pars en voyage.', sep:'\n'},
+      {op:'insertAfter', anchor:'Je pars en voyage.', ins:'\n'},
+      {op:'insertBefore', anchor:'Je rentre à la maison.', ins:'\t'}],
+    replayRefs:['entree-ligne','tab-decaler','copier-coller','couper-coller','copier-clavier','couper-clavier'],
+    expect:`mettre « Je pars en voyage. » sur sa ligne (Entrée), décaler « Je rentre » avec Tab, copier « Je pars » à la fin, et couper-coller « Je joue » tout à la fin` }
+];
+
+/* ---------- NIVEAU 6 — Les tableaux ---------- */
+function tbMeteoEmpty(){ return newTable(5,3); }
+function tbMeteoHeader(){ const t=newTable(5,3); cellAt(t,1,0).text='Jour'; cellAt(t,1,1).text='Temps'; cellAt(t,1,2).text='Température'; return t; }
+function tbMeteoFull(){ const t=tbMeteoHeader(); cellAt(t,0,0).text='La météo de la semaine';
+  [['Lundi','☀️ Soleil','22°'],['Mardi','☁️ Nuages','18°'],['Mercredi','🌧️ Pluie','15°']].forEach((row,r)=>row.forEach((v,c)=>{ cellAt(t,2+r,c).text=v; })); return t; }
+function _b(t,list){ list.forEach(([r,c])=>cellAt(t,r,c).b=true); return t; }
+function _i(t,list){ list.forEach(([r,c])=>cellAt(t,r,c).i=true); return t; }
+function _u(t,list){ list.forEach(([r,c])=>cellAt(t,r,c).u=true); return t; }
+function _bg(t,list,hex){ list.forEach(([r,c])=>cellAt(t,r,c).bg=hex); return t; }
+function _merge(t,r0,c0,r1,c1){ cellAt(t,r0,c0).colspan=c1-c0+1; cellAt(t,r0,c0).rowspan=r1-r0+1;
+  for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){ if(r===r0&&c===c0)continue; cellAt(t,r,c).covered=true; } return t; }
+function _bord(t,v){ for(let r=0;r<t.rows;r++)for(let c=0;c<t.cols;c++) cellAt(t,r,c).bord=v; return t; }
+function _colw(t,c,w){ t.colW[c]=w; return t; }
+function tbAnimaux(){ const t=newTable(3,2);
+  cellAt(t,0,0).text='Animal'; cellAt(t,0,1).text='Cri';
+  cellAt(t,1,0).text='Chat'; cellAt(t,1,1).text='Miaou';
+  cellAt(t,2,0).text='Chien'; cellAt(t,2,1).text='Ouaf'; return t; }
+function tbMenu(){ const t=newTable(4,3); cellAt(t,0,0).text='Le menu de la cantine';
+  ['Entrée','Plat','Dessert'].forEach((v,c)=>cellAt(t,1,c).text=v);
+  ['Salade','Poulet','Pomme'].forEach((v,c)=>cellAt(t,2,c).text=v);
+  ['Soupe','Poisson','Yaourt'].forEach((v,c)=>cellAt(t,3,c).text=v); return t; }
+function tbScores(){ const t=newTable(4,3); cellAt(t,0,0).text='Les scores du tournoi';
+  ['Équipe','Points','Rang'].forEach((v,c)=>cellAt(t,1,c).text=v);
+  ['Les Lions','12','1er'].forEach((v,c)=>cellAt(t,2,c).text=v);
+  ['Les Tigres','9','2e'].forEach((v,c)=>cellAt(t,3,c).text=v); return t; }
+
+const LEVEL6_DEFS = [
+  { kind:'mission', id:'tab-inserer', label:'Mission 1', icon:'➕', tableMode:true,
+    title:'Insérer un tableau',
+    intro:`Un <b>tableau</b> range les informations en cases. Insère un tableau de <b>3 colonnes</b> et <b>5 lignes</b>.`,
+    how:[`Clique sur le bouton <b>➕ Tableau</b> tout en haut.`,
+         `Choisis <b>3 colonnes</b> et <b>5 lignes</b>, puis clique sur <b>Insérer</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:null, goalTable:tbMeteoEmpty(),
+    hint:{target:'tb-insert', text:`Clique sur <b>➕ Tableau</b>, choisis <b>3 colonnes × 5 lignes</b>.`},
+    expect:`insérer un tableau de 3 colonnes et 5 lignes` },
+
+  { kind:'mission', id:'tab-entete', label:'Mission 2', icon:'⌨️', tableMode:true,
+    title:'Remplir l\'en-tête',
+    intro:`On écrit le titre des colonnes sur la <b>2ᵉ ligne</b>. Dans la <b>1ʳᵉ case de la 2ᵉ ligne</b>, écris <b>Jour</b> ; dans la <b>case du milieu</b>, écris <b>Temps</b> ; dans la <b>dernière case</b>, écris <b>Température</b>.`,
+    how:[`Clique dans la <b>1ʳᵉ case de la 2ᵉ ligne</b> et tape <b>Jour</b>.`,
+         `Clique dans la <b>case du milieu</b> et tape <b>Temps</b>.`,
+         `Clique dans la <b>dernière case</b> et tape <b>Température</b>. Puis valide.`],
+    startTable:tbMeteoEmpty(), goalTable:tbMeteoHeader(),
+    hint:{target:'tableArea', cells:[[1,0],[1,1],[1,2]], seq:true, text:`Écris dans les cases de la 2ᵉ ligne, de gauche à droite : <b>Jour</b>, puis <b>Temps</b>, puis <b>Température</b>.`},
+    expect:`écrire Jour, Temps et Température sur la 2ᵉ ligne` },
+
+  { kind:'mission', id:'tab-gras', label:'Mission 3', icon:'🅰️', tableMode:true,
+    title:'Mettre les titres en gras',
+    intro:`<b>J'ai rempli le reste du tableau pour toi !</b> 🎁 Maintenant, mets les mots <b>Jour</b>, <b>Temps</b> et <b>Température</b> (la 2ᵉ ligne) en <b>gras</b>.`,
+    how:[`<b>Sélectionne les 3 cases</b> « Jour », « Temps », « Température ». Deux façons : <b>glisse</b> de « Jour » jusqu'à « Température », OU clique <b>tout à gauche de cette ligne</b> (le curseur devient une flèche ➜).`,
+         `Clique sur le bouton <b>G</b> (Gras) — ou appuie sur <b>Ctrl + B</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:tbMeteoFull(), goalTable:_b(tbMeteoFull(),[[1,0],[1,1],[1,2]]),
+    hint:{target:'tb-bold', cells:[[1,0],[1,1],[1,2]], text:`Sélectionne les cases <b>Jour</b>, <b>Temps</b>, <b>Température</b> (glisse, ou clique tout à gauche de la ligne — flèche ➜), puis <b>G</b>.`},
+    expect:`mettre Jour, Temps et Température en gras` },
+
+  { kind:'test', id:'tab-jalon1', label:'Jalon 1', icon:'🏆', tableMode:true,
+    title:'À toi de jouer !',
+    intro:`Refais un tableau <b>tout seul</b> ! Voici les <b>5 choses</b> à faire :`,
+    tasks:[`Insère un tableau de <b>2 colonnes</b> × <b>3 lignes</b>.`,
+           `Écris sur la 1ʳᵉ ligne : <b>Animal</b> puis <b>Cri</b>. 2ᵉ ligne : <b>Chat</b> puis <b>Miaou</b>. 3ᵉ ligne : <b>Chien</b> puis <b>Ouaf</b>.`,
+           `Mets la <b>1ʳᵉ ligne</b> (Animal / Cri) en <b>gras</b>.`,
+           `Mets <b>Miaou</b> en <b>italique</b>.`,
+           `<b>Souligne</b> <b>Ouaf</b>.`],
+    startTable:null, goalTable:(function(){ let t=tbAnimaux(); _b(t,[[0,0],[0,1]]); _i(t,[[1,1]]); _u(t,[[2,1]]); return t; })(),
+    replayRefs:['tab-inserer','tab-entete','tab-gras'],
+    expect:`créer le tableau des animaux, mettre l'en-tête en gras, Miaou en italique et Ouaf souligné` },
+
+  { kind:'mission', id:'tab-redim-col', label:'Mission 4', icon:'↔️', tableMode:true,
+    title:'Élargir une colonne',
+    intro:`La colonne <b>Temps</b> est trop <b>étroite</b> : le texte est <b>coupé</b> ! <b>Élargis-la</b> en faisant glisser sa bordure de droite vers la droite, jusqu'à voir tout le texte.`,
+    how:[`Place la souris sur la <b>bordure droite</b> de la colonne <b>Temps</b> (le curseur change ↔).`,
+         `<b>Clique et glisse vers la droite</b> jusqu'à ce que « Soleil », « Nuages », « Pluie » soient <b>entièrement visibles</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:_colw(tbMeteoFull(),1,52), resize:{type:'col',index:1},
+    hint:{target:'tableArea', text:`Attrape la <b>bordure droite</b> de la colonne Temps et tire vers la droite.`},
+    expect:`élargir la colonne Temps jusqu'à voir tout le texte` },
+
+  { kind:'mission', id:'tab-redim-row', label:'Mission 5', icon:'↕️', tableMode:true,
+    title:'Agrandir une ligne',
+    intro:`La ligne de <b>Mercredi</b> est trop <b>courte</b> : le texte est <b>coupé</b> en bas. <b>Agrandis-la</b> en faisant glisser sa bordure du bas vers le bas.`,
+    how:[`Place la souris sur la <b>bordure du bas</b> de la ligne <b>Mercredi</b> (le curseur change ↕).`,
+         `<b>Clique et glisse vers le bas</b> jusqu'à voir <b>tout le texte</b> de la ligne.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:(function(){ const t=tbMeteoFull(); const cl=cellAt(t,4,1); cl.text='🌧️ Pluie, pense au parapluie !'; cl.nowrap=false; t.rowH[4]=22; return t; })(),
+    resize:{type:'row',index:4},
+    hint:{target:'tableArea', text:`Attrape la <b>bordure du bas</b> de la ligne Mercredi et tire vers le bas.`},
+    expect:`agrandir la ligne de Mercredi jusqu'à voir tout le texte` },
+
+  { kind:'mission', id:'tab-fond-cell', label:'Mission 6', icon:'🪣', tableMode:true,
+    title:'Colorer une case',
+    intro:`On peut donner une <b>couleur de fond</b> à une case. Colorie la case <b>« Pluie »</b> (Mercredi) en <b>jaune</b>.`,
+    how:[`Clique sur la case <b>« 🌧️ Pluie »</b> pour la sélectionner.`,
+         `Clique sur <b>🪣 Couleur de fond</b> et choisis le <b>jaune</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:tbMeteoFull(), goalTable:_bg(tbMeteoFull(),[[4,1]],'#ffef5c'),
+    hint:{target:'tb-fill', text:`Clique la case « Pluie », puis <b>🪣</b> et le <b>jaune</b>.`},
+    expect:`colorer la case « Pluie » en jaune` },
+
+  { kind:'mission', id:'tab-fond-cell2', label:'Mission 7', icon:'🪣', tableMode:true,
+    title:'Colorer une autre case',
+    intro:`On recommence avec une <b>autre couleur</b>. Colorie la case <b>« Soleil »</b> (Lundi) en <b>orange</b>.`,
+    how:[`Clique sur la case <b>« ☀️ Soleil »</b>.`,
+         `Clique sur <b>🪣 Couleur de fond</b> et choisis l'<b>orange</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:tbMeteoFull(), goalTable:_bg(tbMeteoFull(),[[2,1]],'#ffc14d'),
+    hint:{target:'tb-fill', text:`Clique la case « Soleil », puis <b>🪣</b> et l'<b>orange</b>.`},
+    expect:`colorer la case « Soleil » en orange` },
+
+  { kind:'mission', id:'tab-fond-ligne', label:'Mission 8', icon:'🎨', tableMode:true,
+    title:'Colorer toute une ligne',
+    intro:`On colore la ligne <b>Jour / Temps / Température</b> en entier. Sélectionne ces <b>3 cases</b> et colore-les en <b>bleu</b>.`,
+    how:[`<b>Sélectionne les 3 cases</b> « Jour », « Temps », « Température » : glisse dessus, OU clique <b>tout à gauche de la ligne</b> (le curseur devient une flèche ➜).`,
+         `Clique sur <b>🪣 Couleur de fond</b> et choisis le <b>bleu</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:tbMeteoFull(), goalTable:_bg(tbMeteoFull(),[[1,0],[1,1],[1,2]],'#74d4ff'),
+    hint:{target:'tb-fill', cells:[[1,0],[1,1],[1,2]], text:`Sélectionne les cases <b>Jour</b>, <b>Temps</b>, <b>Température</b> (glisse, ou clique tout à gauche de la ligne — flèche ➜), puis <b>🪣</b> et le <b>bleu</b>.`},
+    expect:`colorer la ligne Jour / Temps / Température en bleu` },
+
+  { kind:'mission', id:'tab-fusion', label:'Mission 9', icon:'⛶', tableMode:true,
+    title:'Fusionner des cases',
+    intro:`<b>Fusionner</b>, c'est réunir plusieurs cases en une seule, parfait pour un grand titre. Sélectionne les <b>3 cases du haut</b> (la ligne du titre) et <b>fusionne-les</b>.`,
+    how:[`<b>Sélectionne les 3 cases de la 1ʳᵉ ligne</b> : clique sur la case de gauche et, <b>sans relâcher</b>, <b>glisse</b> la souris jusqu'à la case de droite (les 3 cases deviennent bleues).`,
+         `Clique sur <b>⛶ Fusionner</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:tbMeteoFull(), goalTable:_merge(tbMeteoFull(),0,0,0,2),
+    hint:{target:'tb-merge', cells:[[0,0],[0,1],[0,2]], text:`Clique la case du haut à gauche et <b>glisse</b> jusqu'à droite (3 cases bleues), puis <b>⛶ Fusionner</b>.`},
+    expect:`fusionner les 3 cases du titre en une seule` },
+
+  { kind:'test', id:'tab-jalon2', label:'Jalon 2', icon:'🏆', tableMode:true,
+    title:'Encore un tableau !',
+    intro:`Un nouveau tableau, et on revoit <b>tout</b> ! Voici les <b>6 choses</b> à faire :`,
+    tasks:[`Insère un tableau de <b>3 colonnes</b> × <b>4 lignes</b>.`,
+           `<b>Fusionne</b> les 3 cases de la 1ʳᵉ ligne (le titre) — glisse pour les sélectionner.`,
+           `Ligne 1 : écris <b>Le menu de la cantine</b> (1ʳᵉ case). Ligne 2 : <b>Entrée</b> / <b>Plat</b> / <b>Dessert</b>. Ligne 3 : <b>Salade</b> / <b>Poulet</b> / <b>Pomme</b>. Ligne 4 : <b>Soupe</b> / <b>Poisson</b> / <b>Yaourt</b>.`,
+           `Colore la ligne <b>Entrée / Plat / Dessert</b> en <b>bleu</b>.`,
+           `Mets la ligne <b>Entrée / Plat / Dessert</b> en <b>gras</b>.`,
+           `<b>Élargis</b> la colonne du <b>Plat</b> (au milieu).`],
+    startTable:null,
+    goalTable:(function(){ let t=tbMenu(); _merge(t,0,0,0,2); _bg(t,[[1,0],[1,1],[1,2]],'#74d4ff'); _b(t,[[1,0],[1,1],[1,2]]); return t; })(),
+    resizeMin:{type:'col',index:1,min:158},
+    replayRefs:['tab-inserer','tab-fusion','tab-fond-ligne','tab-gras','tab-redim-col'],
+    expect:`créer le menu : titre fusionné, en-tête bleu et gras, et colonne du Plat élargie` },
+
+  { kind:'mission', id:'tab-fractionner', label:'Mission 10', icon:'⤲', tableMode:true,
+    title:'Fractionner une case',
+    intro:`<b>Fractionner</b>, c'est l'inverse de fusionner : on <b>re-sépare</b> une grande case en plusieurs. Fractionne le <b>titre</b> qui était fusionné.`,
+    how:[`Clique sur la <b>grande case du titre</b> (en haut).`,
+         `Clique sur <b>⤲ Fractionner</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:_merge(tbMeteoFull(),0,0,0,2), goalTable:tbMeteoFull(),
+    hint:{target:'tb-split', text:`Clique la grande case du titre, puis <b>⤲ Fractionner</b>.`},
+    expect:`fractionner la case du titre en 3 cases` },
+
+  { kind:'mission', id:'tab-bord-fines', label:'Mission 11', icon:'▦', tableMode:true,
+    title:'Ajouter des bordures fines',
+    intro:`Les <b>bordures</b> sont les traits autour des cases. Sélectionne <b>tout le tableau</b> et mets des bordures <b>fines</b>.`,
+    how:[`<b>Sélectionne toutes les cases</b> : clique la case en haut à gauche et <b>glisse</b> jusqu'à la case en bas à droite.`,
+         `Dans le menu <b>Bordures</b> (en haut), choisis <b>Fines</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:_bord(tbMeteoFull(),'none'), goalTable:_bord(tbMeteoFull(),'thin'),
+    hint:{target:'tb-border', text:`Sélectionne tout le tableau (glisse de la 1ʳᵉ à la dernière case), puis <b>Bordures → Fines</b>.`},
+    expect:`mettre des bordures fines à toutes les cases` },
+
+  { kind:'mission', id:'tab-bord-epaisses', label:'Mission 12', icon:'▦', tableMode:true,
+    title:'Des bordures épaisses',
+    intro:`On rend les bordures plus <b>visibles</b>. Sélectionne <b>tout le tableau</b> et passe les bordures en <b>épaisses</b>.`,
+    how:[`<b>Sélectionne toutes les cases</b> (glisse de la 1ʳᵉ à la dernière).`,
+         `Dans le menu <b>Bordures</b>, choisis <b>Épaisses</b>.`,
+         `Clique sur <b>Valider ma mission</b>.`],
+    startTable:_bord(tbMeteoFull(),'thin'), goalTable:_bord(tbMeteoFull(),'thick'),
+    hint:{target:'tb-border', text:`Sélectionne tout le tableau (glisse), puis <b>Bordures → Épaisses</b>.`},
+    expect:`mettre des bordures épaisses à toutes les cases` },
+
+  { kind:'test', id:'tab-jalon3', label:'Jalon final', icon:'🏆', tableMode:true,
+    title:'Le tableau de pro !',
+    intro:`Dernier défi du parcours ! Un tableau complet, tout seul. Voici les <b>7 choses</b> à faire :`,
+    tasks:[`Insère un tableau de <b>3 colonnes</b> × <b>4 lignes</b>.`,
+           `<b>Fusionne</b> la 1ʳᵉ ligne (le titre) — glisse pour sélectionner les 3 cases.`,
+           `Ligne 1 : <b>Les scores du tournoi</b>. Ligne 2 : <b>Équipe</b> / <b>Points</b> / <b>Rang</b>. Ligne 3 : <b>Les Lions</b> / <b>12</b> / <b>1er</b>. Ligne 4 : <b>Les Tigres</b> / <b>9</b> / <b>2e</b>.`,
+           `Mets la ligne <b>Équipe / Points / Rang</b> en <b>bleu</b> et en <b>gras</b>.`,
+           `Colore la ligne des <b>Lions</b> (les gagnants) en <b>jaune</b>.`,
+           `<b>Élargis</b> la colonne <b>Équipe</b> (la 1ʳᵉ).`,
+           `Sélectionne tout le tableau et mets des bordures <b>épaisses</b>.`],
+    startTable:null,
+    goalTable:(function(){ let t=tbScores(); _merge(t,0,0,0,2); _bg(t,[[1,0],[1,1],[1,2]],'#74d4ff'); _b(t,[[1,0],[1,1],[1,2]]); _bg(t,[[2,0],[2,1],[2,2]],'#ffef5c'); _bord(t,'thick'); return t; })(),
+    resizeMin:{type:'col',index:0,min:150},
+    replayRefs:['tab-inserer','tab-fusion','tab-fond-ligne','tab-gras','tab-redim-col','tab-bord-epaisses'],
+    expect:`créer le tableau des scores complet : titre fusionné, en-tête bleu et gras, gagnants en jaune, colonne élargie et bordures épaisses` }
 ];
 
 /* ---------- Table des niveaux ---------- */
@@ -840,13 +1482,48 @@ const LEVELS = [
       "Un cahier rouge",
       "Une trousse",
       "Des crayons de couleur",
-      "Une règle"
+      "Une règle",
+      "Un grand classeur",
+      "Une gomme blanche"
     ],
     newTools:[
       {g:'•', n:'Liste à puces'},{g:'1.', n:'Liste numérotée'},
       {g:'★', n:'Style des puces'},{g:'⇥', n:'Augmenter / diminuer le retrait (imbriquer les listes)'}
     ],
-    defs:LEVEL3_DEFS }
+    defs:LEVEL3_DEFS },
+  { n:4, title:'Le clavier magique', subtitle:'le clavier magique',
+    paras:[
+      "Le clavier magique",
+      "Sur l'ordinateur, deux touches suffisent pour aller plus vite.",
+      "On appelle ça un raccourci clavier. C'est très pratique !",
+      "Garde la touche Ctrl enfoncée, puis appuie sur une lettre."
+    ],
+    blockTools:['btn-bold','btn-italic','btn-underline'],
+    note:`Dans ce niveau, les boutons <b>G</b>, <b>I</b> et <b>S</b> sont <b>🔒 bloqués</b> ! Tu vas les remplacer par le <b>clavier</b> : garde <b>Ctrl</b> enfoncé et appuie sur <b>B</b> (gras), <b>I</b> (italique) ou <b>U</b> (souligné).`,
+    newTools:[
+      {g:'Ctrl B', n:'Gras au clavier'},{g:'Ctrl I', n:'Italique au clavier'},
+      {g:'Ctrl U', n:'Souligné au clavier'}
+    ],
+    defs:LEVEL4_DEFS },
+  { n:5, title:'Écrire et déplacer', subtitle:'écrire et déplacer le texte', contentMode:true,
+    paras:[
+      "Mes vacances à la mer",
+      "Je pars en voyage. Je joue dans le sable. Je rentre à la maison."
+    ],
+    note:`Nouveau pouvoir : tu peux <b>écrire dans le texte</b> ! <b>Entrée ⏎</b> va à la ligne, <b>Tab ⇥</b> décale, et le <b>clic droit</b> (ou <b>Ctrl+C / Ctrl+X / Ctrl+V</b>) sert à <b>copier, couper et coller</b>.`,
+    newTools:[
+      {g:'⏎', n:'Entrée : aller à la ligne'},{g:'⇥', n:'Tab : décaler le texte'},
+      {g:'📋', n:'Copier / Coller'},{g:'✂️', n:'Couper / Coller'}
+    ],
+    defs:LEVEL5_DEFS },
+  { n:6, title:'Les tableaux', subtitle:'les tableaux', tableMode:true,
+    paras:[ "Les tableaux" ],
+    note:`Nouveau pouvoir : les <b>tableaux</b> ! Tu vas <b>insérer</b> un tableau, <b>écrire</b> dans les cases, les <b>colorer</b>, <b>redimensionner</b> les colonnes et lignes au glissé, <b>fusionner</b> des cases et choisir les <b>bordures</b>.`,
+    newTools:[
+      {g:'➕', n:'Insérer un tableau'},{g:'🪣', n:'Couleur de fond'},
+      {g:'⛶', n:'Fusionner / Fractionner'},{g:'▦', n:'Bordures'}
+    ],
+    defs:LEVEL6_DEFS }
 ];
 
 // Construit les STEPS d'un jeu de définitions (chaînage des docs start/goal)
@@ -854,9 +1531,26 @@ let STEPS=[]; let MISSIONS={};
 function buildSteps(defs){
   const steps=[], missions={};
   const base=buildDoc(); let prevGoal=clone(base);
+  const baseText=FULL;
   defs.forEach(def=>{
-    const from = def.kind==='test' ? clone(base) : clone(prevGoal);
-    const goal = applyOps(clone(from), def.ops);
+    let from, goal;
+    if(def.tableMode){
+      // étapes TABLEAU : pas de modèle caractère, on garde startTable/goalTable du def
+      const step=Object.assign({}, def);
+      steps.push(step);
+      if(def.kind==='mission') missions[def.id]=step;
+      return;
+    }
+    if(def.contentMode){
+      // étapes d'ÉDITION DE CONTENU : chacune part du texte de base, cible = texte transformé
+      const startText=baseText;
+      const goalText=applyTextTransforms(startText, def.transforms);
+      from=docFromText(startText);
+      goal=docFromText(goalText);
+    }else{
+      from = def.kind==='test' ? clone(base) : clone(prevGoal);
+      goal = applyOps(clone(from), def.ops);
+    }
     const step = Object.assign({}, def, {startDoc:from, goalDoc:goal});
     steps.push(step);
     if(def.kind==='mission') missions[def.id]=step;
@@ -909,8 +1603,10 @@ function render(){
   let counters=[];                    // compteurs de numérotation par niveau d'imbrication
   let para=document.createElement('div'); para.className='para';
   let firstCharOfPara=null;
+  let paraStart=0;                    // position-modèle du début du paragraphe courant (pour le curseur des lignes vides)
   function flush(){
-    if(firstCharOfPara===null){ para.style.textAlign='left'; editor.appendChild(para); counters=[]; return; }
+    para.dataset.p0=paraStart;
+    if(firstCharOfPara===null){ para.style.textAlign='left'; para.appendChild(document.createElement('br')); editor.appendChild(para); counters=[]; return; }
     const a=doc[firstCharOfPara];
     para.style.textAlign=a.align;
     para.style.lineHeight=a.lh;
@@ -933,8 +1629,8 @@ function render(){
     editor.appendChild(para);
   }
   for(let i=0;i<doc.length;i++){
-    if(doc[i].c==='\n'){ flush(); para=document.createElement('div'); para.className='para'; firstCharOfPara=null; continue; }
-    const sp=document.createElement('span'); sp.className='ch'; sp.dataset.i=i; sp.textContent=doc[i].c;
+    if(doc[i].c==='\n'){ flush(); para=document.createElement('div'); para.className='para'; firstCharOfPara=null; paraStart=i+1; continue; }
+    const sp=document.createElement('span'); sp.className='ch'+(doc[i].c==='\t'?' tab':''); sp.dataset.i=i; sp.textContent=doc[i].c;
     const a=doc[i];
     sp.style.fontWeight=a.b?'700':'400';
     sp.style.fontStyle=a.i?'italic':'normal';
@@ -968,7 +1664,7 @@ function pointToCaret(node, offset){
     if(el.classList && el.classList.contains('ch')){ const i=+el.dataset.i; return offset<=0? i : i+1; }
     if(el.classList && el.classList.contains('para')){
       const kids=el.querySelectorAll('.ch');
-      if(!kids.length) return null;
+      if(!kids.length) return el.dataset.p0!=null ? +el.dataset.p0 : null;   // ligne vide
       // l'offset compte tous les enfants (marqueur de liste inclus) -> on le ramène aux .ch
       const hasMarker = el.firstChild && el.firstChild.classList && el.firstChild.classList.contains('li-marker');
       let off = offset - (hasMarker?1:0);
@@ -1004,8 +1700,16 @@ function readDomSelection(){
 function caretBoundary(pos){
   let sp=(pos<doc.length)? spanOf(pos) : null;
   if(sp) return [sp.firstChild||sp, 0];
-  let j=pos-1;
-  while(j>=0 && !spanOf(j)) j--;
+  // curseur juste après un caractère visible de la même ligne
+  if(pos>0 && doc[pos-1] && doc[pos-1].c!=='\n'){
+    let j=pos-1; while(j>=0 && !spanOf(j)) j--;
+    if(j>=0){ const psp=spanOf(j); return [psp.firstChild||psp, 1]; }
+  }
+  // sinon : début d'une ligne vide -> le paragraphe qui commence à cette position
+  const pe=editor.querySelector('.para[data-p0="'+pos+'"]');
+  if(pe) return [pe, 0];
+  // repli
+  let j=pos-1; while(j>=0 && !spanOf(j)) j--;
   if(j>=0){ const psp=spanOf(j); return [psp.firstChild||psp, 1]; }
   return [editor, 0];
 }
@@ -1098,14 +1802,15 @@ function updateUndoButtons(){
 }
 function pushHistory(){ undoStack.push(clone(doc)); if(undoStack.length>120) undoStack.shift(); redoStack.length=0; updateUndoButtons(); }
 function resetHistory(){ undoStack.length=0; redoStack.length=0; updateUndoButtons(); }
-function undo(){ if(!undoStack.length) return; redoStack.push(clone(doc)); doc=undoStack.pop(); curSel=null; render(); updateToolbar(); updateUndoButtons(); }
-function redo(){ if(!redoStack.length) return; undoStack.push(clone(doc)); doc=redoStack.pop(); curSel=null; render(); updateToolbar(); updateUndoButtons(); }
+function undo(){ if(TABLE_MODE){ tUndo(); return; } if(!undoStack.length) return; redoStack.push(clone(doc)); doc=undoStack.pop(); syncFull(); curSel=null; render(); updateToolbar(); updateUndoButtons(); }
+function redo(){ if(TABLE_MODE){ tRedo(); return; } if(!redoStack.length) return; undoStack.push(clone(doc)); doc=redoStack.pop(); syncFull(); curSel=null; render(); updateToolbar(); updateUndoButtons(); }
 
 function needRange(){
   if(!curSel || curSel.type!=='range'){ toast("Sélectionne d'abord du texte : double-clic sur un mot, ou clique-glisse 🖱️"); return true; }
   return false;
 }
 function toggleAttr(attr){
+  if(TABLE_MODE){ tFormat(attr); return; }
   if(needRange()) return;
   pushHistory();
   const {a,b}=curSel; let allOn=true;
@@ -1115,6 +1820,7 @@ function toggleAttr(attr){
   applyAndRestore();
 }
 function setValue(attr,value){
+  if(TABLE_MODE){ tCellSet(attr,value); return; }
   if(needRange()) return;
   pushHistory();
   const {a,b}=curSel;
@@ -1122,6 +1828,7 @@ function setValue(attr,value){
   applyAndRestore();
 }
 function setAlign(value){
+  if(TABLE_MODE){ tCellSet('align',value); return; }
   const paras=new Set();
   if(curSel && curSel.type==='range'){
     for(let k=curSel.a;k<curSel.b;k++){ if(doc[k] && doc[k].c!=='\n') paras.add(paraIndexOf(k)); }
@@ -1206,9 +1913,37 @@ function smartIndent(dir){
   else changeIndent('indl', dir*24);
 }
 
-document.getElementById('btn-bold').onclick=()=>toggleAttr('b');
-document.getElementById('btn-italic').onclick=()=>toggleAttr('i');
-document.getElementById('btn-underline').onclick=()=>toggleAttr('u');
+/* ---- Outils bloqués (Niveau « clavier magique ») : le bouton affiche un cadenas et invite au raccourci ---- */
+let BLOCKED = new Set();
+const SHORTCUT_LABEL = {'btn-bold':'B','btn-italic':'I','btn-underline':'U'};
+function toolLocked(id){
+  if(BLOCKED.has(id)){ toast('🔒 Ce bouton est bloqué ici ! Utilise le clavier : Ctrl + '+(SHORTCUT_LABEL[id]||'?')); return true; }
+  return false;
+}
+function applyBlockedTools(lvl){
+  BLOCKED = new Set((lvl && lvl.blockTools) || []);
+  ['btn-bold','btn-italic','btn-underline'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.classList.toggle('tool-locked', BLOCKED.has(id));
+  });
+}
+document.getElementById('btn-bold').onclick=()=>{ if(toolLocked('btn-bold')) return; toggleAttr('b'); };
+document.getElementById('btn-italic').onclick=()=>{ if(toolLocked('btn-italic')) return; toggleAttr('i'); };
+document.getElementById('btn-underline').onclick=()=>{ if(toolLocked('btn-underline')) return; toggleAttr('u'); };
+
+/* ---- Raccourcis clavier de mise en forme : Ctrl/Cmd + B (ou G) / I / U ---- */
+document.addEventListener('keydown', e=>{
+  if(!(e.ctrlKey||e.metaKey) || e.altKey) return;
+  if(overlay.classList.contains('open')) return;     // pas pendant une popup
+  const k=e.key.toLowerCase();
+  let attr=null;
+  if(k==='b'||k==='g') attr='b';
+  else if(k==='i') attr='i';
+  else if(k==='u') attr='u';
+  else return;
+  e.preventDefault();
+  readDomSelection();
+  toggleAttr(attr);
+});
 document.getElementById('sel-size').onchange=e=>setValue('size', parseInt(e.target.value));
 document.getElementById('sel-font').onchange=e=>setValue('font', e.target.value);
 document.getElementById('btn-align-left').onclick=()=>setAlign('left');
@@ -1277,7 +2012,68 @@ function applyToolbarForLevel(n){
   });
 }
 
-/* ---- Bloque la saisie : on garde un curseur libre, mais pas d'édition de texte ---- */
+/* ====== ÉDITION DE CONTENU (niveaux « écrire ») : insertion / suppression / presse-papier ====== */
+let EDIT_MODE=false;     // autorise l'écriture (Entrée, Tab, copier/couper/coller)
+let clipboard=null;      // presse-papier interne (tableau de caractères)
+function mkChar(c){ return Object.assign({c}, DEFAULT); }
+function editReplace(a, b, chars){
+  pushHistory();
+  const ins=chars.map(o=>Object.assign({}, o));
+  doc.splice(a, b-a, ...ins);
+  syncFull();
+  render();
+  curSel={type:'caret', pos:a+ins.length};
+  editor.focus(); restoreDomSelection(); updateToolbar();
+}
+function rangeSel(){ return (curSel&&curSel.type==='range') ? [curSel.a,curSel.b] : null; }
+function caretAt(){ if(curSel&&curSel.type==='caret') return curSel.pos; if(curSel&&curSel.type==='range') return curSel.b; return doc.length; }
+function doInsertText(str){
+  const chars=[...str].map(mkChar);
+  if(curSel&&curSel.type==='range') editReplace(curSel.a, curSel.b, chars);
+  else { const p=caretAt(); editReplace(p, p, chars); }
+}
+function doBackspace(){ if(curSel&&curSel.type==='range'){ editReplace(curSel.a, curSel.b, []); return; } const p=caretAt(); if(p>0) editReplace(p-1, p, []); }
+function doDelete(){ if(curSel&&curSel.type==='range'){ editReplace(curSel.a, curSel.b, []); return; } const p=caretAt(); if(p<doc.length) editReplace(p, p+1, []); }
+function doCopy(){ const r=rangeSel(); if(!r){ toast('Sélectionne d\'abord une phrase 🖱️'); return; } clipboard=doc.slice(r[0],r[1]).map(o=>Object.assign({},o)); toast('📋 Copié ! Place ton curseur, puis colle.'); }
+function doCut(){ const r=rangeSel(); if(!r){ toast('Sélectionne d\'abord une phrase 🖱️'); return; } clipboard=doc.slice(r[0],r[1]).map(o=>Object.assign({},o)); editReplace(r[0],r[1],[]); toast('✂️ Coupé ! Place ton curseur, puis colle.'); }
+function doPaste(){ if(!clipboard||!clipboard.length){ toast('Copie ou coupe d\'abord quelque chose !'); return; } if(curSel&&curSel.type==='range') editReplace(curSel.a,curSel.b,clipboard); else { const p=caretAt(); editReplace(p,p,clipboard); } }
+
+/* menu clic droit : Copier / Couper / Coller */
+let ctxMenuEl=null;
+function hideContextMenu(){ if(ctxMenuEl){ ctxMenuEl.remove(); ctxMenuEl=null; } }
+function showContextMenu(x,y){
+  hideContextMenu();
+  const snap = curSel ? Object.assign({}, curSel) : null;
+  const hasRange = snap && snap.type==='range';
+  const m=document.createElement('div'); m.className='ctx-menu';
+  [{l:'📋 Copier', on:hasRange, act:doCopy},
+   {l:'✂️ Couper', on:hasRange, act:doCut},
+   {l:'📥 Coller', on:!!(clipboard&&clipboard.length), act:doPaste}
+  ].forEach(it=>{
+    const b=document.createElement('button'); b.className='ctx-item'+(it.on?'':' off'); b.textContent=it.l;
+    b.addEventListener('mousedown', e=>e.preventDefault());
+    b.onclick=()=>{ hideContextMenu(); if(it.on){ curSel=snap; it.act(); } };
+    m.appendChild(b);
+  });
+  document.body.appendChild(m);
+  const r=m.getBoundingClientRect();
+  m.style.left=Math.min(x, window.innerWidth-r.width-8)+'px';
+  m.style.top=Math.min(y, window.innerHeight-r.height-8)+'px';
+  ctxMenuEl=m;
+}
+editor.addEventListener('contextmenu', e=>{
+  if(!EDIT_MODE) return;
+  e.preventDefault();
+  if(currentStep && currentStep.blockContextMenu){
+    toast('Pas de clic droit cette fois ! Utilise Ctrl+C / Ctrl+X / Ctrl+V au clavier 🎓');
+    return;
+  }
+  readDomSelection(); showContextMenu(e.clientX, e.clientY);
+});
+document.addEventListener('mousedown', e=>{ if(ctxMenuEl && !ctxMenuEl.contains(e.target)) hideContextMenu(); });
+window.addEventListener('scroll', hideContextMenu, true);
+
+/* ---- Saisie : bloquée par défaut ; en mode édition on autorise Entrée / Tab / Retour arrière / copier-coller ---- */
 editor.addEventListener('beforeinput', e=>e.preventDefault());
 editor.addEventListener('paste', e=>e.preventDefault());
 editor.addEventListener('drop', e=>e.preventDefault());
@@ -1288,8 +2084,17 @@ editor.addEventListener('keydown', e=>{
     const k=e.key.toLowerCase();
     if(k==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); return; }
     if(k==='y'){ e.preventDefault(); redo(); return; }
+    if(EDIT_MODE && k==='x'){ e.preventDefault(); readDomSelection(); doCut(); return; }
+    if(EDIT_MODE && k==='v'){ e.preventDefault(); readDomSelection(); doPaste(); return; }
+    if(EDIT_MODE && k==='c'){ e.preventDefault(); readDomSelection(); doCopy(); return; }
     if(k==='a'||k==='c') return;
     e.preventDefault(); return;
+  }
+  if(EDIT_MODE){
+    if(e.key==='Enter'){ e.preventDefault(); readDomSelection(); doInsertText('\n'); return; }
+    if(e.key==='Tab'){ e.preventDefault(); readDomSelection(); doInsertText('\t'); return; }
+    if(e.key==='Backspace'){ e.preventDefault(); readDomSelection(); doBackspace(); return; }
+    if(e.key==='Delete'){ e.preventDefault(); readDomSelection(); doDelete(); return; }
   }
   if(nav.includes(e.key)) return;
   e.preventDefault();
@@ -1301,7 +2106,15 @@ editor.addEventListener('keydown', e=>{
 function startStep(idx){
   stepIndex=idx; replayState=null;
   currentStep=STEPS[idx];
+  if(currentStep.tableMode){
+    startTableStep();
+    updateProgress(); updateBanner();
+    store.set('tt_step_l'+currentLevel, String(idx));
+    openMissionPopup();
+    return;
+  }
   doc=clone(currentStep.startDoc);
+  syncFull();
   curSel=null;
   resetHistory();
   resetToolbarDefaults();
@@ -1356,6 +2169,13 @@ function onSegClick(i){
   visitStep(i);
 }
 function visitStep(i){
+  if(STEPS[i].tableMode || (currentStep && currentStep.tableMode)){
+    if(!replayState) replayState={ savedTable: cloneTable(T), returnIndex: stepIndex };
+    currentStep=STEPS[i];
+    T=cloneTable(currentStep.startTable); tSel=null; tHist=[]; tRedoStack=[];
+    tableRender(); updateProgress(); updateBanner(); openMissionPopup();
+    return;
+  }
   // Sauvegarde l'état réel une seule fois : préserve le travail en cours sur l'étape actuelle
   if(!replayState) replayState={ savedDoc: clone(doc), returnIndex: stepIndex };
   currentStep=STEPS[i];
@@ -1438,10 +2258,116 @@ document.getElementById('restartBtn').onclick=()=>{
   document.getElementById('doRestart').onclick=()=>{ closeOverlay(); restartCurrent(); };
 };
 function onValidate(){
+  if(currentStep.tableMode){
+    const res=tableEvaluate();
+    if(res.status==='success') return onSuccess();
+    if(res.status==='extra')   return onTablePresque();   // mission OK mais autre chose modifié
+    if(res.status==='error')   return onTableOhoh();      // mission pas finie ET autre chose modifié
+    return onTablePasEncore();                            // incomplet, rien d'autre touché → pas de reset
+  }
+  if(currentStep.contentMode){
+    const cur=normContent(textOf(doc));
+    const goal=normContent(textOf(currentStep.goalDoc));
+    const start=normContent(textOf(currentStep.startDoc));
+    const fmtExtra = contentFormattingChanged();          // gras/italique/couleur… non demandé
+    const textDone = (cur===goal);
+    const missionDone = textDone || contentMissionDone(goal,cur);
+    // Réussite parfaite : texte exact ET aucune mise en forme parasite
+    if(textDone && !fmtExtra) return onSuccess();
+    // Mission accomplie MAIS extras (texte en trop OU mise en forme non demandée) → Presque
+    if(missionDone) return onContentPresque();
+    // Mission PAS accomplie : rien touché → Pas encore ; sinon fausse modif → Oh oh
+    if(cur===start && !fmtExtra) return onContentPasEncore();
+    return onContentOhoh();
+  }
   const res=evaluate(currentStep.startDoc, currentStep.goalDoc, doc);
   if(res.status==='success') return onSuccess();
   if(res.status==='extra')  return onExtra(res);
   return onError(res);
+}
+// Détecte une mise en forme parasite : un caractère porte un attribut (gras, italique, souligné,
+// couleur, surlignage, police, taille…) absent du texte de départ → l'élève a fait « plus que demandé »
+function contentFormattingChanged(){
+  const start=currentStep.startDoc||[];
+  const allowed={};
+  for(const a of ATTRS){ allowed[a]=new Set(); for(const ch of start) allowed[a].add(ch[a]); }
+  for(const ch of doc){
+    for(const a of ATTRS){ if(!allowed[a].has(ch[a])) return true; }
+  }
+  return false;
+}
+// Vérifie si toutes les lignes du goal sont présentes dans l'ordre dans le texte de l'élève
+function contentMissionDone(goalNorm, curNorm){
+  const gl=goalNorm.split('\n'), cl=curNorm.split('\n');
+  let gi=0;
+  for(let ci=0;ci<cl.length&&gi<gl.length;ci++){
+    if(cl[ci]===gl[gi] || cl[ci].includes(gl[gi])) gi++;
+  }
+  return gi===gl.length;
+}
+function onContentPasEncore(){
+  modal.className='modal bad';
+  modal.innerHTML=`
+    <span class="m-emoji">🧐</span>
+    <h2>Pas encore…</h2>
+    <p>Ta mission : <b>${currentStep.expect}</b>. Tu n'y es pas encore tout à fait — <b>continue, ton travail est gardé</b>. Vérifie <b>où tu places ton curseur</b> avant d'appuyer. Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
+    <div class="m-actions"><button class="m-btn primary" id="keep">Je continue</button></div>`;
+  openOverlay();
+  document.getElementById('keep').onclick=closeOverlay;
+}
+function onContentPresque(){
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">🤏</span>
+    <h2>Presque !</h2>
+    <p>Tu as bien réussi la mission… mais tu as aussi modifié <b>quelque chose qui n'était pas demandé</b> (ou plus que demandé).</p>
+    <p>La règle d'or : <b>on fait seulement ce que la mission demande</b>. On recommence cette mission, tu vas y arriver !</p>
+    <div class="m-actions"><button class="m-btn primary test" id="redo">Je recommence</button></div>`;
+  openOverlay();
+  document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
+}
+function onContentOhoh(){
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">😬</span>
+    <h2>Oh oh, tu as modifié autre chose !</h2>
+    <p>Tu as changé des choses qui n'étaient <b>pas demandées</b>, et la mission n'est pas finie. Il faut faire <b>seulement</b> ce qui est demandé dans la mission.</p>
+    <p>Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
+    <div class="m-actions"><button class="m-btn primary test" id="retry">↺ Je réessaie</button></div>`;
+  openOverlay();
+  document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
+}
+function onTablePasEncore(){
+  modal.className='modal bad';
+  modal.innerHTML=`
+    <span class="m-emoji">🧐</span>
+    <h2>Pas encore…</h2>
+    <p>Ta mission : <b>${currentStep.expect}</b>. Il te manque encore quelque chose — <b>continue, ton tableau est gardé</b>. Regarde bien chaque consigne (la bonne case, la bonne couleur, la bonne taille). Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
+    <div class="m-actions"><button class="m-btn primary" id="keep">Je continue</button></div>`;
+  openOverlay();
+  document.getElementById('keep').onclick=closeOverlay;
+}
+function onTablePresque(){
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">🤏</span>
+    <h2>Presque !</h2>
+    <p>Tu as bien réussi la mission… mais tu as aussi modifié <b>quelque chose qui n'était pas demandé</b> (ou plus que demandé).</p>
+    <p>La règle d'or : <b>on fait seulement ce que la mission demande</b>. On recommence cette mission, tu vas y arriver !</p>
+    <div class="m-actions"><button class="m-btn primary test" id="redo">Je recommence</button></div>`;
+  openOverlay();
+  document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
+}
+function onTableOhoh(){
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">😬</span>
+    <h2>Oh oh, tu as modifié autre chose !</h2>
+    <p>Tu as changé des choses qui n'étaient <b>pas demandées</b>, et la mission n'est pas finie. Il faut faire <b>seulement</b> ce qui est demandé dans la mission.</p>
+    <p>Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
+    <div class="m-actions"><button class="m-btn primary test" id="retry">↺ Je réessaie</button></div>`;
+  openOverlay();
+  document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
 function flashBad(indices){
   indices.forEach(i=>{ const sp=editor.querySelector('.ch[data-i="'+i+'"]'); if(sp){ sp.classList.add('flash-bad'); setTimeout(()=>sp.classList.remove('flash-bad'),1500); } });
@@ -1461,9 +2387,9 @@ function onError(res){
     document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
     return;
   }
-  // Rien de fait ou tâche incomplète, sans modifications parasites
+  // Tâche incomplète, sans modifications parasites → "Pas encore" : on garde le travail, pas de reset
   flashBad(res.missing);
-  let body=`Ta mission : <b>${currentStep.expect}</b>.`;
+  let body=`Ta mission : <b>${currentStep.expect}</b>. Tu n'y es pas encore tout à fait — <b>continue, ton travail est gardé</b>.`;
   if(!res.startedTask) body+=` Tu n'as pas encore commencé : <b>sélectionne le texte</b> avec la souris, puis clique sur le bon bouton.`;
   body+=` Besoin d'aide ? Clique sur <b>💡 Indice</b>.`;
   modal.className='modal bad';
@@ -1471,9 +2397,9 @@ function onError(res){
     <span class="m-emoji">🧐</span>
     <h2>Pas encore…</h2>
     <p>${body}</p>
-    <div class="m-actions"><button class="m-btn primary" id="retry">Je réessaie</button></div>`;
+    <div class="m-actions"><button class="m-btn primary" id="keep">Je continue</button></div>`;
   openOverlay();
-  document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
+  document.getElementById('keep').onclick=closeOverlay;
 }
 function onExtra(res){
   flashBad(res.extra);
@@ -1488,7 +2414,8 @@ function onExtra(res){
   document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
 function restartCurrent(){
-  doc=clone(currentStep.startDoc); curSel=null; resetHistory(); resetToolbarDefaults(); render();
+  if(currentStep.tableMode){ startTableStep(); return; }
+  doc=clone(currentStep.startDoc); syncFull(); curSel=null; resetHistory(); resetToolbarDefaults(); render();
 }
 function onSuccess(){
   if(replayState){
@@ -1572,26 +2499,39 @@ function updateProgressFinished(){
    8. HINT
    ========================================================= */
 document.getElementById('hintBtn').onclick=onHint;
+function blinkCells(cells, seq){
+  if(!TABLE_MODE || !cells || !cells.length) return;
+  const tds=cells.map(([r,c])=>tableArea.querySelector('td[data-r="'+r+'"][data-c="'+c+'"]')).filter(Boolean);
+  if(!tds.length) return;
+  function pass(){ tds.forEach((td,k)=>{ setTimeout(()=>{ td.classList.add('blink'); setTimeout(()=>td.classList.remove('blink'),650); }, seq? k*520 : 0); }); }
+  pass();
+  if(seq){ setTimeout(pass, tds.length*520+500); }   // 2 passages de gauche à droite
+  else { setTimeout(()=>tds.forEach(td=>{ td.classList.add('blink'); setTimeout(()=>td.classList.remove('blink'),650); }), 1100); }
+}
 function onHint(){
-  if(currentStep.kind==='test' && !replayState) return openReplayPanel();
-  // exercise hint: glow the right button + popup
+  if(currentStep.kind==='test' && currentStep.replayRefs && currentStep.replayRefs.length && !replayState) return openReplayPanel();
   const h=currentStep.hint;
+  if(!h){   // jalon sans entraînement (ex. tableaux) : petit rappel
+    modal.className='modal warn';
+    modal.innerHTML=`<span class="m-emoji">💡</span><h2>L'indice</h2>
+      <p>Relis bien chaque consigne, une par une. Fais <b>seulement</b> ce qui est demandé, dans l'ordre.</p>
+      <div class="m-actions"><button class="m-btn primary" id="okHint">J'ai compris</button></div>`;
+    openOverlay(); document.getElementById('okHint').onclick=closeOverlay; return;
+  }
   const target=document.getElementById(h.target);
+  const inTable=TABLE_MODE && h.cells;
   modal.className='modal warn';
   modal.innerHTML=`
     <span class="m-emoji">💡</span>
     <h2>L'indice</h2>
     <p>${h.text}</p>
-    <p style="font-size:.95rem;color:var(--muted)">Regarde la barre d'outils : le bon bouton <b>brille en orange</b> ✨.</p>
+    <p style="font-size:.95rem;color:var(--muted)">${inTable?'Les bonnes cases vont <b>clignoter</b> ✨.':'Regarde la barre d\'outils : le bon bouton <b>brille en orange</b> ✨.'}</p>
     <div class="m-actions"><button class="m-btn primary" id="okHint">J'ai compris</button></div>`;
   openOverlay();
   document.getElementById('okHint').onclick=()=>{
     closeOverlay();
-    if(target){
-      target.classList.add('glow');
-      target.scrollIntoView({block:'nearest', inline:'center', behavior:'smooth'});
-      setTimeout(()=>target.classList.remove('glow'), 4500);
-    }
+    if(target){ target.classList.add('glow'); target.scrollIntoView({block:'nearest', inline:'center', behavior:'smooth'}); setTimeout(()=>target.classList.remove('glow'), 4500); }
+    if(inTable) blinkCells(h.cells, h.seq);
   };
 }
 function openReplayPanel(){
@@ -1615,6 +2555,13 @@ function openReplayPanel(){
   document.getElementById('closeHint').onclick=closeOverlay;
 }
 function startReplay(mission){
+  if(mission.tableMode){
+    replayState={ savedTable: cloneTable(T), returnIndex: stepIndex };
+    currentStep=mission;
+    T=cloneTable(mission.startTable); tSel=null; tHist=[]; tRedoStack=[];
+    tableRender(); updateProgress(); updateBanner(); openMissionPopup();
+    return;
+  }
   replayState={ savedDoc: clone(doc), returnIndex: stepIndex };
   currentStep=mission;
   doc=clone(mission.startDoc); curSel=null; resetHistory(); resetToolbarDefaults();
@@ -1622,6 +2569,12 @@ function startReplay(mission){
 }
 function exitReplay(){
   if(!replayState) return;
+  const ret=STEPS[replayState.returnIndex];
+  if(ret.tableMode){
+    T = (replayState.savedTable!==undefined) ? replayState.savedTable : cloneTable(ret.startTable);
+    currentStep=ret; replayState=null; tSel=null; tHist=[]; tRedoStack=[];
+    tableRender(); updateProgress(); updateBanner(); return;
+  }
   doc=replayState.savedDoc; currentStep=STEPS[replayState.returnIndex]; replayState=null;
   curSel=null; resetHistory(); render(); updateProgress(); updateBanner();
 }
@@ -1668,6 +2621,9 @@ function loadLevel(n, stepIdx, showIntro){
   PARAS=lvl.paras.slice(); FULL=PARAS.join('\n');
   const built=buildSteps(lvl.defs); STEPS=built.steps; MISSIONS=built.missions;
   applyToolbarForLevel(n);
+  applyBlockedTools(lvl);
+  EDIT_MODE = !!lvl.contentMode;
+  setTableMode(!!lvl.tableMode);
   document.getElementById('lvlTitle').innerHTML='Traitement de texte <span class="dot">·</span> '+lvl.subtitle;
   store.set('tt_curlevel', String(n));
   refreshLevelBtn();
@@ -1685,9 +2641,9 @@ function openLevelIntro(n, cont){
     <span class="m-emoji">🎁</span>
     <div class="kicker">Niveau ${n}</div>
     <h2>${lvl.title}</h2>
-    <p>Bienvenue au <b>Niveau ${n}</b> ! Voici les <b>nouveaux boutons</b> que tu viens de débloquer :</p>
+    <p>Bienvenue au <b>Niveau ${n}</b> ! Voici les <b>nouveaux pouvoirs</b> que tu viens de débloquer :</p>
     <ul class="newtools">${tools}</ul>
-    <p style="font-size:.95rem;color:var(--muted)">Ils sont apparus dans ta barre d'outils, tout en haut. À toi de jouer !</p>
+    ${lvl.note?`<p style="font-size:.97rem;background:#fff6e6;border:2px solid #f6d68a;border-radius:12px;padding:10px 12px;">${lvl.note}</p>`:`<p style="font-size:.95rem;color:var(--muted)">Ils sont apparus dans ta barre d'outils, tout en haut. À toi de jouer !</p>`}
     <div class="m-actions"><button class="m-btn primary green" id="lvlGo">C'est parti ! 🚀</button></div>`;
   openOverlay();
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); cont&&cont(); };
@@ -1780,15 +2736,381 @@ document.getElementById('resetBtn').onclick=()=>{
 };
 
 /* =========================================================
+   10bis. ÉDITEUR DE TABLEAUX (Niveau 6)
+   ========================================================= */
+let TABLE_MODE=false;
+let T=null;                 // modèle de table courant (null = aucune table)
+let tSel=null;              // sélection rectangulaire {r0,c0,r1,c1}
+let tFill='#ffef5c';        // couleur de fond choisie
+let tHist=[], tRedoStack=[];// historique annuler / rétablir
+const tableArea=document.getElementById('tableArea');
+const tableToolbar=document.getElementById('table-toolbar');
+
+function newTable(rows,cols){
+  const cells={};
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++)
+    cells[r+','+c]={text:'',b:false,i:false,u:false,color:'#22303f',hl:'transparent',font:'Arial',size:16,align:'left',
+                    bg:'transparent',bord:'thin',colspan:1,rowspan:1,covered:false,nowrap:true};
+  return {rows,cols,colW:Array(cols).fill(120),rowH:Array(rows).fill(40),cells};
+}
+function cloneTable(t){ return t?JSON.parse(JSON.stringify(t)):null; }
+function cellAt(t,r,c){ return t.cells[r+','+c]; }
+function tPush(){ if(T) tHist.push(cloneTable(T)); if(tHist.length>80) tHist.shift(); tRedoStack.length=0; }
+function tUndo(){ if(!tHist.length) return; tRedoStack.push(cloneTable(T)); T=tHist.pop(); tSel=null; tableRender(); }
+function tRedo(){ if(!tRedoStack.length) return; tHist.push(cloneTable(T)); T=tRedoStack.pop(); tSel=null; tableRender(); }
+
+function normSel(r0,c0,r1,c1){ return {r0:Math.min(r0,r1),c0:Math.min(c0,c1),r1:Math.max(r0,r1),c1:Math.max(c0,c1)}; }
+function inSel(r,c){ return tSel && r>=tSel.r0 && r<=tSel.r1 && c>=tSel.c0 && c<=tSel.c1; }
+function selCells(){ const out=[]; if(!tSel||!T) return out;
+  for(let r=tSel.r0;r<=tSel.r1;r++) for(let c=tSel.c0;c<=tSel.c1;c++){ const cl=cellAt(T,r,c); if(cl&&!cl.covered) out.push(cl); } return out; }
+function cellBorderCss(b){ return b==='thick'?'3px solid #22303f':b==='none'?'1px dashed #dde5ee':'1px solid #5a6b7b'; }
+
+/* ---- rendu ---- */
+function tableRender(){
+  tableArea.innerHTML='';
+  if(!T){
+    tableArea.innerHTML='<div class="tbl-empty"><div class="tbl-empty-ic">▦</div><p>Il n\'y a pas encore de tableau.</p><p>Clique sur <b>➕ Tableau</b> tout en haut pour en insérer un.</p></div>';
+    return;
+  }
+  const wrap=document.createElement('div'); wrap.className='gwrap';
+  const gut=document.createElement('div'); gut.className='rgutter'; wrap.appendChild(gut);
+  const tbl=document.createElement('table'); tbl.className='gtable';
+  tbl.style.width=T.colW.reduce((a,b)=>a+b,0)+'px';   // largeur explicite : table-layout:fixed honore alors les colonnes
+  const cg=document.createElement('colgroup');
+  for(let c=0;c<T.cols;c++){ const col=document.createElement('col'); col.style.width=T.colW[c]+'px'; cg.appendChild(col); }
+  tbl.appendChild(cg);
+  for(let r=0;r<T.rows;r++){
+    const tr=document.createElement('tr'); tr.style.height=T.rowH[r]+'px';
+    for(let c=0;c<T.cols;c++){
+      const cl=cellAt(T,r,c); if(cl.covered) continue;
+      const td=document.createElement('td'); td.dataset.r=r; td.dataset.c=c;
+      if(cl.colspan>1) td.colSpan=cl.colspan;
+      if(cl.rowspan>1) td.rowSpan=cl.rowspan;
+      if(cl.bg&&cl.bg!=='transparent') td.style.background=cl.bg;
+      td.style.border=cellBorderCss(cl.bord);
+      if(inSel(r,c)) td.classList.add('sel');
+      const cin=document.createElement('div'); cin.className='cell-in'; cin.contentEditable='true'; cin.textContent=cl.text;
+      cin.style.fontWeight=cl.b?'700':'400';
+      cin.style.fontStyle=cl.i?'italic':'normal';
+      cin.style.textDecoration=cl.u?'underline':'none';
+      cin.style.color=cl.color||'#22303f';
+      cin.style.fontFamily=cl.font||'Arial';
+      cin.style.fontSize=(cl.size||16)+'px';
+      cin.style.textAlign=cl.align||'left';
+      if(cl.hl&&cl.hl!=='transparent') cin.style.background=cl.hl;
+      cin.style.whiteSpace=cl.nowrap===false?'normal':'nowrap';
+      cin.style.overflow='hidden';
+      let hsum=0; for(let k=0;k<cl.rowspan;k++) hsum+=T.rowH[r+k]||0; cin.style.maxHeight=hsum+'px';
+      cin.addEventListener('input', ()=>{ cl.text=cin.textContent; });
+      cin.addEventListener('focus', ()=>{ if(!tDragging){ tSel=normSel(r,c,r,c); paintSel(); } });
+      td.appendChild(cin);
+      const gc=document.createElement('div'); gc.className='col-grip'; gc.addEventListener('mousedown', e=>startColResize(e, c+cl.colspan-1)); td.appendChild(gc);
+      const gr=document.createElement('div'); gr.className='row-grip'; gr.addEventListener('mousedown', e=>startRowResize(e, r+cl.rowspan-1)); td.appendChild(gr);
+      td.addEventListener('mousedown', e=>onCellDown(e,r,c));
+      tr.appendChild(td);
+    }
+    tbl.appendChild(tr);
+  }
+  wrap.appendChild(tbl);
+  tableArea.appendChild(wrap);
+  // gouttière de sélection de ligne (alignée sur la hauteur réelle de chaque ligne)
+  tbl.querySelectorAll('tr').forEach((tr,r)=>{
+    const hd=document.createElement('div'); hd.className='rowhandle'+( tSel && r>=tSel.r0 && r<=tSel.r1 && tSel.c0===0 && tSel.c1===T.cols-1 ?' on':'' );
+    hd.style.height=tr.offsetHeight+'px'; hd.title='Cliquer pour sélectionner toute la ligne';
+    hd.addEventListener('mousedown', e=>{ e.preventDefault(); tSel={r0:r,c0:0,r1:r,c1:T.cols-1}; tDragging=false; tAnchor=null; paintSel(); });
+    gut.appendChild(hd);
+  });
+}
+function paintSel(){
+  tableArea.querySelectorAll('td').forEach(td=>{ td.classList.toggle('sel', inSel(+td.dataset.r,+td.dataset.c)); });
+  tableArea.querySelectorAll('.rowhandle').forEach((hd,r)=>{ hd.classList.toggle('on', tSel && r>=tSel.r0 && r<=tSel.r1 && tSel.c0===0 && tSel.c1===T.cols-1); });
+  if(tSel && T){ const cl=cellAt(T,tSel.r0,tSel.c0); if(cl&&!cl.covered){ const bs=document.getElementById('tb-border'); if(bs) bs.value=cl.bord||'thin'; } }
+}
+
+/* ---- sélection à la souris : clic = curseur, glissé = plusieurs cases ---- */
+let tAnchor=null, tDragging=false;
+function cellUnder(target){ const td=target && target.closest && target.closest('td'); return (td && td.dataset && td.dataset.r!=null)?{r:+td.dataset.r,c:+td.dataset.c}:null; }
+function onCellDown(e,r,c){
+  if(e.target.classList.contains('col-grip')||e.target.classList.contains('row-grip')) return;
+  tAnchor={r,c}; tDragging=false;
+}
+document.addEventListener('mousemove', e=>{
+  if(!tAnchor || tResize || e.buttons!==1) return;
+  const cell=cellUnder(document.elementFromPoint(e.clientX, e.clientY)); if(!cell) return;
+  if(!tDragging && (cell.r!==tAnchor.r || cell.c!==tAnchor.c)){ tDragging=true; tableArea.style.userSelect='none'; }
+  if(tDragging){ e.preventDefault(); tSel=normSel(tAnchor.r,tAnchor.c,cell.r,cell.c); paintSel();
+    const s=window.getSelection&&window.getSelection(); if(s) s.removeAllRanges(); }
+});
+document.addEventListener('mouseup', ()=>{ if(tDragging) tableArea.style.userSelect=''; tAnchor=null; setTimeout(()=>{ tDragging=false; },0); });
+
+/* ---- redimensionnement au glissé ---- */
+let tResize=null;
+function startColResize(e, c){ e.preventDefault(); e.stopPropagation(); tResize={kind:'col',idx:c,start:e.clientX,w:T.colW[c]}; tPush(); }
+function startRowResize(e, r){ e.preventDefault(); e.stopPropagation(); tResize={kind:'row',idx:r,start:e.clientY,h:T.rowH[r]}; tPush(); }
+document.addEventListener('mousemove', e=>{
+  if(!tResize) return;
+  if(tResize.kind==='col'){ const w=Math.max(36, tResize.w+(e.clientX-tResize.start)); T.colW[tResize.idx]=Math.round(w); }
+  else { const h=Math.max(22, tResize.h+(e.clientY-tResize.start)); T.rowH[tResize.idx]=Math.round(h); }
+  tableRender();
+});
+document.addEventListener('mouseup', ()=>{ tResize=null; });
+
+/* ---- opérations sur les cases sélectionnées ---- */
+function needCells(){ const cells=selCells(); if(!cells.length){ toast('Choisis d\'abord une ou des cases 🖱️ (clique, ou glisse pour en sélectionner plusieurs).'); return null; } return cells; }
+function tFormat(attr){ const cells=needCells(); if(!cells) return; tPush();
+  const allOn=cells.every(c=>c[attr]); cells.forEach(c=>c[attr]=!allOn); tableRender(); }
+function tCellSet(attr,value){ const cells=needCells(); if(!cells) return; tPush(); cells.forEach(c=>c[attr]=value); tableRender(); }
+function tApplyFill(hex){ const cells=needCells(); if(!cells) return; tPush(); cells.forEach(c=>c.bg=hex); tableRender(); }
+function tApplyBorder(v){ const cells=needCells(); if(!cells) return; tPush(); cells.forEach(c=>c.bord=v); tableRender(); }
+function tMerge(){ if(!tSel){ toast('Sélectionne plusieurs cases à fusionner (glisse la souris) 🖱️'); return; }
+  if(tSel.r0===tSel.r1 && tSel.c0===tSel.c1){ toast('Sélectionne au moins 2 cases : glisse la souris d\'une case à l\'autre.'); return; }
+  tPush();
+  const top=cellAt(T,tSel.r0,tSel.c0);
+  let txt=[];
+  for(let r=tSel.r0;r<=tSel.r1;r++) for(let c=tSel.c0;c<=tSel.c1;c++){ const cl=cellAt(T,r,c);
+    if(!(r===tSel.r0&&c===tSel.c0)){ if(cl.text) txt.push(cl.text); cl.covered=true; cl.colspan=1; cl.rowspan=1; } }
+  top.colspan=tSel.c1-tSel.c0+1; top.rowspan=tSel.r1-tSel.r0+1; top.covered=false;
+  if(!top.text && txt.length) top.text=txt[0];
+  tSel=normSel(tSel.r0,tSel.c0,tSel.r0,tSel.c0); tableRender();
+}
+function rangeN(a,b){ const o=[]; for(let i=a;i<=b;i++) o.push(i); return o; }
+function partition(total,parts){ const base=Math.floor(total/parts); const rem=total-base*parts; const out=[]; for(let i=0;i<parts;i++) out.push(base+(i<rem?1:0)); return out; }
+function openSplitDialog(){
+  const cl=selCells()[0];
+  if(!cl || (cl.colspan===1 && cl.rowspan===1)){ toast('Choisis d\'abord une grande case fusionnée à fractionner.'); return; }
+  const cs=cl.colspan, rs=cl.rowspan;
+  modal.className='modal';
+  modal.innerHTML=`<span class="m-emoji">⤲</span><h2>Fractionner la case</h2>
+    <p>En combien de <b>colonnes</b> et de <b>lignes</b> veux-tu couper cette case ?</p>
+    <div style="display:flex;gap:18px;justify-content:center;align-items:center;margin:8px 0 16px;font-weight:800;color:var(--ink)">
+      <label>Colonnes <select id="spCols" class="t-sel">${rangeN(1,cs).map(n=>`<option${n===cs?' selected':''}>${n}</option>`).join('')}</select></label>
+      <label>Lignes <select id="spRows" class="t-sel">${rangeN(1,rs).map(n=>`<option${n===rs?' selected':''}>${n}</option>`).join('')}</select></label>
+    </div>
+    <div class="m-actions"><button class="m-btn ghost" id="spCancel">Annuler</button><button class="m-btn primary green" id="spGo">Fractionner</button></div>`;
+  openOverlay();
+  document.getElementById('spCancel').onclick=closeOverlay;
+  document.getElementById('spGo').onclick=()=>{ const nc=+document.getElementById('spCols').value, nr=+document.getElementById('spRows').value; closeOverlay(); splitCell(nc,nr); };
+}
+function splitCell(nc,nr){
+  const cl=selCells()[0]; if(!cl) return;
+  const r0=tSel.r0, c0=tSel.c0, cs=cl.colspan, rs=cl.rowspan; const keep=cl.text;
+  nc=Math.max(1,Math.min(cs,nc)); nr=Math.max(1,Math.min(rs,nr));
+  tPush();
+  for(let r=r0;r<r0+rs;r++) for(let c=c0;c<c0+cs;c++){ const x=cellAt(T,r,c); x.covered=false; x.colspan=1; x.rowspan=1; x.text=(r===r0&&c===c0)?keep:''; }
+  const colS=partition(cs,nc), rowS=partition(rs,nr);
+  let rr=r0;
+  for(let gi=0;gi<nr;gi++){ let cc=c0;
+    for(let gj=0;gj<nc;gj++){ const top=cellAt(T,rr,cc); top.colspan=colS[gj]; top.rowspan=rowS[gi]; top.covered=false;
+      for(let r=rr;r<rr+rowS[gi];r++) for(let c=cc;c<cc+colS[gj];c++){ if(r===rr&&c===cc) continue; cellAt(T,r,c).covered=true; }
+      cc+=colS[gj]; }
+    rr+=rowS[gi]; }
+  tableRender();
+}
+
+/* ---- insertion (démarre à 1 colonne × 1 ligne : l'enfant choisit lui-même) ---- */
+function openTableInsert(){
+  modal.className='modal';
+  modal.innerHTML=`<span class="m-emoji">➕</span><h2>Insérer un tableau</h2>
+    <p>Choisis le nombre de <b>colonnes</b> et de <b>lignes</b>, puis clique sur <b>Insérer</b>.</p>
+    <div style="display:flex;gap:18px;justify-content:center;align-items:center;margin:8px 0 16px;font-weight:800;color:var(--ink)">
+      <label>Colonnes <select id="tiCols" class="t-sel">${[1,2,3,4,5,6].map(n=>`<option${n===1?' selected':''}>${n}</option>`).join('')}</select></label>
+      <label>Lignes <select id="tiRows" class="t-sel">${[1,2,3,4,5,6,7,8].map(n=>`<option${n===1?' selected':''}>${n}</option>`).join('')}</select></label>
+    </div>
+    <div class="m-actions"><button class="m-btn ghost" id="tiCancel">Annuler</button><button class="m-btn primary green" id="tiGo">Insérer</button></div>`;
+  openOverlay();
+  document.getElementById('tiCancel').onclick=closeOverlay;
+  document.getElementById('tiGo').onclick=()=>{ const c=+document.getElementById('tiCols').value, r=+document.getElementById('tiRows').value;
+    tPush(); T=newTable(r,c); tSel=null; closeOverlay(); tableRender(); };
+}
+
+/* ---- validation ---- */
+function tableSig(t){ if(!t) return 'null';
+  const cells={};
+  for(let r=0;r<t.rows;r++) for(let c=0;c<t.cols;c++){ const x=cellAt(t,r,c);
+    cells[r+','+c]={t:(x.text||'').trim(),b:!!x.b,i:!!x.i,u:!!x.u,color:x.color||'#22303f',hl:x.hl||'transparent',
+      font:x.font||'Arial',size:x.size||16,align:x.align||'left',bg:x.bg||'transparent',bord:x.bord||'thin',
+      cs:x.colspan||1,rs:x.rowspan||1,cv:!!x.covered}; }
+  return JSON.stringify({rows:t.rows,cols:t.cols,cells});
+}
+function colNotTruncated(c){ const tds=tableArea.querySelectorAll('td[data-c="'+c+'"]');
+  if(!tds.length) return false; for(const td of tds){ const cin=td.querySelector('.cell-in'); if(cin && cin.scrollWidth>cin.clientWidth+1) return false; } return true; }
+function rowNotTruncated(r){ const tds=tableArea.querySelectorAll('td[data-r="'+r+'"]');
+  if(!tds.length) return false; for(const td of tds){ const cin=td.querySelector('.cell-in'); if(cin && cin.scrollHeight>cin.clientHeight+1) return false; } return true; }
+// Lecture normalisée des attributs d'une cellule (mêmes règles que tableSig)
+const CELL_ATTRS=[
+  x=>(x.text||'').trim(), x=>!!x.b, x=>!!x.i, x=>!!x.u, x=>x.color||'#22303f', x=>x.hl||'transparent',
+  x=>x.font||'Arial', x=>x.size||16, x=>x.align||'left', x=>x.bg||'transparent', x=>x.bord||'thin',
+  x=>x.colspan||1, x=>x.rowspan||1, x=>!!x.covered ];
+function tableMkStatus(missing,extra){
+  let status;
+  if(missing===0 && extra===0) status='success';
+  else if(missing===0)         status='extra';        // mission OK + modifs en trop → "Presque"
+  else if(extra>0)             status='error';        // mission incomplète + modifs en trop → "Oh oh"
+  else                         status='incomplete';   // mission incomplète, rien d'autre → "Pas encore"
+  return {status,missing,extra};
+}
+// Évalue un tableau comme le moteur texte : compte ce qui manque (missing) et ce qui a été modifié sans être demandé (extra)
+function tableEvaluate(){
+  const st=currentStep;
+  let missing=0, extra=0;
+  // redimensionnement = action requise (jamais "en trop")
+  let resizeOk=true;
+  if(st.resize){ resizeOk = st.resize.type==='col'?colNotTruncated(st.resize.index):rowNotTruncated(st.resize.index); }
+  if(st.resizeMin){ const m=st.resizeMin; const v=(m.type==='col')?(T&&T.colW[m.index]):(T&&T.rowH[m.index]); if(!(v>=m.min)) resizeOk=false; }
+  if(!resizeOk) missing++;
+
+  if(!st.goalTable) return tableMkStatus(missing,extra);
+  if(!T) return {status:'incomplete', missing:missing+1, extra:0};
+  const goal=st.goalTable;
+  // mauvaise taille de tableau → il faut d'abord la bonne structure (incomplet, jamais "en trop")
+  if(T.rows!==goal.rows || T.cols!==goal.cols) return {status:'incomplete', missing:missing+1, extra:0};
+
+  // référence de départ : startTable si fourni, sinon un tableau vide de la bonne taille (jalons « à partir de zéro »)
+  const start = st.startTable || newTable(goal.rows, goal.cols);
+  for(let r=0;r<goal.rows;r++) for(let c=0;c<goal.cols;c++){
+    const gc=cellAt(goal,r,c), sc0=cellAt(start,r,c), cc=cellAt(T,r,c);
+    let miss=false, ext=false;
+    for(const f of CELL_ATTRS){
+      const gv=f(gc), sv=f(sc0), cv=f(cc);
+      if(gv!==sv){ if(cv!==gv) miss=true; }    // attribut requis non atteint → manquant
+      else { if(cv!==sv) ext=true; }           // attribut non demandé modifié → en trop
+    }
+    if(miss) missing++;
+    if(ext) extra++;
+  }
+  return tableMkStatus(missing,extra);
+}
+
+/* ---- barre d'outils tableau (boutons NOUVEAUX : insertion, fond, fusion, fractionner, bordures) ---- */
+document.getElementById('tb-insert').onclick=openTableInsert;
+document.getElementById('tb-merge').onclick=tMerge;
+document.getElementById('tb-split').onclick=openSplitDialog;
+(function(){ const bs=document.getElementById('tb-border');
+  bs.addEventListener('mousedown',()=>{ bs._pre=bs.value; bs.value=''; });
+  bs.addEventListener('change',e=>{ if(e.target.value) tApplyBorder(e.target.value); else bs.value=bs._pre||'thin'; });
+})();
+(function(){ const sw=document.getElementById('tb-swatches');
+  PBG_COLORS.forEach(c=>{ const b=document.createElement('button'); b.className='swatch'; b.title=c.name;
+    if(c.hex==='transparent'){ b.style.background='#fff'; b.style.backgroundImage='linear-gradient(45deg,#e0e0e0 25%,transparent 25%,transparent 75%,#e0e0e0 75%),linear-gradient(45deg,#e0e0e0 25%,#fff 25%,#fff 75%,#e0e0e0 75%)'; b.style.backgroundSize='12px 12px'; b.style.backgroundPosition='0 0,6px 6px'; }
+    else b.style.background=c.hex;
+    b.addEventListener('mousedown', e=>e.preventDefault());
+    b.onclick=(ev)=>{ ev.stopPropagation(); tFill=c.hex; document.getElementById('tbFillBar').style.background=(c.hex==='transparent'?'#fff':c.hex); document.getElementById('tb-swatches').classList.remove('open'); tApplyFill(c.hex); };
+    sw.appendChild(b); });
+})();
+document.getElementById('tb-fill').onclick=(e)=>{ e.stopPropagation(); document.getElementById('tb-swatches').classList.toggle('open'); };
+document.addEventListener('click',()=>document.getElementById('tb-swatches').classList.remove('open'));
+
+/* ---- raccourcis clavier en mode tableau : annuler / rétablir (B/I/U passent par toggleAttr) ---- */
+document.addEventListener('keydown', e=>{
+  if(!TABLE_MODE) return;
+  if(overlay.classList.contains('open')) return;
+  if(!(e.ctrlKey||e.metaKey) || e.altKey) return;
+  const k=e.key.toLowerCase();
+  if(k==='z'){ e.preventDefault(); e.shiftKey?tRedo():tUndo(); }
+  else if(k==='y'){ e.preventDefault(); tRedo(); }
+});
+
+/* ---- bascule mode tableau / texte : on GARDE la barre principale, on ajoute la barre tableau ---- */
+function setTableMode(on){
+  TABLE_MODE=on;
+  tableToolbar.style.display = on?'':'none';
+  editor.style.display = on?'none':'';
+  tableArea.style.display = on?'':'none';
+  // la barre principale (#toolbar) reste visible : tous les boutons débloqués avant restent disponibles
+}
+function startTableStep(){
+  T=cloneTable(currentStep.startTable); tSel=null; tHist=[]; tRedoStack=[];
+  tableRender();
+}
+
+/* =========================================================
    11. INIT
    ========================================================= */
 (function init(){
   // migration douce de l'ancienne clé mono-niveau
   const old=store.get('tt_step'); if(old!=null && store.get('tt_step_l1')==null) store.set('tt_step_l1', old);
+  // saut développeur via URL : ?go=L ou ?go=L.S (tout ce qui précède est réputé réussi)
+  const go=/[?&]go=(\d+)(?:[.\-_](\d+))?/.exec(location.search);
+  if(go){
+    const L=Math.max(1,Math.min(LEVELS.length, parseInt(go[1],10)));
+    store.set('tt_unlocked', String(Math.max(getUnlocked(), L)));
+    store.set('tt_curlevel', String(L));
+    if(go[2]!=null) store.set('tt_step_l'+L, String(Math.max(0, parseInt(go[2],10))));
+  }
   let lvl=parseInt(store.get('tt_curlevel')||'1',10);
   if(isNaN(lvl)||lvl<1||lvl>LEVELS.length) lvl=1;
   lvl=Math.min(lvl, getUnlocked());
-  loadLevel(lvl, getSavedStep(lvl), true);
+  loadLevel(lvl, getSavedStep(lvl), !go);   // pas d'intro de niveau lors d'un saut direct
+})();
+
+/* =========================================================
+   12. ACCÈS DÉVELOPPEUR — sauter à n'importe quel exercice
+   ========================================================= */
+(function devkit(){
+  function steps(lv){ return lv.defs; }
+  const UNLOCK='tt_unlocked', CUR='tt_curlevel', STEP='tt_step_l', HOME='traitement-texte.html';
+
+  const css=`
+  #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,sans-serif;}
+  #devkit .dk-toggle{display:inline-flex;align-items:center;gap:6px;background:#1e2733;color:#e7eef6;border:none;
+    border-radius:999px;padding:9px 14px;font-weight:800;font-size:.85rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.28);}
+  #devkit .dk-toggle:hover{background:#2a3645;}
+  #devkit .dk-panel{display:none;position:absolute;right:0;bottom:48px;width:312px;max-height:72vh;overflow:auto;
+    background:#1e2733;color:#e7eef6;border-radius:14px;padding:12px 12px 14px;box-shadow:0 16px 40px rgba(0,0,0,.42);}
+  #devkit.open .dk-panel{display:block;}
+  #devkit .dk-head{font-weight:800;font-size:.95rem;margin:0 0 2px;}
+  #devkit .dk-note{color:#9fb0c4;font-size:.72rem;margin:0 0 6px;line-height:1.35;}
+  #devkit .dk-lv{font-weight:800;color:#9fc3ff;margin:11px 0 4px;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;}
+  #devkit .dk-step{display:block;width:100%;text-align:left;background:#2b3949;color:#e7eef6;border:1px solid #3a4a5c;
+    border-radius:8px;padding:6px 9px;margin:3px 0;cursor:pointer;font-size:.78rem;line-height:1.3;}
+  #devkit .dk-step:hover{background:#37485c;border-color:#5a7088;}
+  #devkit .dk-step.jalon{border-color:#f6b73c;}
+  #devkit .dk-step b{color:#ffd479;}
+  #devkit .dk-actions{display:flex;gap:6px;margin-top:12px;}
+  #devkit .dk-act{flex:1;background:#33455a;color:#e7eef6;border:1px solid #44586e;border-radius:8px;padding:7px;
+    font-weight:700;font-size:.74rem;cursor:pointer;}
+  #devkit .dk-act:hover{background:#3d5167;}`;
+  const style=document.createElement('style'); style.textContent=css; document.head.appendChild(style);
+
+  const root=document.createElement('div'); root.id='devkit';
+  let html='<button class="dk-toggle" id="dkToggle">🛠️ Dev</button>'
+    +'<div class="dk-panel"><p class="dk-head">🛠️ Accès développeur</p>'
+    +'<p class="dk-note">Saute à un exercice : tout ce qui précède est considéré comme réussi.</p>';
+  LEVELS.forEach(lv=>{
+    html+='<div class="dk-lv">Niveau '+lv.n+' — '+lv.title+'</div>';
+    steps(lv).forEach((d,i)=>{
+      const isJ=(d.kind==='test'||d.kind==='jalon');
+      html+='<button class="dk-step'+(isJ?' jalon':'')+'" data-l="'+lv.n+'" data-s="'+i+'">'
+        +'<b>'+(d.label||('Étape '+(i+1)))+'</b> · '+(d.title||'')+'</button>';
+    });
+  });
+  html+='<div class="dk-actions"><button class="dk-act" id="dkUnlockAll">🔓 Tout débloquer</button>'
+    +'<button class="dk-act" id="dkReset">🧹 Reset complet</button></div></div>';
+  root.innerHTML=html;
+  document.body.appendChild(root);
+
+  function devJump(L,S){
+    L=Math.max(1,Math.min(LEVELS.length,L));
+    const maxS=steps(LEVELS[L-1]).length-1; S=Math.max(0,Math.min(maxS, S||0));
+    store.set(UNLOCK, String(Math.max(getUnlocked(), L)));
+    store.set(CUR, String(L));
+    store.set(STEP+L, String(S));
+    if(typeof closeOverlay==='function') closeOverlay();
+    loadLevel(L, S, false);
+  }
+
+  document.getElementById('dkToggle').onclick=()=>root.classList.toggle('open');
+  root.querySelectorAll('.dk-step').forEach(b=>{
+    b.onclick=()=>{ root.classList.remove('open'); devJump(+b.getAttribute('data-l'), +b.getAttribute('data-s')); };
+  });
+  document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
+  document.getElementById('dkReset').onclick=()=>{
+    const keys=[UNLOCK,CUR,'tt_step'];
+    for(let i=1;i<=LEVELS.length;i++) keys.push(STEP+i);
+    keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+    location.href=HOME;
+  };
+  // (Le saut par URL ?go=L.S est traité dans init, pour éviter un double chargement.)
 })();
 </script>
 </body>

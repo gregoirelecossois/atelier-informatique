@@ -86,8 +86,14 @@
   .hud .meter{flex:1;min-width:140px;height:14px;background:#e2e8f0;border-radius:8px;overflow:hidden;}
   .hud .meter > i{display:block;height:100%;width:0;background:var(--green);border-radius:8px;transition:width .2s ease;}
   .hud .count{font-weight:800;color:var(--muted);font-size:.95rem;white-space:nowrap;}
-  .tip-pill{display:inline-flex;align-items:center;gap:8px;background:#fff6e6;border:1.5px solid #f6d68a;
-    color:#7a5300;border-radius:999px;padding:5px 12px;font-weight:700;font-size:.9rem;}
+  .tip-pill{display:inline-flex;align-items:center;gap:6px;background:#fff6e6;border:2px solid #f6d68a;
+    color:#7a5300;border-radius:999px;padding:6px 14px;font-family:inherit;font-weight:800;font-size:.92rem;
+    cursor:pointer;line-height:1;transition:transform .12s ease,background .15s ease;}
+  .tip-pill:hover{background:#ffedcc;transform:translateY(-1px);}
+  .tip-pill:active{transform:translateY(0);}
+  .tip-char{font-family:"Fredoka",sans-serif;font-size:2.4rem;margin:2px 0 2px;line-height:1;}
+  .tip-cap{font-weight:800;color:var(--ink);font-size:1.05rem;margin:0 0 4px;}
+  .tip-cap kbd, .tip-char kbd{vertical-align:middle;}
 
   /* parachute field */
   .field{position:relative;height:clamp(360px,52vh,540px);overflow:hidden;
@@ -259,6 +265,84 @@
   @keyframes starFly{0%{opacity:1;transform:rotate(var(--angle,0deg)) translateX(6px) scale(1.4);}
     70%{opacity:.85;}100%{opacity:0;transform:rotate(var(--angle,0deg)) translateX(140px) scale(.1);}}
 
+  /* ---------- Combat de Boss ---------- */
+  .field.bossfield{background:radial-gradient(120% 80% at 50% 0%,#3b1d5e 0%,#241043 55%,#160a2e 100%);}
+  .boss-top{position:absolute;top:12px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:7px;z-index:3;pointer-events:none;}
+  .boss-name{font-family:"Fredoka",sans-serif;font-weight:700;color:#ffe9c2;letter-spacing:.03em;font-size:1rem;
+    text-shadow:0 2px 7px rgba(0,0,0,.7),0 0 12px rgba(255,120,60,.5);}
+  .boss-hpbar{width:min(440px,72vw);height:16px;border-radius:9px;background:rgba(0,0,0,.45);
+    border:2px solid #ffd76a;overflow:hidden;box-shadow:0 0 16px rgba(255,90,60,.5);}
+  .boss-hpbar > i{display:block;height:100%;width:100%;border-radius:9px;
+    background:linear-gradient(90deg,#ef4444,#f59e0b);transition:width .3s ease;box-shadow:0 0 10px rgba(255,120,60,.7) inset;}
+  .boss-sprite{font-size:4.6rem;line-height:1;filter:drop-shadow(0 8px 16px rgba(0,0,0,.6));
+    animation:bossPulse 2.4s ease-in-out infinite;}
+  @keyframes bossPulse{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-7px) scale(1.05);}}
+  .boss-sprite.hurt{animation:bossHurt .45s;}
+  @keyframes bossHurt{0%,100%{transform:scale(1);filter:drop-shadow(0 8px 16px rgba(0,0,0,.6));}
+    30%{transform:scale(1.14) rotate(-7deg);filter:brightness(2.6) sepia(1) saturate(7) hue-rotate(-25deg) drop-shadow(0 0 20px #ff5a5a);}
+    65%{transform:scale(.92) rotate(6deg);}}
+  .boss-sprite.exhausted{animation:bossTired 1.4s ease-in-out infinite;filter:grayscale(.5) brightness(.85) drop-shadow(0 8px 16px rgba(0,0,0,.6));}
+  @keyframes bossTired{0%,100%{transform:rotate(-8deg) translateY(3px);}50%{transform:rotate(7deg) translateY(7px);}}
+  .boss-sprite.dead{animation:bossDie 1.1s ease forwards;}
+  @keyframes bossDie{0%{transform:scale(1) rotate(0);opacity:1;}35%{transform:scale(1.3) rotate(18deg);filter:brightness(2.4);}
+    100%{transform:scale(.1) rotate(240deg);opacity:0;}}
+  .boss-sweat{position:absolute;top:-4px;right:-12px;font-size:1.5rem;animation:sweatBob 1s infinite;}
+  @keyframes sweatBob{0%,100%{transform:translateY(0);opacity:.95;}50%{transform:translateY(6px);opacity:.4;}}
+
+  .hero{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:2.9rem;line-height:1;z-index:4;
+    filter:drop-shadow(0 4px 9px rgba(0,0,0,.55));}
+  .hero.hit{animation:heroHit .4s;}
+  @keyframes heroHit{0%,100%{transform:translateX(-50%);}
+    25%{transform:translateX(calc(-50% - 9px)) rotate(-9deg);filter:brightness(.6) sepia(1) saturate(5) hue-rotate(-30deg);}
+    75%{transform:translateX(calc(-50% + 9px)) rotate(9deg);}}
+
+  .spell{position:absolute;top:0;left:0;display:flex;align-items:center;justify-content:center;will-change:transform;z-index:6;}
+  .spell .orb{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
+    background:radial-gradient(circle at 35% 28%,#c4b5fd,#7c3aed 58%,#4c1d95);
+    border:2px solid #ede9fe;box-shadow:0 0 16px 3px rgba(167,139,250,.8);animation:orbGlow 1.3s ease-in-out infinite;}
+  @keyframes orbGlow{0%,100%{box-shadow:0 0 14px 2px rgba(167,139,250,.7);}50%{box-shadow:0 0 22px 5px rgba(196,181,253,.95);}}
+  .spell.pop .orb{animation:spellPop .25s ease forwards;}
+  @keyframes spellPop{to{transform:scale(1.6);opacity:0;}}
+
+  .atk-target{position:absolute;z-index:20;display:flex;align-items:center;justify-content:center;animation:tgtIn .3s ease both;}
+  .atk-target .cap{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.7rem;color:#7c2d12;background:#fff;
+    border:3px solid #f59e0b;box-shadow:0 0 18px 4px rgba(245,158,11,.75);animation:tgtFloat 1.5s ease-in-out infinite;}
+  @keyframes tgtFloat{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-9px) rotate(4deg);}}
+  @keyframes tgtIn{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .atk-target.hit .cap{animation:tgtHit .25s ease forwards;}
+  @keyframes tgtHit{to{transform:scale(1.7);opacity:0;}}
+  .dmg-float{position:absolute;z-index:25;font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.6rem;color:#fde047;
+    text-shadow:0 2px 7px rgba(0,0,0,.7);pointer-events:none;animation:dmgUp .8s ease forwards;}
+  @keyframes dmgUp{0%{transform:translate(-50%,0) scale(.6);opacity:0;}20%{opacity:1;transform:translate(-50%,-8px) scale(1.2);}
+    100%{transform:translate(-50%,-48px) scale(1);opacity:0;}}
+
+  .attack-banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:30;background:radial-gradient(circle,rgba(239,68,68,.28),rgba(20,8,30,.5));pointer-events:none;padding:16px;text-align:center;}
+  .attack-title{font-family:"Fredoka",sans-serif;font-weight:700;font-size:clamp(1.7rem,6vw,3.2rem);color:#fff;
+    text-shadow:0 0 20px #ff5a5a,0 4px 0 #b91c1c,0 9px 24px rgba(0,0,0,.55);
+    animation:atkTitle .5s ease both,atkPulse .6s .5s ease-in-out infinite;}
+  @keyframes atkTitle{0%{transform:scale(.2) rotate(-12deg);opacity:0;}60%{transform:scale(1.18) rotate(4deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
+  @keyframes atkPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+  .attack-sub{margin-top:10px;font-weight:800;color:#ffe9b0;font-size:1.05rem;text-shadow:0 2px 7px rgba(0,0,0,.7);animation:atkTitle .5s .15s both;}
+  .attack-flash{position:absolute;inset:0;background:#fff;z-index:31;pointer-events:none;animation:atkFlash .5s ease forwards;}
+  @keyframes atkFlash{0%{opacity:.85;}100%{opacity:0;}}
+
+  /* Boss en mode MOTS (Niveau 7) */
+  .spell.word .rune{display:inline-flex;align-items:center;padding:7px 14px;border-radius:13px;
+    font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.25rem;color:#ede9fe;white-space:nowrap;letter-spacing:.5px;
+    background:linear-gradient(#6d28d9,#4c1d95);border:2px solid #c4b5fd;box-shadow:0 0 16px 3px rgba(167,139,250,.7);}
+  .spell.word.active .rune{border-color:#fde047;box-shadow:0 0 22px 5px rgba(253,224,71,.7);}
+  .spell.word .typed{color:#86efac;}
+  .spell.pop .rune{animation:spellPop .25s ease forwards;}
+  .atk-word{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:20;animation:tgtIn .3s ease both;}
+  .atk-word .card{display:inline-flex;align-items:center;padding:10px 22px;border-radius:16px;letter-spacing:.5px;
+    font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.9rem;color:#7c2d12;background:#fff;white-space:nowrap;
+    border:3px solid #f59e0b;box-shadow:0 0 22px 5px rgba(245,158,11,.72);animation:tgtFloat 1.5s ease-in-out infinite;}
+  .atk-word .typed{color:#16a34a;}
+  .atk-word.hit .card{animation:tgtHit .25s ease forwards;}
+
   @media (max-width:560px){
     .newtools{grid-template-columns:1fr;}
     .btn{flex:1;justify-content:center;}
@@ -268,6 +352,9 @@
     .modal{animation:none;}
     .lock-burst,.lock-glow,.lock-star{animation:none;}
     .drop.pop .cap,.drop.miss .cap,.field.shake{animation:none;}
+    .boss-sprite,.boss-sprite.hurt,.boss-sprite.exhausted,.boss-sweat,.spell .orb,.spell.pop .orb,
+    .atk-target .cap,.atk-target.hit .cap,.attack-title,.attack-flash,.hero.hit,.dmg-float,
+    .spell.word .rune,.spell.pop .rune,.atk-word .card,.atk-word.hit .card{animation:none!important;}
   }
 </style>
 </head>
@@ -351,6 +438,42 @@ function tipFor(ch){
 }
 function niceChar(ch){ return ch===' ' ? 'espace' : ch; }
 
+/* Astuce IMAGE : pour un caractère, quelles touches surligner sur le mini-clavier + une légende très courte.
+   Renvoie { hl:{keys:Set, maj, altgr}, cap:'…' } à donner à buildKeyboard(). */
+const CIRC_LETTER={'â':'A','ê':'E','î':'I','ô':'O','û':'U'};
+const TREMA_LETTER={'ë':'E','ï':'I','ü':'U'};
+const SYM_HINT={
+  '.':{keys:[';'],maj:true},  ',':{keys:[',']},  '?':{keys:[','],maj:true},  '!':{keys:['!']},
+  ';':{keys:[';']},  ':':{keys:[':']},
+  '(':{keys:['(']},  ')':{keys:[')']},  '=':{keys:['=']},  '"':{keys:['"']},
+  '@':{keys:['à'],altgr:true},  '#':{keys:['"'],altgr:true},  '€':{keys:['e'],altgr:true},
+  '+':{keys:['='],maj:true},  '-':{keys:['-']}
+};
+function keyHint(ch){
+  const S=a=>new Set(a);
+  if(/^[a-z]$/.test(ch)) return {hl:{keys:S([ch])}, cap:'La touche '+kbd(ch.toUpperCase())};
+  if(/^[A-Z]$/.test(ch)) return {hl:{keys:S([ch.toLowerCase()]), maj:true}, cap:kbd('Maj ⇧')+' + '+kbd(ch)};
+  if(/^[0-9]$/.test(ch)) return {hl:{keys:S([ch]), maj:true}, cap:kbd('Maj ⇧')+' + '+kbd(ch)};
+  if('éèàçù'.includes(ch)) return {hl:{keys:S([ch])}, cap:'La touche '+kbd(ch)};
+  if(CIRC_LETTER[ch]) return {hl:{keys:S(['^', CIRC_LETTER[ch].toLowerCase()])}, cap:kbd('^')+' puis '+kbd(CIRC_LETTER[ch])};
+  if(TREMA_LETTER[ch]) return {hl:{keys:S(['^', TREMA_LETTER[ch].toLowerCase()]), maj:true}, cap:kbd('Maj ⇧')+' + '+kbd('^')+' puis '+kbd(TREMA_LETTER[ch])};
+  const s=SYM_HINT[ch];
+  if(s){
+    let cap;
+    if(s.maj) cap=kbd('Maj ⇧')+' + '+kbd(s.keys[0]);
+    else if(s.altgr) cap=kbd('AltGr')+' + '+kbd(s.keys[0]);
+    else cap='La touche '+kbd(s.keys[0]);
+    return {hl:{keys:S(s.keys), maj:!!s.maj, altgr:!!s.altgr}, cap};
+  }
+  return {hl:{keys:S([ch])}, cap:'La touche '+kbd(ch)};
+}
+// Surlignage combiné pour plusieurs caractères (image d'une manche entière)
+function comboHint(chars){
+  const keys=new Set(); let maj=false, altgr=false;
+  chars.forEach(ch=>{ const {hl}=keyHint(ch); (hl.keys||new Set()).forEach(k=>keys.add(k)); if(hl.maj)maj=true; if(hl.altgr)altgr=true; });
+  return {keys, maj, altgr};
+}
+
 // Disposition AZERTY pour le mini-clavier : [étiquette principale, chiffre secondaire?]
 const KB_ROWS=[
   [['&','1'],['é','2'],['"','3'],["'",'4'],['(','5'],['-','6'],['è','7'],['_','8'],['ç','9'],['à','0'],[')'],['=']],
@@ -402,16 +525,19 @@ const LEVELS=[
     rounds:[
       {kind:'mission',label:'Manche 1',emoji:'🟢',title:'Les touches du milieu',
        desc:'Fais éclater les lettres '+kbd('f')+' '+kbd('j')+' '+kbd('d')+' '+kbd('k')+' '+kbd('s')+' '+kbd('l')+'. Ce sont les touches du milieu, là où on pose les doigts.',
-       pool:['f','j','d','k','s','l'],target:10,lives:5,speed:62,spawnMs:1500},
-      {kind:'mission',label:'Manche 2',emoji:'✋',title:'La main gauche',
-       desc:'Maintenant les lettres '+kbd('a')+' '+kbd('z')+' '+kbd('e')+' '+kbd('r')+' '+kbd('t')+', tapées avec la main gauche.',
-       pool:['a','z','e','r','t'],target:12,lives:5,speed:72,spawnMs:1380},
-      {kind:'mission',label:'Manche 3',emoji:'🤚',title:'La main droite',
-       desc:'Les lettres '+kbd('u')+' '+kbd('i')+' '+kbd('o')+' '+kbd('p')+' '+kbd('m')+', tapées avec la main droite.',
-       pool:['u','i','o','p','m'],target:12,lives:4,speed:80,spawnMs:1300},
+       pool:['f','j','d','k','s','l'],target:15,lives:6,speed:58,spawnMs:1550},
+      {kind:'mission',label:'Manche 2',emoji:'🅰️',title:'Les voyelles',
+       desc:'Les voyelles '+kbd('a')+' '+kbd('e')+' '+kbd('i')+' '+kbd('o')+' '+kbd('u')+' '+kbd('y')+'. On les trouve dans presque tous les mots !',
+       pool:['a','e','i','o','u','y'],target:15,lives:6,speed:64,spawnMs:1480},
+      {kind:'mission',label:'Manche 3',emoji:'🤚',title:'Le bord du clavier',
+       desc:'Les lettres un peu plus loin des doigts : '+kbd('a')+' '+kbd('z')+' '+kbd('p')+' '+kbd('q')+' '+kbd('m')+' '+kbd('w')+' '+kbd('x')+' '+kbd('c')+'. Va les chercher !',
+       pool:['a','z','p','q','m','w','x','c'],target:18,lives:6,speed:70,spawnMs:1420},
+      {kind:'mission',label:'Manche 4',emoji:'🔤',title:'Les consonnes restantes',
+       desc:'On termine l\'alphabet avec '+kbd('b')+' '+kbd('g')+' '+kbd('h')+' '+kbd('n')+' '+kbd('r')+' '+kbd('t')+' '+kbd('v')+'.',
+       pool:['b','g','h','n','r','t','v'],target:16,lives:6,speed:74,spawnMs:1360},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Toutes les lettres !',
        desc:'Le grand défi : <b>toutes les lettres</b> de l\'alphabet tombent, un peu plus vite. Montre que tu les connais !',
-       pool:'abcdefghijklmnopqrstuvwxyz'.split(''),target:16,lives:4,speed:96,spawnMs:1050}
+       pool:'abcdefghijklmnopqrstuvwxyz'.split(''),target:40,lives:6,speed:90,spawnMs:1100}
     ]},
 
   { n:2, title:'Le parachute — les majuscules', subtitle:'le parachute · les majuscules', game:'parachute',
@@ -421,42 +547,42 @@ const LEVELS=[
       kb:{maj:true,caps:true,letters:true},
       tools:[{g:'⇧',n:'La touche Maj'},{g:'⇪',n:'Caps Lock'}] },
     rounds:[
-      {kind:'mission',label:'Manche 1',emoji:'🔠',title:'Premières majuscules',
-       desc:'Fais éclater les majuscules '+kbd('F')+' '+kbd('J')+' '+kbd('D')+' '+kbd('K')+' '+kbd('S')+' '+kbd('L')+'. Souviens-toi : '+kbd('Maj ⇧')+' enfoncé + la lettre.',
-       pool:['F','J','D','K','S','L'],target:10,lives:6,speed:54,spawnMs:1750},
-      {kind:'mission',label:'Manche 2',emoji:'🔡',title:'Majuscules et minuscules mélangées',
+      {kind:'mission',label:'Manche 1',emoji:'🔠',title:'Les majuscules des prénoms',
+       desc:'Comme au début d\'un prénom : '+kbd('A')+' '+kbd('E')+' '+kbd('L')+' '+kbd('M')+' '+kbd('N')+' '+kbd('S')+' '+kbd('T')+'. Souviens-toi : '+kbd('Maj ⇧')+' enfoncé + la lettre.',
+       pool:['A','E','L','M','N','S','T'],target:16,lives:7,speed:52,spawnMs:1750},
+      {kind:'mission',label:'Manche 2',emoji:'🔠',title:'D\'autres majuscules',
+       desc:'On continue avec '+kbd('B')+' '+kbd('C')+' '+kbd('D')+' '+kbd('F')+' '+kbd('G')+' '+kbd('J')+' '+kbd('P')+' '+kbd('R')+' '+kbd('V')+'.',
+       pool:['B','C','D','F','G','J','P','R','V'],target:20,lives:7,speed:56,spawnMs:1620},
+      {kind:'mission',label:'Manche 3',emoji:'🔡',title:'Majuscules et minuscules mélangées',
        desc:'Attention : des majuscules <b>et</b> des minuscules tombent ensemble ! Lis bien chaque lettre avant de taper.',
-       pool:['A','a','Z','z','E','e','R','r','T','t','I','i','O','o','N','n'],target:18,lives:5,speed:68,spawnMs:1450},
+       pool:['A','a','Z','z','E','e','R','r','T','t','I','i','O','o','N','n'],target:24,lives:6,speed:66,spawnMs:1500},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Grand mélange — de A à Z',
        desc:'Toutes les lettres tombent : majuscules <b>et</b> minuscules mélangées. Sois rapide et précis !',
-       pool:('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz').split(''),target:26,lives:4,speed:88,spawnMs:1100}
+       pool:('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz').split(''),target:46,lives:6,speed:84,spawnMs:1150}
     ]},
 
   { n:3, title:'Le parachute — les accents', subtitle:'le parachute · les accents', game:'parachute',
     intro:{ emoji:'🔤',
-      lead:'En français, beaucoup de lettres portent un <b>accent</b> : é, è, à, ç… Voici comment les taper !',
-      teach:'Il existe plusieurs accents :<br>'
-        +'• <b>Accent aigu</b> ( é ) : touche <b>directe</b> '+kbd('é')+' (la touche du '+kbd('2')+').<br>'
-        +'• <b>Accent grave</b> ( è à ù ) : touches <b>directes</b> '+kbd('è')+' '+kbd('à')+' '+kbd('ù')+'.<br>'
-        +'• <b>Cédille</b> ( ç ) : touche <b>directe</b> '+kbd('ç')+' (la touche du '+kbd('9')+').<br>'
-        +'• <b>Accent circonflexe</b> ( ê â ô… le « chapeau » ) : appuie sur la touche morte '+kbd('^')+' (à droite du '+kbd('P')+'), <b>relâche</b>, puis appuie sur la lettre.<br>'
-        +'• <b>Tréma</b> ( ë ï ü, les « deux points » ) : appuie sur '+kbd('Maj ⇧')+' + '+kbd('^')+', puis sur la lettre.',
+      lead:'Beaucoup de lettres ont un <b>accent</b> : é è à ç. Regarde le clavier ci-dessous !',
+      teach:'Les touches <b>bleues</b> ( é è à ç ù ) marchent toutes seules : une seule touche.<br>Pour le <b>chapeau</b> ( ê ), appuie sur la touche '+kbd('^')+' puis sur la lettre.',
       kb:{accents:true},
-      legend:['é','è','à','ç','ù','ê','â','ë'],
-      tools:[{g:'é',n:'Accents directs'},{g:'^',n:'La touche morte'}] },
+      tools:[{g:'é',n:'Touches directes'},{g:'^',n:'La touche chapeau'}] },
     rounds:[
       {kind:'mission',label:'Manche 1',emoji:'é',title:'Aigu et grave',
        desc:'Les accents directs '+kbd('é')+' '+kbd('è')+' '+kbd('à')+'. Une seule touche à chaque fois !',
-       pool:['é','è','à'],target:10,lives:6,speed:54,spawnMs:1700,showTips:true},
+       pool:['é','è','à'],target:10,lives:7,speed:46,spawnMs:1900,showTips:true},
       {kind:'mission',label:'Manche 2',emoji:'ç',title:'Cédille et accent sur le u',
        desc:'On ajoute '+kbd('ç')+' et '+kbd('ù')+', toujours en touches directes.',
-       pool:['ç','ù','é','è','à'],target:12,lives:6,speed:62,spawnMs:1550,showTips:true},
+       pool:['ç','ù','é','è','à'],target:14,lives:7,speed:52,spawnMs:1700,showTips:true},
       {kind:'mission',label:'Manche 3',emoji:'ê',title:'Le chapeau (circonflexe)',
        desc:'La touche morte '+kbd('^')+' puis la lettre. Prends ton temps, c\'est un peu plus difficile !',
-       pool:['ê','â','ô','î','û'],target:10,lives:7,speed:46,spawnMs:2100,showTips:true},
+       pool:['ê','â','ô','î','û'],target:14,lives:8,speed:42,spawnMs:2250,showTips:true},
+      {kind:'mission',label:'Manche 4',emoji:'ë',title:'Le tréma (les deux points)',
+       desc:'Le tréma se fait avec '+kbd('Maj ⇧')+' + '+kbd('^')+' puis la lettre. Essaie '+kbd('ë')+' '+kbd('ï')+' '+kbd('ü')+'.',
+       pool:['ë','ï','ü'],target:9,lives:8,speed:42,spawnMs:2300,showTips:true},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tous les accents',
-       desc:'Accents directs et chapeaux mélangés. Montre que tu sais tous les faire !',
-       pool:['é','è','à','ç','ù','ê','â','ô'],target:14,lives:5,speed:70,spawnMs:1350,showTips:true}
+       desc:'Accents directs, chapeaux et trémas mélangés. Montre que tu sais tous les faire !',
+       pool:['é','è','à','ç','ù','ê','â','ô','ë','ï','ü'],target:30,lives:7,speed:58,spawnMs:1550,showTips:true}
     ]},
 
   { n:4, title:'Le parachute — les chiffres', subtitle:'le parachute · les chiffres', game:'parachute',
@@ -468,34 +594,44 @@ const LEVELS=[
     rounds:[
       {kind:'mission',label:'Manche 1',emoji:'🔢',title:'Tous les chiffres d\'un coup',
        desc:'Tous les chiffres de '+kbd('0')+' à '+kbd('9')+' tombent mélangés. Montre que tu les retrouves tous !',
-       pool:'0123456789'.split(''),target:15,lives:5,speed:66,spawnMs:1550},
+       pool:'0123456789'.split(''),target:24,lives:6,speed:60,spawnMs:1600},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Chiffres en rafale',
        desc:'Tous les chiffres tombent vite et en rafale. Reste concentré !',
-       pool:'0123456789'.split(''),target:22,lives:4,speed:98,spawnMs:980}
+       pool:'0123456789'.split(''),target:30,lives:5,speed:90,spawnMs:1080}
     ]},
 
   { n:5, title:'Le parachute — les symboles', subtitle:'le parachute · les symboles', game:'parachute',
     intro:{ emoji:'✨',
-      lead:'Les symboles sont des touches « secrètes » : il faut souvent appuyer sur <b>deux touches en même temps</b>.',
-      teach:'Deux touches magiques :<br>• '+kbd('Maj ⇧')+' pour la ponctuation du haut (comme '+kbd('?')+').<br>• '+kbd('AltGr')+' (à droite de la barre espace) pour des symboles comme '+kbd('@')+' ou '+kbd('#')+'.<br>Regarde bien l\'astuce de chaque symbole sur l\'écran de jeu !',
-      legend:['.',',','?','!','@','#','€','+'],
+      lead:'Les symboles sont des touches « secrètes ». Le clavier ci-dessous te montre lesquelles toucher.',
+      teach:'Touches <b>bleues</b> : appuie directement.<br>Avec '+kbd('Maj ⇧')+' ou '+kbd('AltGr')+' (en orange) : garde la touche enfoncée en même temps que l\'autre.',
+      kb:{maj:true, altgr:true, keys:new Set([';',',','!',':','(',')','=','"','à','e'])},
       tools:[{g:'⇧',n:'Maj + touche'},{g:'AltGr',n:'AltGr + touche'}] },
     rounds:[
-      {kind:'mission',label:'Manche 1',emoji:'❓',title:'La ponctuation',desc:'Les signes '+kbd('.')+' '+kbd(',')+' '+kbd('?')+' '+kbd('!')+'. Les astuces sont affichées pendant le jeu.',pool:['.',',','?','!'],target:8,lives:7,speed:52,spawnMs:1950,showTips:true},
-      {kind:'mission',label:'Manche 2',emoji:'＠',title:'Les symboles spéciaux',desc:'Les symboles '+kbd('@')+' '+kbd('#')+' '+kbd('€')+' '+kbd('+')+' avec '+kbd('AltGr')+' ou '+kbd('Maj ⇧')+'.',pool:['@','#','€','+'],target:8,lives:7,speed:52,spawnMs:2050,showTips:true},
-      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tout mélangé',desc:'Ponctuation et symboles spéciaux tombent ensemble. Garde les astuces en tête !',pool:['.',',','?','!','@','#','€','+'],target:12,lives:5,speed:72,spawnMs:1350,showTips:true}
+      {kind:'mission',label:'Manche 1',emoji:'❓',title:'La ponctuation',desc:'Les signes '+kbd('.')+' '+kbd(',')+' '+kbd('?')+' '+kbd('!')+' '+kbd(';')+' '+kbd(':')+'. Clique sur 💡 si tu cherches une touche.',pool:['.',',','?','!',';',':'],target:16,lives:7,speed:46,spawnMs:2050,showTips:true},
+      {kind:'mission',label:'Manche 2',emoji:'🔣',title:'Parenthèses et signes',desc:'Les touches directes '+kbd('(')+' '+kbd(')')+' '+kbd('=')+', le tiret '+kbd('-')+' et les guillemets '+kbd('"')+'.',pool:['(',')','=','"','-'],target:15,lives:7,speed:48,spawnMs:2100,showTips:true},
+      {kind:'mission',label:'Manche 3',emoji:'＠',title:'Les symboles spéciaux',desc:'Les symboles '+kbd('@')+' '+kbd('#')+' '+kbd('€')+' '+kbd('+')+' avec '+kbd('AltGr')+' ou '+kbd('Maj ⇧')+'.',pool:['@','#','€','+'],target:12,lives:7,speed:48,spawnMs:2150,showTips:true},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tous les symboles',desc:'Ponctuation, parenthèses et symboles spéciaux tombent ensemble. Sers-toi de 💡 quand tu hésites !',pool:['.',',','?','!',';',':','(',')','=','"','-','@','#','€','+'],target:30,lives:7,speed:60,spawnMs:1450,showTips:true},
+      {kind:'jalon',mode:'boss',label:'Combat de Boss',emoji:'🐉',title:'le Dragon des Touches',
+       desc:'Le défi <b>ULTIME</b> : <b>tout le clavier</b> t\'attaque ! Le <b>Dragon des Touches</b> lance des sorts — minuscules, MAJUSCULES, chiffres, symboles, ponctuation, accents… <b>Tape la bonne touche</b> pour esquiver chaque sort. Après <b>10 sorts</b>, le dragon s\'épuise : c\'est le moment d\'<b>ATTAQUER</b> en frappant les symboles devant lui ! Touche-le <b>15 fois</b> pour le vaincre — mais protège tes vies !',
+       lives:6, bossHits:15, spellsPerWave:10, speed:74, spawnMs:1100, maxConcurrent:4}
     ]},
 
   { n:6, title:'Frappe libre', subtitle:'frappe libre', game:'dactylo',
     intro:{ emoji:'⌨️',
       lead:'Recopie le texte affiché en gris, <b>lettre par lettre</b>, à ton rythme. Pas de chrono, pas de pression !',
-      teach:'La lettre à taper est <b>encadrée en bleu</b>. Quand tu tapes la bonne touche, elle devient <b>verte</b> et on passe à la suivante. Si tu te trompes, rien n\'avance : réessaie tranquillement. Tu peux utiliser '+kbd('⌫ Effacer')+' pour revenir en arrière. Pense aux <b>accents</b> : é è à ç sont des touches directes, et le chapeau ( ê ) se fait avec '+kbd('^')+' puis la lettre. Ici, <b>pas de chrono qui stresse</b> : prends ton temps !',
+      teach:'La lettre à taper est <b>encadrée en bleu</b>. Tape-la : elle devient <b>verte</b> et on passe à la suivante. Tu te trompes ? Rien n\'avance, réessaie. La touche '+kbd('⌫')+' efface. Pas de chrono : prends ton temps !',
       tools:[{g:'⌨️',n:'Taper un vrai texte'},{g:'🎯',n:'La précision'}] },
     rounds:[
       {kind:'mission',label:'Texte 1',emoji:'🐱',title:'Une petite phrase',desc:'Recopie cette phrase tout en minuscules.',text:'le petit chat joue dans le jardin avec une balle rouge'},
-      {kind:'mission',label:'Texte 2',emoji:'🌲',title:'Avec des accents',desc:'Pense aux accents directs : é è à se tapent d\'une seule touche.',text:'la forêt est très calme et les oiseaux chantent près des arbres verts'},
-      {kind:'mission',label:'Texte 3',emoji:'❓',title:'Majuscules et ponctuation',desc:'Recopie en soignant les majuscules, la ponctuation et les espaces.',text:'Quel beau voyage ! As-tu vu la mer, les bateaux et les poissons ?'},
-      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand texte',desc:'Un texte plus long, avec des accents, pour devenir un vrai pro du clavier.',text:"Chaque matin, Léa allume son ordinateur et écrit l'histoire d'un dragon très gentil qui adore les fraises."}
+      {kind:'mission',label:'Texte 2',emoji:'🐶',title:'Encore en minuscules',desc:'Une autre phrase tout en minuscules, à ton rythme.',text:'le chien court vite dans le parc et attrape un gros ballon'},
+      {kind:'mission',label:'Texte 3',emoji:'🥐',title:'Une phrase du matin',desc:'Toujours en minuscules : tape chaque mot tranquillement.',text:'le matin je mange du pain avec du beurre et un bon jus'},
+      {kind:'mission',label:'Texte 4',emoji:'🌲',title:'Avec des accents',desc:'Pense aux accents directs : é è à se tapent d\'une seule touche.',text:'la forêt est très calme et les oiseaux chantent près des arbres verts'},
+      {kind:'mission',label:'Texte 5',emoji:'🏖️',title:'Encore des accents',desc:'Toujours des accents directs : é è à, une seule touche à chaque fois.',text:'l\'été à la plage est très agréable quand le ciel est dégagé'},
+      {kind:'mission',label:'Texte 6',emoji:'🌈',title:'Accents et traits d\'union',desc:'Lis bien les accents, et n\'oublie pas les tirets de « arc-en-ciel ».',text:'après la pluie, un bel arc-en-ciel brille au-dessus de la rivière'},
+      {kind:'mission',label:'Texte 7',emoji:'❓',title:'Majuscules et ponctuation',desc:'Recopie en soignant les majuscules, la ponctuation et les espaces.',text:'Quel beau voyage ! As-tu vu la mer, les bateaux et les poissons ?'},
+      {kind:'mission',label:'Texte 8',emoji:'👋',title:'On dit bonjour',desc:'Attention aux majuscules des prénoms et à la ponctuation.',text:'Bonjour Marie ! Veux-tu jouer au parc avec Tom et Lucas ?'},
+      {kind:'mission',label:'Texte 9',emoji:'🧳',title:'Avant de partir',desc:'Soigne les majuscules, les virgules et les deux-points.',text:'Attention : la route est longue, prends de l\'eau et un chapeau.'},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand texte',desc:'Un texte bien plus long, avec des accents et de la ponctuation, pour devenir un vrai pro du clavier.',text:"Chaque matin, Léa allume son ordinateur et écrit l'histoire d'un dragon très gentil qui adore les fraises. L'après-midi, elle dessine un château bleu, invente une chanson rigolote et la chante à voix haute. Le soir, fière de son travail, elle range tout, éteint l'écran et part jouer dehors avec ses amis."}
     ]},
 
   { n:7, title:'La chasse à la lave', subtitle:'la chasse à la lave', game:'dactylo',
@@ -505,8 +641,17 @@ const LEVELS=[
       tools:[{g:'🔥',n:'Rester devant la lave'},{g:'⚡',n:'La vitesse de frappe'}] },
     rounds:[
       {kind:'mission',label:'Poursuite 1',emoji:'🐢',title:'En douceur',desc:'La lave avance lentement. Tape la phrase avant qu\'elle te rattrape.',text:'je tape vite et je reste devant la vague de lave',pursuit:2.0,grace:2600,lead:5},
-      {kind:'mission',label:'Poursuite 2',emoji:'🐇',title:'Ça accélère',desc:'La lave va plus vite ! Reste bien concentré.',text:'la course continue et la lave brûlante monte de plus en plus vite',pursuit:2.8,grace:2200,lead:4},
-      {kind:'jalon',label:'Défi final',emoji:'🏆',title:'La lave en folie',desc:'Dernier défi du parcours : majuscules, accents, ponctuation et lave rapide !',text:'Bravo champion ! Tu écris déjà très bien, sans avoir peur de la lave ?',pursuit:3.4,grace:1900,lead:4}
+      {kind:'mission',label:'Poursuite 2',emoji:'🐢',title:'Tout doux',desc:'Encore en douceur : garde ton avance tranquillement.',text:'la lave est loin derrière moi et je continue à taper',pursuit:2.0,grace:2600,lead:5},
+      {kind:'mission',label:'Poursuite 3',emoji:'🐌',title:'Bien tranquille',desc:'Toujours lentement. Tape chaque lettre sans te presser.',text:'je garde mon avance en tapant chaque lettre avec soin',pursuit:2.0,grace:2600,lead:5},
+      {kind:'mission',label:'Poursuite 4',emoji:'🐇',title:'Ça accélère',desc:'La lave va plus vite ! Reste bien concentré.',text:'la course continue et la lave brûlante monte de plus en plus vite',pursuit:2.8,grace:2200,lead:4},
+      {kind:'mission',label:'Poursuite 5',emoji:'🐇',title:'Plus vite !',desc:'La lave ne te lâche pas : ne ralentis pas !',text:'je file tout droit vers la sortie, là-bas, loin de la lave',pursuit:2.8,grace:2200,lead:4},
+      {kind:'mission',label:'Poursuite 6',emoji:'⚡',title:'À toute allure',desc:'Encore plus rapide : tape sans t\'arrêter pour t\'éloigner.',text:'plus je tape vite, plus je m\'éloigne de la lave rouge',pursuit:2.8,grace:2200,lead:4},
+      {kind:'jalon',label:'Défi final',emoji:'🏆',title:'La lave en folie',desc:'Dernier défi de frappe : majuscules, accents, ponctuation et lave rapide !',text:'Bravo champion ! Tu écris déjà très bien, sans avoir peur de la lave ? Tape sans t\'arrêter et tu gagnes la grande course !',pursuit:2.6,grace:2400,lead:4},
+      {kind:'jalon',mode:'boss',wordMode:true,label:'Boss final',emoji:'🐉',title:'le Dragon des Touches — le retour',
+       desc:'Le <b>Dragon des Touches</b> est de retour, plus puissant que jamais ! Cette fois, tu te bats avec des <b>mots</b>. Pour <b>esquiver</b> ses sorts, tape vite le <b>mot d\'esquive</b> qui descend (<i>esquive, roulade, parade, bouclier…</i>). Quand il s\'épuise, c\'est l\'heure d\'<b>ATTAQUER</b> : tape les <b>mots d\'armes</b> (<i>épée, masse, attaque…</i>). Touche-le <b>8 fois</b> pour le vaincre. En garde, chevalier ! ⚔️',
+       defenseWords:['raté','Esquive','roulade','Parade','bouclier','saut','feinte','en-garde','recul','éclat','demi-tour','défense','évite','Côté','plongeon','contre','pare','Abri'],
+       attackWords:['épée','Gourdin','masse','attaque','Coup','lance','Hache','dague','assaut','frappe','Flèche','arc','bélier','Sabre','étoc','boulet'],
+       lives:6, bossHits:8, spellsPerWave:5, speed:55, spawnMs:2800, maxConcurrent:2, attackMs:9000}
     ]}
 ];
 
@@ -552,16 +697,19 @@ function beep(kind){
   else if(kind==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.12,i*.09)); }
 }
 function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
-document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('kb_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); } };
+document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('kb_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); resumeBossMusic(); } else { pauseBossMusic(); } };
 
 /* =========================================================
    5. MOTEUR DE JEU — abstraction
    ========================================================= */
-let activeGame=null;   // {onKey(e), stop()}
-function stopGame(){ if(activeGame){ try{activeGame.stop();}catch(e){} activeGame=null; } }
+let activeGame=null;   // {onKey(e), stop(), pause?(), resume?()}
+let gamePaused=false;  // vrai quand une astuce est ouverte : le jeu est gelé
+function stopGame(){ if(activeGame){ try{activeGame.stop();}catch(e){} activeGame=null; } gamePaused=false; if(typeof stopBossMusic==='function') stopBossMusic(); }
+function pauseActive(){ if(activeGame && activeGame.pause){ try{activeGame.pause();}catch(e){} } gamePaused=true; }
+function resumeActive(){ if(gamePaused && activeGame && activeGame.resume){ try{activeGame.resume();}catch(e){} } gamePaused=false; }
 
 document.addEventListener('keydown', e=>{
-  if(overlay.classList.contains('open')) return;     // jeu en pause quand une popup est ouverte
+  if(overlay.classList.contains('open') || gamePaused) return;   // jeu en pause quand une astuce/popup est ouverte
   if(!activeGame) return;
   activeGame.onKey(e);
 });
@@ -569,36 +717,38 @@ document.addEventListener('keydown', e=>{
 /* ---- Parachute ---- */
 const P={};
 function startParachute(step){
-  stopGame();
+  stopGame(); gamePaused=false;
   stage.innerHTML=
     '<div class="hud">'
     + '<span class="lives" id="hudLives"></span>'
     + '<span class="count" id="hudCount"></span>'
     + '<div class="meter"><i id="hudMeter"></i></div>'
-    + (step.showTips? '<span class="tip-pill" id="hudTip">💡</span>' : '')
+    + (step.showTips? '<button type="button" class="tip-pill" id="hudTip">💡 Astuce</button>' : '')
     + '</div>'
     + '<div class="field" id="field"><div class="ground"></div></div>';
   const field=document.getElementById('field');
   Object.assign(P,{
     step, field, items:[], cleared:0, lives:step.lives, target:step.target,
     speed:step.speed, spawnMs:step.spawnMs, pool:step.pool, running:true,
-    last:0, nextSpawn:0, groundY:0, raf:0, tipChar:null
+    last:0, nextSpawn:0, groundY:0, raf:0
   });
   P.groundY=field.clientHeight - 58;
   updateHud();
-  if(step.showTips) showTipFor(P.pool[0]);
-  activeGame={ onKey:onKeyP, stop:stopP };
+  if(step.showTips){
+    const tb=document.getElementById('hudTip');
+    if(tb) tb.onclick=()=>{ const it=lowestItem(); openGameTip(it?it.ch:P.pool[0]); };
+  }
+  activeGame={ onKey:onKeyP, stop:stopP,
+    pause(){ if(P.running){ P.running=false; cancelAnimationFrame(P.raf); } },
+    resume(){ if(!P.running){ P.running=true; P.last=0; P.raf=requestAnimationFrame(loopP); } } };
   P.raf=requestAnimationFrame(loopP);
 }
+function lowestItem(){ let low=null; if(P.items) for(const it of P.items){ if(!low||it.y>low.y) low=it; } return low; }
 function updateHud(){
   let h=''; for(let i=0;i<P.step.lives;i++) h+= (i<P.lives?'❤️':'<span class="lost">🖤</span>');
   document.getElementById('hudLives').innerHTML=h;
   document.getElementById('hudCount').textContent=P.cleared+' / '+P.target+' réussies';
   document.getElementById('hudMeter').style.width=Math.min(100,P.cleared/P.target*100)+'%';
-}
-function showTipFor(ch){
-  const el=document.getElementById('hudTip'); if(!el) return;
-  P.tipChar=ch; el.innerHTML='💡 '+kbd(niceChar(ch))+' : '+tipFor(ch);
 }
 function spawnP(){
   if(P.items.length>=5) return;
@@ -626,7 +776,8 @@ function loopP(ts){
   P.raf=requestAnimationFrame(loopP);
 }
 function removeItem(it){ const i=P.items.indexOf(it); if(i>=0) P.items.splice(i,1); }
-function burstAt(xPx, yPx){
+function burstAt(xPx, yPx, field){
+  field=field||P.field;
   const COLORS=['#2563eb','#f59e0b','#16a34a','#ef4444','#a78bfa','#fb923c','#34d399','#f472b6'];
   const N=12;
   const burst=document.createElement('div');
@@ -644,7 +795,7 @@ function burstAt(xPx, yPx){
     sp.style.animationDelay=(Math.random()*0.06)+'s';
     burst.appendChild(sp);
   }
-  P.field.appendChild(burst);
+  field.appendChild(burst);
   setTimeout(()=>burst.remove(),500);
 }
 function missP(it){
@@ -667,15 +818,9 @@ function onKeyP(e){
     burstAt(xPx, yPx);
     removeItem(best); best.el.classList.add('pop'); const el=best.el; setTimeout(()=>el.remove(),250);
     P.cleared++; beep('good'); updateHud();
-    if(P.step.showTips){ const next=P.items[0]; if(next) showTipFor(next.ch); }
     if(P.cleared>=P.target) winP();
   } else {
     beep('key');
-    if(P.step.showTips){
-      // aide : si la touche tapée ne correspond à rien, rappelle l'astuce de la lettre la plus basse
-      let low=null; for(const it of P.items){ if(!low||it.y>low.y) low=it; }
-      if(low) showTipFor(low.ch);
-    }
   }
 }
 function stopP(){ P.running=false; cancelAnimationFrame(P.raf); }
@@ -691,7 +836,7 @@ function failP(){
 /* ---- Dactylo (avec poursuite optionnelle) ---- */
 const D={};
 function startDactylo(step){
-  stopGame();
+  stopGame(); gamePaused=false;
   const pursuit=!!step.pursuit;
   stage.innerHTML=
     '<div class="type-area">'
@@ -704,7 +849,9 @@ function startDactylo(step){
     pursuit, chaser:-(step.lead||4), startTs:0, lastTs:0, started:false, grace:step.grace||0, raf:0
   });
   renderType();
-  activeGame={ onKey:onKeyD, stop:stopD };
+  activeGame={ onKey:onKeyD, stop:stopD,
+    pause(){ if(D.running){ D.running=false; cancelAnimationFrame(D.raf); } },
+    resume(){ if(!D.running){ D.running=true; D.lastTs=0; if(D.pursuit) D.raf=requestAnimationFrame(loopD); } } };
   if(pursuit) D.raf=requestAnimationFrame(loopD);
 }
 function renderType(){
@@ -779,6 +926,271 @@ function caughtD(){
   onFail('La lave t\'a rattrapé ! 🔥', 'Astuce : ne regarde pas tes doigts, regarde l\'écran. Tape la lettre encadrée en bleu sans t\'arrêter pour garder de l\'avance.');
 }
 
+/* ---- Combat de Boss : « le Dragon des Touches » ---- */
+const BOSS_POOL=('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789').split('')
+  .concat(['.',',','?','!',';',':','(',')','=','"','-','@','#','€','+','é','è','à','ç','ù']);
+const BOSS_COMPLEX=['@','#','€','+','=','"','(',')','?',':',';'];
+const ATTACK_MS=7000;
+const B={};
+let bossAudio=null;
+
+function startBossMusic(){
+  try{
+    if(!bossAudio){ bossAudio=new Audio('musics/musique_boss.mp3'); bossAudio.loop=true; bossAudio.volume=.5; }
+    if(soundOn){ bossAudio.currentTime=0; const p=bossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }
+  }catch(e){}
+}
+function pauseBossMusic(){ if(bossAudio){ try{bossAudio.pause();}catch(e){} } }
+function resumeBossMusic(){ if(bossAudio && soundOn && B.running){ try{ const p=bossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
+function stopBossMusic(){ if(bossAudio){ try{bossAudio.pause(); bossAudio.currentTime=0;}catch(e){} } }
+
+function startBoss(step){
+  stopGame(); gamePaused=false;
+  stage.innerHTML=
+    '<div class="hud">'
+    + '<span class="lives" id="bossLives"></span>'
+    + '<span class="count" id="bossPhase"></span>'
+    + '<div class="meter"><i id="bossMeter"></i></div>'
+    + '</div>'
+    + '<div class="field bossfield" id="bossField">'
+    +   '<div class="boss-top">'
+    +     '<div class="boss-name">🐉 le Dragon des Touches</div>'
+    +     '<div class="boss-hpbar"><i id="bossHp"></i></div>'
+    +     '<div style="position:relative"><div class="boss-sprite" id="bossSprite">🐉</div></div>'
+    +   '</div>'
+    +   '<div class="hero" id="bossHero">🧙</div>'
+    + '</div>';
+  const field=document.getElementById('bossField');
+  Object.assign(B,{
+    step, field,
+    sprite:document.getElementById('bossSprite'),
+    hero:document.getElementById('bossHero'),
+    spells:[], attackTargets:[],
+    wordMode:!!step.wordMode, defenseWords:step.defenseWords||[], attackWords:step.attackWords||[], attackWord:null,
+    lives:step.lives||6, maxLives:step.lives||6,
+    hp:step.bossHits||15, maxHp:step.bossHits||15,
+    phase:'cast', spawned:0, spellsPerWave:step.spellsPerWave||10,
+    speed:step.speed||74, spawnMs:step.spawnMs||1100, maxConcurrent:step.maxConcurrent||4,
+    attackMs:step.attackMs||ATTACK_MS,
+    running:true, last:0, nextSpawn:0, groundY:0, attackEndTs:0, raf:0
+  });
+  B.groundY=field.clientHeight-64;
+  updateBossHud();
+  startBossMusic();
+  activeGame={ onKey:onKeyB, stop:stopB,
+    pause(){ if(B.running){ B.running=false; cancelAnimationFrame(B.raf); } pauseBossMusic(); },
+    resume(){ if(!B.running){ B.running=true; B.last=0; B.raf=requestAnimationFrame(loopB); } resumeBossMusic(); } };
+  B.raf=requestAnimationFrame(loopB);
+}
+function updateBossHud(){
+  let h=''; for(let i=0;i<B.maxLives;i++) h+=(i<B.lives?'❤️':'<span class="lost">🖤</span>');
+  const lv=document.getElementById('bossLives'); if(lv) lv.innerHTML=h;
+  const ph=document.getElementById('bossPhase');
+  if(ph){
+    if(B.wordMode) ph.textContent = B.phase==='attack' ? '⚔️ Tape les mots d\'attaque !' : '⚡ Tape les mots d\'esquive !';
+    else ph.textContent = B.phase==='attack' ? '⚔️ Frappe le boss !' : '⚡ Esquive les sorts !';
+  }
+  const mt=document.getElementById('bossMeter'); if(mt){ mt.style.width=Math.max(0,B.lives/B.maxLives*100)+'%'; mt.style.background=(B.lives<=2?'var(--red)':'var(--green)'); }
+  const hp=document.getElementById('bossHp'); if(hp) hp.style.width=Math.max(0,B.hp/B.maxHp*100)+'%';
+}
+function spawnSpell(){
+  if(B.spells.length>=B.maxConcurrent) return;
+  if(B.wordMode){
+    const w=B.defenseWords[Math.floor(Math.random()*B.defenseWords.length)];
+    const el=document.createElement('div'); el.className='spell word';
+    el.innerHTML='<div class="rune"><span class="typed"></span><span class="rest">'+escapeHtml(w)+'</span></div>';
+    const x=24+Math.random()*44;
+    el.style.left=x+'%'; el.style.transform='translate(-50%,96px)';
+    B.field.appendChild(el);
+    B.spells.push({el,word:w,typed:0,x,y:96});
+    return;
+  }
+  const ch=BOSS_POOL[Math.floor(Math.random()*BOSS_POOL.length)];
+  const el=document.createElement('div'); el.className='spell';
+  el.innerHTML='<div class="orb">'+escapeHtml(ch)+'</div>';
+  const x=10+Math.random()*80;
+  el.style.left=x+'%'; el.style.transform='translate(-50%,96px)';
+  B.field.appendChild(el);
+  B.spells.push({el,ch,x,y:96});
+}
+function removeSpell(s){ const i=B.spells.indexOf(s); if(i>=0) B.spells.splice(i,1); }
+// mot le plus bas = cible active (la plus urgente)
+function activeSpell(){ let low=null; for(const s of B.spells){ if(!low||s.y>low.y) low=s; } return low; }
+function paintActiveSpell(){ const a=activeSpell(); for(const s of B.spells) s.el.classList.toggle('active', s===a); }
+function updateSpellWord(s){ const t=s.el.querySelector('.typed'), r=s.el.querySelector('.rest');
+  if(t&&r){ t.textContent=s.word.slice(0,s.typed); r.textContent=s.word.slice(s.typed); } }
+function loopB(ts){
+  if(!B.running) return;
+  if(!B.last) B.last=ts;
+  const dt=Math.min(.05,(ts-B.last)/1000); B.last=ts;
+  if(B.phase==='cast'){
+    if(B.spawned<B.spellsPerWave){
+      if(ts>=B.nextSpawn){ spawnSpell(); B.spawned++; B.nextSpawn=ts+B.spawnMs; }
+    } else if(B.spells.length===0){ openAttack(); B.raf=requestAnimationFrame(loopB); return; }
+    for(const s of B.spells.slice()){
+      s.y+=B.speed*dt;
+      s.el.style.transform='translate(-50%,'+s.y+'px)';
+      if(s.y>=B.groundY) spellHitsHero(s);
+    }
+    if(B.wordMode) paintActiveSpell();
+  } else if(B.phase==='attack'){
+    if(B.attackEndTs && ts>=B.attackEndTs) closeAttack();
+  }
+  B.raf=requestAnimationFrame(loopB);
+}
+function spellHitsHero(s){
+  removeSpell(s); const el=s.el; el.classList.add('pop'); setTimeout(()=>el.remove(),250);
+  B.lives--; beep('bad');
+  B.field.classList.add('shake'); setTimeout(()=>B.field.classList.remove('shake'),250);
+  B.hero.classList.add('hit'); setTimeout(()=>B.hero.classList.remove('hit'),400);
+  updateBossHud();
+  if(B.lives<=0) bossFail();
+}
+function destroySpell(s){
+  const xPx=B.field.clientWidth*s.x/100, yPx=s.y+24;
+  burstAt(xPx,yPx,B.field);
+  removeSpell(s); const el=s.el; el.classList.add('pop'); setTimeout(()=>el.remove(),250);
+  beep('good');
+}
+function onKeyB(e){
+  if(e.key.length!==1) return; e.preventDefault();
+  if(B.phase==='attack'){
+    if(B.wordMode) return typeAttackWord(e.key);
+    let hit=null;
+    for(const t of B.attackTargets){ if(t.ch===e.key){ hit=t; break; } }
+    if(hit) damageBoss(hit); else beep('key');
+    return;
+  }
+  if(B.wordMode) return typeDefenseWord(e.key);
+  let best=null;
+  for(const s of B.spells){ if(s.ch===e.key){ if(!best||s.y>best.y) best=s; } }
+  if(best) destroySpell(best); else beep('key');
+}
+// MODE MOTS — esquive : on tape le mot le plus bas, lettre par lettre
+function typeDefenseWord(key){
+  const s=activeSpell(); if(!s){ beep('key'); return; }
+  if(key===s.word[s.typed]){
+    s.typed++; beep('key'); updateSpellWord(s);
+    if(s.typed>=s.word.length) destroySpell(s);
+  } else beep('bad');
+}
+// MODE MOTS — attaque : on tape le mot d'arme affiché devant le boss
+function typeAttackWord(key){
+  const a=B.attackWord; if(!a){ beep('key'); return; }
+  if(key===a.word[a.typed]){
+    a.typed++; updateAttackWord();
+    if(a.typed>=a.word.length) hitBossWord(a);
+    else beep('key');
+  } else beep('bad');
+}
+function openAttack(){
+  B.phase='attack'; B.attackEndTs=0;
+  B.spells.forEach(s=>s.el.remove()); B.spells=[];
+  B.sprite.classList.add('exhausted');
+  const sw=document.createElement('div'); sw.className='boss-sweat'; sw.id='bossSweat'; sw.textContent='💦';
+  B.sprite.parentElement.appendChild(sw);
+  updateBossHud();
+  const flash=document.createElement('div'); flash.className='attack-flash'; B.field.appendChild(flash); setTimeout(()=>flash.remove(),500);
+  const ban=document.createElement('div'); ban.className='attack-banner';
+  ban.innerHTML='<div class="attack-title">⚔️ ATTAQUE MAINTENANT ! ⚔️</div><div class="attack-sub">Le dragon est épuisé — frappe les symboles !</div>';
+  B.field.appendChild(ban);
+  beep('win');
+  setTimeout(()=>{
+    ban.remove();
+    if(!B.running || B.phase!=='attack') return;
+    if(B.wordMode) spawnAttackWord();
+    else for(let i=0;i<4;i++) spawnOneTarget();
+    B.attackEndTs=performance.now()+B.attackMs;
+  },1300);
+}
+function spawnOneTarget(){
+  let ch, tries=0;
+  do{ ch=BOSS_COMPLEX[Math.floor(Math.random()*BOSS_COMPLEX.length)]; tries++; }
+  while(tries<8 && B.attackTargets.some(t=>t.ch===ch));
+  const el=document.createElement('div'); el.className='atk-target';
+  el.innerHTML='<div class="cap">'+escapeHtml(ch)+'</div>';
+  const x=16+Math.random()*68, y=32+Math.random()*30;
+  el.style.left=x+'%'; el.style.top=y+'%'; el.style.transform='translate(-50%,-50%)';
+  B.field.appendChild(el);
+  B.attackTargets.push({el,ch,x,y});
+}
+// dégât commun au boss (mode lettres ET mode mots) ; renvoie true si le boss est vaincu
+function bossTakeHit(xPx,yPx){
+  burstAt(xPx,yPx,B.field); floatDamage(xPx,yPx);
+  B.hp--; if(B.hp<0) B.hp=0;
+  beep('good');
+  B.sprite.classList.remove('exhausted'); void B.sprite.offsetWidth; B.sprite.classList.add('hurt');
+  setTimeout(()=>{ if(B.phase==='attack'){ B.sprite.classList.remove('hurt'); B.sprite.classList.add('exhausted'); } },450);
+  updateBossHud();
+  if(B.hp<=0){ bossDefeated(); return true; }
+  return false;
+}
+function damageBoss(t){
+  const i=B.attackTargets.indexOf(t); if(i>=0) B.attackTargets.splice(i,1);
+  const el=t.el; el.classList.add('hit'); setTimeout(()=>el.remove(),250);
+  const xPx=B.field.clientWidth*t.x/100, yPx=B.field.clientHeight*t.y/100;
+  if(bossTakeHit(xPx,yPx)) return;
+  if(B.attackEndTs && performance.now()<B.attackEndTs) spawnOneTarget();
+}
+// MODE MOTS — cible d'attaque (un mot d'arme devant le boss)
+function spawnAttackWord(){
+  if(B.attackWord){ B.attackWord.el.remove(); }
+  let w, tries=0;
+  do{ w=B.attackWords[Math.floor(Math.random()*B.attackWords.length)]; tries++; }
+  while(tries<8 && B.attackWord && w===B.attackWord.word);
+  const el=document.createElement('div'); el.className='atk-word';
+  el.innerHTML='<div class="card"><span class="typed"></span><span class="rest">'+escapeHtml(w)+'</span></div>';
+  B.field.appendChild(el);
+  B.attackWord={el,word:w,typed:0};
+}
+function updateAttackWord(){
+  const a=B.attackWord; if(!a) return;
+  const t=a.el.querySelector('.typed'), r=a.el.querySelector('.rest');
+  if(t&&r){ t.textContent=a.word.slice(0,a.typed); r.textContent=a.word.slice(a.typed); }
+}
+function hitBossWord(a){
+  const el=a.el; el.classList.add('hit'); setTimeout(()=>el.remove(),250);
+  B.attackWord=null;
+  const xPx=B.field.clientWidth/2, yPx=B.field.clientHeight*0.42;
+  if(bossTakeHit(xPx,yPx)) return;
+  if(B.attackEndTs && performance.now()<B.attackEndTs) spawnAttackWord();
+}
+function floatDamage(x,y){
+  const d=document.createElement('div'); d.className='dmg-float'; d.textContent='-1';
+  d.style.left=x+'px'; d.style.top=y+'px'; B.field.appendChild(d); setTimeout(()=>d.remove(),800);
+}
+function closeAttack(){
+  B.phase='cast'; B.attackEndTs=0;
+  B.attackTargets.forEach(t=>t.el.remove()); B.attackTargets=[];
+  if(B.attackWord){ B.attackWord.el.remove(); B.attackWord=null; }
+  const sw=document.getElementById('bossSweat'); if(sw) sw.remove();
+  B.sprite.classList.remove('exhausted');
+  B.spawned=0; B.nextSpawn=performance.now()+1300;   // petit répit pour lire le message
+  updateBossHud();
+  const ban=document.createElement('div'); ban.className='attack-banner';
+  ban.innerHTML='<div class="attack-title">⚡ LE DRAGON CONTRE-ATTAQUE ! ⚡</div><div class="attack-sub">Esquive ses sorts !</div>';
+  B.field.appendChild(ban);
+  beep('ding');
+  setTimeout(()=>ban.remove(),1300);
+}
+function bossDefeated(){
+  B.running=false; cancelAnimationFrame(B.raf);
+  B.attackTargets.forEach(t=>t.el.remove()); B.attackTargets=[];
+  if(B.attackWord){ B.attackWord.el.remove(); B.attackWord=null; }
+  B.spells.forEach(s=>s.el.remove()); B.spells=[];
+  const sw=document.getElementById('bossSweat'); if(sw) sw.remove();
+  B.sprite.classList.remove('exhausted','hurt'); B.sprite.classList.add('dead');
+  stopBossMusic(); beep('win');
+  const cx=B.field.clientWidth/2, cy=B.field.clientHeight/2;
+  for(let i=0;i<5;i++) setTimeout(()=>burstAt(cx+(Math.random()*160-80),cy+(Math.random()*100-50),B.field),i*170);
+  setTimeout(()=>onWin(),1300);
+}
+function bossFail(){
+  B.running=false; cancelAnimationFrame(B.raf); stopBossMusic();
+  onFail('Le dragon t\'a vaincu cette fois ! 🐉', 'Astuce : pendant les sorts, lis bien la touche dans la boule violette et tape-la vite. Garde tes doigts posés sur le clavier. Tu vas y arriver !');
+}
+function stopB(){ B.running=false; cancelAnimationFrame(B.raf); stopBossMusic(); }
+
 /* =========================================================
    6. DÉROULÉ (flow)
    ========================================================= */
@@ -823,19 +1235,46 @@ function updateBanner(){
 }
 function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
 
+function openBossBriefing(s){
+  modal.className='modal test-modal';
+  modal.innerHTML=
+    '<span class="m-emoji">🐉</span>'
+    + '<div class="kicker" style="color:var(--red-d)">'+(reviewing()?'Entraînement':'Combat de Boss')+'</div>'
+    + '<h2>'+s.title+'</h2>'
+    + '<div class="howto test"><p class="h-head">⚔️ Le combat :</p><p>'+s.desc+'</p></div>'
+    + '<ul class="newtools">'
+    +   '<li><span class="ni-glyph">⚡</span> '+(s.wordMode?'Esquive : tape le mot':'Esquive : tape la touche du sort')+'</li>'
+    +   '<li><span class="ni-glyph">⚔️</span> '+(s.wordMode?'Attaque : tape le mot d\'arme':'Attaque : frappe les symboles')+'</li>'
+    +   '<li><span class="ni-glyph">❤️</span> '+(s.lives||6)+' vies à protéger</li>'
+    +   '<li><span class="ni-glyph">🐉</span> '+(s.bossHits||15)+' coups pour gagner</li>'
+    + '</ul>'
+    + '<div class="m-actions"><button class="m-btn primary test" id="goBtn">⚔️ Au combat ! 🚀</button></div>';
+  openOverlay();
+  document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
+}
 function openRoundPopup(){
   const s=currentStep, jalon=s.kind==='jalon';
+  if(s.mode==='boss') return openBossBriefing(s);
+  const lvl=LEVELS[currentLevel-1];
+  // Briefing image-first : pour les manches à astuces, on montre les touches sur le clavier
+  let kbimg='';
+  if(lvl.game==='parachute' && s.showTips && s.pool){
+    const c=comboHint(s.pool);
+    kbimg=buildKeyboard({keys:c.keys, maj:c.maj, altgr:c.altgr});
+  }
   modal.className='modal'+(jalon?' test-modal':'');
   modal.innerHTML=
     '<span class="m-emoji">'+s.emoji+'</span>'
     + '<div class="kicker">'+(reviewing()?'Entraînement':s.label)+'</div>'
     + '<h2>'+s.title+'</h2>'
     + '<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta manche :')+'</p><p>'+s.desc+'</p></div>'
+    + kbimg
     + '<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
   openOverlay();
   document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }
 function launchGame(){
+  if(currentStep.mode==='boss') return startBoss(currentStep);
   if(LEVELS[currentLevel-1].game==='parachute') startParachute(currentStep);
   else startDactylo(currentStep);
 }
@@ -868,6 +1307,22 @@ function onFail(reason, tip){
     +'<div class="m-actions"><button class="m-btn primary" id="retry">↺ Je réessaie</button></div>';
   openOverlay();
   document.getElementById('retry').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
+}
+
+/* Astuce VISUELLE pendant le jeu : gèle l'exercice et montre la touche à presser sur le clavier. */
+function openGameTip(ch){
+  pauseActive();
+  const {hl,cap}=keyHint(ch);
+  modal.className='modal';
+  modal.innerHTML=
+    '<span class="m-emoji">💡</span>'
+    + '<div class="kicker">Quelle touche ?</div>'
+    + '<h2 class="tip-char">'+niceChar(ch)+'</h2>'
+    + '<p class="tip-cap">'+cap+'</p>'
+    + buildKeyboard(hl)
+    + '<div class="m-actions"><button class="m-btn primary green" id="tipResume">On continue ! ▶</button></div>';
+  openOverlay();
+  document.getElementById('tipResume').onclick=()=>{ closeOverlay(); resumeActive(); };
 }
 
 /* =========================================================
@@ -960,7 +1415,7 @@ function openLevelSelector(){
   modal.querySelectorAll('.lvl-card:not(.locked)').forEach(c=>{
     c.onclick=()=>{ const n=+c.getAttribute('data-n'); closeOverlay(); loadLevel(n, undefined, n!==currentLevel); };
   });
-  document.getElementById('closeLvls').onclick=closeOverlay;
+  document.getElementById('closeLvls').onclick=()=>{ closeOverlay(); resumeActive(); };
 }
 document.getElementById('levelBtn').onclick=openLevelSelector;
 
@@ -1035,7 +1490,7 @@ document.getElementById('resetBtn').onclick=()=>{
     +'<div class="m-actions"><button class="m-btn ghost" id="cR">Annuler</button>'
     +'<button class="m-btn primary" id="dR">Oui, recommencer</button></div>';
   openOverlay();
-  document.getElementById('cR').onclick=closeOverlay;
+  document.getElementById('cR').onclick=()=>{ closeOverlay(); resumeActive(); };
   document.getElementById('dR').onclick=()=>{ closeOverlay(); progressIdx=0; saveProgress(); startStep(0); };
 };
 
@@ -1044,24 +1499,27 @@ document.getElementById('seeMission').onclick=openRoundPopup;
 document.getElementById('restartBtn').onclick=()=>{ if(currentStep){ audioCtx(); launchGame(); } };
 document.getElementById('hintBtn').onclick=()=>{
   const lvl=LEVELS[currentLevel-1];
-  let body=lvl.intro.teach;
+  // Parachute avec astuces : montre directement la touche de la lettre la plus basse (image + pause)
   if(lvl.game==='parachute' && currentStep && currentStep.showTips){
-    body+='<ul class="legend">'+currentStep.pool.map(c=>'<li><span class="lg-ch">'+c+'</span><span>'+tipFor(c)+'</span></li>').join('')+'</ul>';
-  } else if(lvl.intro.kb){
-    body+=buildKeyboard(lvl.intro.kb);
+    const it=lowestItem(); const pool=currentStep.pool||[];
+    openGameTip(it?it.ch:pool[0]);
+    return;
   }
-  modal.className='modal warn';
-  modal.innerHTML='<span class="m-emoji">💡</span><h2>L\'astuce</h2>'
-    +'<div class="howto test"><p class="h-head">Comment s\'y prendre</p><p>'+body+'</p></div>'
-    +'<div class="m-actions"><button class="m-btn primary" id="okHint">J\'ai compris</button></div>';
+  // Autres niveaux : courte consigne + image du clavier, jeu en pause
+  pauseActive();
+  const kb=lvl.intro.kb?buildKeyboard(lvl.intro.kb):'';
+  modal.className='modal';
+  modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker">Astuce</div>'
+    +'<p class="tip-cap">'+lvl.intro.teach+'</p>'+kb
+    +'<div class="m-actions"><button class="m-btn primary green" id="okHint">J\'ai compris ▶</button></div>';
   openOverlay();
-  document.getElementById('okHint').onclick=closeOverlay;
+  document.getElementById('okHint').onclick=()=>{ closeOverlay(); resumeActive(); };
 };
 
 /* =========================================================
    8. OVERLAY / TOAST / CONFETTI
    ========================================================= */
-function openOverlay(){ overlay.classList.add('open'); }
+function openOverlay(){ pauseActive(); overlay.classList.add('open'); }   // tout panneau gèle l'exercice
 function closeOverlay(){ overlay.classList.remove('open'); }
 let toastTimer=null;
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
@@ -1085,10 +1543,88 @@ function confetti(){
    ========================================================= */
 (function init(){
   refreshSoundBtn();
+  // saut développeur via URL : ?go=L ou ?go=L.S (tout ce qui précède est réputé réussi)
+  const go=/[?&]go=(\d+)(?:[.\-_](\d+))?/.exec(location.search);
+  if(go){
+    const L=Math.max(1,Math.min(LEVELS.length, parseInt(go[1],10)));
+    store.set('kb_unlocked', String(Math.max(getUnlocked(), L)));
+    store.set('kb_curlevel', String(L));
+    if(go[2]!=null) store.set('kb_step_l'+L, String(Math.max(0, parseInt(go[2],10))));
+  }
   let lvl=parseInt(store.get('kb_curlevel')||'1',10);
   if(isNaN(lvl)||lvl<1||lvl>LEVELS.length) lvl=1;
   lvl=Math.min(lvl, getUnlocked());
-  loadLevel(lvl, getSavedStep(lvl), true);
+  loadLevel(lvl, getSavedStep(lvl), !go);   // pas d'intro de niveau lors d'un saut direct
+})();
+
+/* =========================================================
+   10. ACCÈS DÉVELOPPEUR — sauter à n'importe quelle manche
+   ========================================================= */
+(function devkit(){
+  function steps(lv){ return lv.rounds; }
+  const UNLOCK='kb_unlocked', CUR='kb_curlevel', STEP='kb_step_l', HOME='le-clavier.html';
+
+  const css=`
+  #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,sans-serif;}
+  #devkit .dk-toggle{display:inline-flex;align-items:center;gap:6px;background:#1e2733;color:#e7eef6;border:none;
+    border-radius:999px;padding:9px 14px;font-weight:800;font-size:.85rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.28);}
+  #devkit .dk-toggle:hover{background:#2a3645;}
+  #devkit .dk-panel{display:none;position:absolute;right:0;bottom:48px;width:312px;max-height:72vh;overflow:auto;
+    background:#1e2733;color:#e7eef6;border-radius:14px;padding:12px 12px 14px;box-shadow:0 16px 40px rgba(0,0,0,.42);}
+  #devkit.open .dk-panel{display:block;}
+  #devkit .dk-head{font-weight:800;font-size:.95rem;margin:0 0 2px;}
+  #devkit .dk-note{color:#9fb0c4;font-size:.72rem;margin:0 0 6px;line-height:1.35;}
+  #devkit .dk-lv{font-weight:800;color:#9fc3ff;margin:11px 0 4px;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;}
+  #devkit .dk-step{display:block;width:100%;text-align:left;background:#2b3949;color:#e7eef6;border:1px solid #3a4a5c;
+    border-radius:8px;padding:6px 9px;margin:3px 0;cursor:pointer;font-size:.78rem;line-height:1.3;}
+  #devkit .dk-step:hover{background:#37485c;border-color:#5a7088;}
+  #devkit .dk-step.jalon{border-color:#f6b73c;}
+  #devkit .dk-step b{color:#ffd479;}
+  #devkit .dk-actions{display:flex;gap:6px;margin-top:12px;}
+  #devkit .dk-act{flex:1;background:#33455a;color:#e7eef6;border:1px solid #44586e;border-radius:8px;padding:7px;
+    font-weight:700;font-size:.74rem;cursor:pointer;}
+  #devkit .dk-act:hover{background:#3d5167;}`;
+  const style=document.createElement('style'); style.textContent=css; document.head.appendChild(style);
+
+  const root=document.createElement('div'); root.id='devkit';
+  let html='<button class="dk-toggle" id="dkToggle">🛠️ Dev</button>'
+    +'<div class="dk-panel"><p class="dk-head">🛠️ Accès développeur</p>'
+    +'<p class="dk-note">Saute à une manche : tout ce qui précède est considéré comme réussi.</p>';
+  LEVELS.forEach(lv=>{
+    html+='<div class="dk-lv">Niveau '+lv.n+' — '+lv.title+'</div>';
+    steps(lv).forEach((d,i)=>{
+      const isJ=(d.kind==='test'||d.kind==='jalon');
+      html+='<button class="dk-step'+(isJ?' jalon':'')+'" data-l="'+lv.n+'" data-s="'+i+'">'
+        +'<b>'+(d.label||('Manche '+(i+1)))+'</b> · '+(d.title||'')+'</button>';
+    });
+  });
+  html+='<div class="dk-actions"><button class="dk-act" id="dkUnlockAll">🔓 Tout débloquer</button>'
+    +'<button class="dk-act" id="dkReset">🧹 Reset complet</button></div></div>';
+  root.innerHTML=html;
+  document.body.appendChild(root);
+
+  function devJump(L,S){
+    L=Math.max(1,Math.min(LEVELS.length,L));
+    const maxS=steps(LEVELS[L-1]).length-1; S=Math.max(0,Math.min(maxS, S||0));
+    store.set(UNLOCK, String(Math.max(getUnlocked(), L)));
+    store.set(CUR, String(L));
+    store.set(STEP+L, String(S));
+    if(typeof closeOverlay==='function') closeOverlay();
+    loadLevel(L, S, false);
+  }
+
+  document.getElementById('dkToggle').onclick=()=>root.classList.toggle('open');
+  root.querySelectorAll('.dk-step').forEach(b=>{
+    b.onclick=()=>{ root.classList.remove('open'); devJump(+b.getAttribute('data-l'), +b.getAttribute('data-s')); };
+  });
+  document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
+  document.getElementById('dkReset').onclick=()=>{
+    const keys=[UNLOCK,CUR];
+    for(let i=1;i<=LEVELS.length;i++) keys.push(STEP+i);
+    keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+    location.href=HOME;
+  };
+  // (Le saut par URL ?go=L.S est traité dans init, pour éviter un double chargement.)
 })();
 </script>
 </body>
