@@ -135,13 +135,24 @@
         </span>
       </a>
 
-      <div class="card soon" aria-disabled="true">
+      <a class="card active" href="la-souris.html">
         <span class="num">03</span>
         <span class="emoji">🖱️</span>
         <h2>La souris</h2>
-        <p>Clique, double-clique et glisse-dépose comme un champion.</p>
-        <span class="badge">Bientôt disponible</span>
-      </div>
+        <p>Clique, glisse-dépose, double-clique, clic droit, sélectionne et utilise la molette.</p>
+        <div class="levels" id="msLevels">
+          <span class="lvl-chip" data-n="1"><span class="ic">•</span>Niv. 1</span>
+          <span class="lvl-chip" data-n="2"><span class="ic">•</span>Niv. 2</span>
+          <span class="lvl-chip" data-n="3"><span class="ic">•</span>Niv. 3</span>
+          <span class="lvl-chip" data-n="4"><span class="ic">•</span>Niv. 4</span>
+          <span class="lvl-chip" data-n="5"><span class="ic">•</span>Niv. 5</span>
+          <span class="lvl-chip" data-n="6"><span class="ic">•</span>Niv. 6</span>
+          <span class="lvl-chip" data-n="7"><span class="ic">•</span>👑 Boss</span>
+        </div>
+        <span class="go">Commencer
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
 
       <div class="card soon" aria-disabled="true">
         <span class="num">04</span>
@@ -181,6 +192,7 @@
     }
     paint('#ttLevels','tt_unlocked','tt_curlevel');
     paint('#kbLevels','kb_unlocked','kb_curlevel');
+    paint('#msLevels','ms_unlocked','ms_curlevel');
   })();
 
   /* ===== Accès développeur (raccourcis vers chaque niveau) ===== */
@@ -189,7 +201,9 @@
       {file:'traitement-texte.html', name:'📝 Traitement de texte', unlock:'tt_unlocked', cur:'tt_curlevel', stepN:6,
        levels:['Les bases','Paragraphes & Alignements','Listes & Structure','Le clavier magique','Écrire et déplacer','Les tableaux']},
       {file:'le-clavier.html', name:'⌨️ Le clavier', unlock:'kb_unlocked', cur:'kb_curlevel', stepN:7,
-       levels:['Les lettres','Les majuscules','Les accents','Les chiffres','Les symboles','Frappe libre','La chasse à la lave']}
+       levels:['Les lettres','Les majuscules','Les accents','Les chiffres','Les symboles','Frappe libre','La chasse à la lave']},
+      {file:'la-souris.html', name:'🖱️ La souris', unlock:'ms_unlocked', cur:'ms_curlevel', stepN:7,
+       levels:['Clique !','Glisse-dépose','Le double-clic','Le clic droit','Sélectionner','La molette','👑 Combat de Boss']}
     ];
     const css=`
     #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,sans-serif;}
@@ -235,7 +249,7 @@
       location.reload();
     };
     document.getElementById('dkReset').onclick=()=>{
-      GAMES.forEach(g=>{ del(g.unlock); del(g.cur); for(let i=1;i<=g.stepN;i++) del((g.unlock.startsWith('tt')?'tt_step_l':'kb_step_l')+i); });
+      GAMES.forEach(g=>{ const pfx=g.unlock.replace('_unlocked','_step_l'); del(g.unlock); del(g.cur); for(let i=1;i<=g.stepN;i++) del(pfx+i); });
       del('tt_step');
       location.reload();
     };
