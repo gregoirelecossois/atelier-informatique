@@ -80,6 +80,22 @@
   .mini-task{display:inline-block;background:#fff6e6;border:1.5px solid #f6d68a;color:#7a5300;
     border-radius:999px;padding:3px 11px;margin:5px 5px 0 0;font-size:.9rem;font-weight:700;line-height:1.25;}
   .mini-task b{color:var(--amber-d);font-weight:800;}
+  /* Jalon : un objectif à la fois, validé puis glissé vers le haut */
+  .jalon-head{margin:0 0 6px;}
+  .jalon-wrap{overflow:hidden;}
+  .jalon-obj{display:flex;align-items:center;gap:11px;background:#fff;border:2px solid #f6d68a;
+    border-left:6px solid var(--amber);border-radius:12px;padding:10px 14px;font-weight:700;font-size:1.02rem;
+    color:var(--ink);line-height:1.35;
+    transition:transform .45s cubic-bezier(.2,.7,.3,1), opacity .45s ease, background .3s, border-color .3s;}
+  .jalon-obj .jo-check{flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;background:var(--amber);color:#fff;font-weight:800;font-size:1rem;}
+  .jalon-obj .jo-text b{color:var(--amber-d);}
+  .jalon-obj.done{background:#eafaf0;border-color:#86efac;border-left-color:var(--green);color:var(--green-d);}
+  .jalon-obj.done .jo-check{background:var(--green);}
+  .jalon-obj.done .jo-text b{color:var(--green-d);}
+  .jalon-obj.entering{transform:translateY(120%);opacity:0;}
+  .jalon-obj.slideup{transform:translateY(-160%);opacity:0;}
+  @media (prefers-reduced-motion: reduce){ .jalon-obj{transition:opacity .2s ease;} .jalon-obj.entering,.jalon-obj.slideup{transform:none;} }
   .banner .b-btn{
     border:2px solid var(--line);background:#f5f9ff;color:var(--blue-d);font-weight:800;
     border-radius:10px;padding:8px 13px;font-size:.9rem;white-space:nowrap;
@@ -307,10 +323,96 @@
     100%{opacity:0;transform:rotate(var(--angle,0deg)) translateX(140px) scale(0.1);}
   }
 
+  /* ---------- Niveau 7 : Images & Objets ---------- */
+  #objectArea{padding:6px 2px;min-height:300px;}
+  .ob-doc{position:relative;width:100%;max-width:560px;margin:0 auto;min-height:340px;}
+  .ob-flow{position:relative;z-index:1;font-size:15px;line-height:1.75;color:var(--ink);pointer-events:none;}
+  .ob-flow h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.5rem;margin:0 0 12px;text-align:center;}
+  .ob-flow p{margin:0 0 12px;text-align:justify;}
+  .ob-layer{position:absolute;inset:0;pointer-events:none;}
+  .ob-layer.ob-behind{z-index:0;}
+  .ob-layer.ob-front{z-index:2;}
+  .ob-obj{position:relative;pointer-events:auto;}   /* objets dans le flux (aligné / habillage) */
+  .ob-free{position:absolute;pointer-events:auto;cursor:move;}   /* objets flottants (devant/derrière) */
+  .ob-obj.ob-mov{cursor:move;}
+  .ob-sel{outline:2.5px solid var(--blue);outline-offset:2px;}
+  .ob-img-frame{position:relative;overflow:hidden;border-radius:6px;box-shadow:0 4px 14px -7px rgba(0,0,0,.55);}
+  .ob-illus{position:absolute;display:flex;align-items:center;justify-content:center;}
+  .ob-illus .em{filter:drop-shadow(0 2px 3px rgba(0,0,0,.18));line-height:1;}
+  .ob-shape-el{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 3px 6px rgba(0,0,0,.18));}
+  .ob-textbox{box-sizing:border-box;width:100%;height:100%;border:1.5px dashed #94a3b8;background:rgba(255,255,255,.94);
+    border-radius:6px;padding:6px 9px;font-size:14px;font-weight:700;color:var(--ink);overflow:hidden;outline:none;line-height:1.35;}
+  .ob-textbox:focus{border-color:var(--blue);border-style:solid;}
+  /* poignées de redimensionnement (8 : 4 coins ronds + 4 milieux de bord) */
+  .ob-handle{position:absolute;width:13px;height:13px;background:#fff;border:2.5px solid var(--blue);border-radius:50%;
+    z-index:6;pointer-events:auto;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+  .ob-handle.h-nw{left:-7px;top:-7px;cursor:nwse-resize;}
+  .ob-handle.h-n {left:50%;top:-7px;transform:translateX(-50%);cursor:ns-resize;}
+  .ob-handle.h-ne{right:-7px;top:-7px;cursor:nesw-resize;}
+  .ob-handle.h-e {right:-7px;top:50%;transform:translateY(-50%);cursor:ew-resize;}
+  .ob-handle.h-se{right:-7px;bottom:-7px;cursor:nwse-resize;}
+  .ob-handle.h-s {left:50%;bottom:-7px;transform:translateX(-50%);cursor:ns-resize;}
+  .ob-handle.h-sw{left:-7px;bottom:-7px;cursor:nesw-resize;}
+  .ob-handle.h-w {left:-7px;top:50%;transform:translateY(-50%);cursor:ew-resize;}
+  /* poignées de coin = proportions / poignées de milieu = déformation : on distingue par la couleur */
+  .ob-handle.h-n,.ob-handle.h-s,.ob-handle.h-e,.ob-handle.h-w{border-radius:3px;border-color:var(--amber-d);background:#fff7e6;}
+  /* poignées de rognage (façon Word : marques foncées sur les 4 côtés + 4 coins) */
+  .ob-crop-handle{position:absolute;z-index:8;pointer-events:auto;}
+  .ob-crop-handle.h-n,.ob-crop-handle.h-s{left:50%;width:24px;height:6px;transform:translateX(-50%);background:#14202c;cursor:ns-resize;}
+  .ob-crop-handle.h-e,.ob-crop-handle.h-w{top:50%;width:6px;height:24px;transform:translateY(-50%);background:#14202c;cursor:ew-resize;}
+  .ob-crop-handle.h-n{top:-3px;} .ob-crop-handle.h-s{bottom:-3px;}
+  .ob-crop-handle.h-w{left:-3px;} .ob-crop-handle.h-e{right:-3px;}
+  .ob-crop-handle.h-nw,.ob-crop-handle.h-ne,.ob-crop-handle.h-sw,.ob-crop-handle.h-se{width:16px;height:16px;}
+  .ob-crop-handle.h-nw{left:-3px;top:-3px;border-left:5px solid #14202c;border-top:5px solid #14202c;cursor:nwse-resize;}
+  .ob-crop-handle.h-ne{right:-3px;top:-3px;border-right:5px solid #14202c;border-top:5px solid #14202c;cursor:nesw-resize;}
+  .ob-crop-handle.h-sw{left:-3px;bottom:-3px;border-left:5px solid #14202c;border-bottom:5px solid #14202c;cursor:nesw-resize;}
+  .ob-crop-handle.h-se{right:-3px;bottom:-3px;border-right:5px solid #14202c;border-bottom:5px solid #14202c;cursor:nwse-resize;}
+  /* aperçu pendant le rognage : image entière estompée + fenêtre de recadrage nette */
+  .ob-img-cropwrap{position:relative;width:100%;height:100%;}
+  .ob-img-cropwrap .ob-illus.faded{opacity:.3;}
+  .ob-crop-win{position:absolute;left:0;top:0;overflow:hidden;outline:2px solid #fff;box-shadow:0 0 0 1px #14202c;}
+  .ob-textbox.empty:not(:focus)::before{content:'Écris ici…';color:#9aa8b8;font-weight:600;}
+  .ob-sel .ob-textbox:not(.editing){cursor:move;}
+  .ob-empty-note{max-width:430px;margin:24px auto 0;text-align:center;color:var(--muted);font-weight:700;
+    font-size:.92rem;line-height:1.5;background:#f6f9fd;border:2px dashed #cdd9e6;border-radius:14px;padding:22px 18px;}
+  .ob-empty-note .ic{font-size:2.4rem;display:block;margin-bottom:6px;color:#c3d1e2;}
+  /* fausse fenêtre « Insérer une image » */
+  .modal.fx-modal{max-width:660px;}
+  .fx-win{border:1px solid #c9d4e0;border-radius:11px;overflow:hidden;box-shadow:0 18px 50px -22px rgba(20,30,42,.6);background:#fff;margin:2px 0 4px;}
+  .fx-title{display:flex;align-items:center;gap:9px;background:#eef3f9;border-bottom:1px solid #dbe3ec;
+    padding:9px 13px;font-weight:800;font-size:.96rem;color:var(--ink);}
+  .fx-title .fx-dot{margin-left:auto;display:flex;gap:6px;}
+  .fx-title .fx-dot i{width:11px;height:11px;border-radius:50%;background:#cfd8e2;display:inline-block;}
+  .fx-addr{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid #eef2f7;}
+  .fx-crumb{background:#f5f8fc;border:1px solid #dde6f0;border-radius:8px;padding:7px 13px;font-weight:700;
+    font-size:.9rem;color:var(--ink);flex:1;}
+  .fx-body{display:flex;min-height:236px;}
+  .fx-side{width:158px;border-right:1px solid #eef2f7;padding:8px 7px;background:#fbfdff;}
+  .fx-folder{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:none;background:none;
+    border-radius:8px;padding:9px 10px;font-family:inherit;font-weight:700;font-size:.88rem;color:var(--ink);cursor:pointer;}
+  .fx-folder:hover{background:#eef4ff;}
+  .fx-folder.active{background:#dbeafe;color:var(--blue-d);box-shadow:inset 0 0 0 2px #bcd2ff;}
+  .fx-main{flex:1;padding:11px;overflow:auto;max-height:300px;}
+  .fx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:11px;}
+  .fx-file{display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid transparent;
+    border-radius:11px;padding:8px 5px;cursor:pointer;background:none;font-family:inherit;}
+  .fx-file:hover{background:#f1f6ff;}
+  .fx-file.sel{background:#dbeafe;border-color:var(--blue);}
+  .fx-thumb{width:68px;height:52px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+    font-size:1.85rem;box-shadow:inset 0 0 0 1px rgba(0,0,0,.07);}
+  .fx-fn{font-size:.75rem;font-weight:700;color:var(--ink);word-break:break-word;text-align:center;line-height:1.18;}
+  .fx-empty{color:var(--muted);font-weight:700;text-align:center;padding:52px 12px;font-size:.92rem;line-height:1.5;}
+  .fx-foot{display:flex;align-items:center;gap:10px;padding:11px 13px;border-top:1px solid #eef2f7;
+    background:#fbfdff;flex-wrap:wrap;}
+  .fx-namebox{flex:1;min-width:130px;border:1px solid #cdd8e4;border-radius:8px;padding:8px 11px;
+    font-size:.88rem;font-weight:700;color:var(--ink);background:#fff;}
+  .fx-type{border:1px solid #cdd8e4;border-radius:8px;padding:8px 9px;font-size:.8rem;color:var(--muted);background:#fff;}
+
   @media (max-width:560px){
     .page{padding:28px 22px;}
     .btn{flex:1;justify-content:center;}
     .replay-grid{grid-template-columns:1fr;}
+    .fx-side{width:118px;}
   }
   @media (prefers-reduced-motion: reduce){
     .glow{animation:none;border-color:var(--amber)!important;box-shadow:0 0 0 5px rgba(245,158,11,.4);}
@@ -470,10 +572,49 @@
         </select>
       </div>
     </div>
+    <!-- ===== NIVEAU 7 : barre d'outils Images & Objets ===== -->
+    <div class="toolbar" id="object-toolbar" style="display:none">
+      <span class="t-label" style="font-weight:800;color:var(--blue-d)">Objets :</span>
+      <div class="tgroup">
+        <button class="t-btn t-wide" id="ob-image" title="Insérer une image depuis un fichier">🖼️ Image</button>
+        <button class="t-btn t-wide" id="ob-lib" title="Insérer une image depuis la bibliothèque">🗂️ Bibliothèque</button>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup">
+        <button class="t-btn t-wide" id="ob-shape" title="Insérer une forme">⬛ Forme</button>
+        <button class="t-btn t-wide" id="ob-textbox" title="Insérer une zone de texte">🔡 Zone de texte</button>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup">
+        <span class="t-label">Habillage</span>
+        <select class="t-sel" id="ob-wrap" title="Habillage du texte autour de l'objet">
+          <option value="inline">Aligné sur le texte</option>
+          <option value="square">Carré</option>
+          <option value="tight">Rapproché</option>
+          <option value="behind">Derrière le texte</option>
+          <option value="front">Devant le texte</option>
+        </select>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup">
+        <button class="t-btn t-wide" id="ob-crop" title="Rogner (recadrer) une image">🔲 Rogner</button>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup">
+        <span class="t-label">Ordre</span>
+        <button class="t-btn" id="ob-front" title="Mettre au premier plan (devant)">⏫</button>
+        <button class="t-btn" id="ob-back" title="Mettre à l'arrière-plan (derrière)">⏬</button>
+      </div>
+      <span class="divider"></span>
+      <div class="tgroup">
+        <button class="t-btn t-wide" id="ob-delete" title="Supprimer l'objet sélectionné">🗑️ Supprimer</button>
+      </div>
+    </div>
     <div class="canvas">
       <div class="page">
         <div id="editor" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true"></div>
         <div id="tableArea" style="display:none"></div>
+        <div id="objectArea" style="display:none"></div>
       </div>
     </div>
   </div>
@@ -999,6 +1140,11 @@ const LEVEL3_DEFS = [
          {type:'bullet',para:5,value:'arrow'},{type:'bullet',para:6,value:'arrow'},
          {type:'listlevel',para:2,value:1},
          {type:'listlevel',para:6,value:1}],
+    objGroups:[
+      [{type:'list',para:1,value:'bullet'},{type:'list',para:2,value:'bullet'},{type:'list',para:3,value:'bullet'},{type:'list',para:4,value:'bullet'},{type:'list',para:5,value:'bullet'},{type:'list',para:6,value:'bullet'}],
+      [{type:'bullet',para:1,value:'arrow'},{type:'bullet',para:2,value:'arrow'},{type:'bullet',para:3,value:'arrow'},{type:'bullet',para:4,value:'arrow'},{type:'bullet',para:5,value:'arrow'},{type:'bullet',para:6,value:'arrow'}],
+      [{type:'listlevel',para:2,value:1}],
+      [{type:'listlevel',para:6,value:1}]],
     replayRefs:['puces','puce-style','imbriquer','imbriquer-gomme'],
     expect:`mettre les 6 lignes en liste à puces flèche, et imbriquer « Une trousse » et « Une gomme blanche »` },
 
@@ -1017,6 +1163,12 @@ const LEVEL3_DEFS = [
          {type:'listlevel',para:5,value:1},
          {type:'align',range:'title',value:'center'},
          {type:'bold',range:'title'}],
+    objGroups:[
+      [{type:'list',para:1,value:'number'},{type:'list',para:2,value:'number'},{type:'list',para:3,value:'number'},{type:'list',para:4,value:'number'},{type:'list',para:5,value:'number'},{type:'list',para:6,value:'number'}],
+      [{type:'listlevel',para:3,value:1}],
+      [{type:'listlevel',para:5,value:1}],
+      [{type:'align',range:'title',value:'center'}],
+      [{type:'bold',range:'title'}]],
     replayRefs:['numerotee','imbriquer','imbriquer-gomme','puces'],
     expect:`mettre les 6 lignes en liste numérotée, imbriquer « Des crayons de couleur » et « Un grand classeur », et centrer le titre en gras` }
 ];
@@ -1250,6 +1402,12 @@ const LEVEL5_DEFS = [
       {op:'movePhrase', phrase:'Je joue dans le sable.', toAfter:'Je rentre à la maison.\nJe pars en voyage.', sep:'\n'},
       {op:'insertAfter', anchor:'Je pars en voyage.', ins:'\n'},
       {op:'insertBefore', anchor:'Je rentre à la maison.', ins:'\t'}],
+    objChecks:[
+      t => t.includes('Je pars en voyage.\n'),
+      t => t.includes('\tJe rentre à la maison.'),
+      t => (t.split('Je pars en voyage.').length-1) >= 2,
+      t => { const L=t.split('\n').map(x=>x.trim()).filter(Boolean); return L.length>0 && L[L.length-1]==='Je joue dans le sable.' && (t.split('Je joue dans le sable.').length-1)===1; }
+    ],
     replayRefs:['entree-ligne','tab-decaler','copier-coller','couper-coller','copier-clavier','couper-clavier'],
     expect:`mettre « Je pars en voyage. » sur sa ligne (Entrée), décaler « Je rentre » avec Tab, copier « Je pars » à la fin, et couper-coller « Je joue » tout à la fin` }
 ];
@@ -1279,6 +1437,8 @@ function tbScores(){ const t=newTable(4,3); cellAt(t,0,0).text='Les scores du to
   ['Équipe','Points','Rang'].forEach((v,c)=>cellAt(t,1,c).text=v);
   ['Les Lions','12','1er'].forEach((v,c)=>cellAt(t,2,c).text=v);
   ['Les Tigres','9','2e'].forEach((v,c)=>cellAt(t,3,c).text=v); return t; }
+// Ne garde le texte que des n premières lignes (pour les jalons « remplir ligne par ligne »)
+function tbKeepRows(t,n){ for(let r=n;r<t.rows;r++) for(let c=0;c<t.cols;c++) cellAt(t,r,c).text=''; return t; }
 
 const LEVEL6_DEFS = [
   { kind:'mission', id:'tab-inserer', label:'Mission 1', icon:'➕', tableMode:true,
@@ -1313,13 +1473,23 @@ const LEVEL6_DEFS = [
 
   { kind:'test', id:'tab-jalon1', label:'Jalon 1', icon:'🏆', tableMode:true,
     title:'À toi de jouer !',
-    intro:`Refais un tableau <b>tout seul</b> ! Voici les <b>5 choses</b> à faire :`,
+    intro:`Refais un tableau <b>tout seul</b> ! Voici les <b>7 choses</b> à faire :`,
     tasks:[`Insère un tableau de <b>2 colonnes</b> × <b>3 lignes</b>.`,
-           `Écris sur la 1ʳᵉ ligne : <b>Animal</b> puis <b>Cri</b>. 2ᵉ ligne : <b>Chat</b> puis <b>Miaou</b>. 3ᵉ ligne : <b>Chien</b> puis <b>Ouaf</b>.`,
+           `<b>1ʳᵉ ligne</b> : écris <b>Animal</b> puis <b>Cri</b>.`,
+           `<b>2ᵉ ligne</b> : écris <b>Chat</b> puis <b>Miaou</b>.`,
+           `<b>3ᵉ ligne</b> : écris <b>Chien</b> puis <b>Ouaf</b>.`,
            `Mets la <b>1ʳᵉ ligne</b> (Animal / Cri) en <b>gras</b>.`,
            `Mets <b>Miaou</b> en <b>italique</b>.`,
            `<b>Souligne</b> <b>Ouaf</b>.`],
     startTable:null, goalTable:(function(){ let t=tbAnimaux(); _b(t,[[0,0],[0,1]]); _i(t,[[1,1]]); _u(t,[[2,1]]); return t; })(),
+    objTables:[
+      {goal:()=>newTable(3,2)},
+      {goal:()=>tbKeepRows(tbAnimaux(),1)},
+      {goal:()=>tbKeepRows(tbAnimaux(),2)},
+      {goal:()=>tbAnimaux()},
+      {goal:()=>_b(tbAnimaux(),[[0,0],[0,1]])},
+      {goal:()=>_i(_b(tbAnimaux(),[[0,0],[0,1]]),[[1,1]])},
+      {goal:()=>_u(_i(_b(tbAnimaux(),[[0,0],[0,1]]),[[1,1]]),[[2,1]])}],
     replayRefs:['tab-inserer','tab-entete','tab-gras'],
     expect:`créer le tableau des animaux, mettre l'en-tête en gras, Miaou en italique et Ouaf souligné` },
 
@@ -1386,16 +1556,29 @@ const LEVEL6_DEFS = [
 
   { kind:'test', id:'tab-jalon2', label:'Jalon 2', icon:'🏆', tableMode:true,
     title:'Encore un tableau !',
-    intro:`Un nouveau tableau, et on revoit <b>tout</b> ! Voici les <b>6 choses</b> à faire :`,
+    intro:`Un nouveau tableau, et on revoit <b>tout</b> ! Voici les <b>9 choses</b> à faire :`,
     tasks:[`Insère un tableau de <b>3 colonnes</b> × <b>4 lignes</b>.`,
            `<b>Fusionne</b> les 3 cases de la 1ʳᵉ ligne (le titre) — glisse pour les sélectionner.`,
-           `Ligne 1 : écris <b>Le menu de la cantine</b> (1ʳᵉ case). Ligne 2 : <b>Entrée</b> / <b>Plat</b> / <b>Dessert</b>. Ligne 3 : <b>Salade</b> / <b>Poulet</b> / <b>Pomme</b>. Ligne 4 : <b>Soupe</b> / <b>Poisson</b> / <b>Yaourt</b>.`,
+           `<b>1ʳᵉ ligne</b> : écris <b>Le menu de la cantine</b> (dans la grande case).`,
+           `<b>2ᵉ ligne</b> : écris <b>Entrée</b> / <b>Plat</b> / <b>Dessert</b>.`,
+           `<b>3ᵉ ligne</b> : écris <b>Salade</b> / <b>Poulet</b> / <b>Pomme</b>.`,
+           `<b>4ᵉ ligne</b> : écris <b>Soupe</b> / <b>Poisson</b> / <b>Yaourt</b>.`,
            `Colore la ligne <b>Entrée / Plat / Dessert</b> en <b>bleu</b>.`,
            `Mets la ligne <b>Entrée / Plat / Dessert</b> en <b>gras</b>.`,
            `<b>Élargis</b> la colonne du <b>Plat</b> (au milieu).`],
     startTable:null,
     goalTable:(function(){ let t=tbMenu(); _merge(t,0,0,0,2); _bg(t,[[1,0],[1,1],[1,2]],'#74d4ff'); _b(t,[[1,0],[1,1],[1,2]]); return t; })(),
     resizeMin:{type:'col',index:1,min:158},
+    objTables:[
+      {goal:()=>newTable(4,3)},
+      {goal:()=>_merge(newTable(4,3),0,0,0,2)},
+      {goal:()=>_merge(tbKeepRows(tbMenu(),1),0,0,0,2)},
+      {goal:()=>_merge(tbKeepRows(tbMenu(),2),0,0,0,2)},
+      {goal:()=>_merge(tbKeepRows(tbMenu(),3),0,0,0,2)},
+      {goal:()=>_merge(tbMenu(),0,0,0,2)},
+      {goal:()=>_bg(_merge(tbMenu(),0,0,0,2),[[1,0],[1,1],[1,2]],'#74d4ff')},
+      {goal:()=>_b(_bg(_merge(tbMenu(),0,0,0,2),[[1,0],[1,1],[1,2]],'#74d4ff'),[[1,0],[1,1],[1,2]])},
+      {goal:()=>_b(_bg(_merge(tbMenu(),0,0,0,2),[[1,0],[1,1],[1,2]],'#74d4ff'),[[1,0],[1,1],[1,2]]), resizeMin:{type:'col',index:1,min:158}}],
     replayRefs:['tab-inserer','tab-fusion','tab-fond-ligne','tab-gras','tab-redim-col'],
     expect:`créer le menu : titre fusionné, en-tête bleu et gras, et colonne du Plat élargie` },
 
@@ -1431,10 +1614,13 @@ const LEVEL6_DEFS = [
 
   { kind:'test', id:'tab-jalon3', label:'Jalon final', icon:'🏆', tableMode:true,
     title:'Le tableau de pro !',
-    intro:`Dernier défi du parcours ! Un tableau complet, tout seul. Voici les <b>7 choses</b> à faire :`,
+    intro:`Dernier défi du parcours ! Un tableau complet, tout seul. Voici les <b>10 choses</b> à faire :`,
     tasks:[`Insère un tableau de <b>3 colonnes</b> × <b>4 lignes</b>.`,
            `<b>Fusionne</b> la 1ʳᵉ ligne (le titre) — glisse pour sélectionner les 3 cases.`,
-           `Ligne 1 : <b>Les scores du tournoi</b>. Ligne 2 : <b>Équipe</b> / <b>Points</b> / <b>Rang</b>. Ligne 3 : <b>Les Lions</b> / <b>12</b> / <b>1er</b>. Ligne 4 : <b>Les Tigres</b> / <b>9</b> / <b>2e</b>.`,
+           `<b>1ʳᵉ ligne</b> : écris <b>Les scores du tournoi</b> (dans la grande case).`,
+           `<b>2ᵉ ligne</b> : écris <b>Équipe</b> / <b>Points</b> / <b>Rang</b>.`,
+           `<b>3ᵉ ligne</b> : écris <b>Les Lions</b> / <b>12</b> / <b>1er</b>.`,
+           `<b>4ᵉ ligne</b> : écris <b>Les Tigres</b> / <b>9</b> / <b>2e</b>.`,
            `Mets la ligne <b>Équipe / Points / Rang</b> en <b>bleu</b> et en <b>gras</b>.`,
            `Colore la ligne des <b>Lions</b> (les gagnants) en <b>jaune</b>.`,
            `<b>Élargis</b> la colonne <b>Équipe</b> (la 1ʳᵉ).`,
@@ -1442,8 +1628,318 @@ const LEVEL6_DEFS = [
     startTable:null,
     goalTable:(function(){ let t=tbScores(); _merge(t,0,0,0,2); _bg(t,[[1,0],[1,1],[1,2]],'#74d4ff'); _b(t,[[1,0],[1,1],[1,2]]); _bg(t,[[2,0],[2,1],[2,2]],'#ffef5c'); _bord(t,'thick'); return t; })(),
     resizeMin:{type:'col',index:0,min:150},
+    objTables:[
+      {goal:()=>newTable(4,3)},
+      {goal:()=>_merge(newTable(4,3),0,0,0,2)},
+      {goal:()=>_merge(tbKeepRows(tbScores(),1),0,0,0,2)},
+      {goal:()=>_merge(tbKeepRows(tbScores(),2),0,0,0,2)},
+      {goal:()=>_merge(tbKeepRows(tbScores(),3),0,0,0,2)},
+      {goal:()=>_merge(tbScores(),0,0,0,2)},
+      {goal:()=>{ let t=_merge(tbScores(),0,0,0,2); _bg(t,[[1,0],[1,1],[1,2]],'#74d4ff'); _b(t,[[1,0],[1,1],[1,2]]); return t; }},
+      {goal:()=>{ let t=_merge(tbScores(),0,0,0,2); _bg(t,[[1,0],[1,1],[1,2]],'#74d4ff'); _b(t,[[1,0],[1,1],[1,2]]); _bg(t,[[2,0],[2,1],[2,2]],'#ffef5c'); return t; }},
+      {goal:()=>{ let t=_merge(tbScores(),0,0,0,2); _bg(t,[[1,0],[1,1],[1,2]],'#74d4ff'); _b(t,[[1,0],[1,1],[1,2]]); _bg(t,[[2,0],[2,1],[2,2]],'#ffef5c'); return t; }, resizeMin:{type:'col',index:0,min:150}},
+      {goal:()=>{ let t=_merge(tbScores(),0,0,0,2); _bg(t,[[1,0],[1,1],[1,2]],'#74d4ff'); _b(t,[[1,0],[1,1],[1,2]]); _bg(t,[[2,0],[2,1],[2,2]],'#ffef5c'); _bord(t,'thick'); return t; }}],
     replayRefs:['tab-inserer','tab-fusion','tab-fond-ligne','tab-gras','tab-redim-col','tab-bord-epaisses'],
     expect:`créer le tableau des scores complet : titre fusionné, en-tête bleu et gras, gagnants en jaune, colonne élargie et bordures épaisses` }
+];
+
+/* ---------- NIVEAU 7 — Images & Objets ---------- */
+// Catalogue d'images (illustrations dégradé + emoji, repli universel)
+const OB_IMAGES={
+  chat:    {emoji:'🐱', name:'chat.jpg',     g:['#fde68a','#fca5a5']},
+  chien:   {emoji:'🐶', name:'chien.jpg',    g:['#fed7aa','#fef08a']},
+  plage:   {emoji:'🏖️', name:'plage.jpg',    g:['#7dd3fc','#fde68a']},
+  fusee:   {emoji:'🚀', name:'fusee.png',    g:['#a5b4fc','#c4b5fd']},
+  fleur:   {emoji:'🌸', name:'fleur.png',    g:['#fbcfe8','#bbf7d0']},
+  montagne:{emoji:'🏔️', name:'montagne.jpg', g:['#bae6fd','#e2e8f0']},
+  gateau:  {emoji:'🎂', name:'gateau.jpg',   g:['#fecaca','#fde68a']},
+  voiture: {emoji:'🚗', name:'voiture.png',  g:['#bfdbfe','#ddd6fe']}
+};
+const FX_FOLDERS=[['Bureau','🖥️'],['Téléchargements','⬇️'],['Documents','📄'],['Images','🖼️'],['Musique','🎵'],['Vidéos','🎬']];
+const FX_IMAGES=['chat','chien','plage','fusee','fleur','montagne','gateau','voiture'];
+const OB_DEF_W=150;   // largeur d'une image fraîchement insérée
+
+// fabriques d'objets de scène
+function obImg(img, opt){ return Object.assign({type:'image', img, w:OB_DEF_W,h:115, iw:OB_DEF_W,ih:115, ox:0,oy:0, wrap:'inline', z:1}, opt||{}); }
+function obShape(shape, opt){ return Object.assign({type:'shape', shape, fill:'#74d4ff', w:120,h:92, wrap:'front', x:180,y:60, z:1}, opt||{}); }
+function obText(text, opt){ return Object.assign({type:'textbox', text:text||'', w:172,h:66, wrap:'front', x:150,y:80, z:1}, opt||{}); }
+function obScene(objs){ const o=(objs||[]).map(x=>Object.assign({},x)); o.forEach((x,i)=>{ if(x.z==null) x.z=i+1; }); return {objects:o}; }
+
+const LEVEL7_DEFS = [
+  { kind:'mission', id:'ob-img-fichier', label:'Mission 1', icon:'🖼️', objectMode:true,
+    title:'Insérer une image (depuis un fichier)',
+    intro:`Nouveau pouvoir : les <b>images</b> ! On va chercher une photo rangée dans l'ordinateur. Insère l'image <b>chat.jpg</b> qui se trouve dans le dossier <b>Images</b>.`,
+    how:[`Clique sur le bouton <b>🖼️ Image</b> tout en haut.`,
+         `Une petite fenêtre s'ouvre. Le dossier ouvert est <b>vide</b> ! À <b>gauche</b>, clique sur le dossier <b>🖼️ Images</b>.`,
+         `Clique sur le fichier <b>chat.jpg</b> (il devient bleu), puis sur <b>Insérer</b>. Valide ta mission !`],
+    startScene:obScene([]), goalScene:obScene([obImg('chat')]),
+    hint:{target:'ob-image', text:`Clique sur <b>🖼️ Image</b>, ouvre le dossier <b>Images</b> à gauche, choisis <b>chat.jpg</b> puis <b>Insérer</b>.`},
+    expect:`insérer l'image chat.jpg depuis le dossier Images` },
+
+  { kind:'mission', id:'ob-img-biblio', label:'Mission 2', icon:'🗂️', objectMode:true,
+    title:'Insérer une image (depuis la bibliothèque)',
+    intro:`On peut aussi piocher dans une <b>bibliothèque</b> d'images toute prête, sans chercher dans les dossiers. Ajoute l'image de la <b>fleur 🌸</b> depuis la bibliothèque.`,
+    how:[`Clique sur le bouton <b>🗂️ Bibliothèque</b>.`,
+         `Dans la grille d'images, clique sur la <b>fleur 🌸</b>.`,
+         `Valide ta mission !`],
+    startScene:obScene([]), goalScene:obScene([obImg('fleur')]),
+    hint:{target:'ob-lib', text:`Clique sur <b>🗂️ Bibliothèque</b>, puis sur l'image de la <b>fleur 🌸</b>.`},
+    expect:`insérer l'image de la fleur depuis la bibliothèque` },
+
+  { kind:'mission', id:'ob-redim-coins', label:'Mission 3', icon:'⤢', objectMode:true,
+    title:'Agrandir par les coins (mêmes proportions)',
+    intro:`Pour <b>changer la taille</b>, il faut d'abord <b>sélectionner</b> l'image (un clic), puis <b>cliquer-glisser une poignée</b>. Les <b>poignées rondes des 4 coins</b> agrandissent <b>sans déformer</b> (l'image garde ses proportions). Agrandis cette image par un coin.`,
+    how:[`<b>Clique</b> une fois sur l'image : un cadre et des poignées apparaissent (elle est sélectionnée).`,
+         `Attrape un <b>rond bleu de coin</b> et <b>glisse vers l'extérieur</b> (essaie même le coin du haut !).`,
+         `L'image grandit sans se déformer. Valide !`],
+    startScene:obScene([obImg('plage',{wrap:'front',x:170,y:46,w:96,h:74,iw:96,ih:74})]),
+    goalScene:obScene([obImg('plage',{wrap:'front',x:170,y:46,w:96,h:74,iw:96,ih:74})]),
+    requireResize:{mode:'corner-grow'},
+    hint:{target:'objectArea', text:`Clique l'image, puis tire un <b>rond de coin</b> vers l'extérieur. Les coins gardent les proportions.`},
+    expect:`agrandir l'image par un coin, en gardant ses proportions` },
+
+  { kind:'mission', id:'ob-retrecir', label:'Mission 4', icon:'⤡', objectMode:true,
+    title:'Rétrécir une image',
+    intro:`Cette image est trop <b>grande</b>. On va la <b>rétrécir</b> : même geste, mais on tire le coin <b>vers l'intérieur</b>.`,
+    how:[`<b>Clique</b> sur l'image pour la sélectionner.`,
+         `Attrape un <b>rond de coin</b> et <b>glisse vers l'intérieur</b> de l'image.`,
+         `Quand elle est bien plus petite, valide !`],
+    startScene:obScene([obImg('montagne',{wrap:'front',x:120,y:34,w:230,h:168,iw:230,ih:168})]),
+    goalScene:obScene([obImg('montagne',{wrap:'front',x:120,y:34,w:230,h:168,iw:230,ih:168})]),
+    requireResize:{mode:'corner-shrink'},
+    hint:{target:'objectArea', text:`Clique l'image, puis tire un <b>rond de coin</b> vers l'intérieur pour la rapetisser.`},
+    expect:`rétrécir l'image en tirant un coin vers l'intérieur` },
+
+  { kind:'mission', id:'ob-redim-cotes', label:'Mission 5', icon:'↔️', objectMode:true,
+    title:'Étirer sur les côtés (ça déforme !)',
+    intro:`Les <b>poignées du milieu des côtés</b> (les <b>orange</b>, à gauche et à droite) étirent <b>la largeur seulement</b> : l'image se <b>déforme</b> (elle s'aplatit ou s'allonge). Étire cette image sur le côté.`,
+    how:[`<b>Clique</b> sur l'image pour la sélectionner.`,
+         `Attrape la poignée <b>orange du milieu droit</b> (ou gauche) et <b>glisse sur le côté</b>.`,
+         `Vois comme l'image se déforme en largeur. Valide !`],
+    startScene:obScene([obImg('voiture',{wrap:'front',x:150,y:46,w:120,h:96,iw:120,ih:96})]),
+    goalScene:obScene([obImg('voiture',{wrap:'front',x:150,y:46,w:120,h:96,iw:120,ih:96})]),
+    requireResize:{mode:'side'},
+    hint:{target:'objectArea', text:`Clique l'image, puis tire une poignée <b>orange de côté</b> (gauche/droite) : la largeur change toute seule.`},
+    expect:`étirer l'image sur le côté (déformer la largeur)` },
+
+  { kind:'mission', id:'ob-redim-hautbas', label:'Mission 6', icon:'↕️', objectMode:true,
+    title:'Étirer en haut ou en bas (ça déforme !)',
+    intro:`Les poignées <b>orange du milieu en haut et en bas</b> étirent <b>la hauteur seulement</b> : l'image se <b>déforme</b> en hauteur. À toi d'essayer !`,
+    how:[`<b>Clique</b> sur l'image pour la sélectionner.`,
+         `Attrape la poignée <b>orange du milieu en haut</b> (ou en bas) et <b>glisse vers le haut</b> (ou le bas).`,
+         `L'image s'étire en hauteur. Valide !`],
+    startScene:obScene([obImg('fusee',{wrap:'front',x:180,y:30,w:120,h:108,iw:120,ih:108})]),
+    goalScene:obScene([obImg('fusee',{wrap:'front',x:180,y:30,w:120,h:108,iw:120,ih:108})]),
+    requireResize:{mode:'updown'},
+    hint:{target:'objectArea', text:`Clique l'image, puis tire une poignée <b>orange du haut ou du bas</b> : la hauteur change toute seule.`},
+    expect:`étirer l'image en hauteur (déformer)` },
+
+  { kind:'mission', id:'ob-rogner-droite', label:'Mission 7', icon:'🔲', objectMode:true,
+    title:'Rogner à droite',
+    intro:`<b>Rogner</b>, c'est <b>couper un bord</b> d'une image (différent de rétrécir !). Comme dans Word, on peut rogner par le <b>haut, le bas, la gauche ou la droite</b>. Coupe le <b>bord droit</b> de cette image.`,
+    how:[`<b>Clique</b> sur l'image, puis sur le bouton <b>🔲 Rogner</b> : des poignées <b>foncées</b> apparaissent sur les bords.`,
+         `Attrape la poignée foncée du <b>milieu droit</b> et <b>glisse vers l'intérieur</b>.`,
+         `Le bord droit est coupé. Valide !`],
+    startScene:obScene([obImg('plage',{wrap:'front',x:140,y:40,w:200,h:140,iw:200,ih:140})]),
+    goalScene:obScene([obImg('plage',{wrap:'front',x:140,y:40,w:200,h:140,iw:200,ih:140})]),
+    requireCrop:{side:'right'},
+    hint:{target:'ob-crop', text:`Sélectionne l'image, clique <b>🔲 Rogner</b>, puis tire la poignée foncée du <b>milieu droit</b> vers l'intérieur.`},
+    expect:`rogner le bord droit de l'image` },
+
+  { kind:'mission', id:'ob-rogner-haut', label:'Mission 8', icon:'🔲', objectMode:true,
+    title:'Rogner en haut',
+    intro:`On rogne maintenant par un <b>autre côté</b> : coupe le <b>bord du haut</b> de l'image.`,
+    how:[`<b>Clique</b> sur l'image, puis sur <b>🔲 Rogner</b>.`,
+         `Attrape la poignée foncée du <b>milieu en haut</b> et <b>glisse vers le bas</b> (vers l'intérieur).`,
+         `Le haut est coupé. Valide !`],
+    startScene:obScene([obImg('montagne',{wrap:'front',x:140,y:40,w:200,h:150,iw:200,ih:150})]),
+    goalScene:obScene([obImg('montagne',{wrap:'front',x:140,y:40,w:200,h:150,iw:200,ih:150})]),
+    requireCrop:{side:'top'},
+    hint:{target:'ob-crop', text:`Sélectionne l'image, clique <b>🔲 Rogner</b>, puis tire la poignée foncée du <b>haut</b> vers le bas.`},
+    expect:`rogner le bord du haut de l'image` },
+
+  { kind:'test', id:'ob-jalon1', label:'Jalon 1', icon:'🏆', objectMode:true,
+    title:'Une image bien préparée !',
+    intro:`À toi de jouer avec une <b>nouvelle image</b> ! Voici les <b>3 choses</b> à réussir :`,
+    tasks:[`Insère l'image <b>gateau.jpg</b> depuis le dossier <b>Images</b> (bouton 🖼️ Image).`,
+           `<b>Agrandis</b> l'image par un <b>coin</b> (sans la déformer).`,
+           `<b>Rogne</b> un bord de l'image (bouton 🔲 Rogner, poignée foncée vers l'intérieur).`],
+    startScene:obScene([]), goalScene:obScene([obImg('gateau')]),
+    requireResize:{mode:'corner-grow'}, requireCrop:{side:'any'},
+    objScenes:[
+      {goal:()=>[obImg('gateau')]},
+      {goal:()=>[obImg('gateau')], requireResize:{mode:'corner-grow'}},
+      {goal:()=>[obImg('gateau')], requireCrop:{side:'any'}}],
+    replayRefs:['ob-img-fichier','ob-redim-coins','ob-rogner-droite'],
+    expect:`insérer gateau.jpg, l'agrandir par un coin, puis la rogner` },
+
+  { kind:'mission', id:'ob-hab-carre', label:'Mission 9', icon:'🟦', objectMode:true,
+    title:'Habillage : Carré',
+    intro:`L'<b>habillage</b> décide comment le <b>texte se place autour</b> d'une image. Avec <b>Carré</b>, le texte s'enroule autour de l'image comme autour d'une boîte. Choisis l'habillage <b>Carré</b>.`,
+    how:[`Clique sur l'image pour la sélectionner.`,
+         `Ouvre le menu <b>Habillage</b> en haut et choisis <b>Carré</b>.`,
+         `Regarde le texte s'enrouler autour, puis valide !`],
+    startScene:obScene([obImg('chat',{wrap:'inline'})]),
+    goalScene:obScene([obImg('chat',{wrap:'square',side:'right'})]),
+    hint:{target:'ob-wrap', text:`Sélectionne l'image, puis menu <b>Habillage → Carré</b>.`},
+    expect:`mettre l'habillage « Carré » autour de l'image` },
+
+  { kind:'mission', id:'ob-hab-rappro', label:'Mission 10', icon:'🟩', objectMode:true,
+    title:'Habillage : Rapproché',
+    intro:`Avec <b>Rapproché</b>, le texte vient se coller <b>encore plus près</b> de l'image. On change l'habillage : mets-le en <b>Rapproché</b>.`,
+    how:[`Clique sur l'image pour la sélectionner.`,
+         `Ouvre le menu <b>Habillage</b> et choisis <b>Rapproché</b>.`,
+         `Valide ta mission !`],
+    startScene:obScene([obImg('chat',{wrap:'square',side:'right'})]),
+    goalScene:obScene([obImg('chat',{wrap:'tight',side:'right'})]),
+    hint:{target:'ob-wrap', text:`Sélectionne l'image, puis menu <b>Habillage → Rapproché</b>.`},
+    expect:`mettre l'habillage « Rapproché » autour de l'image` },
+
+  { kind:'mission', id:'ob-hab-derriere', label:'Mission 11', icon:'🫥', objectMode:true,
+    title:'Habillage : Derrière le texte',
+    intro:`<b>Derrière le texte</b> glisse l'image <b>sous</b> les mots, comme une image de fond. Le texte passe par-dessus. Mets l'image <b>derrière le texte</b>.`,
+    how:[`Clique sur l'image pour la sélectionner.`,
+         `Ouvre le menu <b>Habillage</b> et choisis <b>Derrière le texte</b>.`,
+         `Tu peux ensuite la <b>déplacer</b> en la faisant glisser. Valide !`],
+    startScene:obScene([obImg('chat',{wrap:'inline'})]),
+    goalScene:obScene([obImg('chat',{wrap:'behind',x:150,y:60})]),
+    hint:{target:'ob-wrap', text:`Sélectionne l'image, puis menu <b>Habillage → Derrière le texte</b>.`},
+    expect:`mettre l'image derrière le texte` },
+
+  { kind:'mission', id:'ob-hab-devant', label:'Mission 12', icon:'🖼️', objectMode:true,
+    title:'Habillage : Devant le texte',
+    intro:`<b>Devant le texte</b> pose l'image <b>par-dessus</b> les mots, comme un autocollant. On répète l'habillage, mais cette fois en <b>Devant le texte</b>.`,
+    how:[`Clique sur l'image pour la sélectionner.`,
+         `Ouvre le menu <b>Habillage</b> et choisis <b>Devant le texte</b>.`,
+         `Tu peux la <b>déplacer</b> où tu veux en la faisant glisser. Valide !`],
+    startScene:obScene([obImg('chat',{wrap:'behind',x:150,y:60})]),
+    goalScene:obScene([obImg('chat',{wrap:'front',x:150,y:60})]),
+    hint:{target:'ob-wrap', text:`Sélectionne l'image, puis menu <b>Habillage → Devant le texte</b>.`},
+    expect:`mettre l'image devant le texte` },
+
+  { kind:'test', id:'ob-jalon2', label:'Jalon 2', icon:'🏆', objectMode:true,
+    title:'Texte et image ensemble !',
+    intro:`On combine l'insertion, l'habillage et la taille. Voici les <b>3 choses</b> à faire :`,
+    tasks:[`Insère l'image <b>chien.jpg</b> depuis le dossier <b>Images</b>.`,
+           `Mets son habillage en <b>Carré</b> (le texte s'enroule autour).`,
+           `<b>Agrandis</b> l'image par un <b>coin</b> (sans la déformer).`],
+    startScene:obScene([]), goalScene:obScene([obImg('chien',{wrap:'square',side:'right'})]),
+    requireResize:{mode:'corner-grow'},
+    objScenes:[
+      {goal:()=>[obImg('chien')]},
+      {goal:()=>[obImg('chien',{wrap:'square',side:'right'})]},
+      {goal:()=>[obImg('chien',{wrap:'square',side:'right'})], requireResize:{mode:'corner-grow'}}],
+    replayRefs:['ob-img-fichier','ob-hab-carre','ob-redim-coins'],
+    expect:`insérer chien.jpg, l'habiller en Carré et l'agrandir par un coin` },
+
+  { kind:'mission', id:'ob-forme', label:'Mission 13', icon:'⭐', objectMode:true,
+    title:'Insérer une forme',
+    intro:`On peut aussi dessiner des <b>formes</b> : rectangle, cercle, triangle, flèche… Insère une <b>étoile ★</b> dans le document.`,
+    how:[`Clique sur le bouton <b>⬛ Forme</b>.`,
+         `Dans la liste, choisis l'<b>étoile ★</b>.`,
+         `La forme apparaît : un <b>clic</b> la sélectionne, puis tu peux la <b>glisser</b> pour la déplacer. Valide !`],
+    startScene:obScene([]), goalScene:obScene([obShape('star',{wrap:'front'})]),
+    hint:{target:'ob-shape', text:`Clique sur <b>⬛ Forme</b>, puis choisis l'<b>étoile ★</b>.`},
+    expect:`insérer une forme en étoile` },
+
+  { kind:'mission', id:'ob-zone', label:'Mission 14', icon:'🔡', objectMode:true,
+    title:'Insérer une zone de texte',
+    intro:`Une <b>zone de texte</b> est un petit cadre où tu peux écrire <b>où tu veux</b> sur la page. Insère-en une et écris dedans : <b>Mon chat</b>.`,
+    how:[`Clique sur le bouton <b>🔡 Zone de texte</b>.`,
+         `Le cadre est prêt : <b>clique à l'intérieur</b> et <b>tape</b> <b>Mon chat</b> au clavier.`,
+         `Clique en dehors quand tu as fini, puis valide !`],
+    startScene:obScene([]), goalScene:obScene([obText('Mon chat',{wrap:'front'})]),
+    hint:{target:'ob-textbox', text:`Clique <b>🔡 Zone de texte</b>, clique <b>dans</b> le cadre, puis tape <b>Mon chat</b>.`},
+    expect:`insérer une zone de texte contenant « Mon chat »` },
+
+  { kind:'mission', id:'ob-deplacer-zone', label:'Mission 15', icon:'✋', objectMode:true,
+    title:'Déplacer la zone de texte',
+    intro:`Attention à bien faire la différence : un <b>clic</b> <b>sélectionne</b> la zone (pour la déplacer ou l'effacer), et <b>cliquer dedans</b> sert à <b>écrire</b>. Ici, <b>déplace</b> la zone de texte <b>en bas à droite</b> de la page.`,
+    how:[`<b>Clique une fois</b> sur le bord de la zone pour la <b>sélectionner</b> (cadre + poignées).`,
+         `Garde le clic et <b>glisse-la</b> vers le <b>bas à droite</b> de la page.`,
+         `Relâche, puis valide !`],
+    startScene:obScene([obText('Mon beau chat',{wrap:'front',x:24,y:30,w:170,h:60})]),
+    goalScene:obScene([obText('Mon beau chat',{wrap:'front',x:24,y:30,w:170,h:60})]),
+    requireMove:{kind:'textbox', minX:250, minY:170},
+    hint:{target:'objectArea', text:`Clique la zone pour la sélectionner, puis <b>glisse-la</b> vers le bas à droite.`},
+    expect:`déplacer la zone de texte en bas à droite` },
+
+  { kind:'mission', id:'ob-hab-zone', label:'Mission 16', icon:'🟪', objectMode:true,
+    title:'Habiller la zone de texte',
+    intro:`L'<b>habillage</b> marche aussi sur une <b>zone de texte</b> ! Mets cette zone en habillage <b>Carré</b> : le texte de la page s'enroulera autour d'elle.`,
+    how:[`Clique sur la zone de texte pour la sélectionner.`,
+         `Ouvre le menu <b>Habillage</b> et choisis <b>Carré</b>.`,
+         `Le texte s'enroule autour de la zone. Valide !`],
+    startScene:obScene([obText('Le savais-tu ?',{wrap:'front',x:150,y:40,w:160,h:64})]),
+    goalScene:obScene([obText('Le savais-tu ?',{wrap:'square',side:'right',w:160,h:64})]),
+    hint:{target:'ob-wrap', text:`Sélectionne la zone de texte, puis menu <b>Habillage → Carré</b>.`},
+    expect:`mettre la zone de texte en habillage « Carré »` },
+
+  { kind:'mission', id:'ob-ordre-devant', label:'Mission 17', icon:'⏫', objectMode:true,
+    title:'Mettre un objet devant',
+    intro:`Quand deux objets se <b>chevauchent</b>, on choisit lequel passe <b>devant</b>. Ici l'image du <b>chat</b> est cachée derrière la fleur. Fais passer le <b>chat devant</b>.`,
+    how:[`Clique sur l'image du <b>chat</b> (sur la partie qui dépasse à gauche) pour la sélectionner.`,
+         `Clique sur le bouton <b>⏫</b> (Ordre : premier plan).`,
+         `Le chat passe devant la fleur. Valide !`],
+    startScene:obScene([ obImg('chat',{wrap:'front',x:34,y:34,z:1}), obImg('fleur',{wrap:'front',x:128,y:78,z:2}) ]),
+    goalScene:obScene([ obImg('chat',{wrap:'front',x:34,y:34,z:3}), obImg('fleur',{wrap:'front',x:128,y:78,z:2}) ]),
+    checkOrder:true,
+    hint:{target:'ob-front', text:`Clique sur le <b>chat</b> (partie visible à gauche), puis sur le bouton <b>⏫</b>.`},
+    expect:`faire passer l'image du chat devant la fleur` },
+
+  { kind:'mission', id:'ob-ordre-derriere', label:'Mission 18', icon:'⏬', objectMode:true,
+    title:'Envoyer un objet derrière',
+    intro:`On répète, mais dans l'autre sens : envoyer un objet <b>derrière</b> les autres. Le <b>gâteau</b> cache le chien. Envoie le <b>gâteau à l'arrière-plan</b>.`,
+    how:[`Clique sur l'image du <b>gâteau</b> (celle qui est devant) pour la sélectionner.`,
+         `Clique sur le bouton <b>⏬</b> (Ordre : arrière-plan).`,
+         `Le gâteau passe derrière le chien. Valide !`],
+    startScene:obScene([ obImg('chien',{wrap:'front',x:122,y:64,z:1}), obImg('gateau',{wrap:'front',x:42,y:36,z:2}) ]),
+    goalScene:obScene([ obImg('chien',{wrap:'front',x:122,y:64,z:1}), obImg('gateau',{wrap:'front',x:42,y:36,z:0}) ]),
+    checkOrder:true,
+    hint:{target:'ob-back', text:`Clique sur le <b>gâteau</b>, puis sur le bouton <b>⏬</b>.`},
+    expect:`envoyer l'image du gâteau derrière le chien` },
+
+  { kind:'mission', id:'ob-supprimer', label:'Mission 19', icon:'🗑️', objectMode:true,
+    title:'Supprimer un objet',
+    intro:`On peut aussi <b>enlever</b> un objet dont on ne veut plus. Il faut d'abord le <b>sélectionner</b> (un clic), puis le supprimer. Supprime cette <b>étoile</b>.`,
+    how:[`<b>Clique</b> une fois sur l'étoile pour la <b>sélectionner</b> (cadre + poignées).`,
+         `Clique sur le bouton <b>🗑️ Supprimer</b> (ou appuie sur la touche <b>Suppr</b>).`,
+         `L'étoile disparaît. Valide !`],
+    startScene:obScene([obShape('star',{wrap:'front',x:170,y:40})]),
+    goalScene:obScene([]),
+    hint:{target:'ob-delete', text:`Clique l'étoile pour la sélectionner, puis <b>🗑️ Supprimer</b> (ou touche <b>Suppr</b>).`},
+    expect:`sélectionner l'étoile puis la supprimer` },
+
+  { kind:'mission', id:'ob-supprimer-un', label:'Mission 20', icon:'🗑️', objectMode:true,
+    title:'Supprimer le bon objet',
+    intro:`Il y a <b>deux objets</b>. On veut garder le <b>chat</b> et supprimer <b>seulement la fleur</b>. Fais bien attention à <b>cliquer sur la fleur</b> avant de supprimer !`,
+    how:[`<b>Clique</b> sur la <b>fleur 🌸</b> pour la sélectionner (pas sur le chat !).`,
+         `Clique sur <b>🗑️ Supprimer</b> (ou touche <b>Suppr</b>).`,
+         `Le chat reste, la fleur disparaît. Valide !`],
+    startScene:obScene([ obImg('chat',{wrap:'front',x:40,y:34}), obImg('fleur',{wrap:'front',x:280,y:60}) ]),
+    goalScene:obScene([ obImg('chat',{wrap:'front',x:40,y:34}) ]),
+    hint:{target:'ob-delete', text:`Clique sur la <b>fleur</b> (à droite), puis <b>🗑️ Supprimer</b>. Ne touche pas au chat !`},
+    expect:`supprimer seulement la fleur et garder le chat` },
+
+  { kind:'test', id:'ob-jalon3', label:'Jalon final', icon:'🏆', objectMode:true,
+    title:'Le maquettiste de génie !',
+    intro:`Dernier défi ! Les 3 objets sont <b>empilés au même endroit</b>. À toi de faire une mise en page <b>bien rangée</b>. Voici les <b>3 choses</b> à faire :`,
+    tasks:[`<b>Écris</b> <b>La fusée</b> dans la zone de texte (clique <b>dedans</b> pour écrire).`,
+           `<b>Agrandis</b> l'image de la fusée par un <b>coin</b> (sans la déformer).`,
+           `<b>Range</b> les 3 objets (image, étoile, zone de texte) pour qu'ils ne se <b>chevauchent plus</b> : sélectionne chacun et <b>glisse-le</b> à un endroit différent.`],
+    startScene:obScene([
+      obImg('fusee',{wrap:'front',x:70,y:42,w:150,h:115,iw:150,ih:115,z:1}),
+      obShape('star',{wrap:'front',x:96,y:60,z:2}),
+      obText('',{wrap:'front',x:80,y:78,z:3}) ]),
+    goalScene:obScene([
+      obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front'}) ]),
+    requireResize:{mode:'corner-grow'}, noOverlap:true,
+    objScenes:[
+      {goal:()=>[obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front'})]},
+      {goal:()=>[obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front'})], requireResize:{mode:'corner-grow'}},
+      {goal:()=>[obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front'})], noOverlap:true}],
+    replayRefs:['ob-zone','ob-redim-coins','ob-deplacer-zone'],
+    expect:`écrire « La fusée », agrandir l'image par un coin, et ranger les 3 objets sans qu'ils se chevauchent` }
 ];
 
 /* ---------- Table des niveaux ---------- */
@@ -1523,7 +2019,18 @@ const LEVELS = [
       {g:'➕', n:'Insérer un tableau'},{g:'🪣', n:'Couleur de fond'},
       {g:'⛶', n:'Fusionner / Fractionner'},{g:'▦', n:'Bordures'}
     ],
-    defs:LEVEL6_DEFS }
+    defs:LEVEL6_DEFS },
+  { n:7, title:'Images & Objets', subtitle:'images & objets', objectMode:true,
+    paras:[ "Images & Objets" ],
+    note:`Nouveau pouvoir : les <b>images et les objets</b> ! Tu vas <b>insérer</b> des images (fichier ou bibliothèque), les <b>agrandir/rétrécir</b> (coins = mêmes proportions ; côtés = déforme), les <b>rogner</b> par chaque bord, choisir l'<b>habillage</b> du texte, ajouter des <b>formes</b> et des <b>zones de texte</b>, les <b>déplacer</b>, gérer l'<b>ordre</b> (devant/derrière) et <b>supprimer</b> ce dont tu ne veux plus. Astuce : un <b>clic</b> sélectionne, <b>glisser une poignée</b> redimensionne, <b>cliquer dans une zone de texte</b> permet d'écrire.`,
+    newTools:[
+      {g:'🖼️', n:'Insérer une image (fichier)'},{g:'🗂️', n:'Image (bibliothèque)'},
+      {g:'⬛', n:'Insérer une forme'},{g:'🔡', n:'Insérer une zone de texte'},
+      {g:'⤢', n:'Agrandir / rétrécir / déformer'},{g:'🔲', n:'Rogner (4 côtés)'},
+      {g:'↔️', n:'Habillage du texte'},{g:'⏫', n:'Ordre (devant / derrière)'},
+      {g:'✋', n:'Déplacer un objet'},{g:'🗑️', n:'Supprimer un objet'}
+    ],
+    defs:LEVEL7_DEFS }
 ];
 
 // Construit les STEPS d'un jeu de définitions (chaînage des docs start/goal)
@@ -1534,9 +2041,10 @@ function buildSteps(defs){
   const baseText=FULL;
   defs.forEach(def=>{
     let from, goal;
-    if(def.tableMode){
-      // étapes TABLEAU : pas de modèle caractère, on garde startTable/goalTable du def
+    if(def.tableMode || def.objectMode){
+      // étapes TABLEAU / OBJETS : pas de modèle caractère, on garde les scènes du def
       const step=Object.assign({}, def);
+      if(def.kind==='test') prepJalon(step);
       steps.push(step);
       if(def.kind==='mission') missions[def.id]=step;
       return;
@@ -1552,11 +2060,29 @@ function buildSteps(defs){
       goal = applyOps(clone(from), def.ops);
     }
     const step = Object.assign({}, def, {startDoc:from, goalDoc:goal});
+    if(def.kind==='test'){
+      prepJalon(step);
+      if(!def.contentMode){
+        // objectifs un par un : on enchaîne les buts cumulés (groupes d'opérations, dans l'ordre des tâches)
+        const groups = def.objGroups || (def.ops||[]).map(o=>[o]);
+        let cum=clone(from); const oS=[], oG=[];
+        groups.forEach(g=>{ oS.push(clone(cum)); cum=applyOps(clone(cum), g); oG.push(clone(cum)); });
+        step._objStart=oS; step._objGoal=oG;
+      }
+    }
     steps.push(step);
     if(def.kind==='mission') missions[def.id]=step;
     prevGoal = goal;
   });
   return {steps, missions};
+}
+// Prépare un jalon en mode « objectifs un par un »
+function prepJalon(step){
+  step._jalon=true;
+  step._count=(step.tasks||[]).length;
+  if(step.objTables) step._objT=step.objTables;
+  if(step.objScenes) step._objS=step.objScenes;
+  if(step.objChecks) step._objC=step.objChecks;
 }
 
 const COLORS=[
@@ -1643,6 +2169,7 @@ function render(){
     para.appendChild(sp);
   }
   flush();
+  jalonTick();          // jalons doc/contenu : valide l'objectif courant après chaque rendu
 }
 
 /* =========================================================
@@ -1802,8 +2329,8 @@ function updateUndoButtons(){
 }
 function pushHistory(){ undoStack.push(clone(doc)); if(undoStack.length>120) undoStack.shift(); redoStack.length=0; updateUndoButtons(); }
 function resetHistory(){ undoStack.length=0; redoStack.length=0; updateUndoButtons(); }
-function undo(){ if(TABLE_MODE){ tUndo(); return; } if(!undoStack.length) return; redoStack.push(clone(doc)); doc=undoStack.pop(); syncFull(); curSel=null; render(); updateToolbar(); updateUndoButtons(); }
-function redo(){ if(TABLE_MODE){ tRedo(); return; } if(!redoStack.length) return; undoStack.push(clone(doc)); doc=redoStack.pop(); syncFull(); curSel=null; render(); updateToolbar(); updateUndoButtons(); }
+function undo(){ if(OBJ_MODE){ objUndo(); return; } if(TABLE_MODE){ tUndo(); return; } if(!undoStack.length) return; redoStack.push(clone(doc)); doc=undoStack.pop(); syncFull(); curSel=null; render(); updateToolbar(); updateUndoButtons(); }
+function redo(){ if(OBJ_MODE){ objRedo(); return; } if(TABLE_MODE){ tRedo(); return; } if(!redoStack.length) return; undoStack.push(clone(doc)); doc=redoStack.pop(); syncFull(); curSel=null; render(); updateToolbar(); updateUndoButtons(); }
 
 function needRange(){
   if(!curSel || curSel.type!=='range'){ toast("Sélectionne d'abord du texte : double-clic sur un mot, ou clique-glisse 🖱️"); return true; }
@@ -2106,6 +2633,14 @@ editor.addEventListener('keydown', e=>{
 function startStep(idx){
   stepIndex=idx; replayState=null;
   currentStep=STEPS[idx];
+  jalonIdx=0; jalonAnimating=false;
+  if(currentStep.objectMode){
+    startObjectStep();
+    updateProgress(); updateBanner();
+    store.set('tt_step_l'+currentLevel, String(idx));
+    openMissionPopup();
+    return;
+  }
   if(currentStep.tableMode){
     startTableStep();
     updateProgress(); updateBanner();
@@ -2147,12 +2682,13 @@ function updateProgress(){
     if(replayState && i===real) d.classList.add('return');     // « reviens à ton étape en cours »
     if(replayState && i===viewed && i!==real) d.classList.add('viewing'); // étape en cours de révision
     if(isMile) d.textContent = (replayState && i===real) ? '↩' : (i<stepIndex ? '🏆' : '🚩');
-    // Navigation : missions déjà atteintes (révision) + l'étape en cours (exercice OU jalon), pour y revenir
+    // Navigation : on peut revenir sur n'importe quelle étape déjà atteinte — exercice OU jalon
     const reachable = i<=stepIndex;
-    if(reachable && (st.kind==='mission' || i===real)){
+    if(reachable && (st.kind==='mission' || st.kind==='test')){
       d.classList.add('clickable');
       if(replayState && i===real) d.title='↩ Revenir à ton étape en cours';
       else if(i===real) d.title=(st.kind==='test'?'Revoir les consignes de ce jalon':'Revoir '+st.label+' : '+st.title);
+      else if(st.kind==='test') d.title='↻ Refaire le jalon : '+st.title+' (ta progression est gardée)';
       else d.title='Revenir à '+st.label+' : '+st.title+' (ta progression est gardée)';
       d.onclick=()=>onSegClick(i);
     }
@@ -2165,10 +2701,17 @@ function onSegClick(i){
   if(i>stepIndex) return;                                   // pas encore débloqué
   const real = replayState ? replayState.returnIndex : stepIndex;
   if(i===real){ if(replayState) exitReplay(); else openMissionPopup(); return; }
-  if(STEPS[i].kind!=='mission') return;                     // on ne « rejoue » pas un ancien jalon
-  visitStep(i);
+  visitStep(i);                                             // missions ET jalons déjà atteints sont rejouables
 }
 function visitStep(i){
+  jalonIdx=0; jalonAnimating=false;
+  if(STEPS[i].objectMode || (currentStep && currentStep.objectMode)){
+    if(!replayState) replayState={ savedScene: cloneScene(OBJ), returnIndex: stepIndex };
+    currentStep=STEPS[i];
+    OBJ=cloneScene(currentStep.startScene); objSel=-1; objCrop=false; objEditing=false; objHist=[]; objRedoStack=[];
+    objRender(); updateProgress(); updateBanner(); openMissionPopup();
+    return;
+  }
   if(STEPS[i].tableMode || (currentStep && currentStep.tableMode)){
     if(!replayState) replayState={ savedTable: cloneTable(T), returnIndex: stepIndex };
     currentStep=STEPS[i];
@@ -2184,34 +2727,103 @@ function visitStep(i){
 }
 function updateBanner(){
   const banner=document.getElementById('banner');
-  banner.className='banner'+(currentStep.kind==='test'?' test':'')+(replayState?' replay':'');
+  const isTest=currentStep.kind==='test';
+  banner.className='banner'+(isTest?' test':'')+(replayState?' replay':'');
   document.getElementById('bEmoji').textContent=currentStep.icon;
   document.getElementById('seeMission').style.display='';
   const backBtn=document.getElementById('backToTest');
   backBtn.style.display = replayState ? '' : 'none';
   const bSub=document.getElementById('bSub');
+  const back = replayState ? STEPS[replayState.returnIndex] : null;
+  const where = back ? (back.kind==='test' ? 'au test' : ('à '+back.label)) : '';
+  if(back) backBtn.textContent='← Revenir '+where;
+  // JALON : un seul objectif à la fois (même quand on le refait via la barre de progression)
+  if(isTest && currentStep._jalon){
+    document.getElementById('bTitle').textContent=(replayState?'Révision — ':'')+currentStep.label+' : '+currentStep.title;
+    renderJalonObjective(false);
+    return;
+  }
   if(replayState){
-    const back=STEPS[replayState.returnIndex];
-    const where = back.kind==='test' ? 'au test' : ('à '+back.label);
-    backBtn.textContent='← Revenir '+where;
     document.getElementById('bTitle').textContent='Révision : '+currentStep.title;
     bSub.innerHTML='Refais cet exercice tranquillement, puis reviens '+where+'. <b>Ta progression est gardée.</b>';
-  }else{
-    document.getElementById('bTitle').textContent=currentStep.label+' : '+currentStep.title;
-    if(currentStep.kind==='test'){
-      const chips=currentStep.tasks.map(t=>`<span class="mini-task">${t}</span>`).join('');
-      bSub.innerHTML='<span class="b-goal-label">Tes '+currentStep.tasks.length+' objectifs :</span> '+chips;
-    }else{
-      bSub.innerHTML='<span class="b-goal-label">Ta mission :</span> '+stripTags(currentStep.expect)+'.';
-    }
+    return;
   }
+  document.getElementById('bTitle').textContent=currentStep.label+' : '+currentStep.title;
+  bSub.innerHTML='<span class="b-goal-label">Ta mission :</span> '+stripTags(currentStep.expect)+'.';
 }
 function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
+
+/* =========================================================
+   7bis. JALONS — objectif par objectif (validation dynamique)
+   ========================================================= */
+let jalonIdx=0, jalonAnimating=false;
+// Évalue UNIQUEMENT l'objectif courant → 'success' | 'extra' (a fait autre chose) | 'incomplete'
+function jalonEvalCurrent(){
+  const s=currentStep, i=jalonIdx;
+  if(s.tableMode){
+    const o=s._objT[i]; const start=(i===0)?s.startTable:s._objT[i-1].goal();
+    const r=tblEval(start, o.goal(), {resize:o.resize, resizeMin:o.resizeMin, lenient:true}, T);
+    return r.extra>0?'extra':(r.missing===0?'success':'incomplete');
+  }
+  if(s.objectMode){
+    const o=s._objS[i];
+    const startObjs=(i===0)?((s.startScene&&s.startScene.objects)||[]):s._objS[i-1].goal();
+    const r=objSceneEval(startObjs, o.goal(), o, (OBJ||{objects:[]}).objects);
+    return r.extra>0?'extra':(r.missing===0?'success':'incomplete');
+  }
+  if(s.contentMode){
+    if(contentFormattingChanged()) return 'extra';
+    return s._objC[i](textOf(doc)) ? 'success' : 'incomplete';
+  }
+  const r=evaluate(s._objStart[i], s._objGoal[i], doc);
+  return r.extra.length>0 ? 'extra' : (r.missing.length===0 ? 'success' : 'incomplete');
+}
+// Appelé après chaque action de l'élève (et par le bouton Valider). force=true → petit rappel si rien fait.
+function jalonTick(force){
+  if(jalonAnimating) return;
+  if(!currentStep || currentStep.kind!=='test' || !currentStep._jalon) return;
+  if(jalonIdx>=currentStep._count) return;
+  const res=jalonEvalCurrent();
+  if(res==='success') jalonAdvance();
+  else if(res==='extra') jalonError();
+  else if(force) toast('👆 Fais l\'objectif affiché tout en haut.');
+}
+function renderJalonObjective(enter){
+  const s=currentStep, i=jalonIdx, n=s._count;
+  const bSub=document.getElementById('bSub'); if(!bSub) return;
+  bSub.innerHTML=`<div class="jalon-head"><span class="b-goal-label">Objectif ${Math.min(i+1,n)} / ${n}</span></div>`
+    +`<div class="jalon-obj${enter?' entering':''}"><span class="jo-check">${i+1}</span><span class="jo-text">${s.tasks[i]||''}</span></div>`;
+  if(enter) requestAnimationFrame(()=>{ const el=bSub.querySelector('.jalon-obj'); if(el) el.classList.remove('entering'); });
+}
+function jalonAdvance(){
+  jalonAnimating=true;
+  const bSub=document.getElementById('bSub'); const el=bSub&&bSub.querySelector('.jalon-obj');
+  if(el){ el.classList.add('done'); const ck=el.querySelector('.jo-check'); if(ck) ck.textContent='✓'; }
+  setTimeout(()=>{ if(el) el.classList.add('slideup'); }, 520);
+  setTimeout(()=>{
+    jalonIdx++;
+    if(jalonIdx>=currentStep._count){ jalonAnimating=false; onSuccess(); return; }
+    renderJalonObjective(true);
+    jalonAnimating=false;
+  }, 980);
+}
+function jalonError(){
+  jalonAnimating=true;
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">🧭</span>
+    <h2>Ce n'était pas l'objectif !</h2>
+    <p>Tu as fait <b>autre chose</b> que l'objectif affiché en haut. Pas de souci : on <b>recommence le jalon</b> depuis le début, et on refait les objectifs <b>un par un</b>.</p>
+    <p style="font-size:.95rem;color:var(--muted)">Besoin d'aide ? Le bouton <b>💡 Indice</b> te laisse refaire un entraînement.</p>
+    <div class="m-actions"><button class="m-btn primary test" id="jalonRetry">↺ Recommencer le jalon</button></div>`;
+  openOverlay();
+  document.getElementById('jalonRetry').onclick=()=>{ closeOverlay(); jalonIdx=0; restartCurrent(); updateBanner(); jalonAnimating=false; };
+}
 
 /* ---- mission popup ---- */
 function openMissionPopup(){
   const s=currentStep;
-  if(s.kind==='test' && !replayState){
+  if(s.kind==='test'){
     modal.className='modal test-modal';
     modal.innerHTML=`
       <span class="m-emoji">${s.icon}</span>
@@ -2258,6 +2870,14 @@ document.getElementById('restartBtn').onclick=()=>{
   document.getElementById('doRestart').onclick=()=>{ closeOverlay(); restartCurrent(); };
 };
 function onValidate(){
+  if(currentStep.kind==='test' && currentStep._jalon){ jalonTick(true); return; }
+  if(currentStep.objectMode){
+    const res=objectEvaluate();
+    if(res.status==='success') return onSuccess();
+    if(res.status==='extra')   return onObjPresque();
+    if(res.status==='error')   return onObjOhoh();
+    return onObjPasEncore();
+  }
   if(currentStep.tableMode){
     const res=tableEvaluate();
     if(res.status==='success') return onSuccess();
@@ -2369,6 +2989,38 @@ function onTableOhoh(){
   openOverlay();
   document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
+function onObjPasEncore(){
+  modal.className='modal bad';
+  modal.innerHTML=`
+    <span class="m-emoji">🧐</span>
+    <h2>Pas encore…</h2>
+    <p>Ta mission : <b>${currentStep.expect}</b>. Il te manque encore quelque chose — <b>continue, ton travail est gardé</b>. Vérifie bien chaque consigne (la bonne image, le bon habillage, l'ordre…). Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
+    <div class="m-actions"><button class="m-btn primary" id="keep">Je continue</button></div>`;
+  openOverlay();
+  document.getElementById('keep').onclick=closeOverlay;
+}
+function onObjPresque(){
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">🤏</span>
+    <h2>Presque !</h2>
+    <p>Tu as bien réussi la mission… mais tu as aussi ajouté ou modifié <b>quelque chose qui n'était pas demandé</b>.</p>
+    <p>La règle d'or : <b>on fait seulement ce que la mission demande</b>. On recommence cette mission, tu vas y arriver !</p>
+    <div class="m-actions"><button class="m-btn primary test" id="redo">Je recommence</button></div>`;
+  openOverlay();
+  document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
+}
+function onObjOhoh(){
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">😬</span>
+    <h2>Oh oh, tu as fait autre chose !</h2>
+    <p>Tu as ajouté ou changé des choses qui n'étaient <b>pas demandées</b>, et la mission n'est pas finie. Il faut faire <b>seulement</b> ce qui est demandé.</p>
+    <p>Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
+    <div class="m-actions"><button class="m-btn primary test" id="retry">↺ Je réessaie</button></div>`;
+  openOverlay();
+  document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
+}
 function flashBad(indices){
   indices.forEach(i=>{ const sp=editor.querySelector('.ch[data-i="'+i+'"]'); if(sp){ sp.classList.add('flash-bad'); setTimeout(()=>sp.classList.remove('flash-bad'),1500); } });
 }
@@ -2414,8 +3066,11 @@ function onExtra(res){
   document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
 function restartCurrent(){
-  if(currentStep.tableMode){ startTableStep(); return; }
+  if(currentStep._jalon) jalonIdx=0;                 // un jalon repart de son 1ᵉʳ objectif
+  if(currentStep.objectMode){ startObjectStep(); if(currentStep._jalon) updateBanner(); return; }
+  if(currentStep.tableMode){ startTableStep(); if(currentStep._jalon) updateBanner(); return; }
   doc=clone(currentStep.startDoc); syncFull(); curSel=null; resetHistory(); resetToolbarDefaults(); render();
+  if(currentStep._jalon) updateBanner();
 }
 function onSuccess(){
   if(replayState){
@@ -2483,7 +3138,7 @@ function onCourseFinish(){
   modal.innerHTML=`
     <span class="m-emoji">🏅</span>
     <h2>Parcours terminé !</h2>
-    <p>Incroyable ! Tu as fini les <b>3 niveaux</b> du <b>Traitement de texte</b> : la mise en forme, les paragraphes et les listes. Tu es devenu un vrai <b>pro de l'ordinateur</b> ! 👏</p>
+    <p>Incroyable ! Tu as fini <b>tous les niveaux</b> du <b>Traitement de texte</b> : la mise en forme, les paragraphes, les listes, le clavier, l'écriture, les tableaux et les images. Tu es devenu un vrai <b>pro de l'ordinateur</b> ! 👏</p>
     <div class="m-actions">
       <button class="m-btn ghost" id="again">↺ Tout recommencer</button>
       <a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Retour à l'accueil</a>
@@ -2555,6 +3210,13 @@ function openReplayPanel(){
   document.getElementById('closeHint').onclick=closeOverlay;
 }
 function startReplay(mission){
+  if(mission.objectMode){
+    replayState={ savedScene: cloneScene(OBJ), returnIndex: stepIndex };
+    currentStep=mission;
+    OBJ=cloneScene(mission.startScene); objSel=-1; objCrop=false; objEditing=false; objHist=[]; objRedoStack=[];
+    objRender(); updateProgress(); updateBanner(); openMissionPopup();
+    return;
+  }
   if(mission.tableMode){
     replayState={ savedTable: cloneTable(T), returnIndex: stepIndex };
     currentStep=mission;
@@ -2570,6 +3232,11 @@ function startReplay(mission){
 function exitReplay(){
   if(!replayState) return;
   const ret=STEPS[replayState.returnIndex];
+  if(ret.objectMode){
+    OBJ = (replayState.savedScene!==undefined) ? replayState.savedScene : cloneScene(ret.startScene);
+    currentStep=ret; replayState=null; objSel=-1; objCrop=false; objEditing=false; objHist=[]; objRedoStack=[];
+    objRender(); updateProgress(); updateBanner(); return;
+  }
   if(ret.tableMode){
     T = (replayState.savedTable!==undefined) ? replayState.savedTable : cloneTable(ret.startTable);
     currentStep=ret; replayState=null; tSel=null; tHist=[]; tRedoStack=[];
@@ -2624,6 +3291,7 @@ function loadLevel(n, stepIdx, showIntro){
   applyBlockedTools(lvl);
   EDIT_MODE = !!lvl.contentMode;
   setTableMode(!!lvl.tableMode);
+  setObjectMode(!!lvl.objectMode);
   document.getElementById('lvlTitle').innerHTML='Traitement de texte <span class="dot">·</span> '+lvl.subtitle;
   store.set('tt_curlevel', String(n));
   refreshLevelBtn();
@@ -2801,7 +3469,7 @@ function tableRender(){
       cin.style.whiteSpace=cl.nowrap===false?'normal':'nowrap';
       cin.style.overflow='hidden';
       let hsum=0; for(let k=0;k<cl.rowspan;k++) hsum+=T.rowH[r+k]||0; cin.style.maxHeight=hsum+'px';
-      cin.addEventListener('input', ()=>{ cl.text=cin.textContent; });
+      cin.addEventListener('input', ()=>{ cl.text=cin.textContent; jalonTick(); });
       cin.addEventListener('focus', ()=>{ if(!tDragging){ tSel=normSel(r,c,r,c); paintSel(); } });
       td.appendChild(cin);
       const gc=document.createElement('div'); gc.className='col-grip'; gc.addEventListener('mousedown', e=>startColResize(e, c+cl.colspan-1)); td.appendChild(gc);
@@ -2820,6 +3488,7 @@ function tableRender(){
     hd.addEventListener('mousedown', e=>{ e.preventDefault(); tSel={r0:r,c0:0,r1:r,c1:T.cols-1}; tDragging=false; tAnchor=null; paintSel(); });
     gut.appendChild(hd);
   });
+  jalonTick();          // jalons tableau : valide l'objectif courant après chaque rendu
 }
 function paintSel(){
   tableArea.querySelectorAll('td').forEach(td=>{ td.classList.toggle('sel', inSel(+td.dataset.r,+td.dataset.c)); });
@@ -2949,46 +3618,43 @@ function tableMkStatus(missing,extra){
   else                         status='incomplete';   // mission incomplète, rien d'autre → "Pas encore"
   return {status,missing,extra};
 }
-// Évalue un tableau comme le moteur texte : compte ce qui manque (missing) et ce qui a été modifié sans être demandé (extra)
-function tableEvaluate(){
-  const st=currentStep;
+// Texte de cellule indulgent : on ignore la casse et les points (pour les jalons « écrire dans le tableau »)
+function normCellText(t){ return (t||'').trim().toLowerCase().replace(/\./g,'').replace(/\s+/g,' '); }
+// Évalue un tableau (cur) contre un but, à partir d'un état de départ. opts: {resize, resizeMin, lenient}
+function tblEval(start, goal, opts, cur){
+  opts=opts||{}; cur=(cur===undefined)?T:cur;
   let missing=0, extra=0;
-  // redimensionnement = action requise (jamais "en trop")
   let resizeOk=true;
-  if(st.resize){ resizeOk = st.resize.type==='col'?colNotTruncated(st.resize.index):rowNotTruncated(st.resize.index); }
-  if(st.resizeMin){ const m=st.resizeMin; const v=(m.type==='col')?(T&&T.colW[m.index]):(T&&T.rowH[m.index]); if(!(v>=m.min)) resizeOk=false; }
+  if(opts.resize){ resizeOk = opts.resize.type==='col'?colNotTruncated(opts.resize.index):rowNotTruncated(opts.resize.index); }
+  if(opts.resizeMin){ const m=opts.resizeMin; const v=(m.type==='col')?(cur&&cur.colW[m.index]):(cur&&cur.rowH[m.index]); if(!(v>=m.min)) resizeOk=false; }
   if(!resizeOk) missing++;
-
-  if(!st.goalTable) return tableMkStatus(missing,extra);
-  if(!T) return {status:'incomplete', missing:missing+1, extra:0};
-  const goal=st.goalTable;
-  // mauvaise taille de tableau → il faut d'abord la bonne structure (incomplet, jamais "en trop")
-  if(T.rows!==goal.rows || T.cols!==goal.cols) return {status:'incomplete', missing:missing+1, extra:0};
-
-  // référence de départ : startTable si fourni, sinon un tableau vide de la bonne taille (jalons « à partir de zéro »)
-  const start = st.startTable || newTable(goal.rows, goal.cols);
+  if(!goal) return tableMkStatus(missing,extra);
+  if(!cur) return {status:'incomplete', missing:missing+1, extra:0};
+  if(cur.rows!==goal.rows || cur.cols!==goal.cols) return {status:'incomplete', missing:missing+1, extra:0};
+  const st0 = start || newTable(goal.rows, goal.cols);
+  const attrs = opts.lenient ? CELL_ATTRS.map((f,i)=> i===0 ? (x=>normCellText(x.text)) : f) : CELL_ATTRS;
   for(let r=0;r<goal.rows;r++) for(let c=0;c<goal.cols;c++){
-    const gc=cellAt(goal,r,c), sc0=cellAt(start,r,c), cc=cellAt(T,r,c);
+    const gc=cellAt(goal,r,c), sc0=cellAt(st0,r,c), cc=cellAt(cur,r,c);
     let miss=false, ext=false;
-    for(const f of CELL_ATTRS){
+    for(const f of attrs){
       const gv=f(gc), sv=f(sc0), cv=f(cc);
-      if(gv!==sv){ if(cv!==gv) miss=true; }    // attribut requis non atteint → manquant
-      else { if(cv!==sv) ext=true; }           // attribut non demandé modifié → en trop
+      if(gv!==sv){ if(cv!==gv) miss=true; }
+      else { if(cv!==sv) ext=true; }
     }
     if(miss) missing++;
     if(ext) extra++;
   }
   return tableMkStatus(missing,extra);
 }
+function tableEvaluate(){ const st=currentStep; return tblEval(st.startTable, st.goalTable, {resize:st.resize, resizeMin:st.resizeMin}, T); }
 
 /* ---- barre d'outils tableau (boutons NOUVEAUX : insertion, fond, fusion, fractionner, bordures) ---- */
 document.getElementById('tb-insert').onclick=openTableInsert;
 document.getElementById('tb-merge').onclick=tMerge;
 document.getElementById('tb-split').onclick=openSplitDialog;
-(function(){ const bs=document.getElementById('tb-border');
-  bs.addEventListener('mousedown',()=>{ bs._pre=bs.value; bs.value=''; });
-  bs.addEventListener('change',e=>{ if(e.target.value) tApplyBorder(e.target.value); else bs.value=bs._pre||'thin'; });
-})();
+// Bordures : simple menu « change » (comme Police/Taille/Interligne). paintSel garde la valeur affichée
+// synchronisée avec la sélection. (On évite la bidouille mousedown→value='' qui cassait le menu natif.)
+document.getElementById('tb-border').addEventListener('change', e=>{ if(e.target.value) tApplyBorder(e.target.value); });
 (function(){ const sw=document.getElementById('tb-swatches');
   PBG_COLORS.forEach(c=>{ const b=document.createElement('button'); b.className='swatch'; b.title=c.name;
     if(c.hex==='transparent'){ b.style.background='#fff'; b.style.backgroundImage='linear-gradient(45deg,#e0e0e0 25%,transparent 25%,transparent 75%,#e0e0e0 75%),linear-gradient(45deg,#e0e0e0 25%,#fff 25%,#fff 75%,#e0e0e0 75%)'; b.style.backgroundSize='12px 12px'; b.style.backgroundPosition='0 0,6px 6px'; }
@@ -3022,6 +3688,453 @@ function startTableStep(){
   T=cloneTable(currentStep.startTable); tSel=null; tHist=[]; tRedoStack=[];
   tableRender();
 }
+
+/* =========================================================
+   10ter. ÉDITEUR D'IMAGES & OBJETS (Niveau 7)
+   ========================================================= */
+let OBJ_MODE=false;
+let OBJ=null;                  // scène courante {objects:[...]}
+let objSel=-1;                 // index de l'objet sélectionné (-1 = aucun)
+let objCrop=false;             // mode rognage actif sur l'objet sélectionné
+let objEditing=false;          // on écrit dans la zone de texte sélectionnée
+let objHist=[], objRedoStack=[];
+const objectArea=document.getElementById('objectArea');
+const objectToolbar=document.getElementById('object-toolbar');
+
+const OB_BODY={
+  title:'Le chat, mon animal préféré',
+  paras:[
+    "Le chat est un animal de compagnie très apprécié. Il aime jouer, dormir au soleil et ronronner sur les genoux de son maître. Beaucoup de familles adoptent un chat car il est doux et très facile à câliner.",
+    "Les chats sont aussi de très bons chasseurs. La nuit, ils voient bien mieux que nous. Leurs longues moustaches les aident à se repérer dans le noir et à se faufiler partout sans faire le moindre bruit.",
+    "Pour rester en pleine forme, un chat a besoin d'eau fraîche, d'une bonne nourriture et de beaucoup d'amour. En échange, il offre à toute la famille de jolis moments de tendresse et de bonne humeur."
+  ]
+};
+function cloneScene(s){ return s?JSON.parse(JSON.stringify(s)):{objects:[]}; }
+function objMaxZ(){ let m=0; OBJ.objects.forEach(o=>{ if((o.z||0)>m)m=o.z||0; }); return m; }
+function objMinZ(){ let m=0; OBJ.objects.forEach(o=>{ if((o.z||0)<m)m=o.z||0; }); return m; }
+function objPush(){ if(OBJ) objHist.push(cloneScene(OBJ)); if(objHist.length>80) objHist.shift(); objRedoStack.length=0; }
+function objUndo(){ if(!objHist.length) return; objRedoStack.push(cloneScene(OBJ)); OBJ=objHist.pop(); objSel=-1; objCrop=false; objEditing=false; objRender(); }
+function objRedo(){ if(!objRedoStack.length) return; objHist.push(cloneScene(OBJ)); OBJ=objRedoStack.pop(); objSel=-1; objCrop=false; objEditing=false; objRender(); }
+function objDelete(){ if(objSel<0||!OBJ.objects[objSel]){ toast('Choisis d\'abord un objet à supprimer : clique dessus 🖱️'); return; }
+  objPush(); OBJ.objects.splice(objSel,1); objSel=-1; objCrop=false; objEditing=false; objRender(); }
+
+/* ---- formes en SVG ---- */
+function obSvg(inner){ return '<svg class="ob-shape-el" viewBox="0 0 100 100" preserveAspectRatio="none">'+inner+'</svg>'; }
+function shapeMarkup(shape, fill){
+  const c=fill||'#74d4ff', st='#1d4ed8';
+  if(shape==='ellipse')  return obSvg('<ellipse cx="50" cy="50" rx="47" ry="47" fill="'+c+'" stroke="'+st+'" stroke-width="3"/>');
+  if(shape==='triangle') return obSvg('<polygon points="50,5 95,95 5,95" fill="'+c+'" stroke="'+st+'" stroke-width="3" stroke-linejoin="round"/>');
+  if(shape==='star')     return obSvg('<polygon points="50,4 61,38 97,38 68,60 79,96 50,74 21,96 32,60 3,38 39,38" fill="'+c+'" stroke="'+st+'" stroke-width="3" stroke-linejoin="round"/>');
+  if(shape==='arrow')    return obSvg('<polygon points="3,38 60,38 60,17 97,50 60,83 60,62 3,62" fill="'+c+'" stroke="'+st+'" stroke-width="3" stroke-linejoin="round"/>');
+  return obSvg('<rect x="3" y="3" width="94" height="94" rx="7" fill="'+c+'" stroke="'+st+'" stroke-width="3"/>');
+}
+
+/* ---- élément visuel d'un objet (image / forme / zone de texte) ---- */
+function mkIllus(meta,o){
+  const il=document.createElement('div'); il.className='ob-illus';
+  il.style.width=(o.iw||o.w)+'px'; il.style.height=(o.ih||o.h)+'px';
+  il.style.left=(o.ox||0)+'px'; il.style.top=(o.oy||0)+'px';
+  il.style.background='linear-gradient(135deg,'+meta.g[0]+','+meta.g[1]+')';
+  const em=document.createElement('span'); em.className='em';
+  em.style.fontSize=(Math.max(16,Math.min(o.iw||o.w,o.ih||o.h)*0.5))+'px'; em.textContent=meta.emoji;
+  il.appendChild(em); return il;
+}
+function objContentEl(o, editing, cropMode){
+  if(o.type==='image'){
+    const meta=OB_IMAGES[o.img]||{emoji:'🖼️',g:['#dbeafe','#bfdbfe']};
+    if(cropMode){
+      // aperçu de rognage : image entière estompée + fenêtre nette par-dessus
+      const wrap=document.createElement('div'); wrap.className='ob-img-cropwrap';
+      const faded=mkIllus(meta,o); faded.classList.add('faded'); wrap.appendChild(faded);
+      const win=document.createElement('div'); win.className='ob-crop-win'; win.style.width=o.w+'px'; win.style.height=o.h+'px';
+      win.appendChild(mkIllus(meta,o)); wrap.appendChild(win);
+      return wrap;
+    }
+    const frame=document.createElement('div'); frame.className='ob-img-frame';
+    frame.appendChild(mkIllus(meta,o)); return frame;
+  }
+  if(o.type==='shape'){
+    const d=document.createElement('div'); d.style.width='100%'; d.style.height='100%';
+    d.innerHTML=shapeMarkup(o.shape,o.fill); return d;
+  }
+  const tb=document.createElement('div'); tb.className='ob-textbox'; tb.spellcheck=false;
+  tb.contentEditable = editing ? 'true' : 'false';
+  if(editing) tb.classList.add('editing');
+  if(!o.text) tb.classList.add('empty');
+  tb.textContent=o.text||'';
+  tb.addEventListener('input', ()=>{ o.text=tb.textContent; tb.classList.toggle('empty', !tb.textContent); jalonTick(); });
+  return tb;
+}
+
+/* ---- rendu de la scène ---- */
+function objRender(){
+  if(!OBJ) OBJ={objects:[]};
+  objectArea.innerHTML='';
+  const docEl=document.createElement('div'); docEl.className='ob-doc';
+  const behind=document.createElement('div'); behind.className='ob-layer ob-behind';
+  const front=document.createElement('div'); front.className='ob-layer ob-front';
+  const flow=document.createElement('div'); flow.className='ob-flow';
+  const objs=OBJ.objects;
+  // objets flottants dans le flux (habillage carré / rapproché) : placés AVANT le texte
+  objs.forEach((o,idx)=>{ if(o.wrap==='square'||o.wrap==='tight') flow.appendChild(objWrapper(o,idx)); });
+  const h=document.createElement('h2'); h.textContent=OB_BODY.title; flow.appendChild(h);
+  OB_BODY.paras.forEach((t,pi)=>{
+    const p=document.createElement('p');
+    if(pi===0){ objs.forEach((o,idx)=>{ if(o.wrap==='inline') p.appendChild(objWrapper(o,idx)); }); }
+    p.appendChild(document.createTextNode(t));
+    flow.appendChild(p);
+  });
+  // objets libres (derrière / devant le texte), triés par z
+  const free=objs.map((o,idx)=>({o,idx})).filter(x=>x.o.wrap==='behind'||x.o.wrap==='front');
+  free.sort((a,b)=>(a.o.z||0)-(b.o.z||0));
+  free.forEach(({o,idx})=>{ (o.wrap==='behind'?behind:front).appendChild(objWrapper(o,idx)); });
+  docEl.appendChild(behind); docEl.appendChild(flow); docEl.appendChild(front);
+  objectArea.appendChild(docEl);
+  if(!objs.length){
+    const note=document.createElement('div'); note.className='ob-empty-note';
+    note.innerHTML='<span class="ic">🖼️</span>Aucun objet pour l\'instant. Utilise les boutons <b>🖼️ Image</b>, <b>⬛ Forme</b> ou <b>🔡 Zone de texte</b> tout en haut pour en ajouter.';
+    objectArea.appendChild(note);
+  }
+  reflectObjToolbar();
+  const u=document.getElementById('btn-undo'), r=document.getElementById('btn-redo');
+  if(u) u.disabled=!objHist.length; if(r) r.disabled=!objRedoStack.length;
+  jalonTick();          // jalons objets : valide l'objectif courant après chaque rendu
+}
+const OB_HANDLES=[['nw',-1,-1],['n',0,-1],['ne',1,-1],['e',1,0],['se',1,1],['s',0,1],['sw',-1,1],['w',-1,0]];
+function addHandles(w, idx, crop){
+  OB_HANDLES.forEach(([cls,hr,vr])=>{
+    const h=document.createElement('div');
+    h.className=(crop?'ob-crop-handle ':'ob-handle ')+'h-'+cls;
+    h.addEventListener('mousedown', e=>startHandleDrag(e, idx, hr, vr, crop?'crop':'resize'));
+    w.appendChild(h);
+  });
+}
+function objWrapper(o, idx){
+  const sel = idx===objSel;
+  const editing = sel && objEditing && o.type==='textbox';
+  const cropMode = sel && objCrop && o.type==='image';
+  let w;
+  if(o.wrap==='behind'||o.wrap==='front'){
+    w=document.createElement('div'); w.className='ob-free';
+    w.style.left=(o.x!=null?o.x:20)+'px'; w.style.top=(o.y!=null?o.y:20)+'px';
+  }else if(o.wrap==='square'||o.wrap==='tight'){
+    w=document.createElement('div'); w.className='ob-obj';
+    const left=(o.side==='left');
+    w.style.cssFloat=left?'left':'right';
+    const m=(o.wrap==='tight')?5:15;
+    w.style.margin = left ? ('3px '+m+'px '+m+'px 0') : ('3px 0 '+m+'px '+m+'px');
+    if(o.wrap==='tight' && o.type!=='textbox'){ w.style.shapeOutside=(o.type==='shape'?'ellipse(50% 50%)':'inset(0)'); }
+  }else{
+    w=document.createElement('span'); w.className='ob-obj';
+    w.style.display='inline-block'; w.style.verticalAlign='middle'; w.style.margin='0 6px';
+  }
+  w.style.width=o.w+'px'; w.style.height=o.h+'px';
+  const content=objContentEl(o, editing, cropMode); content.style.width='100%'; content.style.height='100%';
+  w.appendChild(content);
+  if(sel){
+    w.classList.add('ob-sel');
+    if(cropMode) addHandles(w, idx, true);
+    else if(!editing) addHandles(w, idx, false);
+  }
+  w.addEventListener('mousedown', e=>onObjDown(e, idx));
+  return w;
+}
+function reflectObjToolbar(){
+  const sel=document.getElementById('ob-wrap');
+  if(sel){ if(objSel>=0 && OBJ.objects[objSel]){ sel.value=OBJ.objects[objSel].wrap; sel.classList.add('active'); }
+           else { sel.classList.remove('active'); } }
+  const cb=document.getElementById('ob-crop'); if(cb) cb.classList.toggle('active', objCrop);
+}
+
+/* ---- sélection / écriture / déplacement / redimensionnement / rognage ----
+   3 gestes différents, bien distincts :
+   • un CLIC sélectionne l'objet (cadre + poignées) → on peut le déplacer ou le supprimer ;
+   • CLIQUER-GLISSER une POIGNÉE l'agrandit / le rétrécit / le rogne ;
+   • CLIQUER À L'INTÉRIEUR d'une zone de texte (déjà sélectionnée) permet d'écrire. */
+let objDrag=null, objHandle=null;
+const oclamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function onObjDown(e, idx){
+  e.stopPropagation();
+  if(e.target.classList.contains('ob-handle')||e.target.classList.contains('ob-crop-handle')) return;
+  const o=OBJ.objects[idx]; if(!o) return;
+  const wasSel=(objSel===idx);
+  // on est déjà en train d'écrire dans cette zone de texte → laisser le curseur
+  if(o.type==='textbox' && wasSel && objEditing && e.target.isContentEditable) return;
+  if(!wasSel){ objSel=idx; objCrop=false; objEditing=false; objRender(); }
+  const free=(o.wrap==='behind'||o.wrap==='front');
+  const floated=(o.wrap==='square'||o.wrap==='tight');
+  e.preventDefault();
+  objDrag={idx, kind: free?'move':(floated?'side':'none'),
+    sx:e.clientX, sy:e.clientY, ox:(o.x!=null?o.x:20), oy:(o.y!=null?o.y:20),
+    wasSel, isTextbox:(o.type==='textbox'), moved:false, pushed:false};
+}
+function startHandleDrag(e, idx, hr, vr, mode){
+  e.preventDefault(); e.stopPropagation();
+  const o=OBJ.objects[idx];
+  objHandle={idx, hr, vr, mode, corner:(hr!==0&&vr!==0), sx:e.clientX, sy:e.clientY,
+    w:o.w,h:o.h, iw:o.iw||o.w, ih:o.ih||o.h, ox:o.ox||0, oy:o.oy||0,
+    x:(o.x!=null?o.x:0), y:(o.y!=null?o.y:0), pushed:false};
+}
+function objMouseMove(e){
+  if(!OBJ_MODE) return;
+  if(objHandle){
+    const o=OBJ.objects[objHandle.idx]; if(!o) return;
+    if(!objHandle.pushed){ objPush(); objHandle.pushed=true; }
+    const H=objHandle, dx=e.clientX-H.sx, dy=e.clientY-H.sy;
+    const free=(o.wrap==='behind'||o.wrap==='front');
+    if(H.mode==='resize'){
+      let newW=H.w, newH=H.h;
+      if(H.corner){                                   // coins → on garde les proportions
+        const sW=(H.w + H.hr*dx)/H.w, sH=(H.h + H.vr*dy)/H.h;
+        let s = Math.abs(H.hr*dx) >= Math.abs(H.vr*dy) ? sW : sH;
+        s=Math.max(0.18, s); newW=Math.max(30, Math.round(H.w*s)); newH=Math.max(24, Math.round(H.h*(newW/H.w)));
+      } else if(H.hr!==0){ newW=Math.max(30, Math.round(H.w + H.hr*dx)); }   // côtés → déforme (largeur)
+      else if(H.vr!==0){ newH=Math.max(24, Math.round(H.h + H.vr*dy)); }     // haut/bas → déforme (hauteur)
+      const dW=newW-H.w, dH=newH-H.h, fx=newW/H.w, fy=newH/H.h;
+      o.w=newW; o.h=newH;
+      if(o.type==='image'){
+        if(H.corner){ o.iw=Math.round(H.iw*fx); o.ih=Math.round(H.ih*fx); o.ox=Math.round(H.ox*fx); o.oy=Math.round(H.oy*fx); }
+        else if(H.hr!==0){ o.iw=Math.round(H.iw*fx); o.ox=Math.round(H.ox*fx); }
+        else { o.ih=Math.round(H.ih*fy); o.oy=Math.round(H.oy*fy); }
+      }
+      if(free){ if(H.hr===-1) o.x=Math.round(H.x - dW); if(H.vr===-1) o.y=Math.round(H.y - dH); }
+    } else { // rognage : l'illustration (iw,ih) reste fixe, on bouge les bords de la fenêtre
+      let newW=H.w, newH=H.h, nox=H.ox, noy=H.oy, nx=H.x, ny=H.y;
+      if(H.hr===1){ newW=oclamp(H.w+dx, 24, H.ox+H.iw); }
+      else if(H.hr===-1){ const dL=oclamp(dx, H.ox, H.w-24); newW=H.w-dL; nox=H.ox-dL; nx=H.x+dL; }
+      if(H.vr===1){ newH=oclamp(H.h+dy, 24, H.oy+H.ih); }
+      else if(H.vr===-1){ const dT=oclamp(dy, H.oy, H.h-24); newH=H.h-dT; noy=H.oy-dT; ny=H.y+dT; }
+      o.w=Math.round(newW); o.h=Math.round(newH); o.ox=Math.round(nox); o.oy=Math.round(noy);
+      if(free){ o.x=Math.round(nx); o.y=Math.round(ny); }
+    }
+    objRender(); return;
+  }
+  if(objDrag){
+    const o=OBJ.objects[objDrag.idx]; if(!o) return;
+    if(objDrag.kind==='side'){
+      const doc=objectArea.querySelector('.ob-doc'); if(!doc) return;
+      const rect=doc.getBoundingClientRect(); const mid=rect.left+rect.width/2;
+      const ns=(e.clientX<mid)?'left':'right';
+      if(ns!==o.side){ if(!objDrag.pushed){ objPush(); objDrag.pushed=true; } o.side=ns; objDrag.moved=true; objRender(); }
+      return;
+    }
+    if(objDrag.kind!=='move') return;
+    const dx=e.clientX-objDrag.sx, dy=e.clientY-objDrag.sy;
+    if(Math.abs(dx)>2||Math.abs(dy)>2){
+      if(!objDrag.pushed){ objPush(); objDrag.pushed=true; }
+      objDrag.moved=true;
+      o.x=Math.max(0, Math.round(objDrag.ox+dx));
+      o.y=Math.max(0, Math.round(objDrag.oy+dy));
+      objRender();
+    }
+  }
+}
+function objMouseUp(){
+  // clic simple sur une zone de texte déjà sélectionnée (sans glisser) → on passe en écriture
+  if(objDrag && objDrag.isTextbox && objDrag.wasSel && !objDrag.moved && !objEditing){
+    objEditing=true; objRender(); focusSelTextbox();
+  }
+  objDrag=null; objHandle=null;
+}
+document.addEventListener('mousemove', objMouseMove);
+document.addEventListener('mouseup', objMouseUp);
+// clic dans le vide de la page : on désélectionne
+if(objectArea){ objectArea.addEventListener('mousedown', e=>{
+  if(!OBJ_MODE) return;
+  if(!e.target.closest('.ob-obj,.ob-free')){ if(objSel!==-1){ objSel=-1; objCrop=false; objEditing=false; objRender(); } }
+}); }
+// touche Suppr / Retour arrière : supprime l'objet sélectionné (sauf quand on écrit)
+document.addEventListener('keydown', e=>{
+  if(!OBJ_MODE || objEditing) return;
+  if(overlay.classList.contains('open')) return;
+  if((e.key==='Delete'||e.key==='Backspace') && objSel>=0){ e.preventDefault(); objDelete(); }
+});
+
+/* ---- insertion d'objets ---- */
+function objInsert(o){ objPush(); o.z=objMaxZ()+1; OBJ.objects.push(o); objSel=OBJ.objects.length-1; objCrop=false; objRender(); }
+function focusSelTextbox(){ const el=objectArea.querySelector('.ob-sel .ob-textbox'); if(el){ el.focus();
+  const r=document.createRange(); r.selectNodeContents(el); r.collapse(false); const s=getSelection(); s.removeAllRanges(); s.addRange(r); } }
+
+/* fausse fenêtre « Insérer une image » (explorateur de fichiers) */
+function openFileExplorer(startFolder, onPick){
+  let folder=startFolder||'Documents', picked=null;
+  modal.className='modal fx-modal';
+  modal.innerHTML=`
+   <div class="fx">
+    <div class="fx-win">
+      <div class="fx-title">🖼️ Insérer une image <span class="fx-dot"><i></i><i></i><i></i></span></div>
+      <div class="fx-addr"><span style="font-weight:800">📁</span><span class="fx-crumb" id="fxCrumb"></span></div>
+      <div class="fx-body">
+        <div class="fx-side" id="fxSide"></div>
+        <div class="fx-main" id="fxMain"></div>
+      </div>
+      <div class="fx-foot">
+        <span style="font-weight:800;font-size:.85rem;color:var(--muted)">Nom du fichier :</span>
+        <span class="fx-namebox" id="fxName">—</span>
+        <span class="fx-type">Images (*.png ; *.jpg)</span>
+        <button class="m-btn ghost" id="fxCancel" style="padding:9px 16px;font-size:.95rem">Annuler</button>
+        <button class="m-btn primary green" id="fxInsert" style="padding:9px 16px;font-size:.95rem">Insérer</button>
+      </div>
+    </div>
+   </div>`;
+  openOverlay();
+  const side=modal.querySelector('#fxSide'), main=modal.querySelector('#fxMain'),
+        crumb=modal.querySelector('#fxCrumb'), nameEl=modal.querySelector('#fxName');
+  function doInsert(){ if(!picked){ toast('Choisis d\'abord une image (clique dessus).'); return; } closeOverlay(); onPick(picked); }
+  function renderSide(){ side.innerHTML='';
+    FX_FOLDERS.forEach(([nm,ic])=>{ const b=document.createElement('button');
+      b.className='fx-folder'+(nm===folder?' active':'');
+      b.innerHTML='<span>'+ic+'</span> '+nm;
+      b.onclick=()=>{ folder=nm; picked=null; renderAll(); };
+      side.appendChild(b); }); }
+  function renderMain(){ main.innerHTML=''; crumb.textContent='Ce PC › '+folder; nameEl.textContent=picked?OB_IMAGES[picked].name:'—';
+    const files=(folder==='Images')?FX_IMAGES:[];
+    if(!files.length){ main.innerHTML='<div class="fx-empty">📂 Ce dossier est vide.<br>Aucune image ici… cherche dans un autre dossier à gauche !</div>'; return; }
+    const grid=document.createElement('div'); grid.className='fx-grid';
+    files.forEach(key=>{ const meta=OB_IMAGES[key];
+      const f=document.createElement('button'); f.className='fx-file'+(picked===key?' sel':'');
+      f.innerHTML='<span class="fx-thumb" style="background:linear-gradient(135deg,'+meta.g[0]+','+meta.g[1]+')">'+meta.emoji+'</span><span class="fx-fn">'+meta.name+'</span>';
+      f.onclick=()=>{ picked=key; nameEl.textContent=meta.name; grid.querySelectorAll('.fx-file').forEach(x=>x.classList.remove('sel')); f.classList.add('sel'); };
+      f.ondblclick=()=>{ picked=key; doInsert(); };
+      grid.appendChild(f); });
+    main.appendChild(grid); }
+  function renderAll(){ renderSide(); renderMain(); }
+  renderAll();
+  modal.querySelector('#fxCancel').onclick=closeOverlay;
+  modal.querySelector('#fxInsert').onclick=doInsert;
+}
+function openLibrary(onPick){
+  modal.className='modal';
+  modal.innerHTML=`<span class="m-emoji">🗂️</span><h2>Bibliothèque d'images</h2>
+    <p>Clique sur une image de la <b>bibliothèque</b> pour l'ajouter à ton document.</p>
+    <div class="fx-grid" id="libGrid" style="margin:6px 0 16px"></div>
+    <div class="m-actions"><button class="m-btn ghost" id="libCancel">Annuler</button></div>`;
+  openOverlay();
+  const grid=modal.querySelector('#libGrid');
+  FX_IMAGES.forEach(key=>{ const meta=OB_IMAGES[key];
+    const f=document.createElement('button'); f.className='fx-file';
+    f.innerHTML='<span class="fx-thumb" style="background:linear-gradient(135deg,'+meta.g[0]+','+meta.g[1]+')">'+meta.emoji+'</span><span class="fx-fn">'+meta.name.replace(/\.\w+$/,'')+'</span>';
+    f.onclick=()=>{ closeOverlay(); onPick(key); };
+    grid.appendChild(f); });
+  modal.querySelector('#libCancel').onclick=closeOverlay;
+}
+function openShapePicker(onPick){
+  const shapes=[['rect','Rectangle','▭'],['ellipse','Cercle','⬭'],['triangle','Triangle','▲'],['star','Étoile','★'],['arrow','Flèche','➜']];
+  modal.className='modal';
+  modal.innerHTML=`<span class="m-emoji">⬛</span><h2>Insérer une forme</h2>
+    <p>Choisis la <b>forme</b> à ajouter dans ton document.</p>
+    <div class="fx-grid" id="shGrid" style="margin:6px 0 16px"></div>
+    <div class="m-actions"><button class="m-btn ghost" id="shCancel">Annuler</button></div>`;
+  openOverlay();
+  const grid=modal.querySelector('#shGrid');
+  shapes.forEach(([k,nm,gl])=>{ const b=document.createElement('button'); b.className='fx-file';
+    b.innerHTML='<span class="fx-thumb" style="background:#eef4ff;color:var(--blue-d);font-size:1.7rem">'+gl+'</span><span class="fx-fn">'+nm+'</span>';
+    b.onclick=()=>{ closeOverlay(); onPick(k); };
+    grid.appendChild(b); });
+  modal.querySelector('#shCancel').onclick=closeOverlay;
+}
+
+/* ---- boutons de la barre d'outils Objets ---- */
+document.getElementById('ob-image').onclick   =()=>{ if(!OBJ_MODE) return; openFileExplorer('Documents', img=>objInsert(obImg(img))); };
+document.getElementById('ob-lib').onclick     =()=>{ if(!OBJ_MODE) return; openLibrary(img=>objInsert(obImg(img))); };
+document.getElementById('ob-shape').onclick   =()=>{ if(!OBJ_MODE) return; openShapePicker(sh=>objInsert(obShape(sh))); };
+document.getElementById('ob-textbox').onclick =()=>{ if(!OBJ_MODE) return; objInsert(obText('')); objEditing=true; objRender(); setTimeout(focusSelTextbox,20); };
+document.getElementById('ob-wrap').onchange=e=>{
+  const v=e.target.value;
+  if(objSel<0){ toast('Choisis d\'abord un objet : clique dessus 🖱️'); reflectObjToolbar(); return; }
+  const o=OBJ.objects[objSel]; objPush(); o.wrap=v;
+  if(v==='behind'||v==='front'){ if(o.x==null)o.x=140; if(o.y==null)o.y=50; }
+  if((v==='square'||v==='tight') && !o.side) o.side='right';
+  objCrop=false; objEditing=false; objRender();
+};
+document.getElementById('ob-crop').onclick=()=>{
+  if(objSel<0){ toast('Choisis d\'abord une image 🖱️'); return; }
+  const o=OBJ.objects[objSel];
+  if(o.type!=='image'){ toast('Le rognage marche seulement sur les images 🖼️'); return; }
+  objEditing=false; objCrop=!objCrop; objRender();
+  if(objCrop) toast('✂️ Mode rognage : tire une poignée foncée (haut, bas, gauche, droite ou coin) vers l\'intérieur.');
+};
+document.getElementById('ob-front').onclick=()=>{ if(objSel<0){ toast('Choisis d\'abord un objet 🖱️'); return; } objPush(); OBJ.objects[objSel].z=objMaxZ()+1; objRender(); };
+document.getElementById('ob-back').onclick =()=>{ if(objSel<0){ toast('Choisis d\'abord un objet 🖱️'); return; } objPush(); OBJ.objects[objSel].z=objMinZ()-1; objRender(); };
+document.getElementById('ob-delete').onclick=()=>{ if(!OBJ_MODE) return; objDelete(); };
+
+/* ---- évaluation de la scène (même esprit que le moteur texte / tableau) ---- */
+// Clé d'appariement : image = type+fichier, forme = type+forme, zone de texte = type seul
+// (le texte d'une zone est comparé à part, pour qu'on puisse l'écrire/le corriger sans casser l'appariement).
+function objMatchKey(o){ if(o.type==='image') return 'image|'+o.img; if(o.type==='shape') return 'shape|'+o.shape; return 'textbox'; }
+function objNormText(o){ return (o.text||'').trim().toLowerCase().replace(/\s+/g,' '); }
+function objRankMap(arr){ const list=arr.filter(o=>o.wrap!=='inline').slice().sort((a,b)=>(a.z||0)-(b.z||0));
+  const m={}; list.forEach((o,r)=>{ m[objMatchKey(o)]=r; }); return m; }
+function objAspectClose(r1,r2){ return Math.abs(r1/r2-1)<0.13; }
+function objCropSide(o,side){
+  const iw=o.iw||o.w, ih=o.ih||o.h, ox=o.ox||0, oy=o.oy||0;
+  const l=-ox, t=-oy, r=(ox+iw)-o.w, b=(oy+ih)-o.h;
+  if(side==='left') return l>8; if(side==='top') return t>8;
+  if(side==='right') return r>8; if(side==='bottom') return b>8;
+  return l>8||t>8||r>8||b>8;                            // 'any'
+}
+function objFreeRect(o){ return {x:o.x||0,y:o.y||0,w:o.w,h:o.h}; }
+function objOverlap(a,b){ const ox=Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x); const oy=Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y); return ox>10 && oy>10; }
+// Évalue une scène (cur) contre un but, à partir d'un état de départ. opts: {checkOrder, requireResize, requireCrop, requireMove, noOverlap}
+function objSceneEval(start, goal, opts, cur){
+  opts=opts||{};
+  let missing=0, extra=0;
+  const cmp=(gv,sv,cv)=>{ if(sv!==undefined){ if(gv!==sv){ if(cv!==gv) missing++; } else { if(cv!==sv) extra++; } } else { if(cv!==gv) missing++; } };
+  const startKeys=start.map(objMatchKey), goalKeys=goal.map(objMatchKey);
+  const used=cur.map(()=>false);
+  const gR=opts.checkOrder?objRankMap(goal):null, sR=opts.checkOrder?objRankMap(start):null, cR=opts.checkOrder?objRankMap(cur):null;
+  goal.forEach(g=>{
+    const mk=objMatchKey(g);
+    const ci=cur.findIndex((o,i)=>!used[i] && objMatchKey(o)===mk);
+    if(ci<0){ missing++; return; }
+    used[ci]=true; const c=cur[ci];
+    const s=start.find(o=>objMatchKey(o)===mk) || null;
+    cmp(g.wrap, s?s.wrap:undefined, c.wrap);
+    if(g.type==='textbox') cmp(objNormText(g), s?objNormText(s):undefined, objNormText(c));
+    if(opts.checkOrder){ const gr=gR[mk], sr=sR[mk], cr=cR[mk];
+      if(gr!==sr){ if(cr!==gr) missing++; } else { if(cr!==sr) extra++; } }
+  });
+  cur.forEach((o,i)=>{ if(used[i]) return; const mk=objMatchKey(o);
+    if(startKeys.includes(mk) && !goalKeys.includes(mk)) missing++;   // objet à supprimer encore présent
+    else extra++; });                                                 // objet ajouté en trop
+  if(opts.requireResize){
+    // on mesure l'ILLUSTRATION (iw,ih) et pas le cadre : ainsi le rognage ne « défait » pas l'agrandissement
+    const c=cur.find(o=>o.type==='image'), s=start.find(o=>o.type==='image');
+    const bW=s?(s.iw||s.w):OB_DEF_W, bH=s?(s.ih||s.h):115, m=opts.requireResize.mode;
+    let ok=false;
+    if(c){ const cw=c.iw||c.w, ch=c.ih||c.h, ar=objAspectClose(cw/ch, bW/bH);
+      if(m==='corner-grow')        ok = cw>bW*1.2 && ar;
+      else if(m==='corner-shrink') ok = cw<bW*0.8 && ar;
+      else if(m==='side')          ok = Math.abs(cw-bW)>bW*0.18 && Math.abs(ch-bH)<bH*0.1;
+      else if(m==='updown')        ok = Math.abs(ch-bH)>bH*0.18 && Math.abs(cw-bW)<bW*0.1;
+      else                         ok = cw>=bW*1.25; }
+    if(!ok) missing++;
+  }
+  if(opts.requireCrop){ const c=cur.find(o=>o.type==='image'); if(!c||!objCropSide(c, opts.requireCrop.side||'any')) missing++; }
+  if(opts.requireMove){ const m=opts.requireMove; const c=cur.find(o=> m.kind? o.type===m.kind : (o.wrap==='behind'||o.wrap==='front'));
+    let ok=!!c; if(c){ if(m.minX!=null && (c.x||0)<m.minX) ok=false; if(m.minY!=null && (c.y||0)<m.minY) ok=false; }
+    if(!ok) missing++; }
+  if(opts.noOverlap){ const fr=cur.filter(o=>o.wrap==='behind'||o.wrap==='front'); let bad=false;
+    for(let i=0;i<fr.length&&!bad;i++) for(let j=i+1;j<fr.length;j++){ if(objOverlap(objFreeRect(fr[i]),objFreeRect(fr[j]))){ bad=true; break; } }
+    if(bad) missing++; }
+  return tableMkStatus(missing,extra);
+}
+function objectEvaluate(){ const st=currentStep; return objSceneEval((st.startScene||{objects:[]}).objects, st.goalScene.objects, st, (OBJ||{objects:[]}).objects); }
+
+/* ---- bascule du mode Objets ---- */
+function setObjectMode(on){
+  OBJ_MODE=on;
+  objectToolbar.style.display = on?'':'none';
+  objectArea.style.display = on?'':'none';
+  if(on){ editor.style.display='none'; tableArea.style.display='none'; tableToolbar.style.display='none'; }
+}
+function startObjectStep(){
+  OBJ=cloneScene(currentStep.startScene); objSel=-1; objCrop=false; objEditing=false; objHist=[]; objRedoStack=[];
+  objRender();
+}
+// Évite que les clics sur la barre Objets ne perdent la sélection en cours
+['ob-image','ob-lib','ob-shape','ob-textbox','ob-crop','ob-front','ob-back','ob-delete']
+  .forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('mousedown', e=>e.preventDefault()); });
 
 /* =========================================================
    11. INIT
