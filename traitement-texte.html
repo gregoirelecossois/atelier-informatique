@@ -3737,12 +3737,12 @@ function objDelete(){ if(objSel<0||!OBJ.objects[objSel]){ toast('Choisis d\'abor
 function objSelTextbox(){ return (OBJ_MODE && objSel>=0 && OBJ.objects[objSel] && OBJ.objects[objSel].type==='textbox') ? OBJ.objects[objSel] : null; }
 function objFormatToggle(attr){
   const o=objSelTextbox();
-  if(!o){ toast('Choisis d\'abord une zone de texte 🔡 (clique dessus), puis utilise les boutons du haut.'); return; }
+  if(!o){ toast('Les boutons du haut sont désactivés sur le texte support pour ce niveau.'); return; }
   objPush(); o[attr]=!o[attr]; objRender();
 }
 function objFormatValue(attr,value){
   const o=objSelTextbox();
-  if(!o){ toast('Choisis d\'abord une zone de texte 🔡 (clique dessus), puis utilise les boutons du haut.'); return; }
+  if(!o){ toast('Les boutons du haut sont désactivés sur le texte support pour ce niveau.'); return; }
   objPush(); o[attr]=value; objRender();
 }
 
