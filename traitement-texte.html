@@ -605,10 +605,6 @@
         <button class="t-btn" id="ob-front" title="Mettre au premier plan (devant)">⏫</button>
         <button class="t-btn" id="ob-back" title="Mettre à l'arrière-plan (derrière)">⏬</button>
       </div>
-      <span class="divider"></span>
-      <div class="tgroup">
-        <button class="t-btn t-wide" id="ob-delete" title="Supprimer l'objet sélectionné">🗑️ Supprimer</button>
-      </div>
     </div>
     <div class="canvas">
       <div class="page">
@@ -1688,7 +1684,7 @@ const LEVEL7_DEFS = [
 
   { kind:'mission', id:'ob-redim-coins', label:'Mission 3', icon:'⤢', objectMode:true,
     title:'Agrandir par les coins (mêmes proportions)',
-    intro:`Pour <b>changer la taille</b>, il faut d'abord <b>sélectionner</b> l'image (un clic), puis <b>cliquer-glisser une poignée</b>. Les <b>poignées rondes des 4 coins</b> agrandissent <b>sans déformer</b> (l'image garde ses proportions). Agrandis cette image par un coin.`,
+    intro:`Pour <b>changer la taille</b>, il faut d'abord <b>sélectionner</b> l'image (un clic), puis <b>cliquer-glisser une poignée</b>. Les <b>poignées rondes des 4 coins</b> agrandissent <b>sans déformer</b> (l'image garde ses proportions). Agrandis cette image par un coin. ⚠️ Si tu tires une poignée <b>orange du milieu</b> et que tu <b>déformes</b> l'image, tu devras recommencer.`,
     how:[`<b>Clique</b> une fois sur l'image : un cadre et des poignées apparaissent (elle est sélectionnée).`,
          `Attrape un <b>rond bleu de coin</b> et <b>glisse vers l'extérieur</b> (essaie même le coin du haut !).`,
          `L'image grandit sans se déformer. Valide !`],
@@ -1700,7 +1696,7 @@ const LEVEL7_DEFS = [
 
   { kind:'mission', id:'ob-retrecir', label:'Mission 4', icon:'⤡', objectMode:true,
     title:'Rétrécir une image',
-    intro:`Cette image est trop <b>grande</b>. On va la <b>rétrécir</b> : même geste, mais on tire le coin <b>vers l'intérieur</b>.`,
+    intro:`Cette image est trop <b>grande</b>. On va la <b>rétrécir</b> : même geste, mais on tire le coin <b>vers l'intérieur</b>. ⚠️ Sers-toi d'un <b>rond de coin</b> (mêmes proportions) : si tu déformes l'image avec une poignée orange, tu devras recommencer.`,
     how:[`<b>Clique</b> sur l'image pour la sélectionner.`,
          `Attrape un <b>rond de coin</b> et <b>glisse vers l'intérieur</b> de l'image.`,
          `Quand elle est bien plus petite, valide !`],
@@ -1736,25 +1732,25 @@ const LEVEL7_DEFS = [
 
   { kind:'mission', id:'ob-rogner-droite', label:'Mission 7', icon:'🔲', objectMode:true,
     title:'Rogner à droite',
-    intro:`<b>Rogner</b>, c'est <b>couper un bord</b> d'une image (différent de rétrécir !). Comme dans Word, on peut rogner par le <b>haut, le bas, la gauche ou la droite</b>. Coupe le <b>bord droit</b> de cette image.`,
+    intro:`<b>Rogner</b>, c'est <b>couper un bord</b> d'une image (différent de rétrécir !). Comme dans Word, on peut rogner par le <b>haut, le bas, la gauche ou la droite</b>. Coupe le <b>bord droit</b> de cette image. ⚠️ Attention à bien rogner <b>à droite</b> : si tu coupes le haut, le bas ou la gauche, tu devras recommencer.`,
     how:[`<b>Clique</b> sur l'image, puis sur le bouton <b>🔲 Rogner</b> : des poignées <b>foncées</b> apparaissent sur les bords.`,
          `Attrape la poignée foncée du <b>milieu droit</b> et <b>glisse vers l'intérieur</b>.`,
          `Le bord droit est coupé. Valide !`],
     startScene:obScene([obImg('plage',{wrap:'front',x:140,y:40,w:200,h:140,iw:200,ih:140})]),
     goalScene:obScene([obImg('plage',{wrap:'front',x:140,y:40,w:200,h:140,iw:200,ih:140})]),
-    requireCrop:{side:'right'},
+    requireCrop:{side:'right'}, noResize:true,
     hint:{target:'ob-crop', text:`Sélectionne l'image, clique <b>🔲 Rogner</b>, puis tire la poignée foncée du <b>milieu droit</b> vers l'intérieur.`},
     expect:`rogner le bord droit de l'image` },
 
   { kind:'mission', id:'ob-rogner-haut', label:'Mission 8', icon:'🔲', objectMode:true,
     title:'Rogner en haut',
-    intro:`On rogne maintenant par un <b>autre côté</b> : coupe le <b>bord du haut</b> de l'image.`,
+    intro:`On rogne maintenant par un <b>autre côté</b> : coupe le <b>bord du haut</b> de l'image. ⚠️ Attention à bien rogner <b>en haut</b> : si tu coupes le bas, la gauche ou la droite, tu devras recommencer.`,
     how:[`<b>Clique</b> sur l'image, puis sur <b>🔲 Rogner</b>.`,
          `Attrape la poignée foncée du <b>milieu en haut</b> et <b>glisse vers le bas</b> (vers l'intérieur).`,
          `Le haut est coupé. Valide !`],
     startScene:obScene([obImg('montagne',{wrap:'front',x:140,y:40,w:200,h:150,iw:200,ih:150})]),
     goalScene:obScene([obImg('montagne',{wrap:'front',x:140,y:40,w:200,h:150,iw:200,ih:150})]),
-    requireCrop:{side:'top'},
+    requireCrop:{side:'top'}, noResize:true,
     hint:{target:'ob-crop', text:`Sélectionne l'image, clique <b>🔲 Rogner</b>, puis tire la poignée foncée du <b>haut</b> vers le bas.`},
     expect:`rogner le bord du haut de l'image` },
 
@@ -1768,7 +1764,7 @@ const LEVEL7_DEFS = [
     requireResize:{mode:'corner-grow'}, requireCrop:{side:'any'},
     objScenes:[
       {goal:()=>[obImg('gateau')]},
-      {goal:()=>[obImg('gateau')], requireResize:{mode:'corner-grow'}},
+      {goal:()=>[obImg('gateau')], requireResize:{mode:'corner-grow'}, noCrop:true},
       {goal:()=>[obImg('gateau')], requireCrop:{side:'any'}}],
     replayRefs:['ob-img-fichier','ob-redim-coins','ob-rogner-droite'],
     expect:`insérer gateau.jpg, l'agrandir par un coin, puis la rogner` },
@@ -1781,6 +1777,7 @@ const LEVEL7_DEFS = [
          `Regarde le texte s'enrouler autour, puis valide !`],
     startScene:obScene([obImg('chat',{wrap:'inline'})]),
     goalScene:obScene([obImg('chat',{wrap:'square',side:'right'})]),
+    noModifyImage:true,
     hint:{target:'ob-wrap', text:`Sélectionne l'image, puis menu <b>Habillage → Carré</b>.`},
     expect:`mettre l'habillage « Carré » autour de l'image` },
 
@@ -1792,6 +1789,7 @@ const LEVEL7_DEFS = [
          `Valide ta mission !`],
     startScene:obScene([obImg('chat',{wrap:'square',side:'right'})]),
     goalScene:obScene([obImg('chat',{wrap:'tight',side:'right'})]),
+    noModifyImage:true,
     hint:{target:'ob-wrap', text:`Sélectionne l'image, puis menu <b>Habillage → Rapproché</b>.`},
     expect:`mettre l'habillage « Rapproché » autour de l'image` },
 
@@ -1803,6 +1801,7 @@ const LEVEL7_DEFS = [
          `Tu peux ensuite la <b>déplacer</b> en la faisant glisser. Valide !`],
     startScene:obScene([obImg('chat',{wrap:'inline'})]),
     goalScene:obScene([obImg('chat',{wrap:'behind',x:150,y:60})]),
+    noModifyImage:true,
     hint:{target:'ob-wrap', text:`Sélectionne l'image, puis menu <b>Habillage → Derrière le texte</b>.`},
     expect:`mettre l'image derrière le texte` },
 
@@ -1814,6 +1813,7 @@ const LEVEL7_DEFS = [
          `Tu peux la <b>déplacer</b> où tu veux en la faisant glisser. Valide !`],
     startScene:obScene([obImg('chat',{wrap:'behind',x:150,y:60})]),
     goalScene:obScene([obImg('chat',{wrap:'front',x:150,y:60})]),
+    noModifyImage:true,
     hint:{target:'ob-wrap', text:`Sélectionne l'image, puis menu <b>Habillage → Devant le texte</b>.`},
     expect:`mettre l'image devant le texte` },
 
@@ -1827,8 +1827,8 @@ const LEVEL7_DEFS = [
     requireResize:{mode:'corner-grow'},
     objScenes:[
       {goal:()=>[obImg('chien')]},
-      {goal:()=>[obImg('chien',{wrap:'square',side:'right'})]},
-      {goal:()=>[obImg('chien',{wrap:'square',side:'right'})], requireResize:{mode:'corner-grow'}}],
+      {goal:()=>[obImg('chien',{wrap:'square',side:'right'})], noModifyImage:true},
+      {goal:()=>[obImg('chien',{wrap:'square',side:'right'})], requireResize:{mode:'corner-grow'}, noCrop:true}],
     replayRefs:['ob-img-fichier','ob-hab-carre','ob-redim-coins'],
     expect:`insérer chien.jpg, l'habiller en Carré et l'agrandir par un coin` },
 
@@ -1875,7 +1875,18 @@ const LEVEL7_DEFS = [
     hint:{target:'ob-wrap', text:`Sélectionne la zone de texte, puis menu <b>Habillage → Carré</b>.`},
     expect:`mettre la zone de texte en habillage « Carré »` },
 
-  { kind:'mission', id:'ob-ordre-devant', label:'Mission 17', icon:'⏫', objectMode:true,
+  { kind:'mission', id:'ob-zone-gras', label:'Mission 17', icon:'G', objectMode:true,
+    title:'Mettre en forme le texte d\'une zone',
+    intro:`La <b>barre du haut</b> (G, I, S, police, taille, couleur, surlignage…) marche aussi sur le texte d'une <b>zone de texte</b> ! Ici, mets le texte de la zone en <b>gras</b>.`,
+    how:[`<b>Clique une fois</b> sur la zone de texte pour la <b>sélectionner</b> (cadre + poignées).`,
+         `En haut, clique sur le bouton <b>G</b> (Gras) — ou appuie sur <b>Ctrl + B</b>.`,
+         `Le texte devient bien noir et épais. Valide !`],
+    startScene:obScene([obText('Mon joli chat',{wrap:'front',x:96,y:56,w:184,h:60})]),
+    goalScene:obScene([obText('Mon joli chat',{wrap:'front',x:96,y:56,w:184,h:60,b:true})]),
+    hint:{target:'btn-bold', text:`Clique la zone de texte pour la sélectionner, puis clique sur le bouton <b>G</b> tout en haut.`},
+    expect:`mettre le texte de la zone de texte en gras` },
+
+  { kind:'mission', id:'ob-ordre-devant', label:'Mission 18', icon:'⏫', objectMode:true,
     title:'Mettre un objet devant',
     intro:`Quand deux objets se <b>chevauchent</b>, on choisit lequel passe <b>devant</b>. Ici l'image du <b>chat</b> est cachée derrière la fleur. Fais passer le <b>chat devant</b>.`,
     how:[`Clique sur l'image du <b>chat</b> (sur la partie qui dépasse à gauche) pour la sélectionner.`,
@@ -1887,7 +1898,7 @@ const LEVEL7_DEFS = [
     hint:{target:'ob-front', text:`Clique sur le <b>chat</b> (partie visible à gauche), puis sur le bouton <b>⏫</b>.`},
     expect:`faire passer l'image du chat devant la fleur` },
 
-  { kind:'mission', id:'ob-ordre-derriere', label:'Mission 18', icon:'⏬', objectMode:true,
+  { kind:'mission', id:'ob-ordre-derriere', label:'Mission 19', icon:'⏬', objectMode:true,
     title:'Envoyer un objet derrière',
     intro:`On répète, mais dans l'autre sens : envoyer un objet <b>derrière</b> les autres. Le <b>gâteau</b> cache le chien. Envoie le <b>gâteau à l'arrière-plan</b>.`,
     how:[`Clique sur l'image du <b>gâteau</b> (celle qui est devant) pour la sélectionner.`,
@@ -1899,32 +1910,32 @@ const LEVEL7_DEFS = [
     hint:{target:'ob-back', text:`Clique sur le <b>gâteau</b>, puis sur le bouton <b>⏬</b>.`},
     expect:`envoyer l'image du gâteau derrière le chien` },
 
-  { kind:'mission', id:'ob-supprimer', label:'Mission 19', icon:'🗑️', objectMode:true,
+  { kind:'mission', id:'ob-supprimer', label:'Mission 20', icon:'🗑️', objectMode:true,
     title:'Supprimer un objet',
-    intro:`On peut aussi <b>enlever</b> un objet dont on ne veut plus. Il faut d'abord le <b>sélectionner</b> (un clic), puis le supprimer. Supprime cette <b>étoile</b>.`,
+    intro:`On peut aussi <b>enlever</b> un objet dont on ne veut plus. Il faut d'abord le <b>sélectionner</b> (un clic), puis appuyer sur la touche <b>Suppr</b> du clavier. Supprime cette <b>étoile</b>.`,
     how:[`<b>Clique</b> une fois sur l'étoile pour la <b>sélectionner</b> (cadre + poignées).`,
-         `Clique sur le bouton <b>🗑️ Supprimer</b> (ou appuie sur la touche <b>Suppr</b>).`,
+         `Appuie sur la touche <b>Suppr</b> de ton clavier.`,
          `L'étoile disparaît. Valide !`],
     startScene:obScene([obShape('star',{wrap:'front',x:170,y:40})]),
     goalScene:obScene([]),
-    hint:{target:'ob-delete', text:`Clique l'étoile pour la sélectionner, puis <b>🗑️ Supprimer</b> (ou touche <b>Suppr</b>).`},
+    hint:{target:'objectArea', text:`Clique l'étoile pour la sélectionner, puis appuie sur la touche <b>Suppr</b> du clavier.`},
     expect:`sélectionner l'étoile puis la supprimer` },
 
-  { kind:'mission', id:'ob-supprimer-un', label:'Mission 20', icon:'🗑️', objectMode:true,
+  { kind:'mission', id:'ob-supprimer-un', label:'Mission 21', icon:'🗑️', objectMode:true,
     title:'Supprimer le bon objet',
-    intro:`Il y a <b>deux objets</b>. On veut garder le <b>chat</b> et supprimer <b>seulement la fleur</b>. Fais bien attention à <b>cliquer sur la fleur</b> avant de supprimer !`,
+    intro:`Il y a <b>deux objets</b>. On veut garder le <b>chat</b> et supprimer <b>seulement la fleur</b>. Fais bien attention à <b>cliquer sur la fleur</b> avant d'appuyer sur <b>Suppr</b> !`,
     how:[`<b>Clique</b> sur la <b>fleur 🌸</b> pour la sélectionner (pas sur le chat !).`,
-         `Clique sur <b>🗑️ Supprimer</b> (ou touche <b>Suppr</b>).`,
+         `Appuie sur la touche <b>Suppr</b> de ton clavier.`,
          `Le chat reste, la fleur disparaît. Valide !`],
     startScene:obScene([ obImg('chat',{wrap:'front',x:40,y:34}), obImg('fleur',{wrap:'front',x:280,y:60}) ]),
     goalScene:obScene([ obImg('chat',{wrap:'front',x:40,y:34}) ]),
-    hint:{target:'ob-delete', text:`Clique sur la <b>fleur</b> (à droite), puis <b>🗑️ Supprimer</b>. Ne touche pas au chat !`},
+    hint:{target:'objectArea', text:`Clique sur la <b>fleur</b> (à droite), puis appuie sur <b>Suppr</b>. Ne touche pas au chat !`},
     expect:`supprimer seulement la fleur et garder le chat` },
 
   { kind:'test', id:'ob-jalon3', label:'Jalon final', icon:'🏆', objectMode:true,
     title:'Le maquettiste de génie !',
     intro:`Dernier défi ! Les 3 objets sont <b>empilés au même endroit</b>. À toi de faire une mise en page <b>bien rangée</b>. Voici les <b>3 choses</b> à faire :`,
-    tasks:[`<b>Écris</b> <b>La fusée</b> dans la zone de texte (clique <b>dedans</b> pour écrire).`,
+    tasks:[`<b>Écris</b> <b>La fusée</b> dans la zone de texte, puis mets ce texte en <b>gras</b> (sélectionne la zone et clique sur <b>G</b>).`,
            `<b>Agrandis</b> l'image de la fusée par un <b>coin</b> (sans la déformer).`,
            `<b>Range</b> les 3 objets (image, étoile, zone de texte) pour qu'ils ne se <b>chevauchent plus</b> : sélectionne chacun et <b>glisse-le</b> à un endroit différent.`],
     startScene:obScene([
@@ -1932,14 +1943,14 @@ const LEVEL7_DEFS = [
       obShape('star',{wrap:'front',x:96,y:60,z:2}),
       obText('',{wrap:'front',x:80,y:78,z:3}) ]),
     goalScene:obScene([
-      obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front'}) ]),
+      obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front',b:true}) ]),
     requireResize:{mode:'corner-grow'}, noOverlap:true,
     objScenes:[
-      {goal:()=>[obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front'})]},
-      {goal:()=>[obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front'})], requireResize:{mode:'corner-grow'}},
-      {goal:()=>[obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front'})], noOverlap:true}],
-    replayRefs:['ob-zone','ob-redim-coins','ob-deplacer-zone'],
-    expect:`écrire « La fusée », agrandir l'image par un coin, et ranger les 3 objets sans qu'ils se chevauchent` }
+      {goal:()=>[obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front',b:true})]},
+      {goal:()=>[obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front',b:true})], requireResize:{mode:'corner-grow'}},
+      {goal:()=>[obImg('fusee',{wrap:'front'}), obShape('star',{wrap:'front'}), obText('La fusée',{wrap:'front',b:true})], noOverlap:true}],
+    replayRefs:['ob-zone','ob-zone-gras','ob-redim-coins'],
+    expect:`écrire « La fusée » en gras, agrandir l'image par un coin, et ranger les 3 objets sans qu'ils se chevauchent` }
 ];
 
 /* ---------- Table des niveaux ---------- */
@@ -2022,13 +2033,13 @@ const LEVELS = [
     defs:LEVEL6_DEFS },
   { n:7, title:'Images & Objets', subtitle:'images & objets', objectMode:true,
     paras:[ "Images & Objets" ],
-    note:`Nouveau pouvoir : les <b>images et les objets</b> ! Tu vas <b>insérer</b> des images (fichier ou bibliothèque), les <b>agrandir/rétrécir</b> (coins = mêmes proportions ; côtés = déforme), les <b>rogner</b> par chaque bord, choisir l'<b>habillage</b> du texte, ajouter des <b>formes</b> et des <b>zones de texte</b>, les <b>déplacer</b>, gérer l'<b>ordre</b> (devant/derrière) et <b>supprimer</b> ce dont tu ne veux plus. Astuce : un <b>clic</b> sélectionne, <b>glisser une poignée</b> redimensionne, <b>cliquer dans une zone de texte</b> permet d'écrire.`,
+    note:`Nouveau pouvoir : les <b>images et les objets</b> ! Tu vas <b>insérer</b> des images (fichier ou bibliothèque), les <b>agrandir/rétrécir</b> (coins = mêmes proportions ; côtés = déforme), les <b>rogner</b> par chaque bord, choisir l'<b>habillage</b> du texte, ajouter des <b>formes</b> et des <b>zones de texte</b>, les <b>déplacer</b>, gérer l'<b>ordre</b> (devant/derrière) et <b>supprimer</b> ce dont tu ne veux plus (touche <b>Suppr</b>). Astuce : un <b>clic</b> sélectionne, <b>glisser une poignée</b> redimensionne, <b>cliquer dans une zone de texte</b> permet d'écrire, et la barre du haut (<b>G</b>, <b>I</b>, <b>S</b>, police, taille, couleur…) met en forme le texte d'une zone de texte sélectionnée.`,
     newTools:[
       {g:'🖼️', n:'Insérer une image (fichier)'},{g:'🗂️', n:'Image (bibliothèque)'},
       {g:'⬛', n:'Insérer une forme'},{g:'🔡', n:'Insérer une zone de texte'},
       {g:'⤢', n:'Agrandir / rétrécir / déformer'},{g:'🔲', n:'Rogner (4 côtés)'},
       {g:'↔️', n:'Habillage du texte'},{g:'⏫', n:'Ordre (devant / derrière)'},
-      {g:'✋', n:'Déplacer un objet'},{g:'🗑️', n:'Supprimer un objet'}
+      {g:'✋', n:'Déplacer un objet'},{g:'Suppr', n:'Supprimer un objet (touche du clavier)'}
     ],
     defs:LEVEL7_DEFS }
 ];
@@ -2337,6 +2348,7 @@ function needRange(){
   return false;
 }
 function toggleAttr(attr){
+  if(OBJ_MODE){ objFormatToggle(attr); return; }
   if(TABLE_MODE){ tFormat(attr); return; }
   if(needRange()) return;
   pushHistory();
@@ -2347,6 +2359,7 @@ function toggleAttr(attr){
   applyAndRestore();
 }
 function setValue(attr,value){
+  if(OBJ_MODE){ objFormatValue(attr,value); return; }
   if(TABLE_MODE){ tCellSet(attr,value); return; }
   if(needRange()) return;
   pushHistory();
@@ -2355,6 +2368,7 @@ function setValue(attr,value){
   applyAndRestore();
 }
 function setAlign(value){
+  if(OBJ_MODE){ objFormatValue('align',value); return; }
   if(TABLE_MODE){ tCellSet('align',value); return; }
   const paras=new Set();
   if(curSel && curSel.type==='range'){
@@ -2468,6 +2482,7 @@ document.addEventListener('keydown', e=>{
   else if(k==='u') attr='u';
   else return;
   e.preventDefault();
+  if(OBJ_MODE){ objFormatToggle(attr); return; }
   readDomSelection();
   toggleAttr(attr);
 });
@@ -3718,6 +3733,19 @@ function objRedo(){ if(!objRedoStack.length) return; objHist.push(cloneScene(OBJ
 function objDelete(){ if(objSel<0||!OBJ.objects[objSel]){ toast('Choisis d\'abord un objet à supprimer : clique dessus 🖱️'); return; }
   objPush(); OBJ.objects.splice(objSel,1); objSel=-1; objCrop=false; objEditing=false; objRender(); }
 
+/* ---- mise en forme du texte d'une ZONE DE TEXTE (barre du haut : G/I/S, police, taille, couleur, surlignage) ---- */
+function objSelTextbox(){ return (OBJ_MODE && objSel>=0 && OBJ.objects[objSel] && OBJ.objects[objSel].type==='textbox') ? OBJ.objects[objSel] : null; }
+function objFormatToggle(attr){
+  const o=objSelTextbox();
+  if(!o){ toast('Choisis d\'abord une zone de texte 🔡 (clique dessus), puis utilise les boutons du haut.'); return; }
+  objPush(); o[attr]=!o[attr]; objRender();
+}
+function objFormatValue(attr,value){
+  const o=objSelTextbox();
+  if(!o){ toast('Choisis d\'abord une zone de texte 🔡 (clique dessus), puis utilise les boutons du haut.'); return; }
+  objPush(); o[attr]=value; objRender();
+}
+
 /* ---- formes en SVG ---- */
 function obSvg(inner){ return '<svg class="ob-shape-el" viewBox="0 0 100 100" preserveAspectRatio="none">'+inner+'</svg>'; }
 function shapeMarkup(shape, fill){
@@ -3736,7 +3764,14 @@ function mkIllus(meta,o){
   il.style.left=(o.ox||0)+'px'; il.style.top=(o.oy||0)+'px';
   il.style.background='linear-gradient(135deg,'+meta.g[0]+','+meta.g[1]+')';
   const em=document.createElement('span'); em.className='em';
-  em.style.fontSize=(Math.max(16,Math.min(o.iw||o.w,o.ih||o.h)*0.5))+'px'; em.textContent=meta.emoji;
+  // L'émoji REMPLIT le cadre : il garde ses proportions par les coins, mais s'étire/s'aplatit
+  // dès qu'on tire une poignée de côté (déformation visible, comme une vraie photo étirée).
+  const iw=o.iw||o.w, ih=o.ih||o.h, m=Math.min(iw,ih);
+  em.style.fontSize=(Math.max(14, m*0.72))+'px';
+  em.style.display='inline-block';
+  em.style.transformOrigin='center';
+  em.style.transform='scale('+(iw/m).toFixed(3)+','+(ih/m).toFixed(3)+')';
+  em.textContent=meta.emoji;
   il.appendChild(em); return il;
 }
 function objContentEl(o, editing, cropMode){
@@ -3761,6 +3796,15 @@ function objContentEl(o, editing, cropMode){
   tb.contentEditable = editing ? 'true' : 'false';
   if(editing) tb.classList.add('editing');
   if(!o.text) tb.classList.add('empty');
+  // mise en forme appliquée à toute la zone de texte (barre du haut)
+  if(o.b) tb.style.fontWeight='800';
+  if(o.i) tb.style.fontStyle='italic';
+  if(o.u) tb.style.textDecoration='underline';
+  if(o.color) tb.style.color=o.color;
+  if(o.hl && o.hl!=='transparent') tb.style.background=o.hl;
+  if(o.font) tb.style.fontFamily=o.font;
+  if(o.size) tb.style.fontSize=o.size+'px';
+  if(o.align) tb.style.textAlign=o.align;
   tb.textContent=o.text||'';
   tb.addEventListener('input', ()=>{ o.text=tb.textContent; tb.classList.toggle('empty', !tb.textContent); jalonTick(); });
   return tb;
@@ -4056,22 +4100,28 @@ document.getElementById('ob-crop').onclick=()=>{
 };
 document.getElementById('ob-front').onclick=()=>{ if(objSel<0){ toast('Choisis d\'abord un objet 🖱️'); return; } objPush(); OBJ.objects[objSel].z=objMaxZ()+1; objRender(); };
 document.getElementById('ob-back').onclick =()=>{ if(objSel<0){ toast('Choisis d\'abord un objet 🖱️'); return; } objPush(); OBJ.objects[objSel].z=objMinZ()-1; objRender(); };
-document.getElementById('ob-delete').onclick=()=>{ if(!OBJ_MODE) return; objDelete(); };
+// (Le bouton « Supprimer » a été retiré : on supprime uniquement avec la touche Suppr du clavier.)
 
 /* ---- évaluation de la scène (même esprit que le moteur texte / tableau) ---- */
 // Clé d'appariement : image = type+fichier, forme = type+forme, zone de texte = type seul
 // (le texte d'une zone est comparé à part, pour qu'on puisse l'écrire/le corriger sans casser l'appariement).
 function objMatchKey(o){ if(o.type==='image') return 'image|'+o.img; if(o.type==='shape') return 'shape|'+o.shape; return 'textbox'; }
 function objNormText(o){ return (o.text||'').trim().toLowerCase().replace(/\s+/g,' '); }
+// Mise en forme normalisée d'une zone de texte (valeurs « par défaut » = pas de mise en forme)
+const TB_DEF={b:false,i:false,u:false,color:'#22303f',hl:'transparent',font:'Arial',size:16,align:'left'};
+function objTbFmt(o){ o=o||{}; return {b:!!o.b,i:!!o.i,u:!!o.u,color:o.color||TB_DEF.color,hl:o.hl||TB_DEF.hl,font:o.font||TB_DEF.font,size:o.size||TB_DEF.size,align:o.align||TB_DEF.align}; }
 function objRankMap(arr){ const list=arr.filter(o=>o.wrap!=='inline').slice().sort((a,b)=>(a.z||0)-(b.z||0));
   const m={}; list.forEach((o,r)=>{ m[objMatchKey(o)]=r; }); return m; }
 function objAspectClose(r1,r2){ return Math.abs(r1/r2-1)<0.13; }
-function objCropSide(o,side){
+function objCroppedSides(o){
   const iw=o.iw||o.w, ih=o.ih||o.h, ox=o.ox||0, oy=o.oy||0;
-  const l=-ox, t=-oy, r=(ox+iw)-o.w, b=(oy+ih)-o.h;
-  if(side==='left') return l>8; if(side==='top') return t>8;
-  if(side==='right') return r>8; if(side==='bottom') return b>8;
-  return l>8||t>8||r>8||b>8;                            // 'any'
+  return { left:(-ox)>8, top:(-oy)>8, right:((ox+iw)-o.w)>8, bottom:((oy+ih)-o.h)>8 };
+}
+function objCropSide(o,side){
+  const sd=objCroppedSides(o);
+  if(side==='left') return sd.left; if(side==='top') return sd.top;
+  if(side==='right') return sd.right; if(side==='bottom') return sd.bottom;
+  return sd.left||sd.top||sd.right||sd.bottom;          // 'any'
 }
 function objFreeRect(o){ return {x:o.x||0,y:o.y||0,w:o.w,h:o.h}; }
 function objOverlap(a,b){ const ox=Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x); const oy=Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y); return ox>10 && oy>10; }
@@ -4090,7 +4140,12 @@ function objSceneEval(start, goal, opts, cur){
     used[ci]=true; const c=cur[ci];
     const s=start.find(o=>objMatchKey(o)===mk) || null;
     cmp(g.wrap, s?s.wrap:undefined, c.wrap);
-    if(g.type==='textbox') cmp(objNormText(g), s?objNormText(s):undefined, objNormText(c));
+    if(g.type==='textbox'){
+      cmp(objNormText(g), s?objNormText(s):undefined, objNormText(c));
+      // mise en forme du texte de la zone (gras, italique, souligné, couleur, surlignage, police, taille, alignement)
+      const gf=objTbFmt(g), sf=objTbFmt(s), cf=objTbFmt(c);
+      ['b','i','u','color','hl','font','size','align'].forEach(k=> cmp(gf[k], sf[k], cf[k]));
+    }
     if(opts.checkOrder){ const gr=gR[mk], sr=sR[mk], cr=cR[mk];
       if(gr!==sr){ if(cr!==gr) missing++; } else { if(cr!==sr) extra++; } }
   });
@@ -4101,16 +4156,43 @@ function objSceneEval(start, goal, opts, cur){
     // on mesure l'ILLUSTRATION (iw,ih) et pas le cadre : ainsi le rognage ne « défait » pas l'agrandissement
     const c=cur.find(o=>o.type==='image'), s=start.find(o=>o.type==='image');
     const bW=s?(s.iw||s.w):OB_DEF_W, bH=s?(s.ih||s.h):115, m=opts.requireResize.mode;
-    let ok=false;
+    let ok=false, deformed=false;
     if(c){ const cw=c.iw||c.w, ch=c.ih||c.h, ar=objAspectClose(cw/ch, bW/bH);
-      if(m==='corner-grow')        ok = cw>bW*1.2 && ar;
-      else if(m==='corner-shrink') ok = cw<bW*0.8 && ar;
+      if(m==='corner-grow'){        ok = cw>bW*1.2 && ar; if(!ar) deformed=true; }
+      else if(m==='corner-shrink'){ ok = cw<bW*0.8 && ar; if(!ar) deformed=true; }
       else if(m==='side')          ok = Math.abs(cw-bW)>bW*0.18 && Math.abs(ch-bH)<bH*0.1;
       else if(m==='updown')        ok = Math.abs(ch-bH)>bH*0.18 && Math.abs(cw-bW)<bW*0.1;
       else                         ok = cw>=bW*1.25; }
-    if(!ok) missing++;
+    // coins = mêmes proportions exigées : si l'élève a DÉFORMÉ (tiré un côté), c'est « autre chose » → Presque/Oh oh
+    if(deformed) extra++;
+    else if(!ok) missing++;
   }
-  if(opts.requireCrop){ const c=cur.find(o=>o.type==='image'); if(!c||!objCropSide(c, opts.requireCrop.side||'any')) missing++; }
+  if(opts.requireCrop){
+    const c=cur.find(o=>o.type==='image'); const need=opts.requireCrop.side||'any';
+    if(!c||!objCropSide(c, need)) missing++;
+    // rogner un AUTRE bord que celui demandé → « tu as modifié autre chose »
+    if(c && need!=='any'){ const sd=objCroppedSides(c); for(const k in sd){ if(sd[k] && k!==need){ extra++; break; } } }
+  }
+  // noResize : l'élève ne doit PAS avoir changé la taille de l'illustration (missions de rognage pur)
+  if(opts.noResize){
+    const c=cur.find(o=>o.type==='image'), s=start.find(o=>o.type==='image');
+    if(c && s){ const cwI=c.iw||c.w, chI=c.ih||c.h, swI=s.iw||s.w, shI=s.ih||s.h;
+      if(Math.abs(cwI-swI)>8 || Math.abs(chI-shI)>8) extra++; }
+  }
+  // noCrop : l'élève ne doit PAS avoir rogné l'image (missions de redimensionnement pur)
+  if(opts.noCrop){
+    const c=cur.find(o=>o.type==='image');
+    if(c && objCropSide(c,'any')) extra++;
+  }
+  // noModifyImage : l'élève ne doit PAS avoir redimensionné NI rogné l'image (missions d'habillage pur)
+  if(opts.noModifyImage){
+    const c=cur.find(o=>o.type==='image'), s=start.find(o=>o.type==='image');
+    if(c && s){
+      const cwI=c.iw||c.w, chI=c.ih||c.h, swI=s.iw||s.w, shI=s.ih||s.h;
+      if(Math.abs(cwI-swI)>8 || Math.abs(chI-shI)>8) extra++;  // redimensionné
+    }
+    if(c && objCropSide(c,'any')) extra++;  // rogné
+  }
   if(opts.requireMove){ const m=opts.requireMove; const c=cur.find(o=> m.kind? o.type===m.kind : (o.wrap==='behind'||o.wrap==='front'));
     let ok=!!c; if(c){ if(m.minX!=null && (c.x||0)<m.minX) ok=false; if(m.minY!=null && (c.y||0)<m.minY) ok=false; }
     if(!ok) missing++; }
@@ -4133,7 +4215,7 @@ function startObjectStep(){
   objRender();
 }
 // Évite que les clics sur la barre Objets ne perdent la sélection en cours
-['ob-image','ob-lib','ob-shape','ob-textbox','ob-crop','ob-front','ob-back','ob-delete']
+['ob-image','ob-lib','ob-shape','ob-textbox','ob-crop','ob-front','ob-back']
   .forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('mousedown', e=>e.preventDefault()); });
 
 /* =========================================================
