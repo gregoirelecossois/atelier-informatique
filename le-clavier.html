@@ -612,8 +612,8 @@ const LEVELS=[
       {kind:'mission',label:'Manche 3',emoji:'＠',title:'Les symboles spéciaux',desc:'Les symboles '+kbd('@')+' '+kbd('#')+' '+kbd('€')+' '+kbd('+')+' avec '+kbd('AltGr')+' ou '+kbd('Maj ⇧')+'.',pool:['@','#','€','+'],target:12,lives:7,speed:48,spawnMs:2150,showTips:true},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tous les symboles',desc:'Ponctuation, parenthèses et symboles spéciaux tombent ensemble. Sers-toi de 💡 quand tu hésites !',pool:['.',',','?','!',';',':','(',')','=','"','-','@','#','€','+'],target:30,lives:7,speed:60,spawnMs:1450,showTips:true},
       {kind:'jalon',mode:'boss',label:'Combat de Boss',emoji:'🐉',title:'le Dragon des Touches',
-       desc:'Le défi <b>ULTIME</b> : <b>tout le clavier</b> t\'attaque ! Le <b>Dragon des Touches</b> lance des sorts — minuscules, MAJUSCULES, chiffres, symboles, ponctuation, accents… <b>Tape la bonne touche</b> pour esquiver chaque sort. Après <b>10 sorts</b>, le dragon s\'épuise : c\'est le moment d\'<b>ATTAQUER</b> en frappant les symboles devant lui ! Touche-le <b>15 fois</b> pour le vaincre — mais protège tes vies !',
-       lives:6, bossHits:15, spellsPerWave:10, speed:74, spawnMs:1100, maxConcurrent:4}
+       desc:'Tu as réveillé le <b>Dragon des Touches</b> et il t\'attaque ! <b>Tape la bonne touche</b> pour esquiver puis pour l\'attaquer. Ne te trompe pas de touche et attention aux <b>majuscules</b> !',
+       penalizeWrong:true, lives:10, bossHits:15, spellsPerWave:10, speed:74, spawnMs:1100, maxConcurrent:4}
     ]},
 
   { n:6, title:'Frappe libre', subtitle:'frappe libre', game:'dactylo',
@@ -651,7 +651,7 @@ const LEVELS=[
        desc:'Le <b>Dragon des Touches</b> est de retour, plus puissant que jamais ! Cette fois, tu te bats avec des <b>mots</b>. Pour <b>esquiver</b> ses sorts, tape vite le <b>mot d\'esquive</b> qui descend (<i>esquive, roulade, parade, bouclier…</i>). Quand il s\'épuise, c\'est l\'heure d\'<b>ATTAQUER</b> : tape les <b>mots d\'armes</b> (<i>épée, masse, attaque…</i>). Touche-le <b>8 fois</b> pour le vaincre. En garde, chevalier ! ⚔️',
        defenseWords:['raté','Esquive','roulade','Parade','bouclier','saut','feinte','en-garde','recul','éclat','demi-tour','défense','évite','Côté','plongeon','contre','pare','Abri'],
        attackWords:['épée','Gourdin','masse','attaque','Coup','lance','Hache','dague','assaut','frappe','Flèche','arc','bélier','Sabre','boulet'],
-       lives:6, bossHits:8, spellsPerWave:5, speed:55, spawnMs:2800, maxConcurrent:2, attackMs:9000}
+       penalizeWrong:true, lives:6, bossHits:8, spellsPerWave:5, speed:55, spawnMs:2800, maxConcurrent:2, attackMs:9000}
     ]}
 ];
 
@@ -967,12 +967,12 @@ function startBoss(step){
     hero:document.getElementById('bossHero'),
     spells:[], attackTargets:[],
     wordMode:!!step.wordMode, defenseWords:step.defenseWords||[], attackWords:step.attackWords||[], attackWord:null,
-    lives:step.lives||6, maxLives:step.lives||6,
+    lives:step.lives||6, maxLives:step.lives||6, penalizeWrong:!!step.penalizeWrong,
     hp:step.bossHits||15, maxHp:step.bossHits||15,
     phase:'cast', spawned:0, spellsPerWave:step.spellsPerWave||10,
     speed:step.speed||74, spawnMs:step.spawnMs||1100, maxConcurrent:step.maxConcurrent||4,
     attackMs:step.attackMs||ATTACK_MS,
-    running:true, last:0, nextSpawn:0, groundY:0, attackEndTs:0, raf:0
+    running:true, last:0, nextSpawn:0, groundY:0, attackEndTs:0, raf:0, immune:false
   });
   B.groundY=field.clientHeight-64;
   updateBossHud();
@@ -1040,6 +1040,7 @@ function loopB(ts){
 }
 function spellHitsHero(s){
   removeSpell(s); const el=s.el; el.classList.add('pop'); setTimeout(()=>el.remove(),250);
+  if(B.immune) return;
   B.lives--; beep('bad');
   B.field.classList.add('shake'); setTimeout(()=>B.field.classList.remove('shake'),250);
   B.hero.classList.add('hit'); setTimeout(()=>B.hero.classList.remove('hit'),400);
@@ -1064,7 +1065,18 @@ function onKeyB(e){
   if(B.wordMode) return typeDefenseWord(e.key);
   let best=null;
   for(const s of B.spells){ if(s.ch===e.key){ if(!best||s.y>best.y) best=s; } }
-  if(best) destroySpell(best); else beep('key');
+  if(best) destroySpell(best);
+  else if(B.penalizeWrong) bossWrongKey();
+  else beep('key');
+}
+// Touche pressée qui ne fait éclater aucune boule violette → perte d'une vie
+function bossWrongKey(){
+  if(B.immune || B.lives<=0) return;
+  B.lives--; beep('bad');
+  B.field.classList.add('shake'); setTimeout(()=>B.field.classList.remove('shake'),250);
+  B.hero.classList.add('hit'); setTimeout(()=>B.hero.classList.remove('hit'),400);
+  updateBossHud();
+  if(B.lives<=0) bossFail();
 }
 // MODE MOTS — esquive : on tape le mot le plus bas, lettre par lettre
 function typeDefenseWord(key){
@@ -1072,7 +1084,7 @@ function typeDefenseWord(key){
   if(key===s.word[s.typed]){
     s.typed++; beep('key'); updateSpellWord(s);
     if(s.typed>=s.word.length) destroySpell(s);
-  } else beep('bad');
+  } else { beep('bad'); if(B.penalizeWrong) bossWrongKey(); }
 }
 // MODE MOTS — attaque : on tape le mot d'arme affiché devant le boss
 function typeAttackWord(key){
@@ -1081,10 +1093,10 @@ function typeAttackWord(key){
     a.typed++; updateAttackWord();
     if(a.typed>=a.word.length) hitBossWord(a);
     else beep('key');
-  } else beep('bad');
+  } else { beep('bad'); if(B.penalizeWrong) bossWrongKey(); }
 }
 function openAttack(){
-  B.phase='attack'; B.attackEndTs=0;
+  B.phase='attack'; B.attackEndTs=0; B.immune=true;
   B.spells.forEach(s=>s.el.remove()); B.spells=[];
   B.sprite.classList.add('exhausted');
   const sw=document.createElement('div'); sw.className='boss-sweat'; sw.id='bossSweat'; sw.textContent='💦';
@@ -1101,6 +1113,7 @@ function openAttack(){
     if(B.wordMode) spawnAttackWord();
     else for(let i=0;i<4;i++) spawnOneTarget();
     B.attackEndTs=performance.now()+B.attackMs;
+    B.immune=false;
   },1300);
 }
 function spawnOneTarget(){
@@ -1160,7 +1173,7 @@ function floatDamage(x,y){
   d.style.left=x+'px'; d.style.top=y+'px'; B.field.appendChild(d); setTimeout(()=>d.remove(),800);
 }
 function closeAttack(){
-  B.phase='cast'; B.attackEndTs=0;
+  B.phase='cast'; B.attackEndTs=0; B.immune=true;
   B.attackTargets.forEach(t=>t.el.remove()); B.attackTargets=[];
   if(B.attackWord){ B.attackWord.el.remove(); B.attackWord=null; }
   const sw=document.getElementById('bossSweat'); if(sw) sw.remove();
@@ -1171,7 +1184,7 @@ function closeAttack(){
   ban.innerHTML='<div class="attack-title">⚡ LE DRAGON CONTRE-ATTAQUE ! ⚡</div><div class="attack-sub">Esquive ses sorts !</div>';
   B.field.appendChild(ban);
   beep('ding');
-  setTimeout(()=>ban.remove(),1300);
+  setTimeout(()=>{ ban.remove(); B.immune=false; },1300);
 }
 function bossDefeated(){
   B.running=false; cancelAnimationFrame(B.raf);
@@ -1187,7 +1200,10 @@ function bossDefeated(){
 }
 function bossFail(){
   B.running=false; cancelAnimationFrame(B.raf); stopBossMusic();
-  onFail('Le dragon t\'a vaincu cette fois ! 🐉', 'Astuce : pendant les sorts, lis bien la touche dans la boule violette et tape-la vite. Garde tes doigts posés sur le clavier. Tu vas y arriver !');
+  const tip = B.wordMode
+    ? 'Astuce : pendant l\'esquive, tape vite le mot qui descend lettre par lettre — commence dès qu\'il apparaît. Pendant l\'attaque, tape le mot d\'arme affiché devant le dragon. Attention aux majuscules et aux fautes : chaque erreur coûte une vie !'
+    : 'Astuce : pendant les sorts, lis bien la touche dans la boule violette et tape-la vite. Attention aux majuscules ! Garde tes doigts posés sur le clavier. Tu vas y arriver !';
+  onFail('Le dragon t\'a vaincu cette fois ! 🐉', tip);
 }
 function stopB(){ B.running=false; cancelAnimationFrame(B.raf); stopBossMusic(); }
 
@@ -1236,6 +1252,8 @@ function updateBanner(){
 function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
 
 function openBossBriefing(s){
+  // Combat déjà en cours : « Revoir la consigne » ne fait que mettre en pause (pas de redémarrage)
+  const resuming = !!activeGame;
   modal.className='modal test-modal';
   modal.innerHTML=
     '<span class="m-emoji">🐉</span>'
@@ -1246,11 +1264,14 @@ function openBossBriefing(s){
     +   '<li><span class="ni-glyph">⚡</span> '+(s.wordMode?'Esquive : tape le mot':'Esquive : tape la touche du sort')+'</li>'
     +   '<li><span class="ni-glyph">⚔️</span> '+(s.wordMode?'Attaque : tape le mot d\'arme':'Attaque : frappe les symboles')+'</li>'
     +   '<li><span class="ni-glyph">❤️</span> '+(s.lives||6)+' vies à protéger</li>'
+    +   (s.penalizeWrong?'<li><span class="ni-glyph">⚠️</span> Une mauvaise touche te coûte une vie !</li>':'')
     +   '<li><span class="ni-glyph">🐉</span> '+(s.bossHits||15)+' coups pour gagner</li>'
     + '</ul>'
-    + '<div class="m-actions"><button class="m-btn primary test" id="goBtn">⚔️ Au combat ! 🚀</button></div>';
+    + '<div class="m-actions"><button class="m-btn primary test" id="goBtn">'+(resuming?'⚔️ Reprendre le combat ▶':'⚔️ Au combat ! 🚀')+'</button></div>';
   openOverlay();
-  document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
+  document.getElementById('goBtn').onclick=resuming
+    ? (()=>{ closeOverlay(); resumeActive(); })
+    : (()=>{ closeOverlay(); audioCtx(); launchGame(); });
 }
 function openRoundPopup(){
   const s=currentStep, jalon=s.kind==='jalon';
@@ -1503,6 +1524,20 @@ document.getElementById('hintBtn').onclick=()=>{
   if(lvl.game==='parachute' && currentStep && currentStep.showTips){
     const it=lowestItem(); const pool=currentStep.pool||[];
     openGameTip(it?it.ch:pool[0]);
+    return;
+  }
+  // Boss : astuce spécifique au combat
+  if(currentStep && currentStep.mode==='boss'){
+    pauseActive();
+    const tip = currentStep.wordMode
+      ? 'Pendant l\'<b>esquive</b>, tape vite le mot qui descend, lettre par lettre — commence dès qu\'il apparaît. Pendant l\'<b>attaque</b>, tape le mot d\'arme affiché devant le dragon. Attention aux <b>majuscules</b> et aux fautes : chaque erreur coûte une vie !'
+      : 'Pendant l\'<b>esquive</b>, lis bien la touche dans la boule violette et tape-la vite. Fais attention aux <b>majuscules</b> ! Pendant l\'<b>attaque</b>, frappe les symboles affichés devant le dragon. Chaque mauvaise touche coûte une vie !';
+    modal.className='modal';
+    modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker">Astuce — Combat de Boss</div>'
+      +'<p class="tip-cap">'+tip+'</p>'
+      +'<div class="m-actions"><button class="m-btn primary green" id="okHint">J\'ai compris ▶</button></div>';
+    openOverlay();
+    document.getElementById('okHint').onclick=()=>{ closeOverlay(); resumeActive(); };
     return;
   }
   // Autres niveaux : courte consigne + image du clavier, jeu en pause
