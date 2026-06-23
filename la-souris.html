@@ -327,17 +327,64 @@
   .boss-hud{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:12px;padding:10px 14px;z-index:14;}
   .boss-hearts{font-size:1.3rem;letter-spacing:2px;}
   .boss-hearts .lost{filter:grayscale(1);opacity:.4;}
+  .boss-portrait{width:46px;height:46px;flex:0 0 auto;object-fit:contain;image-rendering:pixelated;
+    border:2px solid #ffd76a;border-radius:10px;background:rgba(0,0,0,.35);padding:2px;box-shadow:0 0 12px rgba(255,90,60,.45);user-select:none;-webkit-user-drag:none;}
   .boss-hpwrap{flex:1;}
   .boss-name{font-family:"Fredoka",sans-serif;color:#ffe9c2;font-weight:600;font-size:.95rem;text-shadow:0 2px 6px #000;margin-bottom:3px;}
+  .boss-mode-tag{font-family:"Nunito",sans-serif;font-size:.72rem;font-weight:800;color:#0b0b0b;background:#ffd76a;
+    padding:1px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
+  /* popup de sélection du mode + portrait de référence */
+  .boss-gate-portrait{width:120px;height:120px;object-fit:contain;image-rendering:pixelated;margin:2px auto 0;display:block;
+    filter:drop-shadow(0 6px 14px rgba(0,0,0,.45));user-select:none;-webkit-user-drag:none;}
+  .boss-modes{display:flex;flex-direction:column;gap:9px;margin:6px 0 2px;}
+  .boss-mode-btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+    background:#fff;border:2px solid #e7d3a8;border-radius:14px;padding:11px 14px;transition:transform .08s,border-color .12s,box-shadow .12s;}
+  .boss-mode-btn:hover{border-color:#f59e0b;box-shadow:0 6px 16px -6px rgba(245,158,11,.5);transform:translateY(-1px);}
+  .boss-mode-btn .bm-ic{font-size:1.9rem;line-height:1;flex:0 0 auto;}
+  .boss-mode-btn .bm-txt{display:flex;flex-direction:column;}
+  .boss-mode-btn .bm-name{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.08rem;color:#3a2a12;}
+  .boss-mode-btn .bm-sub{font-size:.82rem;font-weight:700;color:#8a7a5c;}
+  .boss-mode-btn .bm-tag{margin-left:auto;font-size:.72rem;font-weight:800;color:#0b0b0b;background:#ffe08a;border-radius:999px;padding:3px 10px;white-space:nowrap;}
+  .boss-mode-btn.is-hard .bm-tag{background:#fca5a5;}
+  .boss-mode-btn.is-easy{border-color:#bbf7d0;}
+  .boss-mode-btn.is-easy .bm-tag{background:#86efac;}
   .boss-hpbar{height:16px;border-radius:9px;background:rgba(0,0,0,.5);border:2px solid #ffd76a;overflow:hidden;box-shadow:0 0 14px rgba(255,90,60,.4);}
   .boss-hpbar > i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ef4444,#f59e0b);transition:width .35s ease;}
   .boss-slot{position:absolute;top:12%;left:50%;transform:translateX(-50%);z-index:4;}
   .hero-slot{position:absolute;bottom:15%;left:50%;transform:translateX(-50%);z-index:5;}
   .actor{position:relative;display:flex;align-items:flex-end;justify-content:center;}
-  .actor-img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:none;}
+  .actor-img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:none;user-select:none;-webkit-user-drag:none;pointer-events:none;}
+  .actor{user-select:none;-webkit-user-select:none;}
+  .actor-emoji{user-select:none;-webkit-user-select:none;}
   .actor-emoji{display:flex;align-items:center;justify-content:center;line-height:1;}
   .boss-actor.shake{animation:bossHurtA .42s;}
-  @keyframes bossHurtA{0%,100%{transform:none;}30%{transform:translateX(-9px) scale(1.05);filter:brightness(2.2);}60%{transform:translateX(9px);}}
+  @keyframes bossHurtA{0%,100%{transform:none;}30%{transform:translateX(-9px) scale(1.05);}60%{transform:translateX(9px);}}
+  /* clignotement lumineux rétro pendant l'anim « taking_hit » (style vieux jeux vidéo) */
+  .boss-actor.hurtblink .actor-img,.boss-actor.hurtblink .actor-emoji{animation:hurtBlink 1.3s steps(1,end);}
+  @keyframes hurtBlink{
+    0%,16%,33%,50%,66%,83%{filter:brightness(3.4) contrast(1.5) drop-shadow(0 0 10px #fff);}
+    8%,25%,41%,58%,74%,91%,100%{filter:none;}}
+  /* illumination du sprite quand une boule de feu part de lui */
+  .boss-actor.lit .actor-img,.boss-actor.lit .actor-emoji{filter:brightness(1.7) drop-shadow(0 0 14px #ff7a3c) drop-shadow(0 0 6px #fde047);}
+  /* finale : le démon seul, agrandi et centré pendant l'anim de mort */
+  .bossfield.boss-finale{background:radial-gradient(circle at 50% 48%,rgba(60,10,10,.5),rgba(0,0,0,.94));}
+  .bossfield.boss-finale .boss-hud,
+  .bossfield.boss-finale .hero-slot,
+  .bossfield.boss-finale .health-potion,
+  .bossfield.boss-finale .fire-layer{opacity:0;transition:opacity .45s;pointer-events:none;}
+  .bossfield.boss-finale::after{opacity:0;transition:opacity .45s;}   /* on retire la bande rayée du sol */
+  .boss-actor.dying{transform:scale(2.3);transform-origin:center center;transition:transform .55s ease;
+    z-index:30;filter:drop-shadow(0 0 24px rgba(255,80,30,.6));}
+  /* tremblement de l'arène : léger (dégât) et fort (rugissement) */
+  .bossfield.shake{animation:fieldShake .25s;}
+  .bossfield.quake{animation:bossQuake .7s;}
+  @keyframes bossQuake{0%,100%{transform:translate(0,0);}
+    12%{transform:translate(-10px,5px);}25%{transform:translate(9px,-6px);}38%{transform:translate(-8px,-4px);}
+    50%{transform:translate(8px,5px);}62%{transform:translate(-6px,3px);}75%{transform:translate(5px,-3px);}88%{transform:translate(-3px,2px);}}
+  /* flash rouge plein écran quand le démon encaisse un coup */
+  .dmg-flash{position:absolute;inset:0;z-index:18;pointer-events:none;
+    background:radial-gradient(circle,rgba(255,80,40,0) 45%,rgba(255,60,30,.55) 100%);animation:dmgFlash .28s ease-out forwards;}
+  @keyframes dmgFlash{0%{opacity:0;}30%{opacity:1;}100%{opacity:0;}}
   .hero-actor.shake{animation:heroHurtA .42s;}
   @keyframes heroHurtA{0%,100%{transform:none;}35%{transform:translateX(8px) rotate(6deg);filter:brightness(.6) sepia(1) saturate(4) hue-rotate(-30deg);}}
   .actor-emoji.emo-idle,.actor-emoji.emo-fly{animation:emoBob 2s ease-in-out infinite;}
@@ -636,7 +683,7 @@ const LEVELS=[
       tools:[{g:'⚔️',n:'Clic : frappe'},{g:'🧪',n:'Glisse : potion'},{g:'📜',n:'Molette : grimoire'}] },
     rounds:[
       {kind:'jalon',mode:'boss',emoji:'🐲',label:'Boss final',title:'Gruk, le Démon Gardien',
-        desc:'Enchaîne les <b>épreuves</b> (clic, double-clic, glisser, clic droit, lasso, molette) pour vaincre le démon avant de perdre tous tes cœurs !',
+        desc:'Réussis chaque épreuve pour vaincre Gruk sans perdre tous tes cœurs ❤️ !',
         bossHp:28, lives:5}
     ]}
 ];
@@ -692,7 +739,29 @@ function beep(kind){
   else if(kind==='bad'){ tone(150,.16,'square',.12); }
   else if(kind==='ding'){ tone(880,.12,'sine',.12); tone(1320,.16,'sine',.1,.08); }
   else if(kind==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.12,i*.09)); }
+  else if(kind==='roar'){ tone(150,.5,'sawtooth',.14); tone(95,.55,'sawtooth',.12,.04); tone(70,.6,'square',.08,.05); }
+  else if(kind==='fire'){ tone(330,.18,'sawtooth',.1); tone(180,.26,'sawtooth',.09,.05); }
 }
+/* ---- voix du démon (fichiers mp3 du dossier sounds) ---- */
+const DEMON_SND_ROOT='sounds/a_chunky_red_horned_demon/';
+const DEMON_SOUNDS={
+  growl:  'phatphrogstudio-demon-voice-growling.mp3',     // dégâts (joué accéléré)
+  death:  'demon-death.mp3',                              // mort
+  roar:   'yodguard-aggressive-monster-roar.mp3',         // rugissement
+  noMercy:'phatphrogstudio-demon-voice-no-mercy.mp3',     // provocations (début de phase sans roar)
+  noMore: 'phatphrogstudio-demon-voice-no-more-running.mp3',
+  provoke:'phatphrogstudio-demon-voice-provoke.mp3'
+};
+const _demonAudio={};
+function demonSound(key,opts){
+  if(!soundOn) return; opts=opts||{};
+  const file=DEMON_SOUNDS[key]; if(!file) return;
+  let a=_demonAudio[key];
+  if(!a){ a=new Audio(DEMON_SND_ROOT+file); _demonAudio[key]=a; }
+  try{ a.pause(); a.currentTime=0; a.volume=opts.vol!=null?opts.vol:0.65; a.playbackRate=opts.rate||1;
+    const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+}
+function demonTaunt(){ demonSound(pick(['noMercy','noMore','provoke'])); }   // provocation aléatoire
 function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
 document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('ms_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); if(B.running) resumeBossMusic(); } else { pauseBossMusic(); } };
 
@@ -1210,7 +1279,9 @@ const SPRITE_ROOT='sprites/';
 // dir = direction utilisée ('north' = dos pour le chevalier, 'south' = face sinon).
 const CHARS={
   boss:  { folder:'a_chunky_red_horned_demon', dir:'south', emoji:'🐲', size:160,
-           anims:{idle:'idle',attack:'attack',hurt:'hurt',cast:'cast',roar:'roar',death:'death'} },
+           anims:{idle:'idle',hurt:'taking_hit',roar:'roar',boucle_roar:'boucle_roar',death:'death',
+                  fire_begin:'fire_begin',channeling_fire:'channeling_fire',
+                  horde_cast:'horde_cast',channel_horde:'channel_horde'} },
   hero:  { folder:null, dir:'north', emoji:'🧙', size:84,
            anims:{idle:'idle',attack:'attack',cast:'cast',hurt:'hurt',win:'win'} },
   slime: { folder:null, dir:'south', emoji:'🟢', size:54, anims:{idle:'idle',pop:'pop'} },
@@ -1219,10 +1290,42 @@ const CHARS={
 };
 const spriteCache={};   // charKey -> {static:Image|null, anims:{logical:[Image,...]}} | null
 function preloadImg(src){ const im=new Image(); im.src=src; return im; }
+/* génère une liste de chemins de frames : seq('animations/idle/south/frame_',9,3,0) -> [...frame_000.png..frame_008.png] */
+function seq(prefix,count,pad,start){ const out=[]; start=start||0; for(let i=0;i<count;i++){ out.push(prefix+String(start+i).padStart(pad,'0')+'.png'); } return out; }
+/* Manifeste des frames EMBARQUÉ dans le JS : indispensable pour que les sprites s'affichent
+   quand le jeu est ouvert en local (file://), car fetch(metadata.json) y est bloqué par le navigateur. */
+const SPRITE_FRAMES={
+  a_chunky_red_horned_demon:{
+    rotation:'rotations/south.png',
+    anims:{
+      idle:           seq('animations/idle/south/frame_',9,3,0),
+      roar:           seq('animations/roar/south/frame_',9,3,0),
+      taking_hit:     seq('animations/taking_hit/south/frame_',9,3,0),
+      fire_begin:     seq('animations/fire_begin/south/frame_',13,3,0),
+      channeling_fire:seq('animations/channeling_fire/south/frame_',4,3,0),
+      horde_cast:     seq('animations/horde_cast/south/frame_',9,3,0),
+      death:          seq('animations/death/south/frame_',13,3,0),
+      boucle_roar:    seq('animations/boucle_roar/boucle_roar_',3,4,1),
+      channel_horde:  seq('animations/channel_horde/channel_horde_',3,4,1)
+    }
+  }
+};
 function loadChar(key){
   const c=CHARS[key];
   if(!c || !c.folder) return Promise.resolve(null);
   if(spriteCache[key]!==undefined) return Promise.resolve(spriteCache[key]);
+  // 1) chemin embarqué (marche en file:// comme en http) — aucune requête réseau
+  const data=SPRITE_FRAMES[c.folder];
+  if(data){
+    const base=SPRITE_ROOT+c.folder+'/';
+    const out={static:data.rotation?preloadImg(base+data.rotation):null, anims:{}};
+    for(const logical in c.anims){
+      const list=data.anims[c.anims[logical]];   // c.anims[logical] = nom physique exact de l'anim
+      if(list && list.length) out.anims[logical]=list.map(p=>preloadImg(base+p));
+    }
+    spriteCache[key]=out; return Promise.resolve(out);
+  }
+  // 2) repli : lecture du metadata.json (seulement si servi en http)
   return fetch(SPRITE_ROOT+c.folder+'/metadata.json')
     .then(r=>{ if(!r.ok) throw 0; return r.json(); })
     .then(json=>{
@@ -1232,13 +1335,13 @@ function loadChar(key){
       const rot=st.frames && st.frames.rotations;
       if(rot && rot[c.dir]) out.static=preloadImg(base+rot[c.dir]);
       const anims=(st.frames && st.frames.animations)||{};
+      const has=k=>anims[k] && anims[k][c.dir] && anims[k][c.dir].length;
       for(const logical in c.anims){
         const kw=c.anims[logical].toLowerCase();
-        for(const animKey in anims){
-          if(animKey.toLowerCase().indexOf(kw)>=0 && anims[animKey][c.dir] && anims[animKey][c.dir].length){
-            out.anims[logical]=anims[animKey][c.dir].map(p=>preloadImg(base+p)); break;
-          }
-        }
+        let chosen=null;
+        for(const animKey in anims){ if(animKey.toLowerCase()===kw && has(animKey)){ chosen=animKey; break; } }   // correspondance exacte d'abord
+        if(!chosen) for(const animKey in anims){ if(animKey.toLowerCase().indexOf(kw)>=0 && has(animKey)){ chosen=animKey; break; } }
+        if(chosen) out.anims[logical]=anims[chosen][c.dir].map(p=>preloadImg(base+p));
       }
       spriteCache[key]=out; return out;
     })
@@ -1250,7 +1353,8 @@ function makeActor(key, extraClass){
   const c=CHARS[key];
   const el=document.createElement('div'); el.className='actor '+(extraClass||'');
   el.style.width=c.size+'px'; el.style.height=c.size+'px';
-  el.innerHTML='<span class="actor-emoji" style="font-size:'+Math.round(c.size*0.74)+'px">'+c.emoji+'</span><img class="actor-img" alt="">';
+  el.innerHTML='<span class="actor-emoji" style="font-size:'+Math.round(c.size*0.74)+'px">'+c.emoji+'</span><img class="actor-img" alt="" draggable="false">';
+  el.addEventListener('dragstart',e=>e.preventDefault());
   return { key, el, img:el.querySelector('.actor-img'), emoji:el.querySelector('.actor-emoji'),
            anim:null, frames:null, fi:0, t:0, fps:12, loop:true, then:null, _to:0 };
 }
@@ -1292,11 +1396,36 @@ function stepActor(a, dt){
 
 /* ---- État + arène ---- */
 const B={};
+
+/* ---- Modes de difficulté du boss ----
+   Le mode actuel = « Difficile » (référence, ×1). « Moyen » ≈ 30% plus facile, « Facile » ≈ 60% plus facile.
+   fireMul   : intervalle entre boules de feu (↑ = moins de feu)   → ~+43% / +150% de délai = 30% / 60% de feu en moins
+   countMul  : nb de cibles (cristaux, horde, ingrédients, sorts…) → 0.7 / 0.4
+   gaugeGain : gain de jauge par clic (↑ = plus facile)            → 1.3 / 1.8
+   gaugeDecay: chute de jauge (↓ = plus facile)                    → 0.7 / 0.4
+   speedMul  : vitesse de la horde et des boules de feu (↓ = facile)
+   fairyMul  : nb de fées dans la horde (↓ = moins de risque)
+   livesBonus: cœurs supplémentaires */
+const BOSS_MODES={
+  easy:   {key:'easy',   label:'Facile',   emoji:'🛡️', sub:'Pour bien débuter', tag:'60% plus facile',
+           fireMul:2.5,  countMul:0.4, gaugeGain:1.8, gaugeDecay:0.4, speedMul:0.7,  fairyMul:0.4, livesBonus:2},
+  medium: {key:'medium', label:'Moyen',    emoji:'⚔️', sub:'Un bon équilibre',  tag:'30% plus facile',
+           fireMul:1.43, countMul:0.7, gaugeGain:1.3, gaugeDecay:0.7, speedMul:0.85, fairyMul:0.7, livesBonus:1},
+  hard:   {key:'hard',   label:'Difficile',emoji:'🔥', sub:'Le vrai défi',      tag:'Mode complet',
+           fireMul:1.0,  countMul:1.0, gaugeGain:1.0, gaugeDecay:1.0, speedMul:1.0,  fairyMul:1.0, livesBonus:0}
+};
+let bossMode = (function(){ try{ const m=localStorage.getItem('ms_bossmode'); return BOSS_MODES[m]?m:'hard'; }catch(e){ return 'hard'; } })();
+function bd(){ return BOSS_MODES[bossMode]||BOSS_MODES.hard; }
+function bCount(n,min){ return Math.max(min||1, Math.round(n*bd().countMul)); }   // mise à l'échelle d'un nombre de cibles
+/* portrait de référence du boss (sprite « south » du dossier rotations) */
+const BOSS_PORTRAIT = SPRITE_ROOT+'a_chunky_red_horned_demon/rotations/south.png';
+
 function bossArenaHTML(){
   return '<div class="bossfield" id="bossField">'
     + '<div class="boss-hud">'
     +   '<span class="boss-hearts" id="bossHearts"></span>'
-    +   '<div class="boss-hpwrap"><div class="boss-name">👑 Gruk, le Démon Gardien</div>'
+    +   '<img class="boss-portrait" src="'+BOSS_PORTRAIT+'" alt="Gruk" draggable="false">'
+    +   '<div class="boss-hpwrap"><div class="boss-name">👑 Gruk, le Démon Gardien <span class="boss-mode-tag" id="bossModeTag"></span></div>'
     +     '<div class="boss-hpbar"><i id="bossHpFill"></i></div></div>'
     + '</div>'
     + '<div class="boss-slot" id="bossSlot"></div>'
@@ -1312,10 +1441,11 @@ function startBoss(step){
   B.field=document.getElementById('bossField');
   B.fireLayer=document.getElementById('fireLayer');
   B.maxHp=step.bossHp||28; B.hp=B.maxHp;
-  B.maxLives=step.lives||5; B.lives=B.maxLives;
+  B.maxLives=(step.lives||5)+bd().livesBonus; B.lives=B.maxLives;
+  const mt=document.getElementById('bossModeTag'); if(mt) mt.textContent=bd().emoji+' '+bd().label;
   B.running=true; B.raf=0; B.last=0; B.phaseIdx=0;
   B.actors=[]; B.phaseCleanup=[]; B.phaseTimers=[]; B.phaseUpdate=null; B.fireballs=[]; B.minions=[]; B.spellMenu=null; B.brief=null; B.curPhase=null;
-  B.fireActive=false; B.fireChaos=false; B.fireRate=1; B.fireSpawnT=0; B.bossMove=false; B.bossX=50; B.bossDir=1; B.bossSpeed=15; B.bossXMin=18; B.bossXMax=82; B.gauge=null;
+  B.fireActive=false; B.fireChaos=false; B.fireRate=1; B.fireSpawnT=0; B.bossMove=false; B.bossX=50; B.bossDir=1; B.bossSpeed=15; B.bossXMin=18; B.bossXMax=82; B.gauge=null; B.bossBaseAnim='idle';
   B.boss=makeActor('boss','boss-actor'); document.getElementById('bossSlot').appendChild(B.boss.el); B.actors.push(B.boss);
   B.hero=makeActor('hero','hero-actor'); document.getElementById('heroSlot').appendChild(B.hero.el); B.actors.push(B.hero);
   actorPlay(B.boss,'idle',{loop:true}); actorPlay(B.hero,'idle',{loop:true});
@@ -1328,7 +1458,17 @@ function startBoss(step){
     pause(){ B.running=false; cancelAnimationFrame(B.raf); pauseBossMusic(); },
     resume(){ if(!B.running){ B.running=true; B.last=0; B.raf=requestAnimationFrame(bossLoop); } resumeBossMusic(); } };
   B.raf=requestAnimationFrame(bossLoop);
-  bossBanner('⚔️ EN GARDE, CHEVALIER !','Le combat commence…', ()=>nextPhase());
+  bossIntro();
+}
+/* Intro : idle → bannière « EN GARDE » (PAS de roar ici) → popup « L'ASSAUT » (démon idle).
+   Le 1er rugissement n'arrive qu'au démarrage de l'assaut, après validation de la popup (voir bossPhaseIntro). */
+function bossIntro(){
+  if(!B.running) return;
+  bossBase('idle');
+  pTimeout(()=>{ if(!B.running) return;
+    bossBanner('⚔️ EN GARDE, CHEVALIER !','Le combat commence…');   // pas de rugissement à l'entrée
+    pTimeout(()=>{ if(B.running) nextPhase(); }, 1300);              // → popup « L'ASSAUT » (démon idle)
+  }, 1100);
 }
 function stopBoss(){ B.running=false; B.curPhase=null; if(B.raf) cancelAnimationFrame(B.raf); stopBossMusic(); closeHealthMenu(); closeBriefing(); clearPhase(); }
 
@@ -1392,6 +1532,7 @@ function clearPhase(){
   clearFireballs(); B.fireActive=false; B.fireChaos=false; B.gauge=null;
   B.bossMove=false; B.bossX=50; B.bossXMin=18; B.bossXMax=82;
   const slot=document.getElementById('bossSlot'); if(slot){ slot.style.left='50%'; slot.style.top=''; }
+  if(B.boss && B.hp>0){ B.bossBaseAnim='idle'; actorPlay(B.boss,'idle',{loop:true}); }
 }
 function bossBanner(title, sub, cb){
   const pl=document.getElementById('phaseLayer'); if(!pl){ cb&&cb(); return; }
@@ -1405,10 +1546,55 @@ function burstAtEl(el){ const r=el.getBoundingClientRect(), fr=B.field.getBoundi
 function slashFx(){ burstAtEl(B.boss.el); }
 function boltFx(){ const pl=document.getElementById('phaseLayer'); const r=B.boss.el.getBoundingClientRect(), fr=B.field.getBoundingClientRect();
   const z=document.createElement('div'); z.className='bolt-fx'; z.textContent='⚡'; z.style.left=(r.left+r.width/2-fr.left)+'px'; z.style.top=(r.top+r.height/2-fr.top)+'px'; pl.appendChild(z); setTimeout(()=>{try{z.remove();}catch(e){}},650); beep('ding'); }
+
+/* ---- animations & effets du démon ---- */
+/* anim de fond vers laquelle on revient après un coup (idle / channeling_fire / channel_horde / boucle_roar) */
+function bossBase(anim){ B.bossBaseAnim=anim||'idle'; if(B.boss) actorPlay(B.boss, B.bossBaseAnim, {loop:true}); }
+/* tremblement de l'écran : 'quake' = fort (rugissement), 'shake' = léger (dégât/impact) */
+function fieldQuake(cls,ms){ if(!B.field) return; const c=cls||'quake'; B.field.classList.remove(c); void B.field.offsetWidth; B.field.classList.add(c);
+  if(B._quakeT) clearTimeout(B._quakeT); B._quakeT=setTimeout(()=>{ if(B.field) B.field.classList.remove(c); }, ms||700); }
+/* flash rouge plein écran (le démon encaisse) */
+function dmgFlash(){ const pl=document.getElementById('phaseLayer'); if(!pl) return; const f=document.createElement('div'); f.className='dmg-flash'; pl.appendChild(f); setTimeout(()=>{try{f.remove();}catch(e){}},300); }
+/* illumination brève du sprite (boule de feu qui part de lui) */
+function bossFlash(){ if(!B.boss) return; B.boss.el.classList.remove('lit'); void B.boss.el.offsetWidth; B.boss.el.classList.add('lit'); setTimeout(()=>{ if(B.boss) B.boss.el.classList.remove('lit'); },230); }
+/* le démon encaisse un coup : taking_hit RALENTI + clignotement lumineux rétro + secousses + flash + grognement (accéléré).
+   Ne se joue qu'à la FIN des phases où l'on tape le démon (les clics répétés ne font qu'un bossFlash). */
+function bossHurt(){ if(!B.boss) return;
+  B.boss.el.classList.remove('shake'); void B.boss.el.offsetWidth; B.boss.el.classList.add('shake');
+  B.boss.el.classList.remove('hurtblink'); void B.boss.el.offsetWidth; B.boss.el.classList.add('hurtblink');
+  if(B._hurtBlinkT) clearTimeout(B._hurtBlinkT);
+  B._hurtBlinkT=setTimeout(()=>{ if(B.boss) B.boss.el.classList.remove('hurtblink'); }, 1300);
+  actorPlay(B.boss,'hurt',{loop:false, then:B.bossBaseAnim||'idle', fps:7});   // ralenti (≈1,3 s)
+  fieldQuake('shake',420); dmgFlash(); demonSound('growl',{rate:1.6}); }
+/* durée approx. de l'anim taking_hit (9 frames @ 7 fps) — pour attendre qu'elle finisse avant les popups */
+const HURT_MS=1300;
+/* RUGISSEMENT : roar + gros tremblement + son, puis retombe sur 'then' (idle par défaut, boucle_roar en finale) */
+function bossRoar(then){ if(!B.boss) return; const t=then||'idle'; actorPlay(B.boss,'roar',{loop:false, then:t, fps:6}); B.bossBaseAnim=t; fieldQuake('quake',850); demonSound('roar'); }
+/* LANCE LE FEU : fire_begin → channeling_fire en boucle (anim de fond pendant la pluie de feu) */
+function bossBeginFire(){ if(!B.boss) return; actorPlay(B.boss,'fire_begin',{loop:false, then:'channeling_fire'}); B.bossBaseAnim='channeling_fire'; beep('fire'); }
+/* INVOQUE LA HORDE : horde_cast → channel_horde en boucle */
+function bossBeginHorde(){ if(!B.boss) return; actorPlay(B.boss,'horde_cast',{loop:false, then:'channel_horde'}); B.bossBaseAnim='channel_horde'; beep('fire'); }
+/* entrée d'une phase « boules de feu » : rugissement de reprise, puis fire_begin → channeling_fire */
+function bossEnterFire(){ bossRoar('idle'); pTimeout(()=>{ if(B.running) bossBeginFire(); }, 760); }
+/* ENTRÉE DE PHASE : après la popup, le démon reste IDLE ~1 s (calme et visible),
+   PUIS joue son anim d'entrée (roar / feu / horde), PUIS seulement le combat démarre (dangers via combat()). */
+function bossPhaseIntro(kind, combat, delay){
+  B.fireActive=false; B.bossMove=false; clearFireballs();   // aucun danger pendant la pause
+  bossBase('idle');
+  pTimeout(()=>{
+    if(!B.running) return;
+    if(kind==='fire')           bossEnterFire();              // rugissement → feu (assaut)
+    else if(kind==='firetaunt'){ bossBeginFire(); demonTaunt(); }  // feu SANS roar + provocation en fond
+    else if(kind==='horde'){    bossBeginHorde(); demonTaunt(); }  // invocation (pas de roar → provocation)
+    else if(kind==='imprison')  bossRoar('boucle_roar');
+    else                        bossRoar('idle');
+    const ms = (kind==='fire') ? 760 : 300;                  // le combat démarre quand l'anim d'entrée « frappe »
+    pTimeout(()=>{ if(B.running && combat) combat(); }, ms);
+  }, delay||1000);
+}
 function damageBossTo(target){
   B.hp=Math.max(0,target);
-  B.boss.el.classList.remove('shake'); void B.boss.el.offsetWidth; B.boss.el.classList.add('shake');
-  actorPlay(B.boss,'hurt',{loop:false, then:'idle'});
+  bossHurt();
   beep('good'); updateBossHud();
 }
 function heroHitFx(){ B.hero.el.classList.remove('shake'); void B.hero.el.offsetWidth; B.hero.el.classList.add('shake'); actorPlay(B.hero,'hurt',{loop:false, then:'idle'}); }
@@ -1423,7 +1609,8 @@ function loseLife(reason){
 function phaseSucceed(targetHp){
   clearPhase(); damageBossTo(targetHp);
   if(B.hp<=0) return bossDefeated();
-  pTimeout(()=>{ if(B.running) nextPhase(); }, 850);
+  // on laisse l'anim « taking_hit » se terminer + un petit temps avant la popup suivante
+  pTimeout(()=>{ if(B.running) nextPhase(); }, HURT_MS+450);
 }
 function nextPhase(){
   if(!B.running) return;
@@ -1458,47 +1645,57 @@ function bossFail(){
   document.getElementById('retryBoss').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }
 function bossDefeated(){
-  B.curPhase=null; stopBossMusic(); clearPhase(); B.hp=0; updateBossHud();
-  actorPlay(B.boss,'death',{loop:false}); actorPlay(B.hero,'win',{loop:true});
-  burstAt(B.field, B.field.clientWidth/2, B.field.clientHeight*0.22); confetti(); beep('win');
-  bossBanner('🏆 VICTOIRE !','Le démon est vaincu !', ()=>{ B.running=false; cancelAnimationFrame(B.raf); onWin(); });
+  B.curPhase=null; stopBossMusic(); B.hp=0; clearPhase(); updateBossHud();
+  // mise en scène : le démon SEUL, agrandi (×2,3) et centré, pendant son anim de mort
+  if(B.field) B.field.classList.add('boss-finale');
+  const slot=document.getElementById('bossSlot');
+  if(slot){ slot.style.left='50%'; slot.style.top='50%'; slot.style.transform='translate(-50%,-50%)'; }
+  if(B.boss){ B.boss.el.classList.remove('hurtblink','shake','lit'); B.boss.el.classList.add('dying'); }
+  const FRAMES=13, deathMs=5000, FPS=FRAMES/(deathMs/1000);      // anim de mort très ralentie : dure 5 s
+  actorPlay(B.boss,'death',{loop:false, fps:FPS});               // s'arrête et reste sur la dernière frame
+  demonSound('death'); beep('win');
+  // anim terminée à 5 s (dernière frame conservée) → popup victoire à 7 s
+  pTimeout(()=>{
+    burstAt(B.field, B.field.clientWidth/2, B.field.clientHeight*0.5); confetti();
+    bossBanner('🏆 VICTOIRE !','Le démon est vaincu !', ()=>{ B.running=false; cancelAnimationFrame(B.raf); onWin(); });
+  }, deathMs+2000);
 }
 
 /* ---- séquence de phases ---- */
 function buildPhaseSequence(){
+  const fairies=Math.max(1,Math.round(5*bd().fairyMul));
   return [
     {banner:'⚔️ L\'ASSAUT !', start:phaseAssault, target:24,
-      brief:'🏃 Le démon <b>fuit</b> partout dans l\'arène !<br>🖱️ Fais un <b>clic gauche</b> sur lui, encore et encore, pour remplir la <b>jauge ⚔️</b>.<br>⏬ Attention : la jauge <b>redescend</b> toute seule, sois rapide !<br>🔥 Clique les <b>boules de feu</b> pour les détruire avant qu\'elles te touchent.'},
+      brief:'🖱️ <b>Clique le démon</b>, vite et souvent pour le toucher !<br>🔥 Clique aussi les <b>boules de feu</b> pour les contrer.'},
 
-    {banner:'🔒 LE SORT D\'EMPRISONNEMENT !', start:phaseCrystals, count:10, target:20,
-      brief:'💎 Des <b>cristaux magiques</b> apparaissent autour du démon.<br>🖱️🖱️ <b>Double-clique</b> (2 clics très rapides) sur chaque cristal pour l\'allumer 🔆.<br>✨ Allume-les <b>tous les 10</b> pour lancer le sort d\'emprisonnement !'},
+    {banner:'🔒 LE PIÈGE !', start:phaseCrystals, count:bCount(10,3), target:20,
+      brief:'💎 <b>Double-clique</b> chaque cristal pour l\'allumer et enfermer le démon 🔆.<br>🔥 Clique aussi les <b>boules de feu</b> pour les contrer.'},
 
-    {banner:'🧪 LA POTION D\'AFFAIBLISSEMENT !', start:phasePotion, need:5, target:16,
-      story:'Mince ! Le démon est encore <b>trop fort</b> pour être enfermé ! Il faut d\'abord l\'<b>affaiblir</b> avec une potion ! 🧪',
-      brief:'✨ Repère les <b>bons ingrédients</b> : ce sont ceux qui <b>brillent</b>.<br>🖱️ <b>Attrape</b> un ingrédient, <b>glisse-le</b> jusqu\'au chaudron 🫕, puis <b>relâche</b>.<br>💀 Un <b>mauvais</b> ingrédient (os, crâne, araignée…) te coûte un cœur ❤️ !'},
+    {banner:'🧪 LA POTION !', start:phasePotion, need:bCount(5,2), target:16,
+      story:'Le démon est <b>trop fort</b> ! Affaiblis-le avec une <b>potion</b> 🧪.',
+      brief:'✨ <b>Glisse</b> dans le chaudron 🫕 les ingrédients qui <b>brillent</b>.<br>💀 Pas les autres ! Sinon -1 ❤️'},
 
-    {banner:'📜 LES SORTILÈGES !', start:phaseSpells, rounds:5, target:12,
-      brief:'☝️ Un symbole apparaît <b>au-dessus</b> du démon : c\'est son <b>point faible</b> du moment 🔥 ❄️ ⚡.<br>🖱️ Fais un <b>clic droit</b> sur le démon, puis choisis le <b>sort identique</b> au symbole.<br>🔁 Enchaîne les <b>5 sorts</b> sans te tromper !'},
+    {banner:'📜 LES SORTILÈGES !', start:phaseSpells, rounds:bCount(5,2), target:12,
+      brief:'☝️ Regarde le <b>symbole</b> 🔥❄️⚡.<br>🖱️ <b>Clic droit</b> sur le démon → choisis le <b>même</b>.'},
 
-    {banner:'🔲 LA HORDE !', start:phaseHorde, count:28, speed:12.5, fairies:5, target:8,
-      brief:'👹 Une horde de monstres 🟢 🦇 fonce droit sur le chevalier !<br>🖱️ <b>Garde le clic gauche enfoncé</b> et trace un <b>cadre (lasso)</b> autour des monstres pour les zapper ⚡.<br>🧚 N\'encadre <b>jamais la fée</b> : elle est de ton côté !'},
+    {banner:'🔲 LA HORDE !', start:phaseHorde, count:bCount(28,8), speed:12.5*bd().speedMul, fairies:fairies, target:8,
+      brief:'🖱️ <b>Garde le clic</b> et entoure les monstres 🟢🦇.<br>🧚 <b>Pas la fée</b> !'},
 
-    {banner:'📖 LES SORTS SCELLÉS !', start:phaseGrimoire, total:5, target:3,
-      brief:'📖 Le grimoire cache <b>5 sorts scellés</b> 🔒.<br>🖱️ Tourne la <b>molette</b> de la souris pour faire défiler les pages ⬆️ ⬇️.<br>✨ Clique sur la page qui <b>brille</b> pour briser le sceau !'},
+    {banner:'📖 LES SORTS SCELLÉS !', start:phaseGrimoire, total:bCount(5,2), target:3,
+      brief:'📖 Tourne la <b>molette</b> pour chercher le sort dans le grimoire 🖱️.<br>✨ Clique sur le <b>sort qui brille</b>.'},
 
-    {banner:'💎 LE PIÈGE DE CRISTAL !', start:phaseCrystals, count:10, target:2, trap:true, fireRate:0.52, chaos:true,
-      brief:'💎 Le démon est presque vaincu — il faut refermer le <b>piège de cristal</b> !<br>🖱️🖱️ <b>Double-clique</b> les <b>10 cristaux</b> pour encercler complètement le démon 🔆.<br>🔥🔥 Attention : il déchaîne une <b>pluie de boules de feu folles</b> — esquive-les et clique-les vite !'},
+    {banner:'💎 LE PIÈGE DE CRISTAL !', start:phaseCrystals, count:bCount(10,3), target:2, trap:true, fireRate:0.52, chaos:true,
+      brief:'💎 <b>Double-clique</b> sur chaque cristal pour l\'allumer et enfermer le démon 🔆.<br>🔥 Attention : il invoque encore plus de <b>boules de feu</b> !'},
 
-    {banner:'⛓️ ENFERME LE DÉMON !', start:phaseImprison, btn:'⛓️ Refermer le piège !',
-      brief:'⛓️ Dernier effort, chevalier ! Le démon se <b>débat</b> de toutes ses forces.<br>🖱️ <b>Clique-le sans cesse</b> pour refermer le piège et remplir la jauge ⛓️.<br>⏬ La jauge <b>redescend très vite</b> : martèle les clics !'}
+    {banner:'⛓️ LE DÉMON SE DÉBAT !', start:phaseImprison, btn:'⛓️ Refermer le piège magique !',
+      brief:'🖱️ <b>Clique sans arrêt</b> ! Vite, vite ⛓️ !<br>🔒 Enferme le démon à jamais !'}
   ];
 }
 
 /* ---- sous-systèmes : feu permanent, déplacement du boss, jauge, dégâts, grille ---- */
 function bossDamage(n){
   B.hp=Math.max(0,B.hp-n);
-  B.boss.el.classList.remove('shake'); void B.boss.el.offsetWidth; B.boss.el.classList.add('shake');
-  actorPlay(B.boss,'hurt',{loop:false, then:'idle'}); beep('good'); updateBossHud();
+  bossHurt(); beep('good'); updateBossHud();
 }
 function bossMoveTick(dt){
   if(!B.bossMove) return;
@@ -1513,18 +1710,19 @@ function spawnFireball(){
   const bx=br.left+br.width/2-fre.left, by=br.top+br.height*0.55-fre.top;
   const hx=hr.left+hr.width/2-fre.left, hy=hr.top+hr.height/2-fre.top;
   let ang, sp;
-  if(B.fireChaos){ ang=rnd(0,6.2832); sp=rnd(95,150); }      // direction folle au départ
-  else { ang=Math.atan2(hy-by,hx-bx)+rnd(-0.28,0.28); sp=rnd(125,175); }
+  if(B.fireChaos){ ang=rnd(0,6.2832); sp=rnd(95,150)*bd().speedMul; }      // direction folle au départ
+  else { ang=Math.atan2(hy-by,hx-bx)+rnd(-0.28,0.28); sp=rnd(125,175)*bd().speedMul; }
   const el=document.createElement('div'); el.className='fireball'; el.textContent='🔥';
   el.style.left=bx+'px'; el.style.top=by+'px'; B.fireLayer.appendChild(el);
   const f={el,x:bx,y:by,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,
            chaos:B.fireChaos, age:0, homeAt:rnd(0.9,1.6)};
   el.addEventListener('click',ev=>{ ev.stopPropagation(); burstAt(B.field,f.x,f.y); beep('click'); removeFireball(f); });
   B.fireballs.push(f);
+  bossFlash();   // légère illumination du démon au moment où la boule de feu jaillit
 }
 function removeFireball(f){ const i=B.fireballs.indexOf(f); if(i>=0)B.fireballs.splice(i,1); try{f.el.remove();}catch(e){} }
 function fireTick(dt){
-  if(B.fireActive){ B.fireSpawnT-=dt; if(B.fireSpawnT<=0){ spawnFireball(); B.fireSpawnT=B.fireRate; } }
+  if(B.fireActive){ B.fireSpawnT-=dt; if(B.fireSpawnT<=0){ spawnFireball(); B.fireSpawnT=B.fireRate*bd().fireMul; } }
   if(!B.fireballs.length) return;
   const fr=B.field, hr=B.hero.el.getBoundingClientRect(), fre=fr.getBoundingClientRect();
   const hx=hr.left+hr.width/2-fre.left, hy=hr.top+hr.height/2-fre.top;
@@ -1556,7 +1754,7 @@ function gaugeUI(label){
   g.innerHTML='<span class="bg-label">'+label+'</span><div class="bg-track"><i id="gaugeFill"></i></div>';
   pl.appendChild(g);
 }
-function startGauge(opts){ B.gauge={val:opts.start||0, decay:opts.decay, perClick:opts.perClick, onFull:opts.onFull, onEmpty:opts.onEmpty, done:false}; updateGaugeUI(); }
+function startGauge(opts){ B.gauge={val:opts.start||0, decay:opts.decay*bd().gaugeDecay, perClick:opts.perClick*bd().gaugeGain, onFull:opts.onFull, onEmpty:opts.onEmpty, done:false}; updateGaugeUI(); }
 function gaugeClick(){ if(!B.gauge||B.gauge.done) return; B.gauge.val=Math.min(100,B.gauge.val+B.gauge.perClick); updateGaugeUI();
   if(B.gauge.val>=100){ B.gauge.done=true; const cb=B.gauge.onFull; B.gauge=null; cb&&cb(); } }
 function gaugeTick(dt){ if(!B.gauge||B.gauge.done) return; B.gauge.val=Math.max(0,B.gauge.val-B.gauge.decay*dt); updateGaugeUI();
@@ -1600,19 +1798,26 @@ function scatterPositions(n, opts){
 
 /* ---- Phase 1 : ASSAUT — pourchasser le boss + jauge qui descend + feu permanent ---- */
 function phaseAssault(ph){
-  B.fireActive=true; B.fireRate=0.62; B.fireSpawnT=0.4;
-  B.bossMove=true; B.bossSpeed=17; B.bossXMin=16; B.bossXMax=84;
   prompt('⚔️ Clique le démon — la jauge redescend ! 🔥');
   gaugeUI('⚔️ Attaque');
-  startGauge({perClick:9, decay:3.5, onFull:()=>{ phaseSucceed(ph.target); }});
   B.boss.el.style.cursor='pointer';
-  bossOn(B.boss.el,'click',()=>{ gaugeClick(); actorPlay(B.boss,'hurt',{loop:false,then:'idle'}); slashFx(); beep('good'); });
+  // chaque clic : seulement un clignotement lumineux (on garde l'anim de feu, pas de taking_hit)
+  bossOn(B.boss.el,'click',()=>{ gaugeClick(); slashFx(); bossFlash(); beep('good'); });
+  bossPhaseIntro('fire', ()=>{
+    B.fireRate=0.62; B.fireSpawnT=0.4;
+    B.bossMove=true; B.bossSpeed=17; B.bossXMin=16; B.bossXMax=84;
+    B.fireActive=true;
+    startGauge({perClick:9, decay:3.5, onFull:()=>{ phaseSucceed(ph.target); }});
+  });
 }
 
 /* ---- Phase cristaux (utilisée 2× : charge x10 et piège final x10) ---- */
 function phaseCrystals(ph){
   const count=ph.count||10;
-  B.fireActive=!ph.noFire; B.fireRate=ph.fireRate||1.15; B.fireSpawnT=0.6; B.bossMove=false; B.fireChaos=!!ph.chaos;
+  const fire=!ph.noFire;
+  bossPhaseIntro(fire?'firetaunt':'roar', ()=>{
+    B.fireActive=fire; B.fireRate=ph.fireRate||1.15; B.fireSpawnT=0.6; B.bossMove=false; B.fireChaos=!!ph.chaos;
+  });
   const pr=prompt('✨ Double-clique les '+count+' cristaux 💎');
   const pl=document.getElementById('phaseLayer');
   let charged=0;
@@ -1632,8 +1837,11 @@ function phaseCrystals(ph){
 /* ---- Phase potion : plus d'ingrédients, mauvais = -1 cœur, placés près du joueur ---- */
 function phasePotion(ph){
   const need=ph.need||5;
-  B.fireActive=true; B.fireRate=1.25; B.fireSpawnT=0.6;
-  B.bossMove=true; B.bossSpeed=14; B.bossXMin=18; B.bossXMax=82;
+  bossPhaseIntro('firetaunt', ()=>{
+    B.fireRate=1.25; B.fireSpawnT=0.6;
+    B.bossMove=true; B.bossSpeed=14; B.bossXMin=18; B.bossXMax=82;
+    B.fireActive=true;
+  });
   const pr=prompt('🧪 Glisse les '+need+' bons ingrédients ✨ — évite les mauvais 💀');
   const pl=document.getElementById('phaseLayer');
   const cau=document.createElement('div'); cau.className='cauldron'; cau.textContent='🫕'; pl.appendChild(cau);
@@ -1666,7 +1874,9 @@ function bingrDrag(e,el,it,cau,onGood){
 /* ---- Phase sortilèges : enchaîner plusieurs sorts (clic droit) ---- */
 function phaseSpells(ph){
   const rounds=ph.rounds||5;
-  B.fireActive=true; B.fireRate=1.5; B.fireSpawnT=0.7; B.bossMove=false;
+  bossPhaseIntro('firetaunt', ()=>{
+    B.fireRate=1.5; B.fireSpawnT=0.7; B.bossMove=false; B.fireActive=true;
+  });
   // on abaisse le démon pour dégager de la place au-dessus de lui (point faible bien visible)
   const slot=document.getElementById('bossSlot'); if(slot) slot.style.top='28%';
   const pl=document.getElementById('phaseLayer');
@@ -1720,10 +1930,10 @@ function phaseSpells(ph){
     B.running=false; if(B.raf) cancelAnimationFrame(B.raf); pauseBossMusic(); clearFireballs();
     closeBriefing();
     const ov=document.createElement('div'); ov.className='boss-brief';
-    ov.innerHTML='<div class="bf-story">❌ Mauvais sortilège !</div>'
+    ov.innerHTML='<div class="bf-story">❌ Mauvais sort !</div>'
       +'<div class="bf-title">Raté !</div>'
-      +'<div class="bf-how">Tu n\'as pas lancé le <b>bon sort</b> : il faut viser le <b>point faible</b> ⚠️ affiché au-dessus du démon, dans le bon ordre.<br>👉 La série <b>repart à zéro</b> : recommence depuis le <b>1<sup>er</sup> sort</b> !</div>'
-      +'<button class="bf-go" id="spellRetry">😤 Je reste concentré !</button>';
+      +'<div class="bf-how">On recommence depuis le <b>1<sup>er</sup> sort</b> 🔁.</div>'
+      +'<button class="bf-go" id="spellRetry">😤 J\'y retourne !</button>';
     B.field.appendChild(ov); B.brief=ov;
     document.getElementById('spellRetry').onclick=()=>{
       closeBriefing(); ri=0; show();
@@ -1735,12 +1945,13 @@ function phaseSpells(ph){
 
 /* ---- Phase horde : BEAUCOUP de monstres, ils foncent sur le joueur, pas de feu ---- */
 function phaseHorde(ph){
-  B.fireActive=false; clearFireballs(); B.bossMove=false;
   const total=ph.count||22, speed=ph.speed||5.5;
   const pl=document.getElementById('phaseLayer');
   const pr=prompt('🔲 Encadre les monstres au lasso — jamais la fée 🧚 !');
   const MAX_FAIRIES=ph.fairies||3;
-  B.hordeRemaining=total; let toSpawn=total, spawnT=0.3, fairies=0;
+  B.hordeRemaining=total; let toSpawn=total, spawnT=0.3, fairies=0, started=false;
+  // l'invocation (horde_cast → channel_horde) + provocation, PUIS la horde déferle
+  bossPhaseIntro('horde', ()=>{ B.fireActive=false; clearFireballs(); B.bossMove=false; started=true; });
   function spawnMinion(enemy){
     const key=enemy?pick(['slime','bat']):'fairy';
     const a=makeActor(key,'minion-actor'); a.el.classList.add('minion');
@@ -1767,6 +1978,7 @@ function phaseHorde(ph){
   }
   function heroPct(){ const r=B.hero.el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(); return {x:(r.left+r.width/2-fr.left)/B.field.clientWidth*100, y:(r.top+r.height/2-fr.top)/B.field.clientHeight*100}; }
   B.phaseUpdate=(dt)=>{
+    if(!started) return;   // la horde n'arrive qu'après l'anim d'invocation
     spawnT-=dt;
     if(spawnT<=0){ if(toSpawn>0){ spawnMinion(true); toSpawn--; } if(Math.random()<0.17 && fairies<MAX_FAIRIES){ spawnMinion(false); fairies++; } spawnT=0.34; }
     const h=heroPct();
@@ -1818,8 +2030,11 @@ function phaseHorde(ph){
 const GRIMOIRE_NAMES=['Sort de Lumière','Potion de Force','Bouclier Runique','Flamme Bleue','Vol du Corbeau','Soin Mineur','Mur de Pierre','Éclair Ancien','Brume Grise','Chant des Elfes','Givre Éternel','Racine Profonde','Œil du Dragon','Vent Hurlant','Cendre Noire','Or des Nains','Larme de Lune','Griffe d\'Ours','Aile de Fée','Souffle Glacé','Feu Follet','Pas de l\'Ombre'];
 function phaseGrimoire(ph){
   const total=ph.total||5;
-  B.fireActive=true; B.fireRate=1.1; B.fireSpawnT=0.8;
-  B.bossMove=true; B.bossSpeed=16; B.bossXMin=14; B.bossXMax=54;
+  bossPhaseIntro('firetaunt', ()=>{
+    B.fireRate=1.1; B.fireSpawnT=0.8;
+    B.bossMove=true; B.bossSpeed=16; B.bossXMin=14; B.bossXMax=54;
+    B.fireActive=true;
+  });
   const pl=document.getElementById('phaseLayer');
   const pr=prompt('📖 Molette pour défiler — clique le sort qui brille ✨');
   let found=0;
@@ -1842,36 +2057,37 @@ function phaseGrimoire(ph){
 /* ---- Phase finale : enfermer le démon — il hurle et tremble sur place (facile à cliquer),
        mais la jauge chute très vite et part de la moitié. Si elle tombe à 0 → on rejoue le piège. ---- */
 function phaseImprison(ph){
-  B.fireActive=false; clearFireballs();
-  B.bossMove=false;  // le démon ne fuit plus : il reste centré (facile à cliquer)
   prompt('⛓️ Clique vite et sans cesse — la jauge chute très vite !');
   gaugeUI('⛓️ Piège');
-  startGauge({start:50, perClick:3.5, decay:17,
-    onFull:()=>{ B.phaseUpdate=null; const slot=document.getElementById('bossSlot'); if(slot) slot.style.left='50%'; bossDefeated(); },
-    onEmpty:()=>{
-      B.phaseUpdate=null;
-      // pause + popup centrée que le joueur doit valider pour retourner au piège de cristal
-      B.running=false; if(B.raf) cancelAnimationFrame(B.raf); pauseBossMusic();
-      clearPhase(); closeBriefing();
-      const trapIdx=B.phases.findIndex(p=>p.trap); if(trapIdx>=0) B.phaseIdx=trapIdx;
-      const ov=document.createElement('div'); ov.className='boss-brief';
-      ov.innerHTML='<div class="bf-story">💥 Le démon s\'est débattu !</div>'
-        +'<div class="bf-title">Il a résisté à l\'enfermement !</div>'
-        +'<div class="bf-how">Tu n\'as pas cliqué <b>assez vite</b> : la jauge ⛓️ est tombée à zéro et le démon a <b>brisé le piège</b>.<br>👉 Il faut <b>recharger le piège de cristal</b> 💎 avant de réessayer de l\'enfermer !</div>'
-        +'<button class="bf-go" id="imprisonRetry">😤 Je ne le laisserai pas s\'échapper cette fois !</button>';
-      B.field.appendChild(ov); B.brief=ov;
-      document.getElementById('imprisonRetry').onclick=()=>{
-        closeBriefing();
-        B.running=true; B.last=0; B.raf=requestAnimationFrame(bossLoop); resumeBossMusic();
-        nextPhase();
-      };
-    }});
-  // le démon hurle et tremble de droite à gauche sur place
-  actorPlay(B.boss,'roar',{loop:true});
-  let wob=0;
-  B.phaseUpdate=(dt)=>{ wob+=dt; const slot=document.getElementById('bossSlot'); if(slot) slot.style.left=(50+Math.sin(wob*26)*2.4)+'%'; };
   B.boss.el.style.cursor='pointer';
-  bossOn(B.boss.el,'click',()=>{ gaugeClick(); slashFx(); beep('good'); });
+  // chaque clic : seulement un clignotement lumineux (pas de taking_hit pendant le martèlement)
+  bossOn(B.boss.el,'click',()=>{ gaugeClick(); slashFx(); bossFlash(); beep('good'); });
+  // le démon RUGIT puis enchaîne en boucle de rugissement (boucle_roar) ; le piège (jauge) ne démarre qu'ensuite
+  bossPhaseIntro('imprison', ()=>{
+    B.bossMove=false;  // le démon ne fuit plus : il reste centré (facile à cliquer)
+    let wob=0;
+    B.phaseUpdate=(dt)=>{ wob+=dt; const slot=document.getElementById('bossSlot'); if(slot) slot.style.left=(50+Math.sin(wob*26)*2.4)+'%'; };
+    startGauge({start:50, perClick:3.5, decay:17,
+      onFull:()=>{ B.phaseUpdate=null; const slot=document.getElementById('bossSlot'); if(slot) slot.style.left='50%'; bossDefeated(); },
+      onEmpty:()=>{
+        B.phaseUpdate=null;
+        // pause + popup centrée que le joueur doit valider pour retourner au piège de cristal
+        B.running=false; if(B.raf) cancelAnimationFrame(B.raf); pauseBossMusic();
+        clearPhase(); closeBriefing();
+        const trapIdx=B.phases.findIndex(p=>p.trap); if(trapIdx>=0) B.phaseIdx=trapIdx;
+        const ov=document.createElement('div'); ov.className='boss-brief';
+        ov.innerHTML='<div class="bf-story">💥 Le démon s\'est échappé !</div>'
+          +'<div class="bf-title">Le piège a cédé !</div>'
+          +'<div class="bf-how">Recharge le <b>piège de cristal</b> 💎, puis réessaie !</div>'
+          +'<button class="bf-go" id="imprisonRetry">😤 J\'y retourne !</button>';
+        B.field.appendChild(ov); B.brief=ov;
+        document.getElementById('imprisonRetry').onclick=()=>{
+          closeBriefing();
+          B.running=true; B.last=0; B.raf=requestAnimationFrame(bossLoop); resumeBossMusic();
+          nextPhase();
+        };
+      }});
+  });
 }
 
 /* =========================================================
@@ -1919,6 +2135,7 @@ function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
 
 function openRoundPopup(){
   const s=currentStep, jalon=s.kind==='jalon';
+  if(s && s.mode==='boss') return openBossGate();   // popup dédiée au boss (choix du mode + consignes)
   modal.className='modal'+(jalon?' test-modal':'');
   modal.innerHTML=
     '<span class="m-emoji">'+s.emoji+'</span>'
@@ -1934,6 +2151,43 @@ function openRoundPopup(){
     if(activeGame){ closeOverlay(); audioCtx(); resumeActive(); }
     else { closeOverlay(); audioCtx(); launchGame(); }
   };
+}
+/* Popup d'arrivée devant le boss : portrait + consignes + choix du mode (Facile / Moyen / Difficile).
+   Si un combat est déjà en cours (rouvert via « Revoir la consigne »), on propose simplement de reprendre. */
+function openBossGate(){
+  const resume = !!activeGame;
+  let html =
+    '<img class="boss-gate-portrait" src="'+BOSS_PORTRAIT+'" alt="Gruk" draggable="false">'
+    + '<div class="kicker">Boss final</div>'
+    + '<h2>Gruk, le Démon Gardien</h2>'
+    + '<p>Te voilà au sommet de la tour : <b>Gruk, le Démon Gardien</b> t\'attend !</p>'
+    + '<div class="howto test"><p class="h-head">👉 Comment faire :</p>'
+    +   '<p>🔥 <b>Clique sur les flammes</b> pour te protéger.<br>'
+    +   '🎯 <b>Suis les consignes</b> pour chaque phase du boss.<br>'
+    +   '🧪 Quand tu as besoin, <b>clic droit sur la potion de vie</b> (en bas à gauche) pour récupérer <b>2 cœurs</b> ❤️❤️ !</p></div>';
+  if(resume){
+    html += '<div class="m-actions"><button class="m-btn primary test" id="bossResume">⚔️ Reprendre le combat</button></div>';
+  } else {
+    html += '<p style="font-weight:800;color:#7a5b1e;margin:6px 0 0">Choisis ton mode :</p>'
+      + '<div class="boss-modes">'
+      + ['easy','medium','hard'].map(k=>{ const m=BOSS_MODES[k];
+          return '<button class="boss-mode-btn is-'+k+'" data-mode="'+k+'">'
+            + '<span class="bm-ic">'+m.emoji+'</span>'
+            + '<span class="bm-txt"><span class="bm-name">'+m.label+'</span><span class="bm-sub">'+m.sub+'</span></span>'
+            + '<span class="bm-tag">'+m.tag+'</span></button>'; }).join('')
+      + '</div>';
+  }
+  modal.className='modal test-modal';
+  modal.innerHTML=html;
+  openOverlay();
+  if(resume){
+    document.getElementById('bossResume').onclick=()=>{ closeOverlay(); audioCtx(); resumeActive(); };
+  } else {
+    modal.querySelectorAll('.boss-mode-btn').forEach(b=>{
+      b.onclick=()=>{ bossMode=b.getAttribute('data-mode'); try{localStorage.setItem('ms_bossmode',bossMode);}catch(e){}
+        closeOverlay(); audioCtx(); launchGame(); };
+    });
+  }
 }
 function gameHintLine(){
   const g=LEVELS[currentLevel-1].game;
@@ -1964,7 +2218,7 @@ function onWin(){
       +'<p>Tu as refait cette manche. On revient à <b>ta manche en cours</b>, ta progression est gardée.</p>'
       +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma manche</button></div>';
     openOverlay();
-    document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
+    document.getElementById('bk').onclick=()=>{ closeOverlay(); if(progressIdx>=STEPS.length) courseFinish(); else startStep(progressIdx); };
     return;
   }
   const last=playIdx===STEPS.length-1;
@@ -2002,7 +2256,8 @@ function loadLevel(n, stepIdx, showIntro){
   store.set('ms_curlevel', String(n));
   refreshLevelBtn();
   const startIdx=Math.min(progressIdx, STEPS.length-1);
-  if(showIntro) openLevelIntro(n, ()=>startStep(startIdx));
+  // pour le boss, la popup d'intro générique est remplacée par le « portail » (openBossGate via startStep)
+  if(showIntro && lvl.game!=='boss') openLevelIntro(n, ()=>startStep(startIdx));
   else startStep(startIdx);
 }
 function openLevelIntro(n, cont){
@@ -2050,9 +2305,11 @@ function courseFinish(){
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
     +'<p>Incroyable ! Tu as fini les <b>6 niveaux</b> de <b>La souris</b> <b>et vaincu le Démon Gardien</b> 🐲 ! Le clic, le glisser-déposer, le double-clic, le clic droit, la sélection et la molette n\'ont plus de secret pour toi. Tu es un vrai pro de la souris ! 👏</p>'
     +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
+    +'<button class="m-btn ghost" id="replayBoss">⚔️ Rejouer le combat</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   openOverlay();
   document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
+  document.getElementById('replayBoss').onclick=()=>{ closeOverlay(); audioCtx(); const bi=STEPS.findIndex(s=>s.mode==='boss'); startStep(bi>=0?bi:STEPS.length-1); };
 }
 
 /* ---- sélecteur de niveaux ---- */

@@ -1,0 +1,145 @@
+{
+  "group_id": null,
+  "states": [
+    {
+      "character": {
+        "id": "93d5e9ca-4653-4566-80bb-e470631e45a4",
+        "name": "a chunky red horned demon",
+        "prompt": "a chunky red horned demon ogre boss, idle breathing animation, standing with arms slightly out, belly and shoulders gently rising and falling, two green curved horns, fangs, angry eyes — 16-bit SNES pixel art, bold solid black outline, flat cel shading, limited saturated palette, clean hard pixels, no anti-aliasing, no blur, transparent background, character centered and identical in every frame, full body, feet on bottom line",
+        "size": {
+          "width": 124,
+          "height": 124
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-06-20T21:07:26.918435+00:00"
+      },
+      "folder": "a_chunky_red_horned_demon",
+      "frames": {
+        "rotations": {
+          "south": "a_chunky_red_horned_demon/rotations/south.png",
+          "south-east": "a_chunky_red_horned_demon/rotations/south-east.png",
+          "east": "a_chunky_red_horned_demon/rotations/east.png",
+          "north-east": "a_chunky_red_horned_demon/rotations/north-east.png",
+          "north": "a_chunky_red_horned_demon/rotations/north.png",
+          "north-west": "a_chunky_red_horned_demon/rotations/north-west.png",
+          "west": "a_chunky_red_horned_demon/rotations/west.png",
+          "south-west": "a_chunky_red_horned_demon/rotations/south-west.png"
+        },
+        "animations": {
+          "idle": {
+            "south": [
+              "a_chunky_red_horned_demon/animations/idle/south/frame_000.png",
+              "a_chunky_red_horned_demon/animations/idle/south/frame_001.png",
+              "a_chunky_red_horned_demon/animations/idle/south/frame_002.png",
+              "a_chunky_red_horned_demon/animations/idle/south/frame_003.png",
+              "a_chunky_red_horned_demon/animations/idle/south/frame_004.png",
+              "a_chunky_red_horned_demon/animations/idle/south/frame_005.png",
+              "a_chunky_red_horned_demon/animations/idle/south/frame_006.png",
+              "a_chunky_red_horned_demon/animations/idle/south/frame_007.png",
+              "a_chunky_red_horned_demon/animations/idle/south/frame_008.png"
+            ]
+          },
+          "roar": {
+            "south": [
+              "a_chunky_red_horned_demon/animations/roar/south/frame_000.png",
+              "a_chunky_red_horned_demon/animations/roar/south/frame_001.png",
+              "a_chunky_red_horned_demon/animations/roar/south/frame_002.png",
+              "a_chunky_red_horned_demon/animations/roar/south/frame_003.png",
+              "a_chunky_red_horned_demon/animations/roar/south/frame_004.png",
+              "a_chunky_red_horned_demon/animations/roar/south/frame_005.png",
+              "a_chunky_red_horned_demon/animations/roar/south/frame_006.png",
+              "a_chunky_red_horned_demon/animations/roar/south/frame_007.png",
+              "a_chunky_red_horned_demon/animations/roar/south/frame_008.png"
+            ]
+          },
+          "boucle_roar": {
+            "south": [
+              "a_chunky_red_horned_demon/animations/boucle_roar/boucle_roar_0001.png",
+              "a_chunky_red_horned_demon/animations/boucle_roar/boucle_roar_0002.png",
+              "a_chunky_red_horned_demon/animations/boucle_roar/boucle_roar_0003.png"
+            ]
+          },
+          "taking_hit": {
+            "south": [
+              "a_chunky_red_horned_demon/animations/taking_hit/south/frame_000.png",
+              "a_chunky_red_horned_demon/animations/taking_hit/south/frame_001.png",
+              "a_chunky_red_horned_demon/animations/taking_hit/south/frame_002.png",
+              "a_chunky_red_horned_demon/animations/taking_hit/south/frame_003.png",
+              "a_chunky_red_horned_demon/animations/taking_hit/south/frame_004.png",
+              "a_chunky_red_horned_demon/animations/taking_hit/south/frame_005.png",
+              "a_chunky_red_horned_demon/animations/taking_hit/south/frame_006.png",
+              "a_chunky_red_horned_demon/animations/taking_hit/south/frame_007.png",
+              "a_chunky_red_horned_demon/animations/taking_hit/south/frame_008.png"
+            ]
+          },
+          "fire_begin": {
+            "south": [
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_000.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_001.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_002.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_003.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_004.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_005.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_006.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_007.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_008.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_009.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_010.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_011.png",
+              "a_chunky_red_horned_demon/animations/fire_begin/south/frame_012.png"
+            ]
+          },
+          "channeling_fire": {
+            "south": [
+              "a_chunky_red_horned_demon/animations/channeling_fire/south/frame_000.png",
+              "a_chunky_red_horned_demon/animations/channeling_fire/south/frame_001.png",
+              "a_chunky_red_horned_demon/animations/channeling_fire/south/frame_002.png",
+              "a_chunky_red_horned_demon/animations/channeling_fire/south/frame_003.png"
+            ]
+          },
+          "horde_cast": {
+            "south": [
+              "a_chunky_red_horned_demon/animations/horde_cast/south/frame_000.png",
+              "a_chunky_red_horned_demon/animations/horde_cast/south/frame_001.png",
+              "a_chunky_red_horned_demon/animations/horde_cast/south/frame_002.png",
+              "a_chunky_red_horned_demon/animations/horde_cast/south/frame_003.png",
+              "a_chunky_red_horned_demon/animations/horde_cast/south/frame_004.png",
+              "a_chunky_red_horned_demon/animations/horde_cast/south/frame_005.png",
+              "a_chunky_red_horned_demon/animations/horde_cast/south/frame_006.png",
+              "a_chunky_red_horned_demon/animations/horde_cast/south/frame_007.png",
+              "a_chunky_red_horned_demon/animations/horde_cast/south/frame_008.png"
+            ]
+          },
+          "channel_horde": {
+            "south": [
+              "a_chunky_red_horned_demon/animations/channel_horde/channel_horde_0001.png",
+              "a_chunky_red_horned_demon/animations/channel_horde/channel_horde_0002.png",
+              "a_chunky_red_horned_demon/animations/channel_horde/channel_horde_0003.png"
+            ]
+          },
+          "death": {
+            "south": [
+              "a_chunky_red_horned_demon/animations/death/south/frame_000.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_001.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_002.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_003.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_004.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_005.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_006.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_007.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_008.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_009.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_010.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_011.png",
+              "a_chunky_red_horned_demon/animations/death/south/frame_012.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.0",
+  "export_date": "2026-06-22T18:35:21.647198"
+}
