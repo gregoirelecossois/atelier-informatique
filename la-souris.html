@@ -306,6 +306,20 @@
   .confetti i{position:absolute;top:-10px;width:10px;height:14px;opacity:.9;animation:fall linear forwards;}
   @keyframes fall{to{transform:translateY(110vh) rotate(540deg);}}
 
+  /* ---------- Écran de préchargement des sprites (avant le combat) ---------- */
+  .sprite-loader{position:fixed;inset:0;z-index:140;display:flex;align-items:center;justify-content:center;
+    background:rgba(14,22,34,.92);backdrop-filter:blur(5px);transition:opacity .35s;}
+  .sprite-loader.fade{opacity:0;}
+  .sl-box{display:flex;flex-direction:column;align-items:center;gap:16px;color:#fff;text-align:center;}
+  .sl-emoji{font-size:5rem;line-height:1;animation:slBob 1.4s ease-in-out infinite;
+    filter:drop-shadow(0 0 18px rgba(255,120,40,.6)) drop-shadow(0 14px 24px rgba(0,0,0,.5));}
+  @keyframes slBob{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-10px) scale(1.06);}}
+  .sl-title{font-size:1.25rem;font-weight:800;letter-spacing:.3px;}
+  .sl-barwrap{width:300px;max-width:74vw;height:16px;border-radius:10px;background:rgba(255,255,255,.15);
+    overflow:hidden;box-shadow:inset 0 0 0 2px rgba(255,255,255,.18);}
+  .sl-bar{height:100%;width:0;border-radius:10px;background:linear-gradient(90deg,#ffd76a,#ff7a30);transition:width .2s ease;}
+  .sl-pct{font-size:.95rem;opacity:.85;font-variant-numeric:tabular-nums;}
+
   /* ---------- Animation cadenas (déblocage) ---------- */
   .lock-stage{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;
     background:rgba(14,22,34,.82);backdrop-filter:blur(5px);transition:opacity .4s;}
@@ -1603,7 +1617,72 @@ function bossArenaHTML(){
     + '<div class="health-potion" id="healthPotion" title="Potion de vie" ondragstart="return false"><img class="hp-bottle" id="hpBottle" src="'+POTION_FULL+'" alt="🧪" draggable="false"><span class="hp-hint">🖱️ clic droit</span></div>'
     + '</div>';
 }
+/* ---- Préchargement des sprites AVANT le combat (évite les emojis de repli en jeu) ---- */
+/* Liste à plat de toutes les images du combat : personnages (frames embarquées) + objets. */
+function allBossSpriteUrls(){
+  const urls=[];
+  for(const key in CHARS){
+    const c=CHARS[key]; const data=SPRITE_FRAMES[c.folder]; if(!data) continue;
+    const base=SPRITE_ROOT+c.folder+'/';
+    if(data.rotation) urls.push(base+data.rotation);
+    for(const logical in c.anims){
+      const list=data.anims[c.anims[logical]];
+      if(list) list.forEach(p=>urls.push(base+p));
+    }
+  }
+  urls.push(BOSS_PORTRAIT, HEART_FULL, HEART_EMPTY, POTION_FULL, POTION_EMPTY, CALDRON_IDLE, CRYSTAL_BLUE_FIXE);
+  [].push.apply(urls, CALDRON_BOILING);
+  [].push.apply(urls, CRYSTAL_TRANSFORM);
+  [].push.apply(urls, CRYSTAL_YELLOW);
+  FIREBALL_ANIMS.forEach(a=>[].push.apply(urls, a));
+  INGREDIENTS.forEach(o=>urls.push(o.img));
+  return Array.from(new Set(urls));   // dédoublonne (ex. demon/rotations/south.png)
+}
+/* Charge réellement chaque image (onload/onerror) en remplissant le cache navigateur.
+   Les <img> créés ensuite par le jeu, avec la même URL, sont alors servis instantanément. */
+function preloadAll(urls, onProgress){
+  return new Promise(resolve=>{
+    const total=urls.length; if(!total){ resolve(); return; }
+    let done=0, finished=false;
+    const finish=()=>{ if(!finished){ finished=true; resolve(); } };
+    const tick=()=>{ done++; if(onProgress) onProgress(done,total); if(done>=total) finish(); };
+    urls.forEach(u=>{ const im=new Image(); im.onload=tick; im.onerror=tick; im.src=u; });
+    setTimeout(finish, 12000);   // filet de sécurité : ne jamais bloquer plus de 12 s
+  });
+}
+function showBossLoader(){
+  let el=document.getElementById('spriteLoader');
+  if(!el){
+    el=document.createElement('div'); el.className='sprite-loader'; el.id='spriteLoader';
+    el.innerHTML='<div class="sl-box"><div class="sl-emoji">🐲</div>'
+      +'<div class="sl-title">Préparation du combat…</div>'
+      +'<div class="sl-barwrap"><div class="sl-bar" id="slBar"></div></div>'
+      +'<div class="sl-pct" id="slPct">0%</div></div>';
+    document.body.appendChild(el);
+  }
+  setBossLoaderProgress(0,1);
+  return el;
+}
+function setBossLoaderProgress(done,total){
+  const pct = total ? Math.round(done/total*100) : 100;
+  const bar=document.getElementById('slBar'), p=document.getElementById('slPct');
+  if(bar) bar.style.width=pct+'%';
+  if(p) p.textContent=pct+'%';
+}
+function hideBossLoader(){
+  const el=document.getElementById('spriteLoader'); if(!el) return;
+  el.classList.add('fade');
+  setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 360);
+}
+/* Point d'entrée : on précharge tout, barre de progression à l'appui, puis on lance l'arène. */
 function startBoss(step){
+  showBossLoader();
+  preloadAll(allBossSpriteUrls(), setBossLoaderProgress).then(()=>{
+    hideBossLoader();
+    startBossArena(step);
+  });
+}
+function startBossArena(step){
   stopGame(); MG.cleanup=[];
   stage.innerHTML=bossArenaHTML();
   B.field=document.getElementById('bossField');
