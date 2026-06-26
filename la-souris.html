@@ -366,8 +366,8 @@
   .boss-hpbar > i{display:block;height:100%;width:100%;background:#e53e3e;transition:width .35s ease;}
   /* position de base du démon : partie HAUTE, juste sous la barre d'attaque/piège (90-112px),
      identique dans toutes les phases (l'override n'existe que pour « les sortilèges », plus bas) */
-  .boss-slot{position:absolute;top:120px;left:50%;transform:translateX(-50%);z-index:4;}
-  .hero-slot{position:absolute;bottom:15%;left:50%;transform:translateX(-50%);z-index:5;}
+  .boss-slot{position:absolute;top:63px;left:50%;transform:translateX(-50%);z-index:4;}
+  .hero-slot{position:absolute;bottom:11%;left:50%;transform:translateX(-50%);z-index:5;}
   .actor{position:relative;display:flex;align-items:flex-end;justify-content:center;}
   .actor-img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:none;user-select:none;-webkit-user-drag:none;pointer-events:none;}
   .actor{user-select:none;-webkit-user-select:none;}
@@ -420,7 +420,7 @@
 
   .phase-layer{position:absolute;inset:0;z-index:6;pointer-events:none;}
   .phase-layer .fireball,.phase-layer .bcrystal,.phase-layer .bingr,.phase-layer .ctxmenu,.phase-layer .grimoire{pointer-events:auto;}
-  /* consignes du jeu : placées EN BAS, sous le chevalier, pour dégager le haut (barres + démon) */
+  /* consignes du jeu : placées EN BAS, sous le sorcier, pour dégager le haut (barres + démon) */
   .boss-prompt{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);max-width:74%;text-align:center;
     background:rgba(0,0,0,.62);color:#fff;font-weight:600;padding:8px 16px;border-radius:999px;z-index:17;font-size:1.05rem;
     font-family:"Pixelify Sans",sans-serif;}
@@ -451,7 +451,7 @@
   .bcrystal{position:absolute;transform:translate(-50%,-50%);font-size:2.5rem;cursor:pointer;z-index:9;user-select:none;filter:drop-shadow(0 0 8px #7dd3fc);}
   .bcrystal.charged{filter:drop-shadow(0 0 16px #fde047) brightness(1.25);}
   .bcrystal-img{width:62px;height:62px;object-fit:contain;image-rendering:pixelated;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;}
-  /* chaudron : à GAUCHE du chevalier (même hauteur), pas centré sous lui */
+  /* chaudron : à GAUCHE du sorcier (même hauteur), pas centré sous lui */
   .cauldron{position:absolute;left:38%;bottom:17%;transform:translateX(-50%);font-size:3.1rem;z-index:7;filter:drop-shadow(0 0 10px #a855f7);}
   .cauldron-img{width:84px;height:84px;object-fit:contain;image-rendering:pixelated;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;}
   /* légère vibration du chaudron quand on y met un bon ingrédient (0.5s) */
@@ -477,20 +477,20 @@
   .grimoire.side{inset:22% 2% 7% auto;width:34%;}
   .fire-layer{position:absolute;inset:0;z-index:11;pointer-events:none;}
   .fire-layer .fireball{pointer-events:auto;}
-  .boss-gauge{position:absolute;top:90px;left:50%;transform:translateX(-50%);width:min(440px,82%);z-index:13;display:flex;align-items:center;gap:9px;}
+  .boss-gauge{position:absolute;top:62px;left:50%;transform:translateX(-50%);width:min(440px,82%);z-index:13;display:flex;align-items:center;gap:9px;}
   .boss-gauge .bg-label{color:#fff;font-weight:600;font-size:1rem;text-shadow:0 1px 3px #000;white-space:nowrap;font-family:"Pixelify Sans",sans-serif;}
   .boss-gauge .bg-track{flex:1;height:18px;background:rgba(0,0,0,.5);border:3px solid #000;border-radius:0;overflow:hidden;box-shadow:2px 2px 0 #000,inset 1px 1px 0 rgba(0,0,0,.6);image-rendering:pixelated;}
   .boss-gauge .bg-track > i{display:block;height:100%;width:0;background:#16a34a;transition:width .08s linear;}
-  .boss-aura.weak{display:flex;flex-direction:column;align-items:center;gap:3px;z-index:19;
-    background:rgba(12,5,14,.78);border:3px solid #ffd76a;border-radius:16px;padding:7px 14px 10px;
-    box-shadow:0 8px 22px -6px rgba(0,0,0,.75),0 0 26px rgba(255,120,60,.55);animation:weakPulse 1s ease-in-out infinite;}
+  .boss-aura.weak{display:flex;flex-direction:column;align-items:center;gap:1px;z-index:19;
+    background:rgba(12,5,14,.78);border:2px solid #ffd76a;border-radius:11px;padding:3px 9px 5px;
+    box-shadow:0 6px 16px -6px rgba(0,0,0,.75),0 0 18px rgba(255,120,60,.5);animation:weakPulse 1s ease-in-out infinite;}
   @keyframes weakPulse{0%,100%{box-shadow:0 8px 22px -6px rgba(0,0,0,.75),0 0 18px rgba(255,120,60,.45);}50%{box-shadow:0 8px 22px -6px rgba(0,0,0,.75),0 0 34px rgba(255,160,60,.8);}}
   .boss-aura.weak::after{content:'';position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);
     border:9px solid transparent;border-top-color:#ffd76a;}
-  .boss-aura.weak .aw-tag{font-size:.74rem;font-weight:800;color:#fff;background:#ef4444;padding:2px 12px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.5);}
-  .boss-aura.weak .aw-icon{font-size:3.1rem;line-height:1;animation:emoBob 1.2s ease-in-out infinite;filter:drop-shadow(0 0 8px #ffd76a);}
+  .boss-aura.weak .aw-tag{font-size:.6rem;font-weight:800;color:#fff;background:#ef4444;padding:1px 9px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.5);}
+  .boss-aura.weak .aw-icon{font-size:2.1rem;line-height:1;animation:emoBob 1.2s ease-in-out infinite;filter:drop-shadow(0 0 8px #ffd76a);}
   .health-potion{position:absolute;left:14px;bottom:12px;z-index:16;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;user-select:none;}
-  .health-potion .hp-bottle{width:96px;height:96px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 8px #ff6b9d);animation:emoBob 2.4s ease-in-out infinite;user-select:none;-webkit-user-drag:none;}
+  .health-potion .hp-bottle{width:77px;height:77px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 8px #ff6b9d);animation:emoBob 2.4s ease-in-out infinite;user-select:none;-webkit-user-drag:none;}
   .health-potion .hp-hint{font-size:1.2rem;font-weight:800;color:#ffe9b0;background:rgba(0,0,0,.5);padding:4px 12px;border-radius:999px;white-space:nowrap;}
   .health-potion.empty{cursor:default;}
   .health-potion.empty .hp-bottle{opacity:.6;animation:none;filter:none;}
@@ -797,6 +797,18 @@ function demonSound(key,opts){
     const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
 }
 function demonTaunt(){ demonSound(pick(['noMercy','noMore','provoke'])); }   // provocation aléatoire
+/* ---- sons du héros (sorcier) ---- */
+const HERO_SND_ROOT='sounds/wizard/';
+const HERO_SOUNDS={ magical_hit:'magical_hit.mp3' };
+const _heroAudio={};
+function heroSound(key,opts){
+  if(!soundOn) return; opts=opts||{};
+  const file=HERO_SOUNDS[key]; if(!file) return;
+  let a=_heroAudio[key];
+  if(!a){ a=new Audio(HERO_SND_ROOT+file); _heroAudio[key]=a; }
+  try{ a.pause(); a.currentTime=0; a.volume=opts.vol!=null?opts.vol:0.75; a.playbackRate=opts.rate||1;
+    const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+}
 function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
 document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('ms_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); if(B.running) resumeBossMusic(); } else { pauseBossMusic(); } };
 
@@ -1366,17 +1378,17 @@ function grabStar(row){
 /* ---- Système de sprites (frames PixelLab + repli emoji) ---- */
 const SPRITE_ROOT='sprites/';
 // Registre des personnages. folder = dossier d'export PixelLab (null = pas encore livré → emoji).
-// dir = direction utilisée ('north' = dos pour le chevalier, 'south' = face sinon).
+// dir = direction utilisée ('north' = dos pour le sorcier, 'south' = face sinon).
 const CHARS={
-  boss:  { folder:'a_chunky_red_horned_demon', dir:'south', emoji:'🐲', size:160,
+  boss:  { folder:'demon', dir:'south', emoji:'🐲', size:176,
            anims:{idle:'idle',hurt:'taking_hit',roar:'roar',boucle_roar:'boucle_roar',death:'death',
                   fire_begin:'fire_begin',channeling_fire:'channeling_fire',
                   horde_cast:'horde_cast',channel_horde:'channel_horde'} },
-  hero:  { folder:null, dir:'north', emoji:'🧙', size:84,
-           anims:{idle:'idle',attack:'attack',cast:'cast',hurt:'hurt',win:'win'} },
+  hero:  { folder:'wizard', dir:'north', emoji:'🧙', size:176,
+           anims:{idle:'idle', hurt:'taking_hit', staff_slam:'staff_slam', magical_staff:'magical_staff'} },
   slime: { folder:'green_slime', dir:'south', emoji:'🟢', size:29, anims:{idle:'idle',pop:'idle'} },   // sprite réduit de moitié (horde)
   bat:   { folder:'bat', dir:'south', emoji:'🦇', size:54, anims:{fly:'fly',pop:'fly'} },
-  fairy: { folder:null, dir:'south', emoji:'🧚', size:46, anims:{idle:'idle'} }
+  fairy: { folder:'fairy', dir:'south', emoji:'🧚', size:46, anims:{fly:'fly', idle:'fly'} }
 };
 const spriteCache={};   // charKey -> {static:Image|null, anims:{logical:[Image,...]}} | null
 function preloadImg(src){ const im=new Image(); im.src=src; return im; }
@@ -1385,7 +1397,7 @@ function seq(prefix,count,pad,start){ const out=[]; start=start||0; for(let i=0;
 /* Manifeste des frames EMBARQUÉ dans le JS : indispensable pour que les sprites s'affichent
    quand le jeu est ouvert en local (file://), car fetch(metadata.json) y est bloqué par le navigateur. */
 const SPRITE_FRAMES={
-  a_chunky_red_horned_demon:{
+  demon:{
     rotation:'rotations/south.png',
     anims:{
       idle:           seq('animations/idle/south/frame_',9,3,0),
@@ -1401,7 +1413,22 @@ const SPRITE_FRAMES={
   },
   // monstres de la horde : dossiers de frames « à plat » (pas de rotation), animation en boucle
   green_slime:{ anims:{ idle: seq('frame_',9,3,0) } },                 // frame_000…frame_008
-  bat:        { anims:{ fly:  seq('untitled_',9,4,1) } }               // untitled_0001…untitled_0009
+  bat:        { anims:{ fly:  seq('frame_',9,3,0) } },                 // frame_000…frame_008
+  // fée (fairy) : une seule anim « fly » bouclée pendant qu'elle est à l'écran (17 frames)
+  fairy:{
+    rotation:'rotations/south.png',
+    anims:{ fly: seq('animations/fly/frame_',17,3,0) }
+  },
+  // magicien du héros (wizard) — vue de dos (north) ; magical_staff joué à la mort du boss
+  wizard:{
+    rotation:'rotations/north.png',
+    anims:{
+      idle:          seq('animations/idle/north/frame_',9,3,0),
+      taking_hit:    seq('animations/taking_hit/north/frame_',9,3,0),
+      staff_slam:    seq('animations/staff_slam/north/frame_',9,3,0),
+      magical_staff: seq('animations/magical_staff/north/frame_',9,3,0)
+    }
+  }
 };
 function loadChar(key){
   const c=CHARS[key];
@@ -1511,41 +1538,40 @@ let bossMode = (function(){ try{ const m=localStorage.getItem('ms_bossmode'); re
 function bd(){ return BOSS_MODES[bossMode]||BOSS_MODES.hard; }
 function bCount(n,min){ return Math.max(min||1, Math.round(n*bd().countMul)); }   // mise à l'échelle d'un nombre de cibles
 /* portrait de référence du boss (sprite « south » du dossier rotations) */
-const BOSS_PORTRAIT = SPRITE_ROOT+'a_chunky_red_horned_demon/rotations/south.png';
+const BOSS_PORTRAIT = SPRITE_ROOT+'demon/rotations/south.png';
 
 /* ---- Sprites d'objets du combat (images PNG simples, chargées via <img> → OK en file:// et http) ---- */
-const HEART_FULL  = SPRITE_ROOT+'Heart/heart pixel art 64x64_0001.png';   // cœur plein
-const HEART_EMPTY = SPRITE_ROOT+'Heart/heart pixel art 64x64_0002.png';   // cœur vide
-const POTION_FULL  = SPRITE_ROOT+'Life_potion/full/potion_full.png';
-const POTION_EMPTY = SPRITE_ROOT+'Life_potion/empty/potion_empty.png';
-const CALDRON_IDLE    = SPRITE_ROOT+'Caldron/caldron/rotations/unknown.png';
-const CALDRON_BOILING = seq(SPRITE_ROOT+'Caldron/caldron/animations/caldron_boiling/unknown/frame_',9,3,0);
+const HEART_FULL  = SPRITE_ROOT+'heart/full.png';    // cœur plein
+const HEART_EMPTY = SPRITE_ROOT+'heart/empty.png';   // cœur vide
+const POTION_FULL  = SPRITE_ROOT+'life_potion/full.png';
+const POTION_EMPTY = SPRITE_ROOT+'life_potion/empty.png';
+const CALDRON_IDLE    = SPRITE_ROOT+'cauldron/idle.png';
+const CALDRON_BOILING = seq(SPRITE_ROOT+'cauldron/animations/boiling/frame_',9,3,0);
 /* cristaux : sprite bleu fixe → 12 frames de transformation (bleu→jaune) → boucle jaune (9 frames) */
-const CRYSTAL_BLUE_FIXE = SPRITE_ROOT+'Blue_crystal/Blue_crystal/fixe/unknown.png';
-const _BCRY = SPRITE_ROOT+'Blue_crystal/Blue_crystal/animations/The_blue_crystal_cluster_begins_to_vibrate_its_de/unknown/';
-const CRYSTAL_TRANSFORM = seq(_BCRY+'frame_',10,3,0).concat([_BCRY+'frame_0010.png', _BCRY+'frame_0011.png']);   // frame_000…009 (pad 3) + frame_0010, frame_0011 (pad 4)
-const CRYSTAL_YELLOW = seq(SPRITE_ROOT+'Yellow_crystal/Yellow_crystal/animations/The_crystal_cluster_gently_pulses_with_a_rhythmic/unknown/frame_',9,3,0);
+const CRYSTAL_BLUE_FIXE = SPRITE_ROOT+'blue_crystal/fixe.png';
+const CRYSTAL_TRANSFORM = seq(SPRITE_ROOT+'blue_crystal/animations/transform/frame_',12,3,0);   // frame_000…frame_011
+const CRYSTAL_YELLOW = seq(SPRITE_ROOT+'yellow_crystal/animations/pulse/frame_',9,3,0);
 /* 4 animations de boule de feu (tirées au hasard à chaque apparition) */
-const _FIRE_A=SPRITE_ROOT+'Fireball/Fireball/animations/';
+const _FIRE_A=SPRITE_ROOT+'fireball/animations/';
 const FIREBALL_ANIMS=[
-  seq(_FIRE_A+'The_fireball_pulses_with_a_rhythmic_glowing_inten/unknown/frame_',5,3,0),
-  seq(_FIRE_A+'The_fireball_rapidly_expands_outward_its_bright_w/unknown/frame_',5,3,0),
-  seq(_FIRE_A+'The_fireball_rhythmically_expands_and_contracts_w/unknown/frame_',9,3,0),
-  seq(_FIRE_A+'The_fireball_rotates_steadily_clockwise_its_centr/unknown/frame_',9,3,0)
+  seq(_FIRE_A+'glow/frame_',5,3,0),
+  seq(_FIRE_A+'expand/frame_',5,3,0),
+  seq(_FIRE_A+'breathe/frame_',9,3,0),
+  seq(_FIRE_A+'rotate/frame_',9,3,0)
 ];
-/* 10 ingrédients du chaudron — TOUJOURS ces 5 bons : Eye, Mandragore, Bone, Herbs, Mushrooms */
-const _ING=SPRITE_ROOT+'Ingredients/objects/';
+/* 10 ingrédients du chaudron — TOUJOURS ces 5 bons : eye, mandragore, bone, herbs, mushrooms */
+const _ING=SPRITE_ROOT+'ingredients/';
 const INGREDIENTS=[
-  {img:_ING+'Eye/Eye/rotations/unknown.png',                 good:true},
-  {img:_ING+'Mandragore/Mandragore/rotations/unknown.png',   good:true},
-  {img:_ING+'Bone/Bone/rotations/unknown.png',               good:true},
-  {img:_ING+'Herbs/Herbs/rotations/unknown.png',             good:true},
-  {img:_ING+'Mushrooms/Mushrooms/rotations/unknown.png',     good:true},
-  {img:_ING+'Black_spider/Black_spider/rotations/unknown.png',good:false},
-  {img:_ING+'Butterfly/Butterfly/rotations/unknown.png',     good:false},
-  {img:_ING+'Feather/Feather/rotations/unknown.png',         good:false},
-  {img:_ING+'Flower/Flower/rotations/unknown.png',           good:false},
-  {img:_ING+'Skull/Skull/rotations/unknown.png',             good:false}
+  {img:_ING+'eye.png',          good:true},
+  {img:_ING+'mandragore.png',   good:true},
+  {img:_ING+'bone.png',         good:true},
+  {img:_ING+'herbs.png',        good:true},
+  {img:_ING+'mushrooms.png',    good:true},
+  {img:_ING+'black_spider.png', good:false},
+  {img:_ING+'butterfly.png',    good:false},
+  {img:_ING+'feather.png',      good:false},
+  {img:_ING+'flower.png',       good:false},
+  {img:_ING+'skull.png',        good:false}
 ];
 /* lecteur de frames générique pour un <img> (objets non-acteurs : chaudron, boule de feu) */
 function playImgFrames(img, frames, opts){
@@ -1574,7 +1600,7 @@ function bossArenaHTML(){
     + '<div class="hero-slot" id="heroSlot"></div>'
     + '<div class="phase-layer" id="phaseLayer"></div>'
     + '<div class="fire-layer" id="fireLayer"></div>'
-    + '<div class="health-potion" id="healthPotion" title="Potion de vie"><img class="hp-bottle" id="hpBottle" src="'+POTION_FULL+'" alt="🧪"><span class="hp-hint">🖱️ clic droit</span></div>'
+    + '<div class="health-potion" id="healthPotion" title="Potion de vie" ondragstart="return false"><img class="hp-bottle" id="hpBottle" src="'+POTION_FULL+'" alt="🧪" draggable="false"><span class="hp-hint">🖱️ clic droit</span></div>'
     + '</div>';
 }
 function startBoss(step){
@@ -1608,7 +1634,7 @@ function bossIntro(){
   if(B.stopped) return;
   bossBase('idle');
   pTimeout(()=>{ if(B.stopped) return;
-    bossBanner('⚔️ EN GARDE, CHEVALIER !','Le combat commence…');   // pas de rugissement à l'entrée
+    bossBanner('⚔️ EN GARDE, SORCIER !','Le combat commence…');   // pas de rugissement à l'entrée
     pTimeout(()=>{ if(!B.stopped) nextPhase(); }, 1300);             // → popup « L'ASSAUT » (démon idle)
   }, 1100);
 }
@@ -1747,7 +1773,7 @@ function damageBossTo(target){
   bossHurt();
   beep('good'); updateBossHud();
 }
-function heroHitFx(){ B.hero.el.classList.remove('shake'); void B.hero.el.offsetWidth; B.hero.el.classList.add('shake'); actorPlay(B.hero,'hurt',{loop:false, then:'idle'}); }
+function heroHitFx(){ B.hero.el.classList.remove('shake'); void B.hero.el.offsetWidth; B.hero.el.classList.add('shake'); actorPlay(B.hero,'hurt',{loop:false, then:'idle', fps:22}); }   // Taking_hit défile vite (9 frames ≈ 0,4 s)
 function loseLife(reason){
   B.lives--; beep('bad'); heroHitFx();
   B.field.classList.add('shake'); setTimeout(()=>B.field.classList.remove('shake'),250);
@@ -1789,13 +1815,19 @@ function bossFail(){
   B.running=false; B.stopped=true; B.curPhase=null; if(B.raf) cancelAnimationFrame(B.raf); stopBossMusic(); clearPhase();
   modal.className='modal bad';
   modal.innerHTML='<span class="m-emoji">💀</span><h2>Le démon t\'a vaincu…</h2>'
-    +'<div class="howto test" style="margin-top:4px"><p class="h-head">💡 Courage !</p><p>Tu as perdu tous tes cœurs. Recommence le combat — tu vas y arriver, chevalier !</p></div>'
+    +'<div class="howto test" style="margin-top:4px"><p class="h-head">💡 Courage !</p><p>Tu as perdu tous tes cœurs. Recommence le combat — tu vas y arriver, sorcier !</p></div>'
     +'<div class="m-actions"><button class="m-btn primary" id="retryBoss">↺ Reprendre le combat</button></div>';
   openOverlay();
   document.getElementById('retryBoss').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }
 function bossDefeated(){
   B.stopped=true; B.curPhase=null; stopBossMusic(); B.hp=0; clearPhase(); updateBossHud();
+  // coup de grâce : le héros lève son bâton magique (magical_staff) AVANT la séquence finale de mort du démon
+  beep('win');
+  if(B.hero){ actorPlay(B.hero,'magical_staff',{loop:false, fps:6}); heroSound('magical_hit'); pTimeout(bossFinaleDeath, 1650); }   // ralentie (9 frames ≈ 1,5 s) pour être bien visible
+  else bossFinaleDeath();
+}
+function bossFinaleDeath(){
   // mise en scène : le démon SEUL, agrandi (×2,3) et centré, pendant son anim de mort
   if(B.field) B.field.classList.add('boss-finale');
   const slot=document.getElementById('bossSlot');
@@ -1803,7 +1835,7 @@ function bossDefeated(){
   if(B.boss){ B.boss.el.classList.remove('hurtblink','shake','lit'); B.boss.el.classList.add('dying'); }
   const FRAMES=13, deathMs=5000, FPS=FRAMES/(deathMs/1000);      // anim de mort très ralentie : dure 5 s
   actorPlay(B.boss,'death',{loop:false, fps:FPS});               // s'arrête et reste sur la dernière frame
-  demonSound('death'); beep('win');
+  demonSound('death');
   // anim terminée à 5 s (dernière frame conservée) → popup victoire à 7 s
   pTimeout(()=>{
     burstAt(B.field, B.field.clientWidth/2, B.field.clientHeight*0.5); confetti();
@@ -1888,7 +1920,7 @@ function fireTick(dt){
         if((f.x<26&&f.vx<0)||(f.x>W-26&&f.vx>0)) f.vx*=-1;
         if((f.y<26&&f.vy<0)||(f.y>H-26&&f.vy>0)) f.vy*=-1;
       } else {
-        // puis se dirige progressivement vers le chevalier
+        // puis se dirige progressivement vers le sorcier
         const tang=Math.atan2(hy-f.y,hx-f.x), cang=Math.atan2(f.vy,f.vx);
         let d=tang-cang; while(d>Math.PI)d-=6.2832; while(d<-Math.PI)d+=6.2832;
         const maxTurn=3.2*dt, turn=Math.max(-maxTurn,Math.min(maxTurn,d));
@@ -1932,6 +1964,7 @@ function scatterPositions(n, opts){
       rx:Math.max(7,(r.width/2+padPx)/W*100), ry:Math.max(9,(r.height/2+padPx)/H*100)}); };
   const pad=opts.pad!=null?opts.pad:28;
   addAvoid(B.boss&&B.boss.el,pad); addAvoid(B.hero&&B.hero.el,pad);
+  addAvoid(document.getElementById('healthPotion'), pad+10);   // JAMAIS de cristal/ingrédient sur la potion de vie
   (opts.avoid||[]).forEach(el=>addAvoid(el, opts.avoidPad!=null?opts.avoidPad:20));
   const margin=opts.margin||7, x0=margin, x1=100-margin, y0=opts.y0||24, y1=opts.y1||80;
   const baseSep=opts.sep||14, out=[];
@@ -1945,7 +1978,15 @@ function scatterPositions(n, opts){
       out.push({x,y});
     }
   }
-  while(out.length<n){ out.push({x:x0+Math.random()*(x1-x0), y:y0+Math.random()*(y1-y0)}); }
+  while(out.length<n){   // garde-fou : on continue de respecter les zones interdites (potion, boss, héros)
+    let placed=false;
+    for(let t=0;t<3000 && !placed;t++){
+      const x=x0+Math.random()*(x1-x0), y=y0+Math.random()*(y1-y0);
+      if(avoid.some(a=>Math.hypot((x-a.x)/a.rx,(y-a.y)/a.ry)<1)) continue;
+      out.push({x,y}); placed=true;
+    }
+    if(!placed){ out.push({x:x0+Math.random()*(x1-x0), y:y0+Math.random()*(y1-y0)}); }   // ultime repli (quasi jamais atteint)
+  }
   return out;
 }
 
@@ -1991,7 +2032,7 @@ function phaseCrystals(ph){
       // 12 frames de transformation bleu→jaune, puis boucle de l'animation jaune
       playImgFrames(cimg, CRYSTAL_TRANSFORM, {fps:14, loop:false, onEnd:()=>{ playImgFrames(cimg, CRYSTAL_YELLOW, {fps:8, loop:true}); }});
       pr.innerHTML='✨ Cristaux : <b>'+charged+' / '+count+'</b>';
-      if(charged>=count){ boltFx(); pTimeout(()=>phaseSucceed(ph.target),550); }
+      if(charged>=count){ boltFx(); if(B.hero) actorPlay(B.hero,'staff_slam',{loop:false, then:'idle', fps:12}); pTimeout(()=>phaseSucceed(ph.target),550); }
     });
   });
 }
@@ -2045,7 +2086,7 @@ function phaseSpells(ph){
     B.fireRate=1.5; B.fireSpawnT=0.7; B.bossMove=false; B.fireActive=true;
   });
   // SEULE phase où le démon est plus BAS : on dégage de la place au-dessus pour le point faible
-  const slot=document.getElementById('bossSlot'); if(slot) slot.style.top='168px';
+  const slot=document.getElementById('bossSlot'); if(slot) slot.style.top='120px';
   const pl=document.getElementById('phaseLayer');
   const NEED_ICON={fire:'🔥',ice:'❄️',bolt:'⚡',nature:'🌿'}, NEED_NAME={fire:'Sort de Feu 🔥',ice:'Sort de Glace ❄️',bolt:'Sort de Foudre ⚡',nature:'Sort de Nature 🌿'};
   const needs=['fire','ice','bolt','nature'];
@@ -2059,7 +2100,10 @@ function phaseSpells(ph){
     aura.innerHTML='<span class="aw-tag">⚠️ POINT FAIBLE</span><span class="aw-icon">'+NEED_ICON[need]+'</span>';
     const br=B.boss.el.getBoundingClientRect(), fr=B.field.getBoundingClientRect();
     aura.style.left=(br.left+br.width/2-fr.left)+'px';
-    aura.style.top=Math.max(54,(br.top-fr.top-30))+'px';
+    // l'encadré flotte juste au-dessus des cornes visibles (~22,6% de marge transparente en haut du sprite).
+    // top = centre de l'encadré (transform translate(-50%,-50%)) ; clamp pour rester sous la barre de vie.
+    const hornsTop=(br.top-fr.top)+0.226*br.height;
+    aura.style.top=Math.max(56+aura.offsetHeight/2, hornsTop-aura.offsetHeight/2-16)+'px';
     pr.innerHTML='📜 Sort '+(ri+1)+'/'+rounds+' — clic droit sur le démon → <b>'+NEED_NAME[need]+'</b> ☝️';
   }
   show();
@@ -2123,7 +2167,7 @@ function phaseHorde(ph){
     const a=makeActor(key,'minion-actor'); a.el.classList.add('minion');
     let m;
     if(enemy){
-      // ennemis : arrivent par le haut ou les côtés, puis foncent sur le chevalier
+      // ennemis : arrivent par le haut ou les côtés, puis foncent sur le sorcier
       let x,y; const edge=Math.random();
       if(edge<0.5){ x=rnd(4,96); y=rnd(1,6); }          // bord haut, partout
       else if(edge<0.75){ x=rnd(1,6); y=rnd(3,50); }     // côté gauche, moitié haute
@@ -2150,11 +2194,11 @@ function phaseHorde(ph){
     const h=heroPct();
     for(const m of B.minions){ if(!m.alive) continue;
       if(m.enemy){
-        const dx=h.x-m.x, dy=h.y-m.y, d=Math.hypot(dx,dy)||1;    // foncent droit sur le chevalier
+        const dx=h.x-m.x, dy=h.y-m.y, d=Math.hypot(dx,dy)||1;    // foncent droit sur le sorcier
         m.x+=dx/d*speed*dt; m.y+=dy/d*speed*dt;
         m.el.style.left=m.x+'%'; m.el.style.top=m.y+'%';
         if(d<4.5){ m.alive=false; try{m.el.remove();}catch(e){}
-          B.hordeRemaining--; if(loseLife('Un monstre a atteint le chevalier !')) return; checkHordeDone(); }
+          B.hordeRemaining--; if(loseLife('Un monstre a atteint le sorcier !')) return; checkHordeDone(); }
       } else {
         // fée : traverse horizontalement avec un vol sinusoïdal erratique
         m.ph0+=m.wob*dt;
@@ -2211,6 +2255,7 @@ function phaseGrimoire(ph){
     for(let i=0;i<N;i++){ const row=document.createElement('div');
       if(i===sealed){ row.className='gpage sealed'; row.innerHTML='✨ <b>Sort scellé</b> — clique ! <span class="seal">🔒</span>';
         row.addEventListener('click',()=>{ if(found>=total) return; found++; beep('win'); boltFx(); bossDamage(1);
+          if(B.hero) actorPlay(B.hero,'staff_slam',{loop:false, then:'idle', fps:12});   // coup de bâton à chaque sort brisé
           pr.innerHTML='📖 Sorts brisés : <b>'+found+' / '+total+'</b>';
           if(found>=total){ pTimeout(()=>phaseSucceed(ph.target),450); } else { build(); } }); }
       else { row.className='gpage'; row.textContent='📜 '+pick(GRIMOIRE_NAMES); }
