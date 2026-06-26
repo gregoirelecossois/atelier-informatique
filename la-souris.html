@@ -446,20 +446,60 @@
   @keyframes bbIn{0%{transform:scale(.4) rotate(-8deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
   .boss-banner .bb-sub{margin-top:8px;color:#ffe9b0;font-weight:600;font-size:1.2rem;text-shadow:0 2px 6px #000;font-family:"Pixelify Sans",sans-serif;}
   /* panneau de briefing entre les phases (déclenché par le joueur) */
+  /* tient TOUJOURS dans l'arène (hauteur min 440px) sans barre de défilement : tailles liées au vh */
   .boss-brief{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:13px;padding:20px;text-align:center;pointer-events:auto;overflow-y:auto;
+    gap:clamp(5px,1.2vh,11px);padding:clamp(8px,1.6vh,16px);text-align:center;pointer-events:auto;overflow:hidden;
     background:radial-gradient(circle,rgba(20,8,16,.82),rgba(10,4,8,.93));animation:bbIn .35s ease both;}
-  .boss-brief .bf-story{color:#fca5a5;font-weight:600;font-size:1.3rem;max-width:92%;text-shadow:0 2px 6px #000;font-family:"Pixelify Sans",sans-serif;}
-  .boss-brief .bf-title{font-family:"Pixelify Sans",sans-serif;font-weight:700;font-size:clamp(2rem,6.5vw,3rem);color:#fff;
+  .boss-brief .bf-story{color:#fca5a5;font-weight:600;font-size:clamp(.95rem,2.4vh,1.25rem);max-width:92%;line-height:1.3;text-shadow:0 2px 6px #000;font-family:"Pixelify Sans",sans-serif;}
+  .boss-brief .bf-title{font-family:"Pixelify Sans",sans-serif;font-weight:700;font-size:clamp(1.5rem,4.6vh,2.7rem);color:#fff;line-height:1.1;
     text-shadow:0 0 16px #ff7a3c,0 3px 0 #b91c1c;}
-  .boss-brief .bf-how{color:#fff;font-weight:600;font-size:1.3rem;line-height:1.9;max-width:600px;
+  .boss-brief .bf-how{color:#fff;font-weight:600;font-size:clamp(.92rem,2.3vh,1.2rem);line-height:1.4;max-width:600px;
     font-family:"Pixelify Sans",sans-serif;
-    background:rgba(0,0,0,.42);padding:16px 22px;border-radius:14px;border:2px solid rgba(255,215,106,.45);}
+    background:rgba(0,0,0,.42);padding:clamp(7px,1.4vh,14px) clamp(14px,2.2vw,22px);border-radius:14px;border:2px solid rgba(255,215,106,.45);}
   .boss-brief .bf-how b{color:#fde047;}
   .boss-brief .bf-go{font-family:"Pixelify Sans",sans-serif;font-weight:700;font-size:1.4rem;color:#fff;
     background:linear-gradient(#f59e0b,#b45309);border:none;border-radius:999px;padding:13px 32px;
     box-shadow:0 8px 18px -6px rgba(0,0,0,.6);cursor:pointer;animation:emoBob 1.9s ease-in-out infinite;}
   .boss-brief .bf-go:hover{filter:brightness(1.08);}
+  /* ---- mini-tuto interactif dans le briefing (remplace le bouton « En garde ») ---- */
+  .boss-brief .bf-tuto{display:flex;flex-direction:column;align-items:center;gap:clamp(5px,1.2vh,11px);width:100%;}
+  .boss-brief .bf-tuto-hint{color:#ffe9b0;font-weight:700;font-size:clamp(.9rem,2.1vh,1.08rem);font-family:"Pixelify Sans",sans-serif;
+    background:rgba(0,0,0,.5);padding:clamp(5px,1vh,8px) clamp(12px,2vw,18px);border-radius:999px;max-width:92%;text-align:center;line-height:1.3;}
+  .boss-brief .bf-tuto-hint b{color:#fde047;}
+  .bf-stage{position:relative;width:min(470px,90vw);height:clamp(150px,24vh,216px);border:2px dashed rgba(255,215,106,.55);
+    border-radius:16px;background:rgba(0,0,0,.3);overflow:hidden;touch-action:none;transition:border-color .25s,box-shadow .25s;}
+  .bf-stage.done{border-color:#22c55e;box-shadow:0 0 26px rgba(34,197,94,.5);}
+  .bf-demon{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:clamp(92px,17vh,140px);height:clamp(92px,17vh,140px);
+    object-fit:contain;image-rendering:pixelated;cursor:pointer;user-select:none;-webkit-user-drag:none;
+    filter:drop-shadow(0 0 8px rgba(255,120,60,.45));}
+  .bf-demon.hit{animation:bfHit .22s ease;}
+  @keyframes bfHit{0%{filter:brightness(1.85) drop-shadow(0 0 14px #fde047);transform:translate(-50%,-50%) scale(1.06);}100%{filter:none;transform:translate(-50%,-50%) scale(1);}}
+  .bf-fire{position:absolute;transform:translate(-50%,-50%);cursor:pointer;z-index:6;filter:drop-shadow(0 0 7px #ff7a3c);}
+  .bf-fire .fireball-img{width:54px;height:54px;}
+  .bf-fire.pop{animation:bfPop .22s ease forwards;}
+  @keyframes bfPop{0%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,-50%) scale(1.9);opacity:0;}}
+  .bf-crystal{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);cursor:pointer;user-select:none;filter:drop-shadow(0 0 9px #7dd3fc);}
+  .bf-crystal .bcrystal-img{width:clamp(62px,12vh,86px);height:clamp(62px,12vh,86px);}
+  .bf-crystal.charged{filter:drop-shadow(0 0 16px #fde047) brightness(1.2);}
+  .bf-cauldron{position:absolute;right:16%;top:55%;transform:translate(50%,-50%);filter:drop-shadow(0 0 10px #a855f7);}
+  .bf-cauldron .cauldron-img{width:clamp(66px,13vh,94px);height:clamp(66px,13vh,94px);}
+  .bf-cauldron.vibrate .cauldron-img{animation:cauldronVibrate .5s ease-in-out;}
+  .bf-ingr{position:absolute;transform:translate(-50%,-50%);cursor:grab;user-select:none;touch-action:none;z-index:7;}
+  .bf-ingr.good{filter:drop-shadow(0 0 11px #fde047);}
+  .bf-ingr.bad{filter:drop-shadow(0 0 5px rgba(140,140,140,.45));}
+  .bf-ingr.shake{animation:bfShake .35s;}
+  @keyframes bfShake{0%,100%{transform:translate(-50%,-50%);}25%{transform:translate(-60%,-50%);}75%{transform:translate(-40%,-50%);}}
+  .bf-ingr img{width:54px;height:54px;object-fit:contain;image-rendering:pixelated;pointer-events:none;-webkit-user-drag:none;display:block;}
+  .bf-mini{position:absolute;transform:translate(-50%,-50%);user-select:none;}
+  .bf-mini img{object-fit:contain;image-rendering:pixelated;pointer-events:none;-webkit-user-drag:none;display:block;}
+  .bf-mini.lassosel{outline:3px solid #60a5fa;outline-offset:2px;border-radius:8px;background:rgba(96,165,250,.18);}
+  .bf-selbox{position:absolute;border:2px solid #60a5fa;background:rgba(96,165,250,.16);border-radius:4px;pointer-events:none;z-index:8;}
+  .bf-weak{position:absolute;left:50%;top:8px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:1px;z-index:9;
+    background:rgba(12,5,14,.82);border:2px solid #ffd76a;border-radius:11px;padding:3px 9px 5px;animation:weakPulse 1s ease-in-out infinite;}
+  .bf-weak .aw-tag{font-size:.6rem;font-weight:800;color:#fff;background:#ef4444;padding:1px 9px;border-radius:999px;white-space:nowrap;}
+  .bf-weak .aw-icon{font-size:2rem;line-height:1;filter:drop-shadow(0 0 8px #ffd76a);}
+  .bf-grim{position:absolute;inset:8px;background:#3b2a1a;border:4px solid #1f140a;border-radius:10px;overflow-y:auto;padding:8px;}
+  .bf-grim .gpage{margin:6px 0;font-size:.92rem;}
   .fireball{position:absolute;transform:translate(-50%,-50%);font-size:1.9rem;z-index:9;cursor:pointer;filter:drop-shadow(0 0 7px #ff7a3c);}
   .fireball-img{width:48px;height:48px;object-fit:contain;image-rendering:pixelated;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;}
   .bcrystal{position:absolute;transform:translate(-50%,-50%);font-size:2.5rem;cursor:pointer;z-index:9;user-select:none;filter:drop-shadow(0 0 8px #7dd3fc);}
@@ -1873,23 +1913,219 @@ function nextPhase(){
   const ph=B.phases[B.phaseIdx++];
   showBriefing(ph);
 }
-/* Briefing entre les phases : explication détaillée + bouton « En garde ! » que le joueur déclenche */
-function closeBriefing(){ if(B.brief){ try{B.brief.remove();}catch(e){} B.brief=null; } }
+/* Briefing entre les phases : explication détaillée + MINI-TUTO interactif que le joueur réalise
+   pour lancer la phase (il s'entraîne à la mécanique à venir au lieu de cliquer un simple bouton). */
+function closeBriefing(){
+  (B.briefCleanup||[]).forEach(f=>{ try{f();}catch(e){} }); B.briefCleanup=[];
+  if(B.brief){ try{B.brief.remove();}catch(e){} B.brief=null; }
+}
 function showBriefing(ph){
   B.curPhase=ph;
   if(!B.field){ if(B.running) ph.start(ph); return; }
   closeBriefing();
   /* on met les dangers en pause pendant l'explication */
   B.fireActive=false; clearFireballs(); B.bossMove=false;
+  B.briefCleanup=[];
   const ov=document.createElement('div'); ov.className='boss-brief';
   let html='';
   if(ph.story) html+='<div class="bf-story">'+ph.story+'</div>';
   html+='<div class="bf-title">'+ph.banner+'</div>';
   html+='<div class="bf-how">'+(ph.brief||ph.sub||'')+'</div>';
-  html+='<button class="bf-go" id="bfGo">'+(ph.btn||'⚔️ En garde !')+'</button>';
   ov.innerHTML=html; B.field.appendChild(ov); B.brief=ov; beep('ding');
-  document.getElementById('bfGo').onclick=()=>{ closeBriefing(); if(!B.stopped) ph.start(ph); };
+  const start=()=>{ closeBriefing(); if(!B.stopped) ph.start(ph); };
+  const builder=BRIEF_TUTOS[ph.tuto];
+  if(builder) builder(ov, ph, start);
+  else {   // repli : bouton classique (phase sans tuto défini)
+    const btn=document.createElement('button'); btn.className='bf-go'; btn.textContent=ph.btn||'⚔️ En garde !';
+    ov.appendChild(btn); btn.onclick=start;
+  }
 }
+/* ---- helpers communs aux mini-tutos ---- */
+function bfStage(ov, hintHtml){
+  const wrap=document.createElement('div'); wrap.className='bf-tuto';
+  const hint=document.createElement('div'); hint.className='bf-tuto-hint'; hint.innerHTML=hintHtml;
+  const stage=document.createElement('div'); stage.className='bf-stage';
+  wrap.appendChild(hint); wrap.appendChild(stage); ov.appendChild(wrap);
+  return {wrap, hint, stage};
+}
+/* liste d'URLs de frames pour un dossier/anim du manifeste embarqué (sprites déjà préchargés) */
+function bfFrames(folder, anim){ const d=SPRITE_FRAMES[folder]; const list=d&&d.anims&&d.anims[anim]; if(!list) return null;
+  const base=SPRITE_ROOT+folder+'/'; return list.map(p=>base+p); }
+/* réussite du mini-tuto : petit flash vert puis lancement de la phase */
+function bfWin(t, start){
+  t.hint.innerHTML='✅ <b>Bravo ! La phase commence…</b>';
+  t.stage.classList.add('done'); beep('win');
+  setTimeout(start, 650);
+}
+
+/* L'ASSAUT : frapper le démon plusieurs fois + faire éclater une boule de feu statique */
+function tutoAssault(ov, ph, start){
+  const NEED=3;
+  const t=bfStage(ov,''); let hits=0, fbGone=false, done=false;
+  const demon=document.createElement('img'); demon.className='bf-demon'; demon.src=BOSS_PORTRAIT; demon.alt='démon'; demon.draggable=false;
+  t.stage.appendChild(demon);
+  const fb=document.createElement('div'); fb.className='bf-fire'; fb.style.left='22%'; fb.style.top='30%';
+  fb.innerHTML='<img class="fireball-img" alt="🔥" draggable="false">';
+  t.stage.appendChild(fb);
+  const fimg=fb.querySelector('.fireball-img'); playImgFrames(fimg, pick(FIREBALL_ANIMS), {fps:12, loop:true});
+  B.briefCleanup.push(()=>stopImgFrames(fimg));
+  function refresh(){ t.hint.innerHTML='🖱️ Frappe le démon : <b>'+Math.min(hits,NEED)+' / '+NEED+'</b>'+(hits>=NEED?' ✅':'')+' &nbsp;·&nbsp; 🔥 '+(fbGone?'éclatée ✅':'<b>clique la boule de feu</b>'); }
+  refresh();
+  function check(){ if(!done && hits>=NEED && fbGone){ done=true; bfWin(t, start); } }
+  demon.addEventListener('click',()=>{ if(done||hits>=NEED) return; hits++; beep('good');
+    demon.classList.remove('hit'); void demon.offsetWidth; demon.classList.add('hit'); refresh(); check(); });
+  fb.addEventListener('click',()=>{ if(done||fbGone) return; fbGone=true; beep('good'); stopImgFrames(fimg);
+    fb.classList.add('pop'); setTimeout(()=>{try{fb.remove();}catch(e){}},220); refresh(); check(); });
+}
+
+/* LE DÉMON SE DÉBAT : marteler le sprite du démon plusieurs fois */
+function tutoImprison(ov, ph, start){
+  const NEED=5;
+  const t=bfStage(ov,''); let hits=0, done=false;
+  const demon=document.createElement('img'); demon.className='bf-demon'; demon.src=BOSS_PORTRAIT; demon.alt='démon'; demon.draggable=false;
+  t.stage.appendChild(demon);
+  function refresh(){ t.hint.innerHTML='⛓️ Martèle le démon sans arrêt : <b>'+Math.min(hits,NEED)+' / '+NEED+'</b>'; }
+  refresh();
+  demon.addEventListener('click',()=>{ if(done) return; hits++; beep('good');
+    demon.classList.remove('hit'); void demon.offsetWidth; demon.classList.add('hit'); refresh();
+    if(hits>=NEED){ done=true; bfWin(t, start); } });
+}
+
+/* LE PIÈGE / LE PIÈGE DE CRISTAL : double-cliquer un cristal pour l'allumer */
+function tutoCrystal(ov, ph, start){
+  const t=bfStage(ov, '💎 <b>Double-clique</b> sur le cristal pour l\'allumer 🔆'); let done=false;
+  const c=document.createElement('div'); c.className='bf-crystal';
+  c.innerHTML='<img class="bcrystal-img" src="'+CRYSTAL_BLUE_FIXE+'" alt="💎" draggable="false">';
+  t.stage.appendChild(c);
+  const cimg=c.querySelector('.bcrystal-img'); B.briefCleanup.push(()=>stopImgFrames(cimg));
+  c.addEventListener('click',()=>{ if(!done) toast('Double-clique (2 clics rapides) sur le cristal !'); });
+  c.addEventListener('dblclick',()=>{ if(done) return; done=true; beep('good'); c.classList.add('charged');
+    playImgFrames(cimg, CRYSTAL_TRANSFORM, {fps:14, loop:false, onEnd:()=>{ playImgFrames(cimg, CRYSTAL_YELLOW, {fps:8, loop:true}); }});
+    bfWin(t, start); });
+}
+
+/* LA POTION : glisser le bon ingrédient (brillant) dans le chaudron — pas le mauvais */
+function tutoPotion(ov, ph, start){
+  const t=bfStage(ov, '✨ <b>Glisse l\'ingrédient qui brille</b> dans le chaudron 🫕 — pas le mauvais 💀 !'); let done=false;
+  const cau=document.createElement('div'); cau.className='bf-cauldron';
+  cau.innerHTML='<img class="cauldron-img" src="'+CALDRON_IDLE+'" alt="🫕" draggable="false">';
+  t.stage.appendChild(cau);
+  const good=pick(INGREDIENTS.filter(i=>i.good)), bad=pick(INGREDIENTS.filter(i=>!i.good));
+  const pair=shuffle([good,bad]); const slots=[{x:'20%',y:'32%'},{x:'20%',y:'74%'}];
+  pair.forEach((it,i)=>{
+    const el=document.createElement('div'); el.className='bf-ingr '+(it.good?'good':'bad');
+    el.innerHTML='<img src="'+it.img+'" alt="" draggable="false">';
+    el.style.left=slots[i].x; el.style.top=slots[i].y; t.stage.appendChild(el);
+    el.addEventListener('pointerdown',ev=>bfIngrDrag(ev, el, it, cau, t.stage,
+      ()=>{ if(done) return; done=true; try{el.remove();}catch(e){} beep('good');
+            const ci=cau.querySelector('.cauldron-img'); if(ci) playImgFrames(ci, CALDRON_BOILING, {fps:12, loop:false, then:CALDRON_IDLE});
+            cau.classList.add('vibrate'); bfWin(t, start); },
+      ()=>{ if(done) return; beep('bad'); toast('Berk ! Celui-là est mauvais — prends celui qui brille ✨');
+            try{el.remove();}catch(e){} }));   // le mauvais ingrédient disparaît dans le chaudron
+  });
+}
+function bfIngrDrag(e, el, it, cau, stage, onGood, onBad){
+  e.preventDefault(); const sr=stage.getBoundingClientRect(); el.style.zIndex=20;
+  const move=ev=>{ el.style.left=(ev.clientX-sr.left)+'px'; el.style.top=(ev.clientY-sr.top)+'px'; el.style.transform='translate(-50%,-50%) scale(1.15)'; };
+  const up=ev=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up);
+    const cr=cau.getBoundingClientRect(); const over=ev.clientX>=cr.left&&ev.clientX<=cr.right&&ev.clientY>=cr.top&&ev.clientY<=cr.bottom;
+    if(over && it.good){ onGood(); }
+    else { el.style.transform='translate(-50%,-50%)'; if(over && !it.good) onBad(); } };
+  document.addEventListener('pointermove',move); document.addEventListener('pointerup',up);
+  B.briefCleanup.push(()=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); });
+}
+
+/* LES SORTILÈGES : clic droit sur le démon → choisir le sort affiché comme point faible */
+function tutoSpell(ov, ph, start){
+  const ICON={fire:'🔥',ice:'❄️',bolt:'⚡',nature:'🌿'};
+  const NAME={fire:'Sort de Feu 🔥',ice:'Sort de Glace ❄️',bolt:'Sort de Foudre ⚡',nature:'Sort de Nature 🌿'};
+  const need=pick(['fire','ice','bolt','nature']);
+  const t=bfStage(ov, '🖱️ <b>Clic droit</b> sur le démon, puis choisis son point faible : <b>'+NAME[need]+'</b>');
+  let done=false, menu=null, off=null;
+  const demon=document.createElement('img'); demon.className='bf-demon'; demon.src=BOSS_PORTRAIT; demon.alt='démon'; demon.draggable=false; demon.style.top='58%';
+  t.stage.appendChild(demon);
+  const weak=document.createElement('div'); weak.className='bf-weak';
+  weak.innerHTML='<span class="aw-tag">⚠️ POINT FAIBLE</span><span class="aw-icon">'+ICON[need]+'</span>';
+  t.stage.appendChild(weak);
+  t.stage.addEventListener('contextmenu',e=>e.preventDefault());   // pas de menu natif si on rate le démon
+  function closeMenu(){ if(menu){ try{menu.remove();}catch(e){} menu=null; } if(off){ document.removeEventListener('pointerdown',off); off=null; } }
+  B.briefCleanup.push(closeMenu);
+  demon.addEventListener('click',()=>{ if(!done && !menu) toast('Fais un CLIC DROIT sur le démon !'); });
+  demon.addEventListener('contextmenu',e=>{ e.preventDefault(); e.stopPropagation(); if(!done) openMenu(e); });
+  function openMenu(e){
+    closeMenu(); menu=document.createElement('div'); menu.className='ctxmenu';
+    [{a:'fire',ic:'🔥',l:'Sort de Feu'},{a:'ice',ic:'❄️',l:'Sort de Glace'},{a:'bolt',ic:'⚡',l:'Sort de Foudre'},{a:'nature',ic:'🌿',l:'Sort de Nature'}].forEach(s=>{
+      const b=document.createElement('button'); b.className='ctx-item'; b.innerHTML='<span class="cx-ic">'+s.ic+'</span>'+s.l;
+      b.onclick=ev=>{ ev.stopPropagation(); choose(s.a); }; menu.appendChild(b);
+    });
+    ov.appendChild(menu);
+    const fr=B.field.getBoundingClientRect();
+    menu.style.left=Math.min(e.clientX-fr.left, B.field.clientWidth-menu.offsetWidth-6)+'px';
+    menu.style.top=Math.min(e.clientY-fr.top, B.field.clientHeight-menu.offsetHeight-6)+'px';
+    beep('click');
+    off=ev=>{ if(menu && !menu.contains(ev.target)) closeMenu(); };
+    setTimeout(()=>document.addEventListener('pointerdown',off),0);
+  }
+  function choose(a){ closeMenu();
+    if(a!==need){ beep('bad'); toast('Ce n\'est pas son point faible ! Choisis '+NAME[need]); return; }
+    done=true; beep('good'); bfWin(t, start); }
+}
+
+/* LA HORDE : encadrer au lasso une chauve-souris ET un slime, sans la fée */
+function tutoHorde(ov, ph, start){
+  const t=bfStage(ov, '🖱️ <b>Maintiens le clic</b> et entoure le 🦇 et le 🟢 — jamais la fée 🧚 !');
+  let done=false; const minis=[];
+  function addMini(folder, anim, fps, w, x, y, enemy){
+    const el=document.createElement('div'); el.className='bf-mini';
+    el.innerHTML='<img alt="" draggable="false" style="width:'+w+'px;height:'+w+'px">';
+    el.style.left=x+'%'; el.style.top=y+'%'; t.stage.appendChild(el);
+    const img=el.querySelector('img'); const frames=bfFrames(folder,anim);
+    if(frames){ playImgFrames(img, frames, {fps:fps, loop:true}); B.briefCleanup.push(()=>stopImgFrames(img)); }
+    minis.push({el, enemy, sel:false});
+  }
+  // monstres en bas aux deux extrémités, fée AU MILIEU mais plus haute → on peut encadrer les 2 monstres sans elle
+  addMini('bat','fly',12,54,24,66,true);
+  addMini('fairy','fly',14,48,50,30,false);
+  addMini('green_slime','idle',10,46,76,66,true);
+  t.stage.addEventListener('pointerdown',e=>{
+    if(done) return; e.preventDefault();
+    const sr=t.stage.getBoundingClientRect(); const x0=e.clientX-sr.left, y0=e.clientY-sr.top;
+    const box=document.createElement('div'); box.className='bf-selbox'; t.stage.appendChild(box);
+    const move=ev=>{ const x=ev.clientX-sr.left, y=ev.clientY-sr.top, L=Math.min(x0,x),T=Math.min(y0,y),W=Math.abs(x-x0),H=Math.abs(y-y0);
+      box.style.left=L+'px'; box.style.top=T+'px'; box.style.width=W+'px'; box.style.height=H+'px';
+      minis.forEach(m=>{ const r=m.el.getBoundingClientRect(); const cx=r.left+r.width/2-sr.left, cy=r.top+r.height/2-sr.top;
+        m.sel=cx>=L&&cx<=L+W&&cy>=T&&cy<=T+H; m.el.classList.toggle('lassosel',m.sel); }); };
+    const up=()=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); try{box.remove();}catch(e){} resolve(); };
+    document.addEventListener('pointermove',move); document.addEventListener('pointerup',up);
+    B.briefCleanup.push(()=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); });
+  });
+  function resolve(){
+    if(done) return; const sel=minis.filter(m=>m.sel);
+    if(!sel.length) return;
+    if(sel.some(m=>!m.enemy)){ beep('bad'); toast('Tu as encadré la fée ! Entoure seulement les monstres.');
+      minis.forEach(m=>{ m.sel=false; m.el.classList.remove('lassosel'); }); return; }
+    const enemies=sel.filter(m=>m.enemy);
+    if(enemies.length>=2){ done=true; beep('good'); bfWin(t, start); }
+    else { toast('Entoure les DEUX monstres d\'un coup (le 🦇 et le 🟢) !');
+      minis.forEach(m=>{ m.sel=false; m.el.classList.remove('lassosel'); }); }
+  }
+}
+
+/* LES SORTS SCELLÉS : cliquer le sort qui brille dans le grimoire */
+function tutoGrimoire(ov, ph, start){
+  const t=bfStage(ov, '📖 Cherche dans le grimoire et <b>clique le sort qui brille</b> ✨'); let done=false;
+  const g=document.createElement('div'); g.className='bf-grim'; t.stage.appendChild(g);
+  const N=8, sealed=2+Math.floor(rnd(0,5));
+  for(let i=0;i<N;i++){ const row=document.createElement('div');
+    if(i===sealed){ row.className='gpage sealed'; row.innerHTML='✨ <b>Sort scellé</b> — clique ! <span class="seal">🔒</span>';
+      row.addEventListener('click',()=>{ if(done) return; done=true; bfWin(t, start); }); }
+    else { row.className='gpage'; row.textContent='📜 '+pick(GRIMOIRE_NAMES); }
+    g.appendChild(row);
+  }
+}
+
+const BRIEF_TUTOS={ assault:tutoAssault, crystal:tutoCrystal, potion:tutoPotion, spell:tutoSpell,
+  horde:tutoHorde, grimoire:tutoGrimoire, imprison:tutoImprison };
 function bossFail(){
   B.running=false; B.stopped=true; B.curPhase=null; if(B.raf) cancelAnimationFrame(B.raf); stopBossMusic(); clearPhase();
   modal.className='modal bad';
@@ -1926,29 +2162,29 @@ function bossFinaleDeath(){
 function buildPhaseSequence(){
   const fairies=Math.max(1,Math.round(5*bd().fairyMul));
   return [
-    {banner:'⚔️ L\'ASSAUT !', start:phaseAssault, target:24,
+    {banner:'⚔️ L\'ASSAUT !', start:phaseAssault, target:24, tuto:'assault',
       brief:'🖱️ <b>Clique le démon</b>, vite et souvent pour le toucher !<br>🔥 Clique aussi les <b>boules de feu</b> pour les contrer.'},
 
-    {banner:'🔒 LE PIÈGE !', start:phaseCrystals, count:bCount(10,3), target:20,
+    {banner:'🔒 LE PIÈGE !', start:phaseCrystals, count:bCount(10,3), target:20, tuto:'crystal',
       brief:'💎 <b>Double-clique</b> chaque cristal pour l\'allumer et enfermer le démon 🔆.<br>🔥 Clique aussi les <b>boules de feu</b> pour les contrer.'},
 
-    {banner:'🧪 LA POTION !', start:phasePotion, need:bCount(5,2), target:16,
+    {banner:'🧪 LA POTION !', start:phasePotion, need:bCount(5,2), target:16, tuto:'potion',
       story:'Le démon est <b>trop fort</b> ! Affaiblis-le avec une <b>potion</b> 🧪.',
       brief:'✨ <b>Glisse</b> dans le chaudron 🫕 les ingrédients qui <b>brillent</b>.<br>💀 Pas les autres ! Sinon -1 ❤️'},
 
-    {banner:'📜 LES SORTILÈGES !', start:phaseSpells, rounds:bCount(5,2), target:12,
+    {banner:'📜 LES SORTILÈGES !', start:phaseSpells, rounds:bCount(5,2), target:12, tuto:'spell',
       brief:'☝️ Regarde le <b>symbole</b> 🔥❄️⚡.<br>🖱️ <b>Clic droit</b> sur le démon → choisis le <b>même</b>.'},
 
-    {banner:'🔲 LA HORDE !', start:phaseHorde, count:bCount(28,8), speed:12.5*bd().speedMul, fairies:fairies, target:8,
+    {banner:'🔲 LA HORDE !', start:phaseHorde, count:bCount(28,8), speed:12.5*bd().speedMul, fairies:fairies, target:8, tuto:'horde',
       brief:'🖱️ <b>Garde le clic</b> et entoure les monstres 🟢🦇.<br>🧚 <b>Pas la fée</b> !'},
 
-    {banner:'📖 LES SORTS SCELLÉS !', start:phaseGrimoire, total:bCount(5,2), target:3,
+    {banner:'📖 LES SORTS SCELLÉS !', start:phaseGrimoire, total:bCount(5,2), target:3, tuto:'grimoire',
       brief:'📖 Tourne la <b>molette</b> pour chercher le sort dans le grimoire 🖱️.<br>✨ Clique sur le <b>sort qui brille</b>.'},
 
-    {banner:'💎 LE PIÈGE DE CRISTAL !', start:phaseCrystals, count:bCount(10,3), target:2, trap:true, fireRate:0.52, chaos:true,
+    {banner:'💎 LE PIÈGE DE CRISTAL !', start:phaseCrystals, count:bCount(10,3), target:2, trap:true, fireRate:0.52, chaos:true, tuto:'crystal',
       brief:'💎 <b>Double-clique</b> sur chaque cristal pour l\'allumer et enfermer le démon 🔆.<br>🔥 Attention : il invoque encore plus de <b>boules de feu</b> !'},
 
-    {banner:'⛓️ LE DÉMON SE DÉBAT !', start:phaseImprison, btn:'⛓️ Refermer le piège magique !',
+    {banner:'⛓️ LE DÉMON SE DÉBAT !', start:phaseImprison, btn:'⛓️ Refermer le piège magique !', tuto:'imprison',
       brief:'🖱️ <b>Clique sans arrêt</b> ! Vite, vite ⛓️ !<br>🔒 Enferme le démon à jamais !'}
   ];
 }
