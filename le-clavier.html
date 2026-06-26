@@ -8,6 +8,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* Police d'emojis unifiée sur tous les systèmes (cf. assets/fonts/README.md) */
+  @font-face{
+    font-family:"Fluent Emoji";
+    src:url("assets/fonts/fluent-emoji.woff2") format("woff2");
+    font-display:swap;
+  }
   :root{
     --ink:#22303f; --muted:#5a6b7b;
     --blue:#2563eb; --blue-d:#1d4ed8;
@@ -20,14 +26,14 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    font-family:"Nunito",system-ui,sans-serif;color:var(--ink);
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;color:var(--ink);
     background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
   }
   button{font-family:inherit;cursor:pointer;}
-  .display{font-family:"Fredoka",sans-serif;}
+  .display{font-family:"Fredoka","Fluent Emoji",sans-serif;}
   kbd{
     display:inline-flex;align-items:center;justify-content:center;min-width:24px;
-    font-family:"Fredoka",sans-serif;font-weight:600;font-size:.86em;line-height:1;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:.86em;line-height:1;
     padding:4px 8px;border-radius:7px;background:#fff;border:2px solid #c7d4e6;
     border-bottom-width:3px;color:var(--ink);box-shadow:0 1px 0 #e7eef6;margin:0 1px;white-space:nowrap;}
 
@@ -37,7 +43,7 @@
   .back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--blue-d);
     font-weight:800;font-size:.98rem;padding:8px 12px;border-radius:10px;}
   .back:hover{background:#eef4ff;}
-  .topbar h1{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.15rem;margin:0;flex:1;}
+  .topbar h1{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.15rem;margin:0;flex:1;}
   .topbar h1 .dot{color:var(--blue);}
   .step-count{font-weight:800;color:var(--muted);font-size:.95rem;}
   .reset-btn{border:2px solid var(--line);background:#fff;color:var(--muted);font-weight:700;
@@ -66,7 +72,7 @@
   .banner.review{border-left-color:var(--green);}
   .banner .b-emoji{font-size:1.8rem;line-height:1;}
   .banner .b-txt{flex:1;min-width:200px;}
-  .banner .b-title{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.08rem;}
+  .banner .b-title{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.08rem;}
   .banner .b-sub{color:#3a4a59;font-weight:700;font-size:1rem;margin-top:4px;line-height:1.45;}
   .banner .b-goal-label{font-weight:800;color:var(--blue-d);margin-right:3px;}
   .banner.test .b-goal-label{color:var(--amber-d);}
@@ -91,7 +97,7 @@
     cursor:pointer;line-height:1;transition:transform .12s ease,background .15s ease;}
   .tip-pill:hover{background:#ffedcc;transform:translateY(-1px);}
   .tip-pill:active{transform:translateY(0);}
-  .tip-char{font-family:"Fredoka",sans-serif;font-size:2.4rem;margin:2px 0 2px;line-height:1;}
+  .tip-char{font-family:"Fredoka","Fluent Emoji",sans-serif;font-size:2.4rem;margin:2px 0 2px;line-height:1;}
   .tip-cap{font-weight:800;color:var(--ink);font-size:1.05rem;margin:0 0 4px;}
   .tip-cap kbd, .tip-char kbd{vertical-align:middle;}
 
@@ -107,7 +113,7 @@
     will-change:transform;}
   .drop .para{font-size:1.5rem;line-height:1;filter:drop-shadow(0 3px 2px rgba(0,0,0,.15));}
   .drop .cap{margin-top:-6px;min-width:46px;height:46px;display:flex;align-items:center;justify-content:center;
-    font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:var(--ink);
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.5rem;color:var(--ink);
     background:#fff;border:3px solid var(--blue);border-radius:12px;box-shadow:0 4px 0 #c7d4e6;}
   .drop.sym .cap{border-color:var(--amber);color:var(--amber-d);}
   .drop.pop .cap{animation:dropPop .25s ease forwards;}
@@ -129,7 +135,7 @@
 
   /* dactylo text */
   .type-area{padding:26px 26px 30px;background:#fbfdff;}
-  .type-text{font-family:"Fredoka",sans-serif;font-weight:500;font-size:clamp(1.15rem,2.8vw,1.7rem);
+  .type-text{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:500;font-size:clamp(1.15rem,2.8vw,1.7rem);
     line-height:1.9;letter-spacing:.5px;color:#c2ccd8;max-width:780px;margin:0 auto;
     text-align:center;word-spacing:2px;}
   /* chaque mot reste insécable, la coupure ne se fait qu'entre les mots */
@@ -169,7 +175,7 @@
     box-shadow:0 30px 70px -30px rgba(0,0,0,.6);animation:pop .22s ease;max-height:92vh;overflow:auto;}
   @keyframes pop{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
   .modal .m-emoji{font-size:2.5rem;line-height:1;display:block;margin-bottom:4px;}
-  .modal h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.45rem;margin:0 0 9px;}
+  .modal h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.45rem;margin:0 0 9px;}
   .modal p{font-size:1.03rem;line-height:1.55;margin:0 0 12px;color:var(--ink);}
   .modal .kicker{font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:.78rem;color:var(--blue-d);}
   .modal.test-modal .kicker{color:var(--amber-d);}
@@ -180,7 +186,7 @@
   .howto.test .h-head{color:var(--amber-d);}
   .legend{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:1fr;gap:7px;}
   .legend li{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:10px;padding:7px 11px;font-size:.97rem;}
-  .legend .lg-ch{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.25rem;min-width:30px;text-align:center;color:var(--amber-d);}
+  .legend .lg-ch{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.25rem;min-width:30px;text-align:center;color:var(--amber-d);}
   .modal .m-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px;
     position:sticky;bottom:0;background:#fff;padding-top:10px;border-top:1px solid var(--line-2);}
   .m-btn{border:none;border-radius:13px;padding:13px 22px;font-weight:800;font-size:1.05rem;}
@@ -208,7 +214,7 @@
     text-align:left;border:2px solid var(--line);background:#fbfdff;border-radius:14px;padding:13px 16px;color:var(--ink);}
   .lvl-card .lc-badge{grid-row:1 / span 2;font-size:1.5rem;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
     background:#eef4ff;border-radius:12px;}
-  .lvl-card .lc-n{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.02rem;}
+  .lvl-card .lc-n{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.02rem;}
   .lvl-card .lc-t{color:var(--muted);font-weight:700;font-size:.88rem;}
   .lvl-card:not(.locked):hover{border-color:var(--blue);background:#f1f6ff;transform:translateY(-2px);}
   .lvl-card.current{border-color:var(--green);background:#f1fbf4;}
@@ -254,7 +260,7 @@
   .lock-burst.go{animation:lockBurst .95s ease-out forwards;}
   .lock-burst.lb2.go{animation:lockBurst 1s .18s ease-out forwards;}
   @keyframes lockBurst{0%{opacity:.95;transform:scale(.15);}100%{opacity:0;transform:scale(7.5);}}
-  .lock-cap{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
+  .lock-cap{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
     background:var(--amber);padding:6px 20px;border-radius:999px;box-shadow:0 8px 20px -8px rgba(0,0,0,.6);}
   @keyframes lockIn{from{transform:scale(.3);opacity:0;}to{transform:scale(1);opacity:1;}}
   @keyframes lockShake{0%,100%{transform:rotate(0) translateX(0);}22%{transform:rotate(-12deg) translateX(-8px);}
@@ -268,7 +274,7 @@
   /* ---------- Combat de Boss ---------- */
   .field.bossfield{background:radial-gradient(120% 80% at 50% 0%,#3b1d5e 0%,#241043 55%,#160a2e 100%);}
   .boss-top{position:absolute;top:12px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:7px;z-index:3;pointer-events:none;}
-  .boss-name{font-family:"Fredoka",sans-serif;font-weight:700;color:#ffe9c2;letter-spacing:.03em;font-size:1rem;
+  .boss-name{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;color:#ffe9c2;letter-spacing:.03em;font-size:1rem;
     text-shadow:0 2px 7px rgba(0,0,0,.7),0 0 12px rgba(255,120,60,.5);}
   .boss-hpbar{width:min(440px,72vw);height:16px;border-radius:9px;background:rgba(0,0,0,.45);
     border:2px solid #ffd76a;overflow:hidden;box-shadow:0 0 16px rgba(255,90,60,.5);}
@@ -298,7 +304,7 @@
 
   .spell{position:absolute;top:0;left:0;display:flex;align-items:center;justify-content:center;will-change:transform;z-index:6;}
   .spell .orb{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
     background:radial-gradient(circle at 35% 28%,#c4b5fd,#7c3aed 58%,#4c1d95);
     border:2px solid #ede9fe;box-shadow:0 0 16px 3px rgba(167,139,250,.8);animation:orbGlow 1.3s ease-in-out infinite;}
   @keyframes orbGlow{0%,100%{box-shadow:0 0 14px 2px rgba(167,139,250,.7);}50%{box-shadow:0 0 22px 5px rgba(196,181,253,.95);}}
@@ -307,20 +313,20 @@
 
   .atk-target{position:absolute;z-index:20;display:flex;align-items:center;justify-content:center;animation:tgtIn .3s ease both;}
   .atk-target .cap{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-    font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.7rem;color:#7c2d12;background:#fff;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.7rem;color:#7c2d12;background:#fff;
     border:3px solid #f59e0b;box-shadow:0 0 18px 4px rgba(245,158,11,.75);animation:tgtFloat 1.5s ease-in-out infinite;}
   @keyframes tgtFloat{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-9px) rotate(4deg);}}
   @keyframes tgtIn{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
   .atk-target.hit .cap{animation:tgtHit .25s ease forwards;}
   @keyframes tgtHit{to{transform:scale(1.7);opacity:0;}}
-  .dmg-float{position:absolute;z-index:25;font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.6rem;color:#fde047;
+  .dmg-float{position:absolute;z-index:25;font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.6rem;color:#fde047;
     text-shadow:0 2px 7px rgba(0,0,0,.7);pointer-events:none;animation:dmgUp .8s ease forwards;}
   @keyframes dmgUp{0%{transform:translate(-50%,0) scale(.6);opacity:0;}20%{opacity:1;transform:translate(-50%,-8px) scale(1.2);}
     100%{transform:translate(-50%,-48px) scale(1);opacity:0;}}
 
   .attack-banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     z-index:30;background:radial-gradient(circle,rgba(239,68,68,.28),rgba(20,8,30,.5));pointer-events:none;padding:16px;text-align:center;}
-  .attack-title{font-family:"Fredoka",sans-serif;font-weight:700;font-size:clamp(1.7rem,6vw,3.2rem);color:#fff;
+  .attack-title{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:clamp(1.7rem,6vw,3.2rem);color:#fff;
     text-shadow:0 0 20px #ff5a5a,0 4px 0 #b91c1c,0 9px 24px rgba(0,0,0,.55);
     animation:atkTitle .5s ease both,atkPulse .6s .5s ease-in-out infinite;}
   @keyframes atkTitle{0%{transform:scale(.2) rotate(-12deg);opacity:0;}60%{transform:scale(1.18) rotate(4deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
@@ -331,14 +337,14 @@
 
   /* Boss en mode MOTS (Niveau 7) */
   .spell.word .rune{display:inline-flex;align-items:center;padding:7px 14px;border-radius:13px;
-    font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.25rem;color:#ede9fe;white-space:nowrap;letter-spacing:.5px;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.25rem;color:#ede9fe;white-space:nowrap;letter-spacing:.5px;
     background:linear-gradient(#6d28d9,#4c1d95);border:2px solid #c4b5fd;box-shadow:0 0 16px 3px rgba(167,139,250,.7);}
   .spell.word.active .rune{border-color:#fde047;box-shadow:0 0 22px 5px rgba(253,224,71,.7);}
   .spell.word .typed{color:#86efac;}
   .spell.pop .rune{animation:spellPop .25s ease forwards;}
   .atk-word{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:20;animation:tgtIn .3s ease both;}
   .atk-word .card{display:inline-flex;align-items:center;padding:10px 22px;border-radius:16px;letter-spacing:.5px;
-    font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.9rem;color:#7c2d12;background:#fff;white-space:nowrap;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.9rem;color:#7c2d12;background:#fff;white-space:nowrap;
     border:3px solid #f59e0b;box-shadow:0 0 22px 5px rgba(245,158,11,.72);animation:tgtFloat 1.5s ease-in-out infinite;}
   .atk-word .typed{color:#16a34a;}
   .atk-word.hit .card{animation:tgtHit .25s ease forwards;}
@@ -1231,7 +1237,7 @@ function updateProgress(){
     d.className='seg'+(mile?' milestone':'');
     if(i<progressIdx) d.classList.add('done');
     if(i===playIdx) d.classList.add('current');
-    if(mile) d.textContent = (i<progressIdx?'🏆':'🚩');
+    if(mile) d.textContent = '🏆';
     if(i<=progressIdx){
       d.classList.add('clickable');
       d.title = (i===playIdx?'Manche en cours : ':'Revenir à ')+st.label+' · '+st.title;
@@ -1558,7 +1564,7 @@ function openOverlay(){ pauseActive(); overlay.classList.add('open'); }   // tou
 function closeOverlay(){ overlay.classList.remove('open'); }
 let toastTimer=null;
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2000); }
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),8000); }
 function confetti(){
   const wrap=document.createElement('div'); wrap.className='confetti';
   const cols=['#2563eb','#f59e0b','#16a34a','#e11d48','#7c3aed'];
@@ -1600,7 +1606,7 @@ function confetti(){
   const UNLOCK='kb_unlocked', CUR='kb_curlevel', STEP='kb_step_l', HOME='le-clavier.html';
 
   const css=`
-  #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,sans-serif;}
+  #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;}
   #devkit .dk-toggle{display:inline-flex;align-items:center;gap:6px;background:#1e2733;color:#e7eef6;border:none;
     border-radius:999px;padding:9px 14px;font-weight:800;font-size:.85rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.28);}
   #devkit .dk-toggle:hover{background:#2a3645;}

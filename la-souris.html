@@ -8,6 +8,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* Police d'emojis unifiée sur tous les systèmes (cf. assets/fonts/README.md) */
+  @font-face{
+    font-family:"Fluent Emoji";
+    src:url("assets/fonts/fluent-emoji.woff2") format("woff2");
+    font-display:swap;
+  }
   :root{
     --ink:#22303f; --muted:#5a6b7b;
     --blue:#2563eb; --blue-d:#1d4ed8;
@@ -20,11 +26,11 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    font-family:"Nunito",system-ui,sans-serif;color:var(--ink);
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;color:var(--ink);
     background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
   }
   button{font-family:inherit;cursor:pointer;}
-  .display{font-family:"Fredoka",sans-serif;}
+  .display{font-family:"Fredoka","Fluent Emoji",sans-serif;}
 
   /* ---------- Top bar ---------- */
   .topbar{background:#fff;border-bottom:2px solid var(--line);
@@ -32,7 +38,7 @@
   .back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--blue-d);
     font-weight:800;font-size:.98rem;padding:8px 12px;border-radius:10px;}
   .back:hover{background:#eef4ff;}
-  .topbar h1{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.15rem;margin:0;flex:1;}
+  .topbar h1{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.15rem;margin:0;flex:1;}
   .topbar h1 .dot{color:var(--blue);}
   .step-count{font-weight:800;color:var(--muted);font-size:.95rem;}
   .reset-btn{border:2px solid var(--line);background:#fff;color:var(--muted);font-weight:700;
@@ -61,7 +67,7 @@
   .banner.review{border-left-color:var(--green);}
   .banner .b-emoji{font-size:1.8rem;line-height:1;}
   .banner .b-txt{flex:1;min-width:200px;}
-  .banner .b-title{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.08rem;}
+  .banner .b-title{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.08rem;}
   .banner .b-sub{color:#3a4a59;font-weight:700;font-size:1rem;margin-top:4px;line-height:1.45;}
   .banner .b-goal-label{font-weight:800;color:var(--blue-d);margin-right:3px;}
   .banner.test .b-goal-label{color:var(--amber-d);}
@@ -85,6 +91,21 @@
   .hud .timer{font-weight:800;color:var(--amber-d);font-size:.95rem;white-space:nowrap;}
   .hud .task-prompt{font-weight:800;color:var(--ink);font-size:1rem;flex-basis:100%;line-height:1.4;}
   .hud .task-prompt b{color:var(--blue-d);}
+  /* Consignes enchaînées « un objectif à la fois » — même présentation/animation que les jalons du traitement de texte */
+  .jalon-head{margin:0 0 6px;}
+  .jalon-obj{display:flex;align-items:center;gap:11px;background:#fff;border:2px solid #f6d68a;
+    border-left:6px solid var(--amber);border-radius:12px;padding:10px 14px;font-weight:700;font-size:1.02rem;
+    color:var(--ink);line-height:1.35;
+    transition:transform .45s cubic-bezier(.2,.7,.3,1), opacity .45s ease, background .3s, border-color .3s;}
+  .jalon-obj .jo-check{flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;background:var(--amber);color:#fff;font-weight:800;font-size:1rem;}
+  .jalon-obj .jo-text b{color:var(--amber-d);}
+  .jalon-obj.done{background:#eafaf0;border-color:#86efac;border-left-color:var(--green);color:var(--green-d);}
+  .jalon-obj.done .jo-check{background:var(--green);}
+  .jalon-obj.done .jo-text b{color:var(--green-d);}
+  .jalon-obj.entering{transform:translateY(120%);opacity:0;}
+  .jalon-obj.slideup{transform:translateY(-160%);opacity:0;}
+  @media (prefers-reduced-motion: reduce){ .jalon-obj{transition:opacity .2s ease;} .jalon-obj.entering,.jalon-obj.slideup{transform:none;} }
 
   /* ---------- Game field ---------- */
   .mfield{position:relative;height:clamp(380px,56vh,560px);overflow:hidden;
@@ -193,7 +214,7 @@
   .ctxmenu .ctx-item .cx-ic{font-size:1.15rem;width:22px;text-align:center;}
   .ctxmenu .ctx-sep{height:1px;background:var(--line-2);margin:4px 6px;}
   .ctxmenu .ctx-item.danger:hover{background:#fdecec;color:var(--red-d);}
-  .action-flash{position:absolute;z-index:65;font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.1rem;
+  .action-flash{position:absolute;z-index:65;font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.1rem;
     color:#fff;background:var(--green);padding:8px 16px;border-radius:999px;transform:translate(-50%,-50%);
     box-shadow:0 8px 18px -6px rgba(0,0,0,.5);animation:actFlash 1s ease forwards;pointer-events:none;}
   @keyframes actFlash{0%{opacity:0;transform:translate(-50%,-50%) scale(.6);}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1);}
@@ -221,7 +242,7 @@
   .scrolllist{height:100%;overflow-y:auto;padding:10px 16px 30px;scroll-behavior:smooth;}
   .scrollrow{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--line);border-radius:12px;
     padding:13px 16px;margin:9px 0;font-weight:700;color:#46586b;}
-  .scrollrow .sr-num{font-family:"Fredoka",sans-serif;color:#9aa8b8;font-weight:700;min-width:30px;}
+  .scrollrow .sr-num{font-family:"Fredoka","Fluent Emoji",sans-serif;color:#9aa8b8;font-weight:700;min-width:30px;}
   .scrollrow.star{border-color:var(--amber);background:linear-gradient(#fffaf0,#fff3d6);cursor:pointer;}
   .scrollrow.star .sr-star{font-size:1.6rem;margin-left:auto;animation:starSpin 2.5s linear infinite;}
   @keyframes starSpin{to{transform:rotate(360deg);}}
@@ -252,7 +273,7 @@
     box-shadow:0 30px 70px -30px rgba(0,0,0,.6);animation:pop .22s ease;max-height:92vh;overflow:auto;}
   @keyframes pop{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
   .modal .m-emoji{font-size:2.5rem;line-height:1;display:block;margin-bottom:4px;}
-  .modal h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.45rem;margin:0 0 9px;}
+  .modal h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.45rem;margin:0 0 9px;}
   .modal p{font-size:1.03rem;line-height:1.55;margin:0 0 12px;color:var(--ink);}
   .modal .kicker{font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:.78rem;color:var(--blue-d);}
   .modal.test-modal .kicker{color:var(--amber-d);}
@@ -290,7 +311,7 @@
     text-align:left;border:2px solid var(--line);background:#fbfdff;border-radius:14px;padding:13px 16px;color:var(--ink);}
   .lvl-card .lc-badge{grid-row:1 / span 2;font-size:1.5rem;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
     background:#eef4ff;border-radius:12px;}
-  .lvl-card .lc-n{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.02rem;}
+  .lvl-card .lc-n{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.02rem;}
   .lvl-card .lc-t{color:var(--muted);font-weight:700;font-size:.88rem;}
   .lvl-card:not(.locked):hover{border-color:var(--blue);background:#f1f6ff;transform:translateY(-2px);}
   .lvl-card.current{border-color:var(--green);background:#f1fbf4;}
@@ -338,7 +359,7 @@
   .lock-burst.go{animation:lockBurst .95s ease-out forwards;}
   .lock-burst.lb2.go{animation:lockBurst 1s .18s ease-out forwards;}
   @keyframes lockBurst{0%{opacity:.95;transform:scale(.15);}100%{opacity:0;transform:scale(7.5);}}
-  .lock-cap{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
+  .lock-cap{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
     background:var(--amber);padding:6px 20px;border-radius:999px;box-shadow:0 8px 20px -8px rgba(0,0,0,.6);}
   .lock-star{position:absolute;left:calc(50% - 5px);top:calc(50% - 5px);width:10px;height:10px;
     pointer-events:none;z-index:4;animation:starFly var(--dur,.7s) var(--delay,0ms) ease-out forwards;}
@@ -358,8 +379,8 @@
   .boss-portrait{width:46px;height:46px;flex:0 0 auto;object-fit:contain;image-rendering:pixelated;
     border:2px solid #ffd76a;border-radius:10px;background:rgba(0,0,0,.35);padding:2px;box-shadow:0 0 12px rgba(255,90,60,.45);user-select:none;-webkit-user-drag:none;}
   .boss-hpwrap{flex:1;}
-  .boss-name{font-family:"Pixelify Sans",sans-serif;color:#ffe9c2;font-weight:600;font-size:1.15rem;text-shadow:0 2px 6px #000;margin-bottom:3px;}
-  .boss-mode-tag{font-family:"Nunito",sans-serif;font-size:.72rem;font-weight:800;color:#0b0b0b;background:#ffd76a;
+  .boss-name{font-family:"Pixelify Sans","Fluent Emoji",sans-serif;color:#ffe9c2;font-weight:600;font-size:1.15rem;text-shadow:0 2px 6px #000;margin-bottom:3px;}
+  .boss-mode-tag{font-family:"Nunito","Fluent Emoji",sans-serif;font-size:.72rem;font-weight:800;color:#0b0b0b;background:#ffd76a;
     padding:1px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
   /* popup de sélection du mode + portrait de référence */
   .boss-gate-portrait{width:120px;height:120px;object-fit:contain;image-rendering:pixelated;margin:2px auto 0;display:block;
@@ -370,7 +391,7 @@
   .boss-mode-btn:hover{border-color:#f59e0b;box-shadow:0 6px 16px -6px rgba(245,158,11,.5);transform:translateY(-1px);}
   .boss-mode-btn .bm-ic{font-size:1.9rem;line-height:1;flex:0 0 auto;}
   .boss-mode-btn .bm-txt{display:flex;flex-direction:column;}
-  .boss-mode-btn .bm-name{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.08rem;color:#3a2a12;}
+  .boss-mode-btn .bm-name{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.08rem;color:#3a2a12;}
   .boss-mode-btn .bm-sub{font-size:.82rem;font-weight:700;color:#8a7a5c;}
   .boss-mode-btn .bm-tag{margin-left:auto;font-size:.72rem;font-weight:800;color:#0b0b0b;background:#ffe08a;border-radius:999px;padding:3px 10px;white-space:nowrap;}
   .boss-mode-btn.is-hard .bm-tag{background:#fca5a5;}
@@ -437,33 +458,33 @@
   /* consignes du jeu : placées EN BAS, sous le sorcier, pour dégager le haut (barres + démon) */
   .boss-prompt{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);max-width:74%;text-align:center;
     background:rgba(0,0,0,.62);color:#fff;font-weight:600;padding:8px 16px;border-radius:999px;z-index:17;font-size:1.05rem;
-    font-family:"Pixelify Sans",sans-serif;}
+    font-family:"Pixelify Sans","Fluent Emoji",sans-serif;}
   .boss-prompt b{color:#fde047;}
   .boss-banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     z-index:20;background:radial-gradient(circle,rgba(0,0,0,.25),rgba(0,0,0,.55));text-align:center;padding:16px;pointer-events:none;}
-  .boss-banner .bb-title{font-family:"Pixelify Sans",sans-serif;font-weight:700;font-size:clamp(1.9rem,6.5vw,3.2rem);color:#fff;
+  .boss-banner .bb-title{font-family:"Pixelify Sans","Fluent Emoji",sans-serif;font-weight:700;font-size:clamp(1.9rem,6.5vw,3.2rem);color:#fff;
     text-shadow:0 0 18px #ff7a3c,0 4px 0 #b91c1c;animation:bbIn .4s ease both;}
   @keyframes bbIn{0%{transform:scale(.4) rotate(-8deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
-  .boss-banner .bb-sub{margin-top:8px;color:#ffe9b0;font-weight:600;font-size:1.2rem;text-shadow:0 2px 6px #000;font-family:"Pixelify Sans",sans-serif;}
+  .boss-banner .bb-sub{margin-top:8px;color:#ffe9b0;font-weight:600;font-size:1.2rem;text-shadow:0 2px 6px #000;font-family:"Pixelify Sans","Fluent Emoji",sans-serif;}
   /* panneau de briefing entre les phases (déclenché par le joueur) */
   /* tient TOUJOURS dans l'arène (hauteur min 440px) sans barre de défilement : tailles liées au vh */
   .boss-brief{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:clamp(5px,1.2vh,11px);padding:clamp(8px,1.6vh,16px);text-align:center;pointer-events:auto;overflow:hidden;
     background:radial-gradient(circle,rgba(20,8,16,.82),rgba(10,4,8,.93));animation:bbIn .35s ease both;}
-  .boss-brief .bf-story{color:#fca5a5;font-weight:600;font-size:clamp(.95rem,2.4vh,1.25rem);max-width:92%;line-height:1.3;text-shadow:0 2px 6px #000;font-family:"Pixelify Sans",sans-serif;}
-  .boss-brief .bf-title{font-family:"Pixelify Sans",sans-serif;font-weight:700;font-size:clamp(1.5rem,4.6vh,2.7rem);color:#fff;line-height:1.1;
+  .boss-brief .bf-story{color:#fca5a5;font-weight:600;font-size:clamp(.95rem,2.4vh,1.25rem);max-width:92%;line-height:1.3;text-shadow:0 2px 6px #000;font-family:"Pixelify Sans","Fluent Emoji",sans-serif;}
+  .boss-brief .bf-title{font-family:"Pixelify Sans","Fluent Emoji",sans-serif;font-weight:700;font-size:clamp(1.5rem,4.6vh,2.7rem);color:#fff;line-height:1.1;
     text-shadow:0 0 16px #ff7a3c,0 3px 0 #b91c1c;}
   .boss-brief .bf-how{color:#fff;font-weight:600;font-size:clamp(.92rem,2.3vh,1.2rem);line-height:1.4;max-width:600px;
-    font-family:"Pixelify Sans",sans-serif;
+    font-family:"Pixelify Sans","Fluent Emoji",sans-serif;
     background:rgba(0,0,0,.42);padding:clamp(7px,1.4vh,14px) clamp(14px,2.2vw,22px);border-radius:14px;border:2px solid rgba(255,215,106,.45);}
   .boss-brief .bf-how b{color:#fde047;}
-  .boss-brief .bf-go{font-family:"Pixelify Sans",sans-serif;font-weight:700;font-size:1.4rem;color:#fff;
+  .boss-brief .bf-go{font-family:"Pixelify Sans","Fluent Emoji",sans-serif;font-weight:700;font-size:1.4rem;color:#fff;
     background:linear-gradient(#f59e0b,#b45309);border:none;border-radius:999px;padding:13px 32px;
     box-shadow:0 8px 18px -6px rgba(0,0,0,.6);cursor:pointer;animation:emoBob 1.9s ease-in-out infinite;}
   .boss-brief .bf-go:hover{filter:brightness(1.08);}
   /* ---- mini-tuto interactif dans le briefing (remplace le bouton « En garde ») ---- */
   .boss-brief .bf-tuto{display:flex;flex-direction:column;align-items:center;gap:clamp(5px,1.2vh,11px);width:100%;}
-  .boss-brief .bf-tuto-hint{color:#ffe9b0;font-weight:700;font-size:clamp(.9rem,2.1vh,1.08rem);font-family:"Pixelify Sans",sans-serif;
+  .boss-brief .bf-tuto-hint{color:#ffe9b0;font-weight:700;font-size:clamp(.9rem,2.1vh,1.08rem);font-family:"Pixelify Sans","Fluent Emoji",sans-serif;
     background:rgba(0,0,0,.5);padding:clamp(5px,1vh,8px) clamp(12px,2vw,18px);border-radius:999px;max-width:92%;text-align:center;line-height:1.3;}
   .boss-brief .bf-tuto-hint b{color:#fde047;}
   .bf-stage{position:relative;width:min(470px,90vw);height:clamp(150px,24vh,216px);border:2px dashed rgba(255,215,106,.55);
@@ -520,7 +541,7 @@
   .minion.lassosel{outline:3px solid #60a5fa;outline-offset:2px;border-radius:8px;background:rgba(96,165,250,.18);}
   .grimoire{position:absolute;inset:9% 11% 11%;background:#3b2a1a;border:5px solid #1f140a;border-radius:12px;overflow:hidden;z-index:7;display:flex;flex-direction:column;box-shadow:0 16px 40px -10px rgba(0,0,0,.6);}
   .grimoire .gpages{flex:1;overflow-y:auto;padding:10px;}
-  .gpage{background:#e8d5a8;border:2px solid #b79b66;border-radius:7px;margin:8px 0;padding:11px 14px;font-weight:600;color:#5a4423;font-family:"Pixelify Sans",sans-serif;font-size:1rem;}
+  .gpage{background:#e8d5a8;border:2px solid #b79b66;border-radius:7px;margin:8px 0;padding:11px 14px;font-weight:600;color:#5a4423;font-family:"Pixelify Sans","Fluent Emoji",sans-serif;font-size:1rem;}
   .gpage.sealed{background:linear-gradient(#fff3c4,#ffe08a);border-color:#f59e0b;cursor:pointer;
     animation:sealPulse 1.1s ease-in-out infinite;}
   @keyframes sealPulse{
@@ -532,7 +553,7 @@
   .fire-layer{position:absolute;inset:0;z-index:11;pointer-events:none;}
   .fire-layer .fireball{pointer-events:auto;}
   .boss-gauge{position:absolute;top:62px;left:50%;transform:translateX(-50%);width:min(440px,82%);z-index:13;display:flex;align-items:center;gap:9px;}
-  .boss-gauge .bg-label{color:#fff;font-weight:600;font-size:1rem;text-shadow:0 1px 3px #000;white-space:nowrap;font-family:"Pixelify Sans",sans-serif;}
+  .boss-gauge .bg-label{color:#fff;font-weight:600;font-size:1rem;text-shadow:0 1px 3px #000;white-space:nowrap;font-family:"Pixelify Sans","Fluent Emoji",sans-serif;}
   .boss-gauge .bg-track{flex:1;height:18px;background:rgba(0,0,0,.5);border:3px solid #000;border-radius:0;overflow:hidden;box-shadow:2px 2px 0 #000,inset 1px 1px 0 rgba(0,0,0,.6);image-rendering:pixelated;}
   .boss-gauge .bg-track > i{display:block;height:100%;width:0;background:#16a34a;transition:width .08s linear;}
   .boss-aura.weak{display:flex;flex-direction:column;align-items:center;gap:1px;z-index:19;
@@ -590,7 +611,8 @@
 
   <div class="actions">
     <button class="btn btn-hint" id="hintBtn">💡 Astuce</button>
-    <button class="btn btn-restart" id="restartBtn">↺ Recommencer le boss depuis le début</button>
+    <button class="btn btn-restart" id="restartBtn">↺ Recommencer le boss</button>
+    <button class="btn btn-restart" id="diffBtn" style="display:none">⚙️ Difficulté</button>
   </div>
 
   <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
@@ -686,7 +708,7 @@ const LEVELS=[
         items:[{e:'📁',l:'Photos'},{e:'🎮',l:'Jeu'},{e:'📄',l:'Texte'},{e:'🎨',l:'Dessin'},{e:'📁',l:'École'},{e:'🎵',l:'Chanson'}], target:6},
       {kind:'jalon',emoji:'🏆',label:'Défi final',title:'Le défi du double-clic',
         desc:'Ouvre les <b>8</b> éléments du bureau le plus vite possible !',
-        items:[{e:'📁',l:'Photos'},{e:'🎮',l:'Jeu'},{e:'📄',l:'Texte'},{e:'🎨',l:'Dessin'},{e:'📁',l:'École'},{e:'🎵',l:'Chanson'},{e:'🌐',l:'Internet'},{e:'📷',l:'Album'}], target:8, timeMs:5000}
+        items:[{e:'📁',l:'Photos'},{e:'🎮',l:'Jeu'},{e:'📄',l:'Texte'},{e:'🎨',l:'Dessin'},{e:'📁',l:'École'},{e:'🎵',l:'Chanson'},{e:'🌐',l:'Internet'},{e:'📷',l:'Album'}], target:8, timeMs:8000}
     ]},
 
   /* ---------- N4 : CLIC DROIT ---------- */
@@ -842,6 +864,8 @@ const DEMON_SOUNDS={
   provoke:'phatphrogstudio-demon-voice-provoke.mp3'
 };
 const _demonAudio={};
+// NB : « growling » et « no-more-running » ont été amplifiés ×2 directement dans les fichiers mp3
+// (cf. sounds/a_chunky_red_horned_demon). On les joue donc en <audio> simple, sans Web Audio.
 function demonSound(key,opts){
   if(!soundOn) return; opts=opts||{};
   const file=DEMON_SOUNDS[key]; if(!file) return;
@@ -1199,7 +1223,7 @@ function startContext(step){
   stopGame(); MG.cleanup=[];
   stage.innerHTML=hudHTML({prompt:true})+'<div class="mfield" id="mfield"><div class="ctxgrid" id="ctxgrid"></div></div>';
   const grid=document.getElementById('ctxgrid'), field=document.getElementById('mfield');
-  Object.assign(MG,{step, field, taskIdx:0, total:step.tasks.length, iconEls:{}, menu:null});
+  Object.assign(MG,{step, field, taskIdx:0, total:step.tasks.length, iconEls:{}, menu:null, ctxAnimating:false});
   setHud(0,MG.total,0,0);
   step.items.forEach(it=>{
     const el=document.createElement('div'); el.className='icon'; el.style.position='relative';
@@ -1214,15 +1238,19 @@ function startContext(step){
   activeGame={ stop(){ closeCtxMenu(); mgStop(); }, pause(){}, resume(){} };
 }
 function curTask(){ return MG.step.tasks[MG.taskIdx]; }
-function showCtxPrompt(){
+function showCtxPrompt(enter){
   const t=curTask(); const it=MG.step.items.find(i=>i.id===t.item);
-  const p=document.getElementById('hudPrompt');
-  if(p) p.innerHTML='Consigne '+(MG.taskIdx+1)+'/'+MG.total+' : <b>'+ACTION_VERB[t.action]+'</b> '+ACTION_ICO[t.action]+' le fichier <b>'+escapeHtml(it.l)+'</b> '+it.e;
+  const p=document.getElementById('hudPrompt'); if(!p) return;
+  p.innerHTML='<div class="jalon-head"><span class="b-goal-label">Objectif '+(MG.taskIdx+1)+' / '+MG.total+'</span></div>'
+    +'<div class="jalon-obj'+(enter?' entering':'')+'"><span class="jo-check">'+(MG.taskIdx+1)+'</span>'
+    +'<span class="jo-text"><b>'+ACTION_VERB[t.action]+'</b> '+ACTION_ICO[t.action]+' le fichier <b>'+escapeHtml(it.l)+'</b> '+it.e+'</span></div>';
+  if(enter) requestAnimationFrame(()=>{ const el=p.querySelector('.jalon-obj'); if(el) el.classList.remove('entering'); });
   // pulse l'élément cible pour guider
   Object.values(MG.iconEls).forEach(e=>e.classList.remove('target-pulse'));
   const tgt=MG.iconEls[t.item]; if(tgt) tgt.classList.add('target-pulse');
 }
 function onCtxRight(e,it,el){
+  if(MG.ctxAnimating) return;   // on ignore les clics pendant l'animation d'enchaînement des consignes
   closeCtxMenu();
   const t=curTask();
   if(it.id!==t.item){ beep('bad'); toast('Ce n\'est pas le bon élément. Relis la consigne en haut !'); return; }
@@ -1258,9 +1286,17 @@ function onCtxAction(action, el){
   flash.style.left=(er.left-fr.left+er.width/2)+'px'; flash.style.top=(er.top-fr.top+er.height/2)+'px';
   MG.field.appendChild(flash); setTimeout(()=>flash.remove(),1000);
   beep('good'); el.classList.remove('target-pulse');
-  MG.taskIdx++; setHud(MG.taskIdx,MG.total,0,0);
-  if(MG.taskIdx>=MG.total){ mgStop(); beep('win'); setTimeout(onWin,400); }
-  else showCtxPrompt();
+  // anime la consigne validée (✓ + glissement vers le haut) puis enchaîne sur la suivante,
+  // comme les jalons du traitement de texte.
+  MG.ctxAnimating=true;
+  const card=document.querySelector('#hudPrompt .jalon-obj');
+  if(card){ card.classList.add('done'); const ck=card.querySelector('.jo-check'); if(ck) ck.textContent='✓'; }
+  setTimeout(()=>{ if(card) card.classList.add('slideup'); }, 520);
+  setTimeout(()=>{
+    MG.taskIdx++; setHud(MG.taskIdx,MG.total,0,0);
+    if(MG.taskIdx>=MG.total){ MG.ctxAnimating=false; mgStop(); beep('win'); setTimeout(onWin,300); }
+    else { showCtxPrompt(true); MG.ctxAnimating=false; }
+  }, 980);
 }
 function labelOf(action){ const m=CTX_MENU.find(x=>x.action===action); return m?m.label:action; }
 
@@ -2640,7 +2676,7 @@ function updateProgress(){
     d.className='seg'+(mile?' milestone':'');
     if(i<progressIdx) d.classList.add('done');
     if(i===playIdx) d.classList.add('current');
-    if(mile) d.textContent=(i<progressIdx?'🏆':'🚩');
+    if(mile) d.textContent='🏆';
     if(i<=progressIdx){
       d.classList.add('clickable');
       d.title=(i===playIdx?'Manche en cours : ':'Revenir à ')+st.label+' · '+st.title;
@@ -2657,6 +2693,8 @@ function updateBanner(){
   document.getElementById('bEmoji').textContent=currentStep.emoji;
   document.getElementById('bTitle').textContent=(reviewing()?'Révision · ':'')+currentStep.label+' : '+currentStep.title;
   document.getElementById('bSub').innerHTML='<span class="b-goal-label">Objectif :</span> '+stripTags(currentStep.desc);
+  // Le bouton « Difficulté » n'a de sens que pour le boss final.
+  document.getElementById('diffBtn').style.display = (LEVELS[currentLevel-1].game==='boss') ? '' : 'none';
 }
 function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
 
@@ -2696,13 +2734,7 @@ function openBossGate(){
     html += '<div class="m-actions"><button class="m-btn primary test" id="bossResume">⚔️ Reprendre le combat</button></div>';
   } else {
     html += '<p style="font-weight:800;color:#7a5b1e;margin:6px 0 0">Choisis ton mode :</p>'
-      + '<div class="boss-modes">'
-      + ['easy','medium','hard'].map(k=>{ const m=BOSS_MODES[k];
-          return '<button class="boss-mode-btn is-'+k+'" data-mode="'+k+'">'
-            + '<span class="bm-ic">'+m.emoji+'</span>'
-            + '<span class="bm-txt"><span class="bm-name">'+m.label+'</span><span class="bm-sub">'+m.sub+'</span></span>'
-            + '<span class="bm-tag">'+m.tag+'</span></button>'; }).join('')
-      + '</div>';
+      + bossModeChooserHTML();
   }
   modal.className='modal test-modal';
   modal.innerHTML=html;
@@ -2710,11 +2742,36 @@ function openBossGate(){
   if(resume){
     document.getElementById('bossResume').onclick=()=>{ closeOverlay(); audioCtx(); resumeActive(); };
   } else {
-    modal.querySelectorAll('.boss-mode-btn').forEach(b=>{
-      b.onclick=()=>{ bossMode=b.getAttribute('data-mode'); try{localStorage.setItem('ms_bossmode',bossMode);}catch(e){}
-        closeOverlay(); audioCtx(); launchGame(); };
-    });
+    bindBossModeChoice();
   }
+}
+/* Boutons de choix du mode (Facile / Moyen / Difficile) — partagés entre l'arrivée
+   devant le boss et le bouton « Difficulté » de la barre d'actions. */
+function bossModeChooserHTML(){
+  return '<div class="boss-modes">'
+    + ['easy','medium','hard'].map(k=>{ const m=BOSS_MODES[k];
+        return '<button class="boss-mode-btn is-'+k+'" data-mode="'+k+'">'
+          + '<span class="bm-ic">'+m.emoji+'</span>'
+          + '<span class="bm-txt"><span class="bm-name">'+m.label+'</span><span class="bm-sub">'+m.sub+'</span></span>'
+          + '<span class="bm-tag">'+m.tag+'</span></button>'; }).join('')
+    + '</div>';
+}
+function bindBossModeChoice(){
+  modal.querySelectorAll('.boss-mode-btn').forEach(b=>{
+    b.onclick=()=>{ bossMode=b.getAttribute('data-mode'); try{localStorage.setItem('ms_bossmode',bossMode);}catch(e){}
+      closeOverlay(); audioCtx(); launchGame(); };
+  });
+}
+/* Relance le boss en re-choisissant la difficulté (bouton « ⚙️ Difficulté »). */
+function openBossDifficulty(){
+  modal.className='modal test-modal';
+  modal.innerHTML=
+    '<div class="kicker">Boss final</div>'
+    + '<h2>Choisis ta difficulté</h2>'
+    + '<p>Relance le combat contre <b>Gruk</b> en choisissant un nouveau mode :</p>'
+    + bossModeChooserHTML();
+  openOverlay();
+  bindBossModeChoice();
 }
 function gameHintLine(){
   const g=LEVELS[currentLevel-1].game;
@@ -2831,12 +2888,11 @@ function courseFinish(){
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
     +'<p>Incroyable ! Tu as fini les <b>6 niveaux</b> de <b>La souris</b> <b>et vaincu le Démon Gardien</b> 🐲 ! Le clic, le glisser-déposer, le double-clic, le clic droit, la sélection et la molette n\'ont plus de secret pour toi. Tu es un vrai pro de la souris ! 👏</p>'
-    +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
-    +'<button class="m-btn ghost" id="replayBoss">⚔️ Rejouer le combat</button>'
+    +'<div class="m-actions"><button class="m-btn ghost" id="replayBoss">⚔️ Rejouer le Boss</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   openOverlay();
-  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
-  document.getElementById('replayBoss').onclick=()=>{ closeOverlay(); audioCtx(); const bi=STEPS.findIndex(s=>s.mode==='boss'); startStep(bi>=0?bi:STEPS.length-1); };
+  // « Rejouer le Boss » : on recharge le niveau du boss (et non la dernière manche du niveau courant).
+  document.getElementById('replayBoss').onclick=()=>{ closeOverlay(); audioCtx(); const bossLvl=LEVELS.findIndex(l=>l.game==='boss')+1; loadLevel(bossLvl>0?bossLvl:LEVELS.length, 0, false); };
 }
 
 /* ---- sélecteur de niveaux ---- */
@@ -2922,6 +2978,7 @@ document.getElementById('resetBtn').onclick=()=>{
 /* ---- boutons action ---- */
 document.getElementById('seeMission').onclick=openRoundPopup;
 document.getElementById('restartBtn').onclick=()=>{ if(currentStep){ audioCtx(); launchGame(); } };
+document.getElementById('diffBtn').onclick=()=>{ if(currentStep){ audioCtx(); openBossDifficulty(); } };
 const POTION_TIP='🧪 <b>Potion de vie :</b> à <b>tout moment</b>, fais un <b>clic droit sur la potion</b> 🧪 (en bas à gauche) pour récupérer <b>2 cœurs</b> ❤️❤️ !';
 document.getElementById('hintBtn').onclick=()=>{
   pauseActive();
@@ -2952,7 +3009,7 @@ function openOverlay(){ pauseActive(); overlay.classList.add('open'); }
 function closeOverlay(){ overlay.classList.remove('open'); }
 let toastTimer=null;
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),8800); }
 function confetti(){
   const wrap=document.createElement('div'); wrap.className='confetti';
   const cols=['#2563eb','#f59e0b','#16a34a','#e11d48','#7c3aed'];
@@ -2992,7 +3049,7 @@ function confetti(){
   function steps(lv){ return lv.rounds; }
   const UNLOCK='ms_unlocked', CUR='ms_curlevel', STEP='ms_step_l', HOME='la-souris.html';
   const css=`
-  #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,sans-serif;}
+  #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;}
   #devkit .dk-toggle{display:inline-flex;align-items:center;gap:6px;background:#1e2733;color:#e7eef6;border:none;
     border-radius:999px;padding:9px 14px;font-weight:800;font-size:.85rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.28);}
   #devkit .dk-toggle:hover{background:#2a3645;}

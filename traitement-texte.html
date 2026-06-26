@@ -8,6 +8,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* Police d'emojis unifiée sur tous les systèmes (cf. assets/fonts/README.md) */
+  @font-face{
+    font-family:"Fluent Emoji";
+    src:url("assets/fonts/fluent-emoji.woff2") format("woff2");
+    font-display:swap;
+  }
   :root{
     --ink:#22303f; --muted:#5a6b7b;
     --blue:#2563eb; --blue-d:#1d4ed8;
@@ -20,11 +26,11 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    font-family:"Nunito",system-ui,sans-serif;color:var(--ink);
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;color:var(--ink);
     background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
   }
   button{font-family:inherit;cursor:pointer;}
-  .display{font-family:"Fredoka",sans-serif;}
+  .display{font-family:"Fredoka","Fluent Emoji",sans-serif;}
 
   /* ---------- Top bar ---------- */
   .topbar{
@@ -36,7 +42,7 @@
     font-weight:800;font-size:.98rem;padding:8px 12px;border-radius:10px;
   }
   .back:hover{background:#eef4ff;}
-  .topbar h1{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.15rem;margin:0;flex:1;}
+  .topbar h1{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.15rem;margin:0;flex:1;}
   .topbar h1 .dot{color:var(--blue);}
   .step-count{font-weight:800;color:var(--muted);font-size:.95rem;}
   .reset-btn{
@@ -73,7 +79,7 @@
   .banner.replay{border-left-color:var(--green);}
   .banner .b-emoji{font-size:1.8rem;line-height:1;}
   .banner .b-txt{flex:1;min-width:200px;}
-  .banner .b-title{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.08rem;}
+  .banner .b-title{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.08rem;}
   .banner .b-sub{color:#3a4a59;font-weight:700;font-size:1rem;margin-top:4px;line-height:1.45;}
   .banner .b-goal-label{font-weight:800;color:var(--blue-d);margin-right:3px;}
   .banner.test .b-goal-label{color:var(--amber-d);}
@@ -153,7 +159,7 @@
   .t-btn.t-wide{width:auto;min-width:0;padding:0 12px;font-size:.92rem;}
   .t-btn:focus-visible, .t-sel:focus-visible{outline:3px solid var(--blue);outline-offset:2px;}
   .t-btn.bold{font-weight:800;}
-  .t-btn.italic{font-style:italic;font-family:Georgia,serif;}
+  .t-btn.italic{font-style:italic;font-family:Georgia,"Fluent Emoji",serif;}
   .t-btn.under{text-decoration:underline;}
   .t-btn.active{background:#dbeafe;border-color:var(--blue);color:var(--blue);box-shadow:inset 0 2px 5px -2px rgba(37,99,235,.5);}
   .t-btn.active:hover{background:#cfe0ff;}
@@ -211,7 +217,7 @@
     box-shadow:0 30px 70px -30px rgba(0,0,0,.6);animation:pop .22s ease;max-height:92vh;overflow:auto;}
   @keyframes pop{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
   .modal .m-emoji{font-size:2.5rem;line-height:1;display:block;margin-bottom:4px;}
-  .modal h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.45rem;margin:0 0 9px;}
+  .modal h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.45rem;margin:0 0 9px;}
   .modal p{font-size:1.03rem;line-height:1.5;margin:0 0 12px;color:var(--ink);}
   .modal .kicker{font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:.78rem;color:var(--blue-d);}
   .modal.test-modal .kicker{color:var(--amber-d);}
@@ -276,7 +282,7 @@
     text-align:left;border:2px solid var(--line);background:#fbfdff;border-radius:14px;padding:14px 16px;color:var(--ink);}
   .lvl-card .lc-badge{grid-row:1 / span 2;font-size:1.6rem;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
     background:#eef4ff;border-radius:12px;}
-  .lvl-card .lc-n{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.05rem;}
+  .lvl-card .lc-n{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.05rem;}
   .lvl-card .lc-t{color:var(--muted);font-weight:700;font-size:.9rem;}
   .lvl-card:not(.locked):hover{border-color:var(--blue);background:#f1f6ff;transform:translateY(-2px);}
   .lvl-card.current{border-color:var(--green);background:#f1fbf4;}
@@ -305,7 +311,7 @@
   .lock-burst.go{animation:lockBurst .95s ease-out forwards;}
   .lock-burst.lb2.go{animation:lockBurst 1s .18s ease-out forwards;}
   @keyframes lockBurst{0%{opacity:.95;transform:scale(.15);}100%{opacity:0;transform:scale(7.5);}}
-  .lock-cap{font-family:"Fredoka",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
+  .lock-cap{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;
     background:var(--amber);padding:6px 20px;border-radius:999px;box-shadow:0 8px 20px -8px rgba(0,0,0,.6);}
   @keyframes lockIn{from{transform:scale(.3);opacity:0;}to{transform:scale(1);opacity:1;}}
   .lock-box.shake{animation:lockShake .44s ease-in-out 3;}
@@ -327,7 +333,7 @@
   #objectArea{padding:6px 2px;min-height:300px;}
   .ob-doc{position:relative;width:100%;max-width:560px;margin:0 auto;min-height:340px;}
   .ob-flow{position:relative;z-index:1;font-size:15px;line-height:1.75;color:var(--ink);pointer-events:none;}
-  .ob-flow h2{font-family:"Fredoka",sans-serif;font-weight:600;font-size:1.5rem;margin:0 0 12px;text-align:center;}
+  .ob-flow h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.5rem;margin:0 0 12px;text-align:center;}
   .ob-flow p{margin:0 0 12px;text-align:justify;}
   .ob-layer{position:absolute;inset:0;pointer-events:none;}
   .ob-layer.ob-behind{z-index:0;}
@@ -812,7 +818,7 @@ const LEVEL1_DEFS = [
     hint:{target:'btn-underline', text:`Sélectionne les trois mots <b>« la pluie tombe »</b> en glissant, puis clique sur le bouton <span class="hint-target">S</span>.`},
     expect:`souligner les trois mots « la pluie tombe »` },
 
-  { kind:'test', id:'testA', label:'Jalon 1', icon:'🏆',
+  { kind:'test', id:'testA', label:'Défi 1', icon:'🏆',
     title:'La météo des mots !',
     intro:`Bravo, tu sais mettre en <b>gras</b>, en <b>italique</b> et <b>souligner</b>, sur <b>un mot ou plusieurs</b> ! Cette fois, ce ne sont <b>plus les mêmes mots</b>. Voici les <b>6 choses</b> à réussir :`,
     tasks:[`Mets le mot <b>soleil</b> en <b>gras</b>.`,
@@ -880,7 +886,7 @@ const LEVEL1_DEFS = [
     hint:{target:'sel-font', text:`Sélectionne le titre, puis ouvre le menu des <span class="hint-target">polices</span> et choisis <b>Georgia</b>.`},
     expect:`mettre le titre en police Georgia` },
 
-  { kind:'test', id:'testB', label:'Jalon 2', icon:'🏆',
+  { kind:'test', id:'testB', label:'Défi 2', icon:'🏆',
     title:'La mise en page complète !',
     intro:`Dernier défi du niveau ! Ici on ne refait pas les exercices à l'identique : <b>nouvelles valeurs</b> et <b>plus d'étapes</b>. Mets en page le titre comme un pro. Voici les <b>7 choses</b> à faire :`,
     tasks:[`<b>Centre</b> le titre <b>« Le cycle de l'eau »</b>.`,
@@ -954,7 +960,7 @@ const LEVEL2_DEFS = [
     hint:{target:'sel-linespacing', text:`Clique dans le paragraphe du hibou, puis choisis <b>1,5</b> dans le menu <span class="hint-target">Interligne</span>.`},
     expect:`mettre le paragraphe du hibou en interligne 1,5` },
 
-  { kind:'test', id:'test2A', label:'Jalon 1', icon:'🏆',
+  { kind:'test', id:'test2A', label:'Défi 1', icon:'🏆',
     title:'Le rangement des paragraphes !',
     intro:`Montre que tu sais placer les paragraphes ! Cette fois les cibles et les valeurs <b>changent</b>. Voici les <b>5 choses</b> à réussir :`,
     tasks:[`<b>Centre</b> le titre <b>« Les animaux de la forêt »</b>.`,
@@ -1020,7 +1026,7 @@ const LEVEL2_DEFS = [
     hint:{target:'btn-parabg', text:`Sélectionne la phrase <b>« Le hibou dort le jour. »</b>, puis surligne-la en <b>rose</b> avec <span class="hint-target">Surlignage</span> 🖍️.`},
     expect:`surligner la phrase « Le hibou dort le jour. » en rose` },
 
-  { kind:'test', id:'test2B', label:'Jalon 2', icon:'🏆',
+  { kind:'test', id:'test2B', label:'Défi 2', icon:'🏆',
     title:'La belle mise en page !',
     intro:`Dernier défi du niveau ! Combine tous tes nouveaux pouvoirs sur la page. Valeurs et cibles <b>différentes</b> des exercices. Voici les <b>6 choses</b> à faire :`,
     tasks:[`Mets le paragraphe du <b>renard</b> en interligne <b>double</b>.`,
@@ -1121,7 +1127,7 @@ const LEVEL3_DEFS = [
     hint:{target:'btn-list-number', text:`Sélectionne les 6 lignes, puis re-clique sur <span class="hint-target">Liste numérotée</span> pour revenir au texte.`},
     expect:`reconvertir la liste en texte normal` },
 
-  { kind:'test', id:'test3A', label:'Jalon 1', icon:'🏆',
+  { kind:'test', id:'test3A', label:'Défi 1', icon:'🏆',
     title:'La liste bien décorée !',
     intro:`Montre que tu maîtrises les listes à puces ! Cibles et style <b>différents</b> des exercices. Voici les <b>4 choses</b> à faire :`,
     tasks:[`Transforme les <b>6 lignes</b> en <b>liste à puces</b>.`,
@@ -1144,7 +1150,7 @@ const LEVEL3_DEFS = [
     replayRefs:['puces','puce-style','imbriquer','imbriquer-gomme'],
     expect:`mettre les 6 lignes en liste à puces flèche, et imbriquer « Une trousse » et « Une gomme blanche »` },
 
-  { kind:'test', id:'test3B', label:'Jalon 2', icon:'🏆',
+  { kind:'test', id:'test3B', label:'Défi 2', icon:'🏆',
     title:'La liste de pro !',
     intro:`Dernier défi du parcours ! Tu combines listes, structure et mise en forme. Voici les <b>5 choses</b> à faire :`,
     tasks:[`Transforme les <b>6 lignes</b> en <b>liste numérotée</b>.`,
@@ -1251,7 +1257,7 @@ const LEVEL4_DEFS = [
     hint:{target:'btn-underline', text:`Sélectionne <b>« C'est très pratique »</b>, puis appuie sur <b>Ctrl + U</b>.`},
     expect:`souligner « C'est très pratique » avec Ctrl + U` },
 
-  { kind:'test', id:'test4A', label:'Jalon 1', icon:'🏆',
+  { kind:'test', id:'test4A', label:'Défi 1', icon:'🏆',
     title:'Le champion du clavier !',
     intro:`Montre que tu maîtrises les raccourcis ! Les boutons restent <b>bloqués</b> : tout au clavier. Voici les <b>4 choses</b> à faire :`,
     tasks:[`Mets le mot <b>Ctrl</b> en <b>gras</b> (Ctrl + B).`,
@@ -1386,7 +1392,7 @@ const LEVEL5_DEFS = [
     hint:{target:'editor', text:`Sélectionne « Je pars en voyage. », <b>Ctrl+X</b>, va à la fin, <b>Entrée</b>, <b>Ctrl+V</b>. Recommence avec « Je joue dans le sable. ».`},
     expect:`déplacer « Je pars en voyage. » puis « Je joue dans le sable. » avec Ctrl+X / Ctrl+V` },
 
-  { kind:'test', id:'test5A', label:'Jalon 1', icon:'🏆', contentMode:true,
+  { kind:'test', id:'test5A', label:'Défi 1', icon:'🏆', contentMode:true,
     title:'Le texte bien rangé !',
     intro:`Montre tout ce que tu sais faire ! Voici les <b>4 choses</b> à accomplir :`,
     tasks:[`Mets <b>« Je pars en voyage. »</b> sur sa propre ligne (curseur après le point, <b>Entrée</b>).`,
@@ -1467,7 +1473,7 @@ const LEVEL6_DEFS = [
     hint:{target:'tb-bold', cells:[[1,0],[1,1],[1,2]], text:`Sélectionne les cases <b>Jour</b>, <b>Temps</b>, <b>Température</b> (glisse, ou clique tout à gauche de la ligne — flèche ➜), puis <b>G</b>.`},
     expect:`mettre Jour, Temps et Température en gras` },
 
-  { kind:'test', id:'tab-jalon1', label:'Jalon 1', icon:'🏆', tableMode:true,
+  { kind:'test', id:'tab-jalon1', label:'Défi 1', icon:'🏆', tableMode:true,
     title:'À toi de jouer !',
     intro:`Refais un tableau <b>tout seul</b> ! Voici les <b>7 choses</b> à faire :`,
     tasks:[`Insère un tableau de <b>2 colonnes</b> × <b>3 lignes</b>.`,
@@ -1550,7 +1556,7 @@ const LEVEL6_DEFS = [
     hint:{target:'tb-merge', cells:[[0,0],[0,1],[0,2]], text:`Clique la case du haut à gauche et <b>glisse</b> jusqu'à droite (3 cases bleues), puis <b>⛶ Fusionner</b>.`},
     expect:`fusionner les 3 cases du titre en une seule` },
 
-  { kind:'test', id:'tab-jalon2', label:'Jalon 2', icon:'🏆', tableMode:true,
+  { kind:'test', id:'tab-jalon2', label:'Défi 2', icon:'🏆', tableMode:true,
     title:'Encore un tableau !',
     intro:`Un nouveau tableau, et on revoit <b>tout</b> ! Voici les <b>9 choses</b> à faire :`,
     tasks:[`Insère un tableau de <b>3 colonnes</b> × <b>4 lignes</b>.`,
@@ -1608,7 +1614,7 @@ const LEVEL6_DEFS = [
     hint:{target:'tb-border', text:`Sélectionne tout le tableau (glisse), puis <b>Bordures → Épaisses</b>.`},
     expect:`mettre des bordures épaisses à toutes les cases` },
 
-  { kind:'test', id:'tab-jalon3', label:'Jalon final', icon:'🏆', tableMode:true,
+  { kind:'test', id:'tab-jalon3', label:'Défi final', icon:'🏆', tableMode:true,
     title:'Le tableau de pro !',
     intro:`Dernier défi du parcours ! Un tableau complet, tout seul. Voici les <b>10 choses</b> à faire :`,
     tasks:[`Insère un tableau de <b>3 colonnes</b> × <b>4 lignes</b>.`,
@@ -1754,7 +1760,7 @@ const LEVEL7_DEFS = [
     hint:{target:'ob-crop', text:`Sélectionne l'image, clique <b>🔲 Rogner</b>, puis tire la poignée foncée du <b>haut</b> vers le bas.`},
     expect:`rogner le bord du haut de l'image` },
 
-  { kind:'test', id:'ob-jalon1', label:'Jalon 1', icon:'🏆', objectMode:true,
+  { kind:'test', id:'ob-jalon1', label:'Défi 1', icon:'🏆', objectMode:true,
     title:'Une image bien préparée !',
     intro:`À toi de jouer avec une <b>nouvelle image</b> ! Voici les <b>3 choses</b> à réussir :`,
     tasks:[`Insère l'image <b>gateau.jpg</b> depuis le dossier <b>Images</b> (bouton 🖼️ Image).`,
@@ -1817,7 +1823,7 @@ const LEVEL7_DEFS = [
     hint:{target:'ob-wrap', text:`Sélectionne l'image, puis menu <b>Habillage → Devant le texte</b>.`},
     expect:`mettre l'image devant le texte` },
 
-  { kind:'test', id:'ob-jalon2', label:'Jalon 2', icon:'🏆', objectMode:true,
+  { kind:'test', id:'ob-jalon2', label:'Défi 2', icon:'🏆', objectMode:true,
     title:'Texte et image ensemble !',
     intro:`On combine l'insertion, l'habillage et la taille. Voici les <b>3 choses</b> à faire :`,
     tasks:[`Insère l'image <b>chien.jpg</b> depuis le dossier <b>Images</b>.`,
@@ -1932,7 +1938,7 @@ const LEVEL7_DEFS = [
     hint:{target:'objectArea', text:`Clique sur la <b>fleur</b> (à droite), puis appuie sur <b>Suppr</b>. Ne touche pas au chat !`},
     expect:`supprimer seulement la fleur et garder le chat` },
 
-  { kind:'test', id:'ob-jalon3', label:'Jalon final', icon:'🏆', objectMode:true,
+  { kind:'test', id:'ob-jalon3', label:'Défi final', icon:'🏆', objectMode:true,
     title:'Le maquettiste de génie !',
     intro:`Dernier défi ! Les 3 objets sont <b>empilés au même endroit</b>. À toi de faire une mise en page <b>bien rangée</b>. Voici les <b>3 choses</b> à faire :`,
     tasks:[`<b>Écris</b> <b>La fusée</b> dans la zone de texte, puis mets ce texte en <b>gras</b> (sélectionne la zone et clique sur <b>G</b>).`,
@@ -2696,14 +2702,14 @@ function updateProgress(){
     if(i===real) d.classList.add('current');
     if(replayState && i===real) d.classList.add('return');     // « reviens à ton étape en cours »
     if(replayState && i===viewed && i!==real) d.classList.add('viewing'); // étape en cours de révision
-    if(isMile) d.textContent = (replayState && i===real) ? '↩' : (i<stepIndex ? '🏆' : '🚩');
+    if(isMile) d.textContent = (replayState && i===real) ? '↩' : '🏆';
     // Navigation : on peut revenir sur n'importe quelle étape déjà atteinte — exercice OU jalon
     const reachable = i<=stepIndex;
     if(reachable && (st.kind==='mission' || st.kind==='test')){
       d.classList.add('clickable');
       if(replayState && i===real) d.title='↩ Revenir à ton étape en cours';
-      else if(i===real) d.title=(st.kind==='test'?'Revoir les consignes de ce jalon':'Revoir '+st.label+' : '+st.title);
-      else if(st.kind==='test') d.title='↻ Refaire le jalon : '+st.title+' (ta progression est gardée)';
+      else if(i===real) d.title=(st.kind==='test'?'Revoir les consignes de ce défi':'Revoir '+st.label+' : '+st.title);
+      else if(st.kind==='test') d.title='↻ Refaire le défi : '+st.title+' (ta progression est gardée)';
       else d.title='Revenir à '+st.label+' : '+st.title+' (ta progression est gardée)';
       d.onclick=()=>onSegClick(i);
     }
@@ -2828,9 +2834,9 @@ function jalonError(){
   modal.innerHTML=`
     <span class="m-emoji">🧭</span>
     <h2>Ce n'était pas l'objectif !</h2>
-    <p>Tu as fait <b>autre chose</b> que l'objectif affiché en haut. Pas de souci : on <b>recommence le jalon</b> depuis le début, et on refait les objectifs <b>un par un</b>.</p>
+    <p>Tu as fait <b>autre chose</b> que l'objectif affiché en haut. Pas de souci : on <b>recommence le défi</b> depuis le début, et on refait les objectifs <b>un par un</b>.</p>
     <p style="font-size:.95rem;color:var(--muted)">Besoin d'aide ? Le bouton <b>💡 Indice</b> te laisse refaire un entraînement.</p>
-    <div class="m-actions"><button class="m-btn primary test" id="jalonRetry">↺ Recommencer le jalon</button></div>`;
+    <div class="m-actions"><button class="m-btn primary test" id="jalonRetry">↺ Recommencer le défi</button></div>`;
   openOverlay();
   document.getElementById('jalonRetry').onclick=()=>{ closeOverlay(); jalonIdx=0; restartCurrent(); updateBanner(); jalonAnimating=false; };
 }
@@ -3109,7 +3115,7 @@ function onSuccess(){
     confetti();
     modal.innerHTML=`
       <span class="m-emoji">🏆</span>
-      <h2>Jalon réussi !</h2>
+      <h2>Défi réussi !</h2>
       <p>Super ! Tu as réussi à <b>combiner plusieurs choses</b> en même temps. Tu deviens un vrai pro de la mise en page !</p>
       <div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>`;
   }else{
@@ -3272,7 +3278,7 @@ function closeOverlay(){ overlay.classList.remove('open'); }
 let toastTimer=null;
 function toast(msg){
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),8800);
 }
 function confetti(){
   const wrap=document.createElement('div'); wrap.className='confetti';
@@ -4246,7 +4252,7 @@ function startObjectStep(){
   const UNLOCK='tt_unlocked', CUR='tt_curlevel', STEP='tt_step_l', HOME='traitement-texte.html';
 
   const css=`
-  #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,sans-serif;}
+  #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;}
   #devkit .dk-toggle{display:inline-flex;align-items:center;gap:6px;background:#1e2733;color:#e7eef6;border:none;
     border-radius:999px;padding:9px 14px;font-weight:800;font-size:.85rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.28);}
   #devkit .dk-toggle:hover{background:#2a3645;}
