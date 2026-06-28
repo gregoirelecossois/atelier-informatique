@@ -1,0 +1,2289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dossiers et fichiers — Atelier informatique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Police d'emojis unifiée sur tous les systèmes (cf. assets/fonts/README.md) */
+  @font-face{
+    font-family:"Fluent Emoji";
+    src:url("assets/fonts/fluent-emoji.woff2") format("woff2");
+    font-display:swap;
+  }
+  :root{
+    --ink:#22303f; --muted:#5a6b7b;
+    --blue:#2563eb; --blue-d:#1d4ed8;
+    --amber:#f59e0b; --amber-d:#b45309;
+    --green:#16a34a; --green-d:#15803d;
+    --red:#ef4444; --red-d:#b91c1c;
+    --paper:#ffffff; --line:#d7e0ea; --line-2:#e7eef6;
+    --shell:#e9eff7; --canvas:#dde6f1; --sky:#eaf3ff;
+    /* explorateur */
+    --win-bar:#f3f7fc; --win-line:#cdd9e8; --sel:#cfe2ff; --sel-line:#7aa7ec;
+    --task:#1f2a37; --task-2:#28344400;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;color:var(--ink);
+    background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
+  }
+  button{font-family:inherit;cursor:pointer;}
+  .display{font-family:"Fredoka","Fluent Emoji",sans-serif;}
+  kbd{
+    display:inline-flex;align-items:center;justify-content:center;min-width:22px;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:.84em;line-height:1;
+    padding:3px 7px;border-radius:7px;background:#fff;border:2px solid #c7d4e6;
+    border-bottom-width:3px;color:var(--ink);box-shadow:0 1px 0 #e7eef6;margin:0 1px;white-space:nowrap;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{background:#fff;border-bottom:2px solid var(--line);
+    display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap;}
+  .back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--blue-d);
+    font-weight:800;font-size:.98rem;padding:8px 12px;border-radius:10px;}
+  .back:hover{background:#eef4ff;}
+  .topbar h1{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.15rem;margin:0;flex:1;}
+  .topbar h1 .dot{color:var(--blue);}
+  .reset-btn{border:2px solid var(--line);background:#fff;color:var(--muted);font-weight:700;
+    border-radius:10px;padding:7px 11px;font-size:.85rem;}
+  .reset-btn:hover{border-color:var(--blue);color:var(--blue-d);}
+  .reset-btn.danger:hover{border-color:var(--red);color:var(--red-d);}
+
+  /* ---------- Progress ---------- */
+  .progress-wrap{background:#fff;padding:8px 18px 14px;border-bottom:2px solid var(--line);}
+  .track{display:flex;gap:6px;align-items:center;max-width:1000px;margin:0 auto;}
+  .seg{position:relative;flex:1;height:14px;border-radius:8px;background:var(--line-2);}
+  .seg.done{background:var(--green);}
+  .seg.current{background:var(--blue);box-shadow:0 0 0 3px #bcd2ff;}
+  .seg.milestone{height:20px;display:flex;align-items:center;justify-content:center;font-size:1rem;background:#fdebc4;}
+  .seg.milestone.done{background:#facc15;}
+  .seg.milestone.current{background:var(--amber);box-shadow:0 0 0 3px #fde2a8;}
+  .seg.clickable{cursor:pointer;transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;}
+  .seg.clickable:hover{filter:brightness(1.07);transform:translateY(-2px);}
+  .seg.clickable.done:hover{box-shadow:0 0 0 3px #b9eccd;}
+
+  /* ---------- Mission banner ---------- */
+  .banner{max-width:1000px;margin:12px auto 0;width:calc(100% - 36px);
+    background:#fff;border:2px solid var(--line);border-left:7px solid var(--blue);
+    border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .banner.test{border-left-color:var(--amber);}
+  .banner.review{border-left-color:var(--green);}
+  .banner.boss{border-left-color:var(--red);}
+  .banner .b-emoji{font-size:1.8rem;line-height:1;}
+  .banner .b-txt{flex:1;min-width:200px;}
+  .banner .b-title{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.08rem;}
+  .banner .b-sub{color:#3a4a59;font-weight:700;font-size:1rem;margin-top:4px;line-height:1.45;}
+  .banner .b-goal-label{font-weight:800;color:var(--blue-d);margin-right:3px;}
+  .banner.test .b-goal-label{color:var(--amber-d);}
+  .banner .b-btn{border:2px solid var(--line);background:#f5f9ff;color:var(--blue-d);font-weight:800;
+    border-radius:10px;padding:8px 13px;font-size:.9rem;white-space:nowrap;}
+  .banner .b-btn:hover{border-color:var(--blue);}
+
+  /* ---------- Stage (l'écran de l'ordinateur) ---------- */
+  .stage-wrap{max-width:1000px;margin:12px auto;width:calc(100% - 36px);}
+  .screen{position:relative;height:clamp(440px,66vh,660px);border-radius:16px;overflow:hidden;
+    border:3px solid #cdd9e8;box-shadow:0 18px 40px -24px rgba(34,48,63,.55);
+    background:
+      radial-gradient(1200px 600px at 70% -10%, #5b8def 0%, transparent 60%),
+      radial-gradient(900px 600px at -10% 120%, #7c5cd6 0%, transparent 55%),
+      linear-gradient(140deg,#2e64c4,#3f7fd6 55%,#5aa0e6);
+    user-select:none;-webkit-user-select:none;}
+  .screen.crt{animation:crtOff .9s ease forwards;}
+  @keyframes crtOff{60%{filter:brightness(1)}100%{filter:brightness(.2) blur(2px)}}
+
+  /* Bureau + icônes */
+  .desktop{position:absolute;inset:0 0 46px 0;display:flex;flex-direction:column;flex-wrap:wrap;
+    align-content:flex-start;padding:12px 8px;gap:2px;}
+  .desktop.dragover{outline:3px dashed rgba(255,255,255,.55);outline-offset:-8px;}
+  .dt-icon{width:92px;min-height:84px;display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:8px 4px 6px;border-radius:10px;cursor:default;text-align:center;border:2px solid transparent;}
+  .dt-icon .ic{font-size:2.5rem;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));pointer-events:none;}
+  .dt-icon .nm{font-size:.82rem;font-weight:700;color:#fff;line-height:1.15;text-shadow:0 1px 3px rgba(0,0,0,.7);
+    word-break:break-word;pointer-events:none;max-width:88px;}
+  .dt-icon.sel{background:rgba(120,170,240,.4);border-color:rgba(190,215,255,.85);}
+  .dt-icon.infected .ic{animation:virusPulse 1s ease-in-out infinite;}
+  .dt-icon.drop-ok{background:rgba(120,170,240,.45);border-color:#bfe;}
+
+  /* ---------- Fenêtres ---------- */
+  .win-layer{position:absolute;inset:0 0 46px 0;pointer-events:none;}
+  .win{position:absolute;pointer-events:auto;background:#fff;border:1px solid var(--win-line);
+    border-radius:11px;display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 18px 50px -12px rgba(10,20,40,.55);min-width:300px;min-height:200px;}
+  .win.focused{box-shadow:0 22px 60px -10px rgba(10,20,40,.65);}
+  .win.min{display:none;}
+  .win-bar{height:40px;display:flex;align-items:center;gap:8px;padding:0 6px 0 12px;cursor:default;
+    background:var(--win-bar);border-bottom:1px solid var(--win-line);}
+  .win-bar .wt-ic{font-size:1.1rem;}
+  .win-bar .wt-name{font-weight:800;font-size:.92rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .win-btn{position:relative;z-index:40;width:30px;height:26px;border:none;background:transparent;border-radius:7px;font-size:.95rem;
+    display:flex;align-items:center;justify-content:center;color:#43576b;}
+  .win-btn:hover{background:#e4ecf6;}
+  .win-btn.close:hover{background:var(--red);color:#fff;}
+  .win-toolbar{display:flex;align-items:center;gap:5px;padding:6px 8px;border-bottom:1px solid var(--win-line);
+    background:#fbfdff;flex-wrap:nowrap;}
+  .nav-btn{width:30px;height:28px;border:1px solid transparent;background:transparent;border-radius:8px;cursor:default;
+    font-size:1rem;color:#3a4a5c;display:flex;align-items:center;justify-content:center;flex:none;}
+  .nav-btn:hover:not(:disabled){background:#e9f0fa;border-color:#d2dded;}
+  .nav-btn:disabled{opacity:.35;cursor:default;}
+  .crumbs{flex:1;display:flex;align-items:center;gap:2px;background:#fff;border:1px solid var(--win-line);
+    border-radius:8px;padding:4px 8px;font-weight:700;font-size:.86rem;overflow:hidden;white-space:nowrap;min-width:0;}
+  .crumbs{cursor:default;}
+  .crumbs .cr{padding:2px 6px;border-radius:6px;cursor:default;color:#33485e;white-space:nowrap;}
+  .crumbs .cr:hover{background:#eaf1fb;color:var(--blue-d);}
+  .crumbs .sep{color:#9fb1c5;flex:none;}
+  .win-search{flex:none;width:130px;display:flex;align-items:center;gap:4px;background:#fff;
+    border:1px solid var(--win-line);border-radius:8px;padding:3px 8px;}
+  .win-search input{border:none;outline:none;width:100%;font-family:inherit;font-weight:700;font-size:.82rem;background:transparent;color:var(--ink);}
+  .win-search .si{font-size:.85rem;color:#90a2b6;}
+  .win-body{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;flex-wrap:wrap;
+    align-content:flex-start;gap:4px;position:relative;background:#fff;}
+  .win-body.dragover{outline:3px dashed var(--sel-line);outline-offset:-6px;border-radius:8px;}
+  .win-body.empty-note::after{content:'Ce dossier est vide';position:absolute;top:46%;left:0;right:0;
+    text-align:center;color:#9aabbd;font-weight:800;font-size:.95rem;pointer-events:none;}
+  .fitem{width:96px;min-height:90px;display:flex;flex-direction:column;align-items:center;gap:5px;
+    padding:9px 5px 6px;border-radius:9px;cursor:default;text-align:center;border:2px solid transparent;}
+  .fitem .ic{font-size:2.3rem;line-height:1;pointer-events:none;}
+  .fitem .nm{font-size:.8rem;font-weight:700;color:var(--ink);line-height:1.18;word-break:break-word;max-width:90px;pointer-events:none;}
+  .fitem:hover{background:#f1f6fd;}
+  .fitem.sel{background:var(--sel);border-color:var(--sel-line);}
+  .fitem.cut{opacity:.45;}
+  .fitem.infected .ic{animation:virusPulse 1s ease-in-out infinite;}
+  .fitem.infected{background:rgba(239,68,68,.07);}
+  .fitem.drop-ok{background:#d7ebff;border-color:#5aa0e6;}
+  .fitem .rn,.dt-icon .rn{font-size:.8rem;font-weight:700;width:84px;max-width:84px;text-align:center;color:var(--ink);
+    background:#fff;border:2px solid var(--blue);border-radius:6px;padding:1px 3px;font-family:inherit;outline:none;}
+  @keyframes virusPulse{0%,100%{filter:drop-shadow(0 0 0 rgba(239,68,68,0));transform:scale(1)}
+    50%{filter:drop-shadow(0 0 7px rgba(239,68,68,.95));transform:scale(1.08)}}
+  .win-status{height:24px;border-top:1px solid var(--win-line);background:#f7fafd;
+    display:flex;align-items:center;gap:10px;padding:0 12px;font-size:.76rem;font-weight:700;color:#6c7d8f;}
+  /* poignées de redimensionnement : 4 côtés + 4 coins */
+  .rz{position:absolute;z-index:30;}
+  .rz-n{top:0;left:10px;right:10px;height:6px;cursor:ns-resize;}
+  .rz-s{bottom:0;left:10px;right:10px;height:6px;cursor:ns-resize;}
+  .rz-e{right:0;top:10px;bottom:10px;width:6px;cursor:ew-resize;}
+  .rz-w{left:0;top:10px;bottom:10px;width:6px;cursor:ew-resize;}
+  .rz-ne{top:0;right:0;width:12px;height:12px;cursor:nesw-resize;}
+  .rz-nw{top:0;left:0;width:12px;height:12px;cursor:nwse-resize;}
+  .rz-se{bottom:0;right:0;width:14px;height:14px;cursor:nwse-resize;}
+  .rz-sw{bottom:0;left:0;width:12px;height:12px;cursor:nesw-resize;}
+  /* aperçu document (texte rigolo) facon feuille de papier */
+  .doc-paper{text-align:left;background:#fffdf5;border:2px solid #ece3c8;border-radius:10px;padding:16px 18px;
+    font-size:1rem;color:#3a4a59;max-height:240px;overflow:auto;line-height:1.55;
+    box-shadow:0 2px 0 #ece3c8;white-space:normal;}
+  /* mini-lecteur de musique */
+  .music-player{display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0 4px;}
+  .mp-disc{font-size:3.4rem;line-height:1;animation:mpSpin 3s linear infinite;}
+  @keyframes mpSpin{to{transform:rotate(360deg);}}
+  .mp-bars{display:flex;align-items:flex-end;gap:5px;height:40px;}
+  .mp-bars i{width:7px;height:12px;border-radius:4px;background:linear-gradient(var(--green),var(--blue));animation:mpEq .9s ease-in-out infinite;}
+  .mp-bars i:nth-child(2){animation-delay:.15s;} .mp-bars i:nth-child(3){animation-delay:.3s;}
+  .mp-bars i:nth-child(4){animation-delay:.45s;} .mp-bars i:nth-child(5){animation-delay:.6s;}
+  @keyframes mpEq{0%,100%{height:10px;}50%{height:38px;}}
+  .mp-now{font-weight:800;color:var(--blue-d);}
+  /* calculatrice */
+  .calc{max-width:280px;margin:6px auto 0;}
+  .calc-disp{background:#1f2a37;color:#fff;font-family:"Fredoka","Fluent Emoji",sans-serif;font-size:1.9rem;
+    text-align:right;padding:14px 16px;border-radius:12px;margin-bottom:10px;min-height:56px;overflow:hidden;white-space:nowrap;}
+  .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .calc-grid button{padding:15px 0;border-radius:12px;border:2px solid var(--line);background:#fff;font-weight:800;font-size:1.15rem;color:var(--ink);}
+  .calc-grid button:hover{background:#eef4ff;}
+  .calc-grid button.op{background:#eaf1fb;color:var(--blue-d);border-color:#cfe0f7;}
+  .calc-grid button.eq{background:var(--green);color:#fff;border-color:var(--green);}
+  .calc-grid button.clear{background:#fdecec;color:var(--red-d);border-color:#f6c9c9;}
+  .calc-grid button.span4{grid-column:span 4;}
+  /* paramètres farfelus */
+  .settings{text-align:left;}
+  .set-head{font-weight:800;color:var(--blue-d);margin:6px 0 8px;font-size:.98rem;}
+  .set-head.danger{color:var(--red-d);margin-top:16px;}
+  .set-row{display:flex;align-items:center;gap:12px;padding:10px 13px;border:2px solid var(--line);border-radius:12px;margin-bottom:8px;background:#f9fbfe;}
+  .set-row .se-ic{font-size:1.45rem;flex:none;}
+  .set-row .se-tx{flex:1;min-width:0;}
+  .set-row .se-tx b{display:block;font-size:.98rem;}
+  .set-row .se-tx small{color:var(--muted);font-weight:700;font-size:.84rem;}
+  .set-sw{width:46px;height:26px;border-radius:999px;background:#cdd7e3;position:relative;flex:none;cursor:pointer;transition:background .2s;}
+  .set-sw .kn{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+  .set-sw.on{background:var(--green);} .set-sw.on .kn{left:23px;}
+  .set-danger{border-color:#f6c9c9;background:#fdf2f2;}
+  .set-danger .se-tx small{color:var(--red-d);}
+  .set-btn{border:2px solid #f0b8b8;background:#fff;color:var(--red-d);font-weight:800;border-radius:10px;padding:8px 12px;font-size:.86rem;flex:none;}
+  .set-btn:hover{background:#fdecec;}
+
+  /* recherche : résultats */
+  .res-loc{font-size:.66rem;color:#8294a6;font-weight:700;margin-top:-2px;}
+
+  /* ---------- Barre des tâches ---------- */
+  .taskbar{position:absolute;left:0;right:0;bottom:0;height:46px;background:rgba(24,33,46,.92);
+    backdrop-filter:blur(6px);display:flex;align-items:center;gap:6px;padding:0 10px;z-index:40;}
+  .tb-start{height:34px;padding:0 16px;border:none;border-radius:9px;background:#2c3a4d;color:#fff;cursor:default;
+    font-size:.86rem;font-weight:800;white-space:nowrap;display:flex;align-items:center;justify-content:center;}
+  .tb-start:hover,.tb-start.on{background:var(--blue);}
+  .tb-apps{display:flex;gap:5px;flex:1;min-width:0;overflow:hidden;}
+  .tb-btn{display:flex;align-items:center;gap:6px;max-width:170px;height:34px;padding:0 11px;border:none;cursor:default;
+    border-radius:8px;background:#2c3a4d;color:#dfe8f2;font-weight:700;font-size:.82rem;
+    border-bottom:3px solid transparent;}
+  .tb-btn .ic{font-size:1rem;}
+  .tb-btn .lb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tb-btn:hover{background:#37485e;}
+  .tb-btn.active{background:#3a4d66;border-bottom-color:var(--blue);}
+  .tb-btn.min{opacity:.7;}
+  .tb-clock{color:#dfe8f2;font-weight:800;font-size:.8rem;text-align:right;line-height:1.05;padding:0 6px;flex:none;}
+  .tb-clock small{display:block;font-weight:700;font-size:.7rem;color:#9fb0c4;}
+
+  /* ---------- Menu Démarrer ---------- */
+  .startmenu{position:absolute;left:10px;bottom:52px;width:300px;background:#243140;border-radius:14px;z-index:900;
+    box-shadow:0 20px 50px rgba(0,0,0,.5);padding:14px;display:none;animation:popUp .14s ease;}
+  .startmenu.open{display:block;}
+  .sm-head{color:#9fb0c4;font-weight:800;font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;margin:2px 0 8px;}
+  .sm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .sm-item{display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 4px;border:none;border-radius:10px;cursor:default;
+    background:#2d3c4e;color:#e7eef6;font-weight:700;font-size:.72rem;}
+  .sm-item .ic{font-size:1.6rem;}
+  .sm-item:hover{background:#3a4d63;}
+  .sm-power{margin-top:10px;display:flex;justify-content:flex-end;}
+  .sm-power button{background:#2d3c4e;color:#e7eef6;border:none;border-radius:9px;padding:8px 12px;font-weight:700;font-size:.78rem;}
+  .sm-power button:hover{background:var(--red);}
+  @keyframes popUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- Menu contextuel (clic droit) ---------- */
+  .ctxmenu{position:absolute;z-index:1000;min-width:212px;background:#fff;border:1px solid #cdd9e8;
+    border-radius:10px;box-shadow:0 16px 40px rgba(10,20,40,.32);padding:5px;font-size:.86rem;display:none;}
+  .ctxmenu.open{display:block;animation:popUp .1s ease;}
+  .cm-item{display:flex;align-items:center;gap:10px;width:100%;border:none;background:transparent;text-align:left;
+    padding:8px 11px;border-radius:7px;font-weight:700;color:var(--ink);font-family:inherit;font-size:.86rem;}
+  .cm-item .cm-ic{width:20px;text-align:center;font-size:1rem;flex:none;}
+  .cm-item .cm-k{margin-left:auto;color:#9aabbd;font-size:.74rem;font-weight:700;}
+  .cm-item:hover:not(:disabled){background:#eaf1fb;color:var(--blue-d);}
+  .cm-item:disabled{opacity:.38;cursor:default;}
+  .cm-item.danger:hover{background:#fdecec;color:var(--red-d);}
+  .cm-sep{height:1px;background:#e7eef6;margin:5px 6px;}
+  .cm-sub-label{padding:8px 11px;font-weight:800;color:#7a8b9d;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;}
+
+  /* spotlight (astuce qui montre où agir) */
+  .spot{position:absolute;border-radius:12px;border:3px solid #ffd54a;box-shadow:0 0 0 4px rgba(255,213,74,.35),0 0 22px rgba(255,213,74,.7);
+    z-index:70;pointer-events:none;animation:spotPulse 1.1s ease-in-out infinite;}
+  @keyframes spotPulse{0%,100%{opacity:.55}50%{opacity:1}}
+
+  /* ---------- Barre d'actions (en bas) ---------- */
+  .stage-actions{position:relative;max-width:1000px;margin:0 auto 22px;width:calc(100% - 36px);
+    display:flex;align-items:center;justify-content:center;min-height:52px;gap:12px;}
+  .sa-btn{border:2px solid var(--line);background:#fff;font-weight:800;border-radius:13px;
+    padding:12px 20px;font-size:1rem;display:inline-flex;align-items:center;gap:8px;}
+  .sa-btn:active{transform:translateY(1px);}
+  .sa-hint{position:absolute;left:0;color:var(--amber-d);border-color:var(--amber);}
+  .sa-hint:hover{background:#fff8ec;}
+  .sa-restart{color:var(--muted);}
+  .sa-restart:hover{border-color:var(--red);color:var(--red-d);}
+  @media (max-width:560px){
+    .stage-actions{flex-direction:column;}
+    .sa-hint{position:static;}
+  }
+
+  /* drag ghost */
+  .drag-ghost{position:fixed;z-index:9999;pointer-events:none;display:flex;flex-direction:column;align-items:center;
+    opacity:.9;transform:translate(-50%,-50%) scale(.92);filter:drop-shadow(0 6px 8px rgba(0,0,0,.4));}
+  .drag-ghost .ic{font-size:2.2rem;}
+  .drag-ghost .badge{position:absolute;top:-6px;right:-10px;background:var(--blue);color:#fff;font-weight:800;
+    font-size:.72rem;border-radius:999px;padding:1px 7px;}
+
+  /* ---------- Boss : barre antivirus ---------- */
+  .boss-hud{position:absolute;left:0;right:0;top:0;height:42px;z-index:50;display:flex;align-items:center;gap:12px;
+    padding:0 12px;background:linear-gradient(#0d1726ee,#16243aee);color:#fff;border-bottom:2px solid #2a3d57;}
+  .boss-hud .bh-ttl{font-weight:800;font-size:.86rem;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+  .boss-hud .meter{flex:1;height:16px;border-radius:9px;background:#24344a;overflow:hidden;position:relative;min-width:80px;}
+  .boss-hud .meter > i{display:block;height:100%;width:0;border-radius:9px;
+    background:linear-gradient(90deg,#22c55e,#eab308 55%,#ef4444);transition:width .3s ease;}
+  .boss-hud .meter .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:.7rem;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);}
+  .boss-hud .bh-stat{font-weight:800;font-size:.82rem;white-space:nowrap;}
+  .boss-hud .scan-btn{border:none;background:#2563eb;color:#fff;font-weight:800;border-radius:9px;padding:7px 11px;font-size:.8rem;}
+  .boss-hud .scan-btn:hover{background:#1d4ed8;}
+  .boss-hud .scan-btn:disabled{opacity:.45;}
+  .screen.shake{animation:screenShake .4s;}
+  @keyframes screenShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .radar-ping{position:absolute;border-radius:14px;border:3px solid #38bdf8;z-index:65;pointer-events:none;
+    animation:radarPing 1.2s ease-out 2;}
+  @keyframes radarPing{0%{box-shadow:0 0 0 0 rgba(56,189,248,.6);opacity:1}100%{box-shadow:0 0 0 26px rgba(56,189,248,0);opacity:.2}}
+  .bsod{position:absolute;inset:0;z-index:200;background:#1a4ed8;color:#fff;display:none;flex-direction:column;
+    justify-content:center;padding:8% 10%;font-family:"Fredoka","Fluent Emoji",sans-serif;}
+  .bsod.show{display:flex;animation:popUp .2s ease;}
+  .bsod .face{font-size:3.2rem;font-weight:600;}
+  .bsod h2{font-size:1.7rem;margin:14px 0 8px;font-weight:600;}
+  .bsod p{font-size:1rem;font-weight:400;line-height:1.5;max-width:560px;}
+  .bsod .pct{font-size:.86rem;margin-top:16px;opacity:.85;}
+
+  /* ---------- Overlay / modale ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(20,30,45,.55);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;padding:20px;z-index:300;}
+  .overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto;
+    padding:26px 26px 22px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:modalIn .22s ease;}
+  @keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+  .modal.good{border-top:8px solid var(--green);}
+  .modal.bad{border-top:8px solid var(--red);}
+  .modal.test-modal{border-top:8px solid var(--amber);}
+  .modal.boss-modal{border-top:8px solid var(--red);}
+  .modal .m-emoji{font-size:3rem;line-height:1;display:block;margin-bottom:6px;}
+  .modal .kicker{font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:.78rem;color:var(--blue-d);margin-bottom:4px;}
+  .modal h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.5rem;margin:2px 0 8px;}
+  .modal p{color:#3a4a59;font-weight:600;font-size:1.04rem;line-height:1.5;margin:0 0 8px;}
+  .modal .howto{background:#f3f8ff;border:2px solid #d9e6fb;border-radius:14px;padding:13px 16px;text-align:left;margin:12px 0 4px;}
+  .modal .howto.test{background:#fff8ec;border-color:#fbe3b6;}
+  .modal .howto.boss{background:#fdeeee;border-color:#f6c9c9;}
+  .modal .howto .h-head{font-weight:800;color:var(--blue-d);margin:0 0 6px;font-size:1rem;}
+  .modal .howto.test .h-head{color:var(--amber-d);}
+  .modal .howto.boss .h-head{color:var(--red-d);}
+  .modal .howto p{font-size:.98rem;color:#3a4a59;margin:0 0 4px;}
+  .modal .newtools{list-style:none;padding:0;margin:12px 0 4px;display:flex;flex-direction:column;gap:7px;text-align:left;}
+  .modal .newtools li{display:flex;align-items:center;gap:11px;background:#f6f9fd;border:2px solid var(--line);
+    border-radius:12px;padding:9px 13px;font-weight:700;font-size:.95rem;}
+  .modal .newtools .ni-glyph{font-size:1.35rem;width:34px;height:34px;flex:none;display:flex;align-items:center;
+    justify-content:center;background:#fff;border:2px solid var(--line);border-radius:9px;}
+  .modal .m-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px;}
+  .m-btn{border:2px solid var(--line);background:#fff;color:var(--ink);font-weight:800;border-radius:12px;
+    padding:11px 18px;font-size:1rem;}
+  .m-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .m-btn.primary:hover{background:var(--blue-d);}
+  .m-btn.primary.green{background:var(--green);border-color:var(--green);}
+  .m-btn.primary.green:hover{background:var(--green-d);}
+  .m-btn.primary.test{background:var(--amber);border-color:var(--amber);color:#3d2c06;}
+  .m-btn.primary.boss{background:var(--red);border-color:var(--red);color:#fff;}
+  .m-btn.primary.boss:hover{background:var(--red-d);}
+  .m-btn.ghost{background:#fff;color:var(--muted);}
+  .m-btn.ghost:hover{border-color:var(--blue);color:var(--blue-d);}
+  .lvl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0 4px;}
+  .lvl-card{display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:2px solid var(--line);
+    background:#fff;border-radius:12px;padding:11px 12px;text-align:left;}
+  .lvl-card:hover:not(.locked){border-color:var(--blue);}
+  .lvl-card.current{border-color:var(--blue);background:#eef4ff;}
+  .lvl-card.locked{opacity:.5;}
+  .lvl-card .lc-badge{font-size:1.1rem;}
+  .lvl-card .lc-n{font-weight:800;font-size:.78rem;color:var(--muted);}
+  .lvl-card .lc-t{font-weight:700;font-size:.86rem;}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#1f2a37;color:#fff;
+    font-weight:700;font-size:.92rem;padding:11px 18px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.3);
+    opacity:0;pointer-events:none;transition:.25s;z-index:400;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* confetti */
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:350;overflow:hidden;}
+  .confetti i{position:absolute;top:-12px;width:10px;height:14px;border-radius:2px;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(105vh) rotate(640deg);}}
+
+  @media (max-width:560px){
+    .topbar h1{font-size:1rem;}
+    .win-search{width:90px;}
+    .dt-icon{width:78px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .confetti i,.modal,.startmenu,.ctxmenu,.spot,.radar-ping,.fitem.infected .ic,.dt-icon.infected .ic,.mp-disc,.mp-bars i{animation:none!important;}
+    .screen.shake,.screen.crt{animation:none!important;}
+  }
+</style>
+<style>
+  /* ===== Bascule police OpenDyslexic (accessibilité lecture/dyslexie) ===== */
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
+  html.dys, html.dys *{font-family:"OpenDyslexic","Fluent Emoji",sans-serif !important;}
+  .dys-toggle{position:fixed;bottom:16px;left:16px;z-index:500;display:inline-flex;align-items:center;gap:9px;
+    border:2px solid #d7e0ea;background:#fff;color:#22303f;border-radius:999px;padding:7px 9px 7px 13px;
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-weight:800;font-size:.82rem;line-height:1;cursor:pointer;
+    box-shadow:0 6px 18px rgba(34,48,63,.20);transition:border-color .2s,background .2s,box-shadow .2s;}
+  .dys-toggle:hover{box-shadow:0 8px 22px rgba(34,48,63,.28);}
+  .dys-toggle:focus-visible{outline:3px solid #2563eb;outline-offset:2px;}
+  .dys-toggle .dys-ic{font-size:1.05rem;}
+  .dys-toggle .dys-label{white-space:nowrap;}
+  .dys-toggle .dys-switch{position:relative;width:38px;height:22px;border-radius:999px;background:#cdd7e3;transition:background .2s;flex:none;}
+  .dys-toggle .dys-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s;}
+  html.dys .dys-toggle{border-color:#16a34a;background:#f1fbf4;}
+  html.dys .dys-toggle .dys-switch{background:#16a34a;}
+  html.dys .dys-toggle .dys-knob{left:18px;}
+  @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
+</style>
+<script>try{if(localStorage.getItem('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
+</head>
+<body>
+  <div class="topbar">
+    <a class="back" href="index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      Accueil
+    </a>
+    <h1 class="display" id="lvlTitle">Dossiers et fichiers <span class="dot">·</span> le bureau</h1>
+    <span class="reset-btn" id="stepCount" style="cursor:default">Niveau 1 · Mission 1</span>
+    <button class="reset-btn" id="soundBtn" title="Activer / couper le son">🔊 Son</button>
+    <button class="reset-btn" id="levelBtn" title="Voir les niveaux">🗺️ Niveau 1/7</button>
+    <button class="reset-btn danger" id="resetBtn" title="Recommencer cette mission">↺ Recommencer</button>
+  </div>
+
+  <div class="progress-wrap"><div class="track" id="track"></div></div>
+
+  <div class="banner" id="banner">
+    <span class="b-emoji" id="bEmoji">🖥️</span>
+    <div class="b-txt">
+      <div class="b-title" id="bTitle">Mission</div>
+      <div class="b-sub" id="bSub"></div>
+    </div>
+    <button class="b-btn" id="seeMission">📋 Revoir la consigne</button>
+  </div>
+
+  <div class="stage-wrap"><div id="stage"></div></div>
+
+  <div class="stage-actions">
+    <button class="sa-btn sa-hint" id="hintBtn">💡 Astuce</button>
+    <button class="sa-btn sa-restart" id="restartBtn">↺ Recommencer la mission</button>
+  </div>
+
+  <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   DOSSIERS ET FICHIERS — explorateur Windows simulé & gamifié
+   Aucun framework. Tout est piloté par LEVELS[].rounds[].
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   0. OUTILS GÉNÉRAUX
+   --------------------------------------------------------- */
+function kbd(s){ return '<kbd>'+s+'</kbd>'; }
+const ICON={
+  drive:'💽', folder:'📁', folderOpen:'📂', bin:'🗑️', binFull:'🗑️',
+  txt:'📄', doc:'📝', pdf:'📕', jpg:'🖼️', png:'🖼️', gif:'🎞️', photo:'📷',
+  mp3:'🎵', mp4:'🎬', zip:'🗜️', exe:'⚙️', xls:'📊', ppt:'📽️', html:'🌐',
+  app:'🧩', virus:'🦠', generic:'📄'
+};
+function iconFor(node){
+  if(node.icon) return node.icon;
+  if(node.type==='folder') return node===EX.binNode ? (BIN.kids.length?ICON.binFull:ICON.bin) : ICON.folder;
+  return ICON[node.ext] || ICON.generic;
+}
+function fakeSize(node){
+  if(node.type==='folder'){ return countAll(node)+' élément'+(countAll(node)>1?'s':''); }
+  const map={txt:'12 Ko',doc:'48 Ko',pdf:'320 Ko',jpg:'1,4 Mo',png:'820 Ko',gif:'2,1 Mo',photo:'2,8 Mo',
+    mp3:'4,2 Mo',mp4:'24 Mo',zip:'6,7 Mo',exe:'1,1 Mo',xls:'30 Ko',ppt:'2,4 Mo',html:'8 Ko',virus:'??? Ko'};
+  return map[node.ext]||'10 Ko';
+}
+function typeLabel(node){
+  if(node.type==='folder') return 'Dossier';
+  const map={txt:'Document texte',doc:'Document Word',pdf:'Document PDF',jpg:'Image JPEG',png:'Image PNG',
+    gif:'Image GIF',photo:'Photo',mp3:'Fichier audio',mp4:'Vidéo',zip:'Dossier compressé',exe:'Application',
+    xls:'Feuille de calcul',ppt:'Présentation',html:'Page web',virus:'⚠ Fichier infecté'};
+  return map[node.ext]||'Fichier';
+}
+function displayName(node){
+  if(node.type==='folder') return node.name;
+  if(node.noext || !node.ext) return node.name;
+  return node.name+'.'+node.ext;
+}
+function countAll(node){ let n=0; (node.kids||[]).forEach(k=>{ n++; if(k.type==='folder') n+=countAll(k); }); return n; }
+
+/* construction de l'arbre à partir d'une graine déclarative */
+function file(name, ext, opts){ return Object.assign({type:'file', name:name, ext:ext}, opts||{}); }
+function folder(name, kids, opts){ return Object.assign({type:'folder', name:name, kids:kids||[]}, opts||{}); }
+let _uid=1;
+function buildNode(spec, parent){
+  const n=Object.assign({}, spec);
+  n.id='n'+(_uid++);
+  n.parent=parent||null;
+  n.seeded=true;
+  if(n.type==='folder'){
+    const kids=(spec.kids||[]).map(k=>buildNode(k, n));
+    n.kids=kids;
+  }
+  return n;
+}
+function cloneSubtree(node, parent){
+  const n=Object.assign({}, node);
+  n.id='n'+(_uid++);
+  n.parent=parent||null;
+  n.seeded=false;
+  if(n.type==='folder') n.kids=(node.kids||[]).map(k=>cloneSubtree(k, n));
+  return n;
+}
+function walk(node, fn){ fn(node); if(node.type==='folder') (node.kids||[]).forEach(k=>walk(k, fn)); }
+function findFolderByName(root, name){ let f=null; walk(root, n=>{ if(!f && n.type==='folder' && n.name===name) f=n; }); return f; }
+function findAnyByName(root, name){ const a=[]; walk(root, n=>{ if(n!==root && (n.name===name || displayName(n)===name)) a.push(n); }); return a; }
+function pathOf(node){ const p=[]; let c=node; while(c){ p.unshift(c); c=c.parent; } return p; }
+
+/* ---------------------------------------------------------
+   1. ÉTAT GLOBAL + STOCKAGE
+   --------------------------------------------------------- */
+const store={
+  get(k){ try{return localStorage.getItem(k);}catch(e){return this._m&&this._m[k];} },
+  set(k,v){ try{localStorage.setItem(k,v);}catch(e){ (this._m=this._m||{})[k]=v; } },
+  del(k){ try{localStorage.removeItem(k);}catch(e){ if(this._m) delete this._m[k]; } },
+  _m:{}
+};
+let currentLevel=1, STEPS=[], progressIdx=0, playIdx=0, currentStep=null;
+const stage=document.getElementById('stage');
+const overlay=document.getElementById('overlay');
+const modal=document.getElementById('modal');
+
+let BUREAU=null, BIN=null;           // racines de l'arbre
+const EX={
+  windows:[], focusedWin:null, winSeq:0,
+  desktopRoot:null, binNode:null,
+  sel:new Set(),                      // sélection (ids) dans le conteneur actif
+  selBox:null,                        // conteneur où porte la sélection ('desktop' ou winId)
+  clip:null,                          // {mode:'cut'|'copy', ids:[...]}
+  opened:new Set(),                   // noms de fichiers ouverts
+  evt:{},                             // drapeaux d'évènements pour la mission en cours
+  boss:null
+};
+let soundOn=(store.get('df_sound')||'1')==='1';
+
+function getUnlocked(){ let u=parseInt(store.get('df_unlocked')||'1',10); if(isNaN(u)||u<1)u=1; return Math.min(u,LEVELS.length); }
+function getSavedStep(n){ let s=parseInt(store.get('df_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
+function saveProgress(){ store.set('df_step_l'+currentLevel, String(progressIdx)); }
+
+/* ---------------------------------------------------------
+   2. SON (WebAudio, sans fichier externe)
+   --------------------------------------------------------- */
+let actx=null;
+function audioCtx(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } } return actx; }
+function beep(kind){
+  if(!soundOn) return; const a=audioCtx(); if(!a) return; const now=a.currentTime;
+  function tone(freq,dur,type,vol,delay){
+    const o=a.createOscillator(),g=a.createGain(); o.type=type||'sine'; o.frequency.value=freq;
+    o.connect(g); g.connect(a.destination); const t=now+(delay||0);
+    g.gain.setValueAtTime(vol||.12,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur); o.start(t); o.stop(t+dur);
+  }
+  if(kind==='click'){ tone(420,.03,'square',.05); }
+  else if(kind==='open'){ tone(540,.06,'sine',.09); tone(760,.07,'sine',.07,.04); }
+  else if(kind==='good'){ tone(740,.09,'sine',.12); tone(1180,.09,'sine',.08,.02); }
+  else if(kind==='bad'){ tone(150,.16,'square',.12); }
+  else if(kind==='delete'){ tone(300,.08,'sawtooth',.08); tone(180,.12,'sawtooth',.07,.05); }
+  else if(kind==='ding'){ tone(880,.12,'sine',.12); tone(1320,.16,'sine',.1,.08); }
+  else if(kind==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.12,i*.09)); }
+  else if(kind==='alarm'){ tone(360,.18,'square',.10); tone(300,.18,'square',.10,.18); }
+  else if(kind==='crash'){ [400,300,200,120,80].forEach((f,i)=>tone(f,.22,'sawtooth',.12,i*.12)); }
+}
+function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
+document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('df_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); } };
+
+/* ---------------------------------------------------------
+   3. RENDU DE L'ÉCRAN (bureau, fenêtres, barre des tâches)
+   --------------------------------------------------------- */
+function buildScreen(){
+  stage.innerHTML=
+    '<div class="screen" id="screen">'
+    + '<div class="desktop" id="desktop"></div>'
+    + '<div class="win-layer" id="winLayer"></div>'
+    + '<div class="startmenu" id="startmenu"></div>'
+    + '<div class="taskbar">'
+    +   '<button class="tb-start" id="tbStart" title="Menu Démarrer">Démarrer</button>'
+    +   '<div class="tb-apps" id="tbApps"></div>'
+    +   '<div class="tb-clock" id="tbClock"></div>'
+    + '</div>'
+    + '<div class="ctxmenu" id="ctxmenu"></div>'
+    + '</div>';
+  document.getElementById('tbStart').onclick=(e)=>{ e.stopPropagation(); toggleStart(); };
+  // Empêche le mousedown sur les menus / le bouton Démarrer de remonter au #screen
+  // (sinon le handler global les referme AVANT que le clic sur un item n'aboutisse).
+  document.getElementById('tbStart').addEventListener('mousedown', e=>e.stopPropagation());
+  document.getElementById('startmenu').addEventListener('mousedown', e=>e.stopPropagation());
+  document.getElementById('ctxmenu').addEventListener('mousedown', e=>e.stopPropagation());
+  const desk=document.getElementById('desktop');
+  desk.addEventListener('mousedown', onDesktopMouseDown);
+  desk.addEventListener('contextmenu', onDesktopContext);
+  document.getElementById('screen').addEventListener('mousedown', e=>{ if(!e.target.closest('.rn')){ commitRename(); } closeStart(); closeCtx(); });
+  startClock();
+}
+function startClock(){
+  const el=document.getElementById('tbClock'); if(!el) return;
+  const t=new Date();
+  const hh=String(t.getHours()).padStart(2,'0'), mm=String(t.getMinutes()).padStart(2,'0');
+  el.innerHTML=hh+':'+mm+'<small>'+t.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'})+'</small>';
+}
+
+function renderDesktop(){
+  const desk=document.getElementById('desktop'); if(!desk) return;
+  desk.innerHTML='';
+  const items=(EX.desktopRoot.kids||[]).concat([EX.binNode]);
+  items.forEach(node=>{
+    const el=document.createElement('div');
+    el.className='dt-icon'+(EX.sel.has(node.id)&&EX.selBox==='desktop'?' sel':'')+(node.infected?' infected':'');
+    el.dataset.id=node.id;
+    el.innerHTML='<span class="ic">'+iconFor(node)+'</span><span class="nm">'+displayName(node)+'</span>';
+    el.addEventListener('mousedown', e=>onItemMouseDown(e, node, 'desktop'));
+    el.addEventListener('dblclick', e=>{ e.stopPropagation(); cancelRenameTimer(); openNode(node); });
+    el.addEventListener('contextmenu', e=>onItemContext(e, node, 'desktop'));
+    desk.appendChild(el);
+  });
+}
+
+function renderTaskbar(){
+  const apps=document.getElementById('tbApps'); if(!apps) return;
+  apps.innerHTML='';
+  EX.windows.forEach(w=>{
+    const b=document.createElement('button');
+    b.className='tb-btn'+(w===EX.focusedWin&&!w.min?' active':'')+(w.min?' min':'');
+    b.innerHTML='<span class="ic">'+iconFor(w.cur)+'</span><span class="lb">'+w.cur.name+'</span>';
+    b.onclick=()=>{
+      if(w.min){ w.min=false; focusWin(w); EX.evt.taskbarRestore=true; }
+      else if(w===EX.focusedWin){ w.min=true; }
+      else focusWin(w);
+      renderAll(); checkMission();
+    };
+    apps.appendChild(b);
+  });
+  // synchronise l'état visuel des fenêtres (réduite / au premier plan)
+  EX.windows.forEach(w=>{ if(w.el){ w.el.classList.toggle('min', !!w.min); w.el.classList.toggle('focused', w===EX.focusedWin && !w.min); } });
+}
+
+function renderAll(){ renderDesktop(); renderTaskbar(); EX.windows.forEach(renderWinBody); }
+
+/* ----- fenêtres ----- */
+function openWindow(node, opts){
+  opts=opts||{};
+  // si une fenêtre est déjà ouverte sur ce dossier, la remettre au premier plan
+  const existing=EX.windows.find(w=>w.cur===node);
+  if(existing){ existing.min=false; focusWin(existing); renderTaskbar(); return existing; }
+  const k=EX.windows.length;
+  const w={
+    id:'w'+(++EX.winSeq), cur:node, hist:[node], hidx:0,
+    x:24+k*30, y:18+k*26, wdt:480, hgt:330,
+    sortBy:null, search:'', searchResults:null, min:false
+  };
+  EX.windows.push(w);
+  const el=document.createElement('div'); el.className='win'; el.dataset.id=w.id;
+  el.style.left=w.x+'px'; el.style.top=w.y+'px'; el.style.width=w.wdt+'px'; el.style.height=w.hgt+'px';
+  el.innerHTML=
+    '<div class="win-bar">'
+    +  '<span class="wt-ic">'+iconFor(node)+'</span><span class="wt-name"></span>'
+    +  '<button class="win-btn min" title="Réduire">▁</button>'
+    +  '<button class="win-btn close" title="Fermer">✕</button>'
+    + '</div>'
+    + '<div class="win-toolbar">'
+    +  '<button class="nav-btn nav-back" title="Précédent">◀</button>'
+    +  '<button class="nav-btn nav-fwd" title="Suivant">▶</button>'
+    +  '<button class="nav-btn nav-up" title="Dossier parent">⬆</button>'
+    +  '<div class="crumbs"></div>'
+    +  '<div class="win-search"><span class="si">🔍</span><input type="text" placeholder="Rechercher"></div>'
+    + '</div>'
+    + '<div class="win-body"></div>'
+    + '<div class="win-status"></div>'
+    + '<div class="rz rz-n" data-d="n"></div><div class="rz rz-s" data-d="s"></div>'
+    + '<div class="rz rz-e" data-d="e"></div><div class="rz rz-w" data-d="w"></div>'
+    + '<div class="rz rz-ne" data-d="ne"></div><div class="rz rz-nw" data-d="nw"></div>'
+    + '<div class="rz rz-se" data-d="se"></div><div class="rz rz-sw" data-d="sw"></div>';
+  document.getElementById('winLayer').appendChild(el);
+  w.el=el;
+  // titlebar : déplacement + focus
+  const bar=el.querySelector('.win-bar');
+  bar.addEventListener('mousedown', e=>{ if(e.button!==0) return; if(e.target.closest('.win-btn')) return; focusWin(w); startWinDrag(e, w); });
+  el.addEventListener('mousedown', ()=>focusWin(w), true);
+  el.querySelector('.win-btn.min').onclick=(e)=>{ e.stopPropagation(); w.min=true; renderAll(); checkMission(); };
+  el.querySelector('.win-btn.close').onclick=(e)=>{ e.stopPropagation(); closeWindow(w); };
+  el.querySelector('.nav-back').onclick=()=>navBack(w);
+  el.querySelector('.nav-fwd').onclick=()=>navFwd(w);
+  el.querySelector('.nav-up').onclick=()=>navUp(w);
+  const body=el.querySelector('.win-body');
+  body.addEventListener('mousedown', e=>{ if(e.target===body) onBodyEmptyMouseDown(e, w); });
+  body.addEventListener('contextmenu', e=>{ if(e.target===body || e.target.closest('.win-body')===body && !e.target.closest('.fitem')) onBodyContext(e, w); });
+  const inp=el.querySelector('.win-search input');
+  inp.addEventListener('input', ()=>{ w.search=inp.value; if(!w.search){ w.searchResults=null; } });
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ runSearch(w, inp.value); } e.stopPropagation(); });
+  el.querySelectorAll('.rz').forEach(h=>h.addEventListener('mousedown', e=>startWinResize(e, w, h.dataset.d)));
+  focusWin(w);
+  renderWinBody(w);
+  renderTaskbar();
+  if(opts.evt!==false) EX.evt.openedAny=true;
+  EX.evt.everHadWindow=true;
+  beep('open');
+  return w;
+}
+function closeWindow(w){
+  if(w.el) w.el.remove();
+  EX.windows=EX.windows.filter(x=>x!==w);
+  if(EX.focusedWin===w) EX.focusedWin=EX.windows[EX.windows.length-1]||null;
+  renderTaskbar(); beep('click'); checkMission();
+}
+function focusWin(w){
+  EX.focusedWin=w; w.min=false;
+  EX.windows.forEach(x=>{ if(x.el) x.el.classList.toggle('focused', x===w); });
+  // ordre d'empilement
+  let z=10; EX.windows.forEach(x=>{ if(x.el) x.el.style.zIndex=(x===w?100:z++); });
+  if(w.el) w.el.style.display='';
+  renderTaskbar();
+}
+function navTo(w, node, pushHist){
+  w.cur=node; w.search=''; w.searchResults=null;
+  if(w.el) w.el.querySelector('.win-search input').value='';
+  if(pushHist!==false){ w.hist=w.hist.slice(0, w.hidx+1); w.hist.push(node); w.hidx=w.hist.length-1; }
+  renderWinBody(w); renderTaskbar();
+}
+function navBack(w){ if(w.hidx>0){ w.hidx--; w.cur=w.hist[w.hidx]; w.search=''; w.searchResults=null; if(w.el) w.el.querySelector('.win-search input').value=''; EX.evt.usedBack=true; renderWinBody(w); renderTaskbar(); beep('click'); checkMission(); } }
+function navFwd(w){ if(w.hidx<w.hist.length-1){ w.hidx++; w.cur=w.hist[w.hidx]; w.search=''; w.searchResults=null; if(w.el) w.el.querySelector('.win-search input').value=''; EX.evt.usedFwd=true; renderWinBody(w); renderTaskbar(); beep('click'); checkMission(); } }
+function navUp(w){ const p=w.cur.parent; if(p){ EX.evt.usedUp=true; navTo(w, p); beep('click'); checkMission(); } }
+
+function renderWinBody(w){
+  if(!w.el) return;
+  focusedClass(w);
+  w.el.querySelector('.wt-ic').textContent=iconFor(w.cur);
+  w.el.querySelector('.wt-name').textContent=w.cur.name;
+  // fil d'Ariane
+  const cr=w.el.querySelector('.crumbs'); cr.innerHTML='';
+  const path=pathOf(w.cur);
+  path.forEach((nd,i)=>{
+    if(i>0){ const s=document.createElement('span'); s.className='sep'; s.textContent='▸'; cr.appendChild(s); }
+    const c=document.createElement('span'); c.className='cr'; c.textContent=(i===0?'🖥️ ':'')+nd.name;
+    c.onclick=()=>{ EX.evt.usedCrumb=true; navTo(w, nd); beep('click'); checkMission(); };
+    cr.appendChild(c);
+  });
+  // boutons nav
+  w.el.querySelector('.nav-back').disabled=(w.hidx<=0);
+  w.el.querySelector('.nav-fwd').disabled=(w.hidx>=w.hist.length-1);
+  w.el.querySelector('.nav-up').disabled=!w.cur.parent;
+  // corps
+  const body=w.el.querySelector('.win-body');
+  body.innerHTML='';
+  body.classList.toggle('dragover', false);
+  if(w.searchResults){
+    renderSearchResults(w, body); return;
+  }
+  let kids=(w.cur.kids||[]).slice();
+  if(w.sortBy) kids=sortKids(kids, w.sortBy);
+  const term=(w.search||'').trim().toLowerCase();
+  const visible=kids.filter(k=>!term || displayName(k).toLowerCase().includes(term));
+  body.classList.toggle('empty-note', visible.length===0);
+  visible.forEach(node=>{
+    const el=document.createElement('div');
+    el.className='fitem'+(EX.sel.has(node.id)&&EX.selBox===w.id?' sel':'')
+      +(EX.clip&&EX.clip.mode==='cut'&&EX.clip.ids.indexOf(node.id)>=0?' cut':'')
+      +(node.infected?' infected':'');
+    el.dataset.id=node.id;
+    el.innerHTML='<span class="ic">'+iconFor(node)+'</span><span class="nm">'+displayName(node)+'</span>';
+    el.addEventListener('mousedown', e=>onItemMouseDown(e, node, w.id));
+    el.addEventListener('dblclick', e=>{ e.stopPropagation(); cancelRenameTimer(); openNode(node, w); });
+    el.addEventListener('contextmenu', e=>onItemContext(e, node, w.id));
+    body.appendChild(el);
+  });
+  // barre d'état
+  const st=w.el.querySelector('.win-status');
+  const selCount=(EX.selBox===w.id)?EX.sel.size:0;
+  st.textContent=(w.cur.kids||[]).length+' élément'+((w.cur.kids||[]).length>1?'s':'')
+    +(selCount?'  ·  '+selCount+' sélectionné'+(selCount>1?'s':''):'');
+}
+function focusedClass(w){ w.el.classList.toggle('focused', w===EX.focusedWin); }
+function sortKids(kids, by){
+  const arr=kids.slice();
+  if(by==='name') arr.sort((a,b)=>displayName(a).localeCompare(displayName(b),'fr',{numeric:true}));
+  else if(by==='type') arr.sort((a,b)=> (a.type===b.type? (a.type==='folder'?0:(a.ext||'').localeCompare(b.ext||'')) : (a.type==='folder'?-1:1)) || displayName(a).localeCompare(displayName(b),'fr'));
+  else if(by==='date') arr.sort((a,b)=>(b.date||0)-(a.date||0));
+  // dossiers d'abord (sauf tri par date)
+  if(by!=='date') arr.sort((a,b)=> (a.type==='folder'?0:1)-(b.type==='folder'?0:1) );
+  return arr;
+}
+
+/* recherche récursive */
+function runSearch(w, term){
+  term=(term||'').trim();
+  if(term.length<2){ w.searchResults=null; renderWinBody(w); return; }
+  const res=[]; walk(EX.desktopRoot, n=>{ if(n!==EX.desktopRoot && displayName(n).toLowerCase().includes(term.toLowerCase())) res.push(n); });
+  w.searchResults={term, res}; EX.evt.searched=term;
+  renderWinBody(w); checkMission();
+}
+function renderSearchResults(w, body){
+  const {term,res}=w.searchResults;
+  if(!res.length){ body.classList.add('empty-note'); body.innerHTML='<div style="width:100%;text-align:center;color:#9aabbd;font-weight:800;padding:40px 10px;">Aucun résultat pour « '+term+' »</div>'; return; }
+  res.forEach(node=>{
+    const loc=pathOf(node.parent||EX.desktopRoot).map(p=>p.name).join(' ▸ ');
+    const el=document.createElement('div');
+    el.className='fitem'+(node.infected?' infected':'');
+    el.dataset.id=node.id;
+    el.innerHTML='<span class="ic">'+iconFor(node)+'</span><span class="nm">'+displayName(node)+'</span><span class="res-loc">'+loc+'</span>';
+    el.addEventListener('dblclick', e=>{ e.stopPropagation();
+      EX.evt.searchOpened=(EX.evt.searchOpened||new Set()); EX.evt.searchOpened.add(node.name);
+      if(node.type==='folder'){ navTo(w, node); }
+      else { const pf=node.parent; if(pf){ navTo(w, pf); } selectOnly(node, w.id); EX.opened.add(node.name); openFilePreview(node); }
+      checkMission();
+    });
+    el.addEventListener('contextmenu', e=>onItemContext(e, node, w.id));
+    body.appendChild(el);
+  });
+}
+
+/* ----- déplacement / redimension fenêtre ----- */
+let winDrag=null;
+function startWinDrag(e, w){
+  winDrag={w, dx:e.clientX-w.x, dy:e.clientY-w.y};
+  window.addEventListener('mousemove', onWinDragMove);
+  window.addEventListener('mouseup', onWinDragUp);
+}
+function onWinDragMove(e){
+  if(!winDrag) return; const {w}=winDrag;
+  const screen=document.getElementById('screen').getBoundingClientRect();
+  let nx=e.clientX-winDrag.dx, ny=e.clientY-winDrag.dy;
+  nx=Math.max(-w.wdt+80, Math.min(screen.width-60, nx));
+  ny=Math.max(0, Math.min(screen.height-80, ny));
+  w.x=nx; w.y=ny; w.el.style.left=nx+'px'; w.el.style.top=ny+'px';
+}
+function onWinDragUp(){ winDrag=null; document.body.style.cursor=''; window.removeEventListener('mousemove', onWinDragMove); window.removeEventListener('mouseup', onWinDragUp); }
+let winRz=null;
+function startWinResize(e, w, dir){
+  e.stopPropagation(); e.preventDefault(); focusWin(w);
+  winRz={w, dir:dir||'se', sx:e.clientX, sy:e.clientY, sw:w.wdt, sh:w.hgt, sl:w.x, st:w.y};
+  document.body.style.cursor=getComputedStyle(e.currentTarget).cursor;
+  window.addEventListener('mousemove', onWinResizeMove); window.addEventListener('mouseup', onWinResizeUp);
+}
+function onWinResizeMove(e){
+  if(!winRz) return; const {w,dir}=winRz; const MINW=300, MINH=200;
+  const dx=e.clientX-winRz.sx, dy=e.clientY-winRz.sy;
+  let nw=winRz.sw, nh=winRz.sh, nx=winRz.sl, ny=winRz.st;
+  if(dir.indexOf('e')>=0) nw=winRz.sw+dx;
+  if(dir.indexOf('s')>=0) nh=winRz.sh+dy;
+  if(dir.indexOf('w')>=0){ nw=winRz.sw-dx; nx=winRz.sl+dx; }
+  if(dir.indexOf('n')>=0){ nh=winRz.sh-dy; ny=winRz.st+dy; }
+  if(nw<MINW){ if(dir.indexOf('w')>=0) nx=winRz.sl+(winRz.sw-MINW); nw=MINW; }
+  if(nh<MINH){ if(dir.indexOf('n')>=0) ny=winRz.st+(winRz.sh-MINH); nh=MINH; }
+  if(ny<0){ nh+=ny; ny=0; }
+  w.wdt=nw; w.hgt=nh; w.x=nx; w.y=ny;
+  w.el.style.width=nw+'px'; w.el.style.height=nh+'px'; w.el.style.left=nx+'px'; w.el.style.top=ny+'px';
+}
+function onWinResizeUp(){ winRz=null; document.body.style.cursor=''; window.removeEventListener('mousemove', onWinResizeMove); window.removeEventListener('mouseup', onWinResizeUp); }
+
+/* ---------------------------------------------------------
+   4. SÉLECTION + GLISSER-DÉPOSER (pointer-based)
+   --------------------------------------------------------- */
+function selectOnly(node, box){ EX.sel=new Set([node.id]); EX.selBox=box; refreshSel(); }
+/* Met à jour UNIQUEMENT les classes de sélection (sans reconstruire le DOM,
+   sinon un double-clic réel détruit l'élément cliqué entre les deux clics). */
+function refreshSel(){
+  document.querySelectorAll('#desktop .dt-icon').forEach(el=>{
+    el.classList.toggle('sel', EX.selBox==='desktop' && EX.sel.has(el.dataset.id));
+  });
+  EX.windows.forEach(w=>{
+    if(!w.el) return;
+    w.el.querySelectorAll('.win-body .fitem').forEach(el=>{
+      el.classList.toggle('sel', EX.selBox===w.id && EX.sel.has(el.dataset.id));
+      el.classList.toggle('cut', !!(EX.clip && EX.clip.mode==='cut' && EX.clip.ids.indexOf(el.dataset.id)>=0));
+    });
+    const st=w.el.querySelector('.win-status');
+    if(st){ const selCount=(EX.selBox===w.id)?EX.sel.size:0;
+      st.textContent=(w.cur.kids||[]).length+' élément'+((w.cur.kids||[]).length>1?'s':'')
+        +(selCount?'  ·  '+selCount+' sélectionné'+(selCount>1?'s':''):''); }
+  });
+}
+function nodeById(id){ let r=null; walk(EX.desktopRoot, n=>{ if(n.id===id) r=n; }); if(r) return r; walk(BIN, n=>{ if(n.id===id) r=n; }); return r; }
+
+let pendDrag=null, dragging=null;
+let _renameTimer=null;
+function cancelRenameTimer(){ if(_renameTimer){ clearTimeout(_renameTimer); _renameTimer=null; } }
+function onItemMouseDown(e, node, box){
+  if(e.button!==0) return;
+  e.stopPropagation(); closeStart(); closeCtx();
+  commitRename(); cancelRenameTimer();
+  if(box!=='desktop'){ const w=EX.windows.find(x=>x.id===box); if(w) focusWin(w); }
+  // l'objet était-il déjà le seul sélectionné ? (→ second clic = renommer, comme Windows)
+  const wasSelected = !e.ctrlKey && !e.metaKey && EX.selBox===box && EX.sel.size===1 && EX.sel.has(node.id);
+  // sélection
+  if(e.ctrlKey || e.metaKey){
+    if(EX.selBox!==box){ EX.sel=new Set(); EX.selBox=box; }
+    if(EX.sel.has(node.id)) EX.sel.delete(node.id); else EX.sel.add(node.id);
+  } else if(!EX.sel.has(node.id) || EX.selBox!==box){
+    EX.sel=new Set([node.id]); EX.selBox=box;
+  }
+  refreshSel(); beep('click');
+  pendDrag={node, box, sx:e.clientX, sy:e.clientY, wasSelected};
+  window.addEventListener('mousemove', onPendMove);
+  window.addEventListener('mouseup', onPendUp);
+}
+function onPendMove(e){
+  if(!pendDrag) return;
+  if(Math.abs(e.clientX-pendDrag.sx)>5 || Math.abs(e.clientY-pendDrag.sy)>5){
+    beginDrag(e);
+  }
+}
+function onPendUp(){
+  window.removeEventListener('mousemove', onPendMove); window.removeEventListener('mouseup', onPendUp);
+  const pd=pendDrag; pendDrag=null;
+  // clic simple sur un objet déjà sélectionné → renommer (sauf double-clic, qui annulera le minuteur)
+  if(pd && pd.wasSelected && pd.node && !pd.node.locked){
+    cancelRenameTimer();
+    _renameTimer=setTimeout(()=>{ _renameTimer=null; if(EX.sel.size===1 && EX.sel.has(pd.node.id) && EX.selBox===pd.box) startRename(pd.node, pd.box); }, 550);
+  }
+}
+function beginDrag(e){
+  const ids=(EX.selBox===pendDrag.box && EX.sel.size>1 && EX.sel.has(pendDrag.node.id)) ? Array.from(EX.sel) : [pendDrag.node.id];
+  const nodes=ids.map(nodeById).filter(Boolean).filter(n=>!n.locked);
+  if(!nodes.length){ onPendUp(); return; }
+  dragging={nodes, fromBox:pendDrag.box};
+  const g=document.createElement('div'); g.className='drag-ghost'; g.id='dragGhost';
+  g.innerHTML='<span class="ic">'+iconFor(nodes[0])+'</span>'+(nodes.length>1?'<span class="badge">'+nodes.length+'</span>':'');
+  document.body.appendChild(g);
+  moveGhost(e);
+  window.removeEventListener('mousemove', onPendMove); window.removeEventListener('mouseup', onPendUp); pendDrag=null;
+  window.addEventListener('mousemove', onDragMove);
+  window.addEventListener('mouseup', onDragUp);
+}
+function moveGhost(e){ const g=document.getElementById('dragGhost'); if(g){ g.style.left=e.clientX+'px'; g.style.top=e.clientY+'px'; } }
+function onDragMove(e){
+  moveGhost(e);
+  clearDropHints();
+  const t=dropTargetAt(e);
+  if(t && t.el) t.el.classList.add(t.kind==='body'||t.kind==='desktop'?'dragover':'drop-ok');
+}
+function clearDropHints(){
+  document.querySelectorAll('.drop-ok').forEach(el=>el.classList.remove('drop-ok'));
+  document.querySelectorAll('.win-body.dragover, .desktop.dragover').forEach(el=>el.classList.remove('dragover'));
+}
+function dropTargetAt(e){
+  const els=document.elementsFromPoint(e.clientX, e.clientY);
+  for(const el of els){
+    const fi=el.closest && el.closest('.fitem');
+    if(fi){ const node=nodeById(fi.dataset.id); if(node && node.type==='folder' && dragging.nodes.indexOf(node)<0) return {kind:'folder', node, el:fi}; if(node && node.type!=='folder') continue; }
+    const dti=el.closest && el.closest('.dt-icon');
+    if(dti){ const node=nodeById(dti.dataset.id); if(node===EX.binNode) return {kind:'bin', node, el:dti}; if(node && node.type==='folder' && dragging.nodes.indexOf(node)<0) return {kind:'folder', node, el:dti}; }
+    if(el.classList && el.classList.contains('win-body')){ const w=EX.windows.find(x=>x.el&&x.el.querySelector('.win-body')===el); if(w) return {kind:'body', node:w.cur, el, w}; }
+    if(el.id==='desktop') return {kind:'desktop', node:EX.desktopRoot, el};
+  }
+  return null;
+}
+function onDragUp(e){
+  const t=dropTargetAt(e);
+  clearDropHints();
+  const g=document.getElementById('dragGhost'); if(g) g.remove();
+  window.removeEventListener('mousemove', onDragMove); window.removeEventListener('mouseup', onDragUp);
+  if(t){
+    if(t.kind==='bin'){ doDelete(dragging.nodes); }
+    else { const dest=t.node; if(dest && dest.type==='folder' && dragging.nodes.every(n=>n.parent!==dest)) doMove(dragging.nodes, dest); else { dragging=null; return; } }
+  }
+  dragging=null;
+}
+
+/* ---------------------------------------------------------
+   5. OPÉRATIONS SUR LES FICHIERS
+   --------------------------------------------------------- */
+function openNode(node, w){
+  if(node===EX.binNode){ openWindow(BIN); return; }
+  if(node.type==='folder'){
+    if(w){ navTo(w, node); beep('open'); } else { openWindow(node); }
+    checkMission();
+  } else {
+    EX.opened.add(node.name); beep('open');
+    openFilePreview(node); checkMission();
+  }
+}
+function doMove(nodes, dest){
+  let moved=0;
+  nodes.forEach(n=>{
+    if(n.locked) return;
+    if(n===dest || isAncestor(n, dest)) return;
+    if(n.parent){ n.parent.kids=n.parent.kids.filter(x=>x!==n); }
+    else if(EX.desktopRoot.kids.indexOf(n)>=0){ EX.desktopRoot.kids=EX.desktopRoot.kids.filter(x=>x!==n); }
+    // si on déplaçait depuis la corbeille
+    BIN.kids=BIN.kids.filter(x=>x!==n);
+    n.name=uniqueName(dest, n);
+    n.parent=dest; dest.kids.push(n); moved++;
+  });
+  if(moved){ EX.sel=new Set(); beep('open'); toast('Déplacé ✔'); renderAll(); checkMission(); }
+}
+function isAncestor(a, b){ let c=b; while(c){ if(c===a) return true; c=c.parent; } return false; }
+function uniqueName(dest, node){
+  const base=node.name; let name=base, i=2;
+  const exists=nm=> (dest.kids||[]).some(k=>k!==node && k.name===nm && (k.type==='folder')===(node.type==='folder'));
+  while(exists(name)){ name=base+' ('+i+')'; i++; }
+  return name;
+}
+function doCopy(nodes, dest){
+  let n2=null;
+  nodes.forEach(n=>{ const c=cloneSubtree(n, dest); c.name=uniqueName(dest, c); dest.kids.push(c); n2=c; });
+  beep('open'); toast('Copié ✔'); renderAll(); checkMission();
+}
+function doDelete(nodes){
+  let del=0;
+  nodes.forEach(n=>{
+    if(n.locked){ toast('🔒 Ce fichier système ne peut pas être supprimé'); return; }
+    if(n.parent){ n.parent.kids=n.parent.kids.filter(x=>x!==n); }
+    EX.desktopRoot.kids=EX.desktopRoot.kids.filter(x=>x!==n);
+    n.binOrigin=n.parent || EX.desktopRoot;
+    n.parent=BIN; BIN.kids.push(n); del++;
+    EX.evt.everDeleted=true;
+  });
+  if(del){ EX.sel=new Set(); beep('delete'); toast(del>1?del+' éléments mis à la corbeille 🗑️':'Mis à la corbeille 🗑️'); renderAll(); checkMission(); }
+}
+function doRestore(nodes){
+  let r=0;
+  nodes.forEach(n=>{
+    BIN.kids=BIN.kids.filter(x=>x!==n);
+    let dest=n.binOrigin; if(!dest || (dest!==EX.desktopRoot && !inTree(EX.desktopRoot, dest))) dest=EX.desktopRoot;
+    n.parent=(dest===EX.desktopRoot)?EX.desktopRoot:dest;
+    if(dest===EX.desktopRoot) EX.desktopRoot.kids.push(n); else dest.kids.push(n);
+    n.name=uniqueName(dest, n); r++;
+  });
+  if(r){ EX.sel=new Set(); beep('open'); toast('Restauré ✔'); renderAll(); checkMission(); }
+}
+function inTree(root, node){ let f=false; walk(root, n=>{ if(n===node) f=true; }); return f; }
+function emptyBin(){
+  if(!BIN.kids.length){ toast('La corbeille est déjà vide'); return; }
+  EX.evt.binEmptied=true; BIN.kids=[]; beep('delete'); toast('Corbeille vidée 🧹'); renderAll(); checkMission();
+}
+function newFolder(dest){
+  const base='Nouveau dossier'; let name=base, i=2;
+  while((dest.kids||[]).some(k=>k.type==='folder'&&k.name===name)){ name=base+' ('+i+')'; i++; }
+  const nf=buildNode(folder(name, []), dest); nf.seeded=false; nf.fresh=true;
+  dest.kids.push(nf); EX.evt.createdFolder=true;
+  beep('open'); renderAll(); checkMission();
+  // renommage immédiat
+  const w=EX.windows.find(x=>x.cur===dest);
+  if(w){ startRename(nf, w.id); }
+  return nf;
+}
+function doPaste(dest){
+  if(!EX.clip) return;
+  const nodes=EX.clip.ids.map(nodeById).filter(Boolean);
+  if(EX.clip.mode==='copy'){ doCopy(nodes, dest); }
+  else { doMove(nodes, dest); EX.clip=null; }
+}
+let _activeRename=null;
+/* Valide (enregistre) le renommage en cours s'il y en a un — appelé avant
+   tout clic ailleurs, exactement comme l'explorateur Windows. */
+function commitRename(){ if(_activeRename) _activeRename.commit(); }
+function startRename(node, box){
+  if(node.locked){ toast('🔒 Ce fichier système ne peut pas être renommé'); return; }
+  commitRename();                 // valide un éventuel renommage précédent
+  cancelRenameTimer();
+  let el=null;
+  if(box==='desktop'){ el=document.querySelector('#desktop .dt-icon[data-id="'+node.id+'"] .nm'); }
+  else { const w=EX.windows.find(x=>x.id===box); if(w&&w.el) el=w.el.querySelector('.fitem[data-id="'+node.id+'"] .nm'); }
+  if(!el) return;
+  const cur=node.name;
+  const inp=document.createElement('input'); inp.className='rn'; inp.value=cur;
+  el.replaceWith(inp); inp.focus(); inp.select();
+  let done=false;
+  function commit(){
+    if(done) return; done=true; _activeRename=null;
+    const v=inp.value.trim();
+    if(v && v!==cur){ node.name=v; node.renamed=true; EX.evt.renamedAny=true; beep('good'); }
+    renderAll(); checkMission();
+  }
+  function cancel(){ if(done) return; done=true; _activeRename=null; renderAll(); checkMission(); }
+  _activeRename={commit, cancel, inp};
+  inp.addEventListener('keydown', e=>{ e.stopPropagation(); if(e.key==='Enter'){ commit(); } else if(e.key==='Escape'){ cancel(); } });
+  inp.addEventListener('blur', commit);
+}
+
+/* ---- Contenus rigolos & thématiques des fichiers ---- */
+function strHash(s){ let h=0; for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))|0; } return Math.abs(h); }
+const FILE_TEXTS={
+  'bienvenue':"👋 Bienvenue sur ton ordinateur !\n\nIci, tu vas devenir un vrai chef des dossiers : ouvrir, ranger, renommer et retrouver tes fichiers les yeux (presque) fermés.\n\nAllez, c'est parti pour l'aventure !",
+  'liste-de-courses':"🛒 Liste de courses\n\n☐ 3 bananes pas trop mûres 🍌\n☐ 1 énorme pot de confiture de fraises 🍓\n☐ des pâtes (beaucoup, BEAUCOUP de pâtes) 🍝\n☐ du fromage qui sent les pieds 🧀\n☐ des cookies (chut, c'est pour moi 🍪)",
+  'liste':"📝 Ma liste de choses à faire\n\n1. Apprendre à siffler 🎶\n2. Battre Papa au jeu de cartes 🃏\n3. Caresser 5 chiens aujourd'hui 🐶\n4. Devenir le pro des dossiers !",
+  'poésie':"🌸 Poésie\n\nLe petit escargot\nPorte sur son dos\nSa jolie maison.\nIl part en vacances\nTout doux, sans se presser :\nle roi de la lenteur ! 🐌",
+  'exposé-volcan':"🌋 Exposé : les volcans\n\nUn volcan, c'est une montagne qui éternue de la lave ! Quand il fait « ATCHOUM 🔥 », mieux vaut être très, TRÈS loin... avec un parapluie ignifugé.",
+  'exposé':"🦖 Exposé : le T-Rex\n\nLe T-Rex avait d'énormes dents mais de tout petits bras. Il ne pouvait même pas faire ses lacets tout seul. Mais bizarrement, personne n'osait se moquer de lui !",
+  'tresor':"🏴‍☠️ CARTE AU TRÉSOR\n\nFais 10 pas vers le palmier rigolo 🌴, tourne à gauche au rocher en forme de patate, et creuse là où brille le grand X. Le trésor t'attend ! 💎",
+  'secret':"🤫 ULTRA TOP SECRET\n\nLe vrai secret du monde : les chats commandent tout pendant qu'on dort. Ne le répète à PERSONNE... surtout pas à ton chat, il le sait déjà. 🐱",
+  'rapport':"📋 Rapport très très sérieux\n\nAprès une longue enquête, c'est prouvé : les chaussettes disparaissent dans la machine à laver pour partir en vacances aux Bahamas. 🧦🏝️\nDossier classé.",
+  'contrat':"📜 Contrat ultra-important\n\nArticle 1 : on a le droit de rigoler.\nArticle 2 : le goûter est obligatoire 🍫.\nArticle 3 : en cas de doute, relire l'article 2.\n\nSigné : le Grand Chef des Rigolos ✍️",
+  'lettre':"✉️ Chère Mamie,\n\nMerci pour les bonbons, ils étaient trop bons ! 🍬 J'apprends à ranger mes fichiers sur l'ordinateur, bientôt je serai un champion. Gros bisous tout doux !",
+  'facture':"🧾 Facture\n\n1 gros câlin ............... 0 €\n3 rayons de soleil ........ 0 €\n1 arc-en-ciel ............. 0 €\n1 fou rire ................ 0 €\n\nTOTAL : gratuit, c'est cadeau ! 🌈",
+  'devoir':"✏️ Devoirs pour demain\n\nMaths : combien font 2 câlins + 3 câlins ?\nRéponse : PLEIN de câlins 🤗\n\nLecture : une histoire de dragon avant de dormir 🐉",
+  'modèle':"📝 Modèle de lettre\n\nBonjour [ton prénom ici],\nTu es génial(e) parce que [écris un truc rigolo ici].\nÀ très bientôt,\n[signe ici] 🌟",
+  'note':"🗒️ Mes petites notes\n\n• nourrir le poisson rouge 🐠\n• apprendre à faire un nœud\n• devenir le roi/la reine des dossiers\n• ne PAS oublier le goûter",
+  'config':"⚙️ Fichier du système\n\nBip bop, je suis un fichier très important de l'ordinateur, je n'ai pas le temps de rigoler... bon, juste une : pourquoi l'ordinateur a froid ? Parce qu'il a laissé ses fenêtres ouvertes ! ❄️",
+  'démarrage':"⚙️ Fichier de démarrage\n\nC'est moi qui réveille l'ordinateur le matin : « Debout là-dedans ! » Sans moi, il ferait la grasse matinée toute la journée. 😴",
+  'important':"⭐ TRÈS IMPORTANT (vraiment)\n\nNote pour plus tard : tu es quelqu'un de génial et tu apprends super vite. Garde bien ce fichier ! 💛",
+  'vrai-travail':"💼 Travail super sérieux\n\nÉtape 1 : faire semblant de réfléchir très fort 🤔.\nÉtape 2 : avoir LA super idée pendant la récré.\nÉtape 3 : être fier de soi ! 🎉",
+  'document':"📄 Document mystère\n\nPersonne ne sait vraiment ce qui est écrit ici... La recette du bonheur ? La liste des meilleures blagues ? À toi d'inventer la suite ! ✨"
+};
+const JUNK={
+  pub:"📢 SUPER MÉGA PROMO !!!\n\nAchetez un nuage, le 2e est OFFERT ! Cliquez 999 fois pour gagner un éléphant rose 🐘.\n\n...Bon, en vrai c'est juste une pub bidon. Direction la corbeille ! 🗑️",
+  spam:"🤖 BZZZT. Bonjour humain.\n\nJe suis un robot pas très malin. Voulez-vous acheter 500 paires de chaussettes dépareillées ? 🧦 Répondez OUI ou OUI.\n\n(à jeter sans hésiter !)",
+  dusty:"🕸️ Vieux fichier tout poussiéreux\n\nPlus personne ne se souvient de ce qu'il y avait dedans. Il sent le renfermé et il tousse quand on l'ouvre. *cough cough* 😅",
+  copy:"📑 Copie de la copie de la copie...\n\nÀ force de se recopier, ce fichier ne sait même plus ce qu'il racontait au début. Il tourne en rond ! 🌀"
+};
+const GENERIC_TEXTS=[
+  "🦄 Journal secret\n\nAujourd'hui j'ai vu une licorne. Ou alors un poney avec une glace sur la tête. Le mystère reste entier ! 🍦",
+  "🚀 Plan top-secret\n\nÉtape 1 : construire une fusée en carton.\nÉtape 2 : viser la Lune 🌙.\nÉtape 3 : rapporter du fromage pour tout le monde 🧀.",
+  "🐉 Histoire du soir\n\nIl était une fois un dragon qui avait peur des chatouilles. Le royaume fut sauvé... grâce à une simple plume ! 🪶",
+  "🍕 Recette rigolote\n\nPizza arc-en-ciel :\n- une pâte à nuages ☁️\n- de la sauce aux étoiles ⭐\n- du fromage de Lune\nCuire 3 minutes dans un volcan tiède 🌋.",
+  "🎈 Idées pour la journée\n\n- sauter dans la plus GROSSE flaque\n- inventer une danse rigolote 💃\n- faire un câlin à quelqu'un\n- sourire à un inconnu 😄"
+];
+function fileText(node){
+  const n=(node.name||'').toLowerCase();
+  if(/pub/.test(n)) return JUNK.pub;
+  if(/spam/.test(n)) return JUNK.spam;
+  if(/(vieux|archive|brouillon)/.test(n)) return JUNK.dusty;
+  if(/copie/.test(n)) return JUNK.copy;
+  for(const k in FILE_TEXTS){ if(n.indexOf(k)>=0) return FILE_TEXTS[k]; }
+  return GENERIC_TEXTS[strHash(n)%GENERIC_TEXTS.length];
+}
+const IMG_CAPS=[
+  [/chat/,"🐱 Un chat tout mignon qui fait semblant de dormir pour qu'on lui donne à manger."],
+  [/(anniversaire|gateau|gâteau)/,"🎂 Joyeux anniversaire ! Fais un vœu... et garde la plus grosse part !"],
+  [/(chateau|château|sable)/,"🏖️ Un superbe château de sable. (Emporté par la vague 3 secondes après la photo 🌊)"],
+  [/coquillage/,"🐚 Un coquillage qui chante la mer, paraît-il, si on l'écoute très fort."],
+  [/glace/,"🍦 Une glace à trois boules. Une par main, et... une pour le bout du nez ?"],
+  [/(plage|mer)/,"🌊 Le soleil, le sable entre les orteils, l'eau bien fraîche. Les vacances quoi !"],
+  [/montagne/,"⛰️ Une montagne si haute qu'elle chatouille le ventre des nuages."],
+  [/licorne/,"🦄 Une vraie licorne ! (ou un poney très, très bien coiffé, on ne sait pas trop)"],
+  [/dessin/,"🎨 Un chef-d'œuvre digne d'un grand musée... ou du frigo de Mamie."],
+  [/(photo|image|janvier|souvenir|famille)/,"📷 Une belle photo souvenir. Tout le monde a les yeux fermés, comme d'habitude !"]
+];
+function imgCaption(node){
+  const n=(node.name||'').toLowerCase();
+  for(const pair of IMG_CAPS){ if(pair[0].test(n)) return pair[1]; }
+  return "🖼️ Une jolie image à garder précieusement dans tes souvenirs.";
+}
+
+/* ---- Petite musique (WebAudio, sans fichier externe) ---- */
+const NOTE={C:261.63,D:293.66,E:329.63,F:349.23,G:392.0,A:440.0,B:493.88,C2:523.25,D2:587.33,E2:659.25,r:0};
+const TUNES={
+  twinkle:[['C',1],['C',1],['G',1],['G',1],['A',1],['A',1],['G',2],['F',1],['F',1],['E',1],['E',1],['D',1],['D',1],['C',2]],
+  auclair:[['C',1],['C',1],['C',1],['D',1],['E',2],['D',2],['C',1],['E',1],['D',1],['D',1],['C',2]],
+  frere:[['C',1],['D',1],['E',1],['C',1],['C',1],['D',1],['E',1],['C',1],['E',1],['F',1],['G',2],['E',1],['F',1],['G',2]],
+  rock:[['E',1],['E',1],['G',1],['E',1],['A',1],['G',1],['E',2],['r',1],['E',1],['G',1],['A',1],['B',2]],
+  podcast:[['G',1],['E',1],['C',1],['E',1],['G',2]]
+};
+function pickTune(node){
+  const n=(node.name||'').toLowerCase();
+  if(/douce/.test(n)) return TUNES.auclair;
+  if(/rock/.test(n)) return TUNES.rock;
+  if(/podcast/.test(n)) return TUNES.podcast;
+  if(/chanson2/.test(n)) return TUNES.frere;
+  if(/chanson/.test(n)) return TUNES.twinkle;
+  const all=[TUNES.twinkle,TUNES.auclair,TUNES.frere,TUNES.podcast];
+  return all[strHash(n)%all.length];
+}
+let musicNodes=[];
+function stopTune(){ musicNodes.forEach(o=>{ try{o.stop();}catch(e){} }); musicNodes=[]; }
+function playTune(node){
+  if(!soundOn) return; const a=audioCtx(); if(!a) return;
+  stopTune();
+  const tune=pickTune(node); let t=a.currentTime+0.06; const beat=0.34;
+  tune.forEach(step=>{
+    const f=NOTE[step[0]], dur=step[1]*beat;
+    if(f>0){
+      const o=a.createOscillator(), g=a.createGain();
+      o.type='triangle'; o.frequency.value=f; o.connect(g); g.connect(a.destination);
+      g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.13,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur*0.92);
+      o.start(t); o.stop(t+dur); musicNodes.push(o);
+    }
+    t+=dur;
+  });
+}
+
+/* aperçu de fichier (double-clic) */
+function openFilePreview(node){
+  if(node.infected){ return; } // géré par le boss
+  const ext=node.ext; let body='', music=false;
+  if(ext==='txt'||ext==='doc'||ext==='pdf'){
+    body='<div class="doc-paper">'+fileText(node).replace(/\n/g,'<br>')+'</div>';
+  } else if(ext==='mp3'||ext==='mp4'){
+    music=true;
+    body='<div class="music-player"><div class="mp-disc">'+iconFor(node)+'</div>'
+      +'<div class="mp-bars"><i></i><i></i><i></i><i></i><i></i></div>'
+      +'<div class="mp-now">♪ Lecture en cours… ♪</div>'
+      +'<button class="m-btn" id="mpReplay">▶ Réécouter</button></div>';
+  } else {
+    body='<div style="font-size:4rem;margin:6px 0">'+iconFor(node)+'</div>'
+      +'<p style="color:#3a4a59;font-weight:700">'+imgCaption(node)+'</p>';
+  }
+  modal.className='modal';
+  modal.innerHTML='<div class="kicker">Aperçu</div><h2>'+displayName(node)+'</h2>'
+    +'<p style="color:var(--muted);margin-bottom:8px">'+typeLabel(node)+' · '+fakeSize(node)+'</p>'+body
+    +'<div class="m-actions"><button class="m-btn primary" id="pvClose">Fermer ✕</button></div>';
+  openOverlay();
+  if(music){ playTune(node); const rp=document.getElementById('mpReplay'); if(rp) rp.onclick=()=>playTune(node); }
+  document.getElementById('pvClose').onclick=()=>{ stopTune(); closeOverlay(); };
+}
+function openProps(node){
+  modal.className='modal';
+  modal.innerHTML='<span class="m-emoji">'+iconFor(node)+'</span><div class="kicker">Propriétés</div><h2>'+displayName(node)+'</h2>'
+    +'<ul class="newtools">'
+    +'<li><span class="ni-glyph">🏷️</span> Type : '+typeLabel(node)+'</li>'
+    +'<li><span class="ni-glyph">📦</span> Taille : '+fakeSize(node)+'</li>'
+    +'<li><span class="ni-glyph">📍</span> Emplacement : '+pathOf(node.parent||EX.desktopRoot).map(p=>p.name).join(' ▸ ')+'</li>'
+    +'</ul><div class="m-actions"><button class="m-btn primary" id="prClose">OK</button></div>';
+  openOverlay(); document.getElementById('prClose').onclick=()=>closeOverlay();
+}
+
+/* ---------------------------------------------------------
+   6. MENU CONTEXTUEL (clic droit)
+   --------------------------------------------------------- */
+function closeCtx(){ const m=document.getElementById('ctxmenu'); if(m){ m.classList.remove('open'); m.innerHTML=''; } }
+function showCtx(x, y, items){
+  const m=document.getElementById('ctxmenu'); if(!m) return;
+  m.innerHTML='';
+  items.forEach(it=>{
+    if(it==='sep'){ const s=document.createElement('div'); s.className='cm-sep'; m.appendChild(s); return; }
+    if(it.label){ const l=document.createElement('div'); l.className='cm-sub-label'; l.textContent=it.label; m.appendChild(l); return; }
+    const b=document.createElement('button'); b.className='cm-item'+(it.danger?' danger':''); b.disabled=!!it.disabled;
+    b.innerHTML='<span class="cm-ic">'+(it.ic||'')+'</span><span>'+it.txt+'</span>'+(it.k?'<span class="cm-k">'+it.k+'</span>':'');
+    if(!it.disabled) b.onclick=()=>{ closeCtx(); it.fn&&it.fn(); };
+    m.appendChild(b);
+  });
+  const screen=document.getElementById('screen').getBoundingClientRect();
+  m.classList.add('open');
+  let px=x-screen.left, py=y-screen.top;
+  px=Math.min(px, screen.width-m.offsetWidth-6); py=Math.min(py, screen.height-m.offsetHeight-6);
+  m.style.left=Math.max(4,px)+'px'; m.style.top=Math.max(4,py)+'px';
+}
+function onItemContext(e, node, box){
+  e.preventDefault(); e.stopPropagation(); closeStart(); commitRename(); cancelRenameTimer();
+  if(!EX.sel.has(node.id) || EX.selBox!==box){ EX.sel=new Set([node.id]); EX.selBox=box; refreshSel(); }
+  const inBin = (box!=='desktop') && EX.windows.find(x=>x.id===box && x.cur && (x.cur===BIN || isAncestor(BIN,x.cur)));
+  const sel=Array.from(EX.sel).map(nodeById).filter(Boolean);
+  const items=[];
+  if(inBin){
+    items.push({ic:'♻️',txt:'Restaurer',fn:()=>doRestore(sel)});
+    items.push('sep');
+    items.push({ic:'🗑️',txt:'Supprimer définitivement',danger:true,fn:()=>{ BIN.kids=BIN.kids.filter(x=>sel.indexOf(x)<0); beep('delete'); renderAll(); checkMission(); }});
+    showCtx(e.clientX, e.clientY, items); return;
+  }
+  items.push({ic:node.type==='folder'?'📂':'👁️',txt:'Ouvrir',k:'double-clic',fn:()=>openNode(node, box!=='desktop'?EX.windows.find(x=>x.id===box):null)});
+  items.push('sep');
+  items.push({ic:'✂️',txt:'Couper',k:'Ctrl+X',fn:()=>{ EX.clip={mode:'cut',ids:Array.from(EX.sel)}; EX.evt.cut=true; refreshSel(); toast('Coupé ✂️'); }});
+  items.push({ic:'📋',txt:'Copier',k:'Ctrl+C',fn:()=>{ EX.clip={mode:'copy',ids:Array.from(EX.sel)}; EX.evt.copied=true; toast('Copié 📋'); }});
+  items.push({ic:'✏️',txt:'Renommer',k:'F2',disabled:sel.length!==1||node.locked,fn:()=>startRename(node, box)});
+  items.push('sep');
+  items.push({ic:'🗑️',txt:'Supprimer',k:'Suppr',danger:true,disabled:node.locked,fn:()=>doDelete(sel)});
+  items.push('sep');
+  items.push({ic:'ℹ️',txt:'Propriétés',fn:()=>openProps(node)});
+  showCtx(e.clientX, e.clientY, items);
+}
+function onBodyContext(e, w){
+  e.preventDefault(); e.stopPropagation(); closeStart(); commitRename(); cancelRenameTimer();
+  EX.sel=new Set(); refreshSel();
+  const inBin = w.cur===BIN || isAncestor(BIN, w.cur);
+  const items=[];
+  if(inBin){
+    items.push({ic:'🧹',txt:'Vider la corbeille',danger:true,disabled:!BIN.kids.length,fn:emptyBin});
+    showCtx(e.clientX, e.clientY, items); return;
+  }
+  items.push({ic:'📁',txt:'Nouveau dossier',k:'Ctrl+Maj+N',fn:()=>newFolder(w.cur)});
+  items.push({ic:'📋',txt:'Coller',k:'Ctrl+V',disabled:!EX.clip,fn:()=>doPaste(w.cur)});
+  items.push('sep');
+  items.push({label:'Trier par'});
+  items.push({ic:'🔤',txt:'Nom',fn:()=>{ w.sortBy='name'; EX.evt.sorted='name'; renderWinBody(w); checkMission(); }});
+  items.push({ic:'🏷️',txt:'Type',fn:()=>{ w.sortBy='type'; EX.evt.sorted='type'; renderWinBody(w); checkMission(); }});
+  items.push({ic:'📅',txt:'Date',fn:()=>{ w.sortBy='date'; EX.evt.sorted='date'; renderWinBody(w); checkMission(); }});
+  showCtx(e.clientX, e.clientY, items);
+}
+function onDesktopContext(e){
+  if(e.target.closest('.dt-icon')) return;
+  e.preventDefault(); e.stopPropagation(); closeStart(); commitRename(); cancelRenameTimer();
+  EX.sel=new Set(); refreshSel();
+  const items=[
+    {ic:'📁',txt:'Nouveau dossier',fn:()=>{ const nf=newFolder(EX.desktopRoot); }},
+    {ic:'📋',txt:'Coller',disabled:!EX.clip,fn:()=>doPaste(EX.desktopRoot)},
+    'sep',
+    {label:'Trier les icônes'},
+    {ic:'🔤',txt:'Nom',fn:()=>{ EX.desktopRoot.kids=sortKids(EX.desktopRoot.kids,'name'); renderDesktop(); }},
+  ];
+  showCtx(e.clientX, e.clientY, items);
+}
+function onDesktopMouseDown(e){ if(e.target.id==='desktop'){ commitRename(); cancelRenameTimer(); EX.sel=new Set(); EX.selBox='desktop'; refreshSel(); closeStart(); closeCtx(); } }
+function onBodyEmptyMouseDown(e, w){ commitRename(); cancelRenameTimer(); EX.sel=new Set(); EX.selBox=w.id; renderWinBody(w); closeStart(); closeCtx(); }
+
+/* ---------------------------------------------------------
+   7. MENU DÉMARRER
+   --------------------------------------------------------- */
+function toggleStart(){ const m=document.getElementById('startmenu'); if(m.classList.contains('open')) closeStart(); else openStart(); }
+function openStart(){
+  const m=document.getElementById('startmenu');
+  const apps=[
+    {ic:'📁',n:'Explorateur',fn:()=>{ closeStart(); openWindow(EX.desktopRoot); }},
+    {ic:'🗑️',n:'Corbeille',fn:()=>{ closeStart(); openWindow(BIN); }},
+    {ic:'🖼️',n:'Photos',fn:()=>{ closeStart(); openFolderApp('Images'); }},
+    {ic:'🎵',n:'Musique',fn:()=>{ closeStart(); openFolderApp('Musique'); }},
+    {ic:'🧮',n:'Calculatrice',fn:()=>{ closeStart(); openCalculator(); }},
+    {ic:'⚙️',n:'Paramètres',fn:()=>{ closeStart(); openSettings(); }}
+  ];
+  m.innerHTML='<div class="sm-head">Applications</div><div class="sm-grid">'
+    + apps.map((a,i)=>'<button class="sm-item" data-i="'+i+'"><span class="ic">'+a.ic+'</span>'+a.n+'</button>').join('')
+    + '</div><div class="sm-power"><button id="smPower">⏻ Arrêter</button></div>';
+  m.classList.add('open');
+  m.querySelectorAll('.sm-item').forEach((b,i)=>b.onclick=(e)=>{ e.stopPropagation(); apps[i].fn(); });
+  m.querySelector('#smPower').onclick=(e)=>{ e.stopPropagation(); closeStart(); toast('Pour de vrai, ça éteindrait l\'ordinateur 😉'); };
+  document.getElementById('tbStart').classList.add('on');
+  EX.evt.startOpened=true; checkMission();
+}
+function closeStart(){ const m=document.getElementById('startmenu'); if(m){ m.classList.remove('open'); } const s=document.getElementById('tbStart'); if(s) s.classList.remove('on'); }
+
+/* Applications du menu Démarrer */
+function openFolderApp(folderName){
+  const f=findFolderByName(EX.desktopRoot, folderName);
+  if(f) openWindow(f); else toast('📂 Aucun dossier « '+folderName+' » sur ce bureau.');
+}
+function openCalculator(){
+  const layout=[['7','8','9','÷'],['4','5','6','×'],['1','2','3','−'],['0','.','=','+'],['C']];
+  let grid='';
+  layout.forEach(row=>row.forEach(v=>{
+    let cls=''; if('÷×−+'.indexOf(v)>=0) cls='op'; else if(v==='=') cls='eq'; else if(v==='C') cls='clear span4';
+    grid+='<button data-v="'+v+'" class="'+cls+'">'+v+'</button>';
+  }));
+  modal.className='modal';
+  modal.innerHTML='<span class="m-emoji">🧮</span><h2>Calculatrice</h2>'
+    +'<div class="calc"><div class="calc-disp" id="calcDisp">0</div><div class="calc-grid" id="calcGrid">'+grid+'</div></div>'
+    +'<div class="m-actions"><button class="m-btn primary" id="calcClose">Fermer ✕</button></div>';
+  openOverlay();
+  let cur='0', acc=null, op=null, fresh=true;
+  const disp=document.getElementById('calcDisp');
+  function show(){ disp.textContent=(cur.length>12)?(+cur).toPrecision(8):cur; }
+  function digit(d){ if(fresh||cur==='0'){ cur=(d==='.')?'0.':d; fresh=false; } else { if(d==='.'&&cur.indexOf('.')>=0) return; cur+=d; } show(); }
+  function compute(){ if(op==null||acc==null) return; const b=parseFloat(cur); let r;
+    if(op==='+') r=acc+b; else if(op==='−') r=acc-b; else if(op==='×') r=acc*b; else r=(b===0?null:acc/b);
+    cur=(r==null)?'🤯 oups':String(Math.round(r*1e8)/1e8); acc=null; op=null; fresh=true; show(); }
+  function setop(o){ if(op!=null && !fresh) compute(); acc=parseFloat(cur)||0; op=o; fresh=true; }
+  document.getElementById('calcGrid').addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return; const v=b.dataset.v; beep('click');
+    if(/^[0-9.]$/.test(v)) digit(v);
+    else if(v==='C'){ cur='0'; acc=null; op=null; fresh=true; show(); }
+    else if(v==='=') compute();
+    else setop(v);
+  });
+  document.getElementById('calcClose').onclick=()=>closeOverlay();
+}
+function openSettings(){
+  const toggles=[
+    {ic:'🌈',t:'Mode arc-en-ciel',s:'Repeint tout l\'écran en couleurs (ou pas).'},
+    {ic:'🦄',t:'Activer les licornes',s:'Recommandé par 9 enfants sur 10.'},
+    {ic:'🚀',t:'Mode super-vitesse',s:'L\'ordinateur va si vite qu\'il a déjà fini.'},
+    {ic:'🦆',t:'Bruitages de canard',s:'Coin coin à chaque clic. Génial. Ou pas.'},
+    {ic:'🌙',t:'Mode sieste',s:'Met l\'ordinateur en pyjama.'}
+  ];
+  const dangers=[
+    {ic:'💥',t:'Formater l\'univers',s:'Oulah, ça a l\'air dangereux…',b:'Lancer'},
+    {ic:'🌐',t:'Supprimer Internet',s:'Mieux vaut ne pas toucher à ça…',b:'Supprimer'},
+    {ic:'🐉',t:'Réveiller le dragon',s:'Tu es sûr ? Vraiment, vraiment sûr ?',b:'Réveiller'},
+    {ic:'🔴',t:'Le gros bouton rouge',s:'Surtout, n\'appuie PAS dessus.',b:'Ne pas appuyer'}
+  ];
+  modal.className='modal';
+  modal.innerHTML='<span class="m-emoji">⚙️</span><h2>Paramètres</h2>'
+    +'<div class="settings">'
+    +'<div class="set-head">🎉 Réglages rigolos</div>'
+    + toggles.map((x,i)=>'<div class="set-row"><span class="se-ic">'+x.ic+'</span><span class="se-tx"><b>'+x.t+'</b><small>'+x.s+'</small></span><span class="set-sw" data-i="'+i+'"><span class="kn"></span></span></div>').join('')
+    +'<div class="set-head danger">⚠️ Zone dangereuse</div>'
+    + dangers.map(x=>'<div class="set-row set-danger"><span class="se-ic">'+x.ic+'</span><span class="se-tx"><b>'+x.t+'</b><small>'+x.s+'</small></span><button class="set-btn">'+x.b+'</button></div>').join('')
+    +'</div>'
+    +'<div class="m-actions"><button class="m-btn primary" id="setClose">Fermer ✕</button></div>';
+  openOverlay();
+  const onMsgs=['Et voilà, c\'est activé ! (enfin… presque)','Hmm, il ne se passe rien. C\'est tout à fait normal 😄','Réglage changé ! L\'ordinateur fait semblant d\'obéir.'];
+  modal.querySelectorAll('.set-sw').forEach(sw=>sw.onclick=()=>{ sw.classList.toggle('on'); beep('click');
+    toast(sw.classList.contains('on')?onMsgs[Math.floor(Math.random()*onMsgs.length)]:'Désactivé. Ouf. 😌'); });
+  const dMsgs=['Ouf ! On a évité la catastrophe de justesse. 😅','Rien ne s\'est passé… cette fois. 😬','Bip bop — bouton ignoré pour ta sécurité ! 🛡️','Hé ! On t\'avait dit de ne pas toucher ! 🙈'];
+  modal.querySelectorAll('.set-btn').forEach(b=>b.onclick=()=>{ beep('bad'); toast(dMsgs[Math.floor(Math.random()*dMsgs.length)]); });
+  document.getElementById('setClose').onclick=()=>closeOverlay();
+}
+
+/* ---------------------------------------------------------
+   8. RACCOURCIS CLAVIER
+   --------------------------------------------------------- */
+document.addEventListener('keydown', e=>{
+  if(overlay.classList.contains('open')) return;
+  if(e.target.tagName==='INPUT') return;
+  const sel=Array.from(EX.sel).map(nodeById).filter(Boolean);
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='c'){ if(sel.length){ EX.clip={mode:'copy',ids:Array.from(EX.sel)}; EX.evt.copied=true; toast('Copié 📋'); } }
+  else if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='x'){ if(sel.length){ EX.clip={mode:'cut',ids:Array.from(EX.sel)}; EX.evt.cut=true; refreshSel(); toast('Coupé ✂️'); } }
+  else if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='v'){ const w=EX.focusedWin; if(w&&EX.clip){ doPaste(w.cur); } }
+  else if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='a'){ const w=EX.focusedWin; if(w){ e.preventDefault(); EX.sel=new Set((w.cur.kids||[]).map(k=>k.id)); EX.selBox=w.id; refreshSel(); } }
+  else if(e.key==='F2'){ if(sel.length===1){ e.preventDefault(); startRename(sel[0], EX.selBox); } }
+  else if(e.key==='Delete'){ if(sel.length){ doDelete(sel); } }
+  else if(e.key==='Escape'){ closeStart(); closeCtx(); }
+});
+
+/* ---------------------------------------------------------
+   9. SYSTÈME DE MISSIONS (objectifs déclaratifs)
+   --------------------------------------------------------- */
+function buildCtx(){
+  const winsOpen=EX.windows.filter(w=>!w.min);
+  const fwin=(EX.focusedWin&&!EX.focusedWin.min)?EX.focusedWin:(winsOpen[winsOpen.length-1]||null);
+  return {
+    win:fwin, windows:EX.windows, winsOpen,
+    bin:BIN.kids, evt:EX.evt, opened:EX.opened, root:EX.desktopRoot,
+    find:name=>findAnyByName(EX.desktopRoot, name),
+    folder:name=>findFolderByName(EX.desktopRoot, name),
+    inFolder:(folderName,itemName)=>{ const f=findFolderByName(EX.desktopRoot,folderName); return f && (f.kids||[]).some(k=>k.name===itemName||displayName(k)===itemName); },
+    countNamed:name=>findAnyByName(EX.desktopRoot,name).length
+  };
+}
+const G={
+  windowOpenAt:(name)=>({hint:'Double-clique sur le dossier pour l\'ouvrir.', test:c=>c.winsOpen.some(w=>w.cur.name===name)}),
+  windowsCount:(n)=>({test:c=>c.winsOpen.length===n}),
+  noWindows:()=>({test:c=>c.evt.everHadWindow && c.windows.length===0}),
+  minimized:()=>({test:c=>c.windows.some(w=>w.min)}),
+  restoredFromTaskbar:()=>({test:c=>c.evt.taskbarRestore}),
+  startOpened:()=>({test:c=>c.evt.startOpened}),
+  atFolder:(name)=>({hint:'Entre dans le bon dossier en double-cliquant dessus.', test:c=>c.win && c.win.cur.name===name}),
+  usedBack:()=>({test:c=>c.evt.usedBack}),
+  usedFwd:()=>({test:c=>c.evt.usedFwd}),
+  usedUp:()=>({test:c=>c.evt.usedUp}),
+  usedCrumb:()=>({test:c=>c.evt.usedCrumb}),
+  openedFile:(name)=>({hint:'Double-clique sur le fichier pour l\'ouvrir.', test:c=>c.opened.has(name)}),
+  createdAny:()=>({hint:'Clic droit dans la fenêtre (zone vide) → Nouveau dossier.', test:c=>c.evt.createdFolder}),
+  created:(name,parent)=>({hint:'Clic droit dans la fenêtre → Nouveau dossier, puis tape le nom.', test:c=> parent? c.inFolder(parent,name) : findAnyByName(c.root,name).some(n=>n.type==='folder')}),
+  renamedTo:(name,parent)=>({hint:'Clic droit → Renommer (ou touche F2), efface et tape le nouveau nom.', test:c=> parent? c.inFolder(parent,name) : !!c.find(name).length}),
+  movedInto:(item,dest)=>({hint:'Glisse le fichier sur le dossier, ou utilise Couper puis Coller.', test:c=>c.inFolder(dest,item)}),
+  copiedInto:(item,dest)=>({hint:'Copier (Ctrl+C) puis Coller (Ctrl+V) : la copie reste à sa place ET arrive dans le dossier.', test:c=>c.inFolder(dest,item) && c.countNamed(item)>=2}),
+  deleted:(name)=>({hint:'Sélectionne le fichier puis appuie sur Suppr (ou clic droit → Supprimer).', test:c=>c.bin.some(n=>n.name===name||displayName(n)===name)}),
+  restored:(name)=>({hint:'Ouvre la Corbeille, clic droit sur le fichier → Restaurer.', test:c=> !!c.find(name).length && !c.bin.some(n=>n.name===name)}),
+  binEmpty:()=>({hint:'Ouvre la Corbeille puis clic droit dans le vide → Vider la corbeille.', test:c=>c.evt.binEmptied}),
+  vanished:(name)=>({hint:'Supprime le fichier puis vide la corbeille pour le faire disparaître pour de bon.', test:c=> !c.find(name).length && !c.bin.some(n=>n.name===name||displayName(n)===name) && c.evt.everDeleted}),
+  sortedBy:(by)=>({hint:'Clic droit dans le vide → Trier par…', test:c=>c.win && c.win.sortBy===by}),
+  searchedOpened:(name)=>({hint:'Tape le nom dans la barre 🔍 en haut à droite, appuie sur Entrée, puis double-clique le résultat.', test:c=>c.evt.searchOpened && c.evt.searchOpened.has(name)}),
+  all:(arr)=>({multi:true, parts:arr, test:c=>arr.every(g=>g.test(c))}),
+};
+
+function checkMission(){
+  if(!currentStep || currentStep.mode==='boss') return;
+  if(reviewing()){ /* en révision : on valide aussi pour permettre de rejouer */ }
+  if(!currentStep.goal) return;
+  if(_missionDone) return;
+  if(currentStep.goal.test(buildCtx())){ _missionDone=true; setTimeout(onMissionWin, 260); }
+}
+let _missionDone=false;
+
+/* ---------------------------------------------------------
+   10. LES NIVEAUX
+   --------------------------------------------------------- */
+/* graines réutilisables */
+function homeTree(){
+  return [
+    folder('Documents',[ folder('École',[file('exposé','doc'),file('poésie','txt')]), folder('Devoirs',[]), file('liste-de-courses','txt') ]),
+    folder('Images',[ folder('Vacances',[ folder('Plage',[file('chateau-de-sable','jpg',{icon:'🏖️'}),file('coquillage','jpg',{icon:'🐚'})]), folder('Été',[file('glace','jpg',{icon:'🍦'})]) ]), file('chat','jpg',{icon:'🐱'}), file('anniversaire','jpg',{icon:'🎂'}) ]),
+    folder('Musique',[ file('chanson-douce','mp3',{icon:'🎵'}), file('rock','mp3',{icon:'🎸'}) ]),
+    file('bienvenue','txt',{icon:'👋'})
+  ];
+}
+
+const LEVELS=[
+/* ===== NIVEAU 1 — Le Bureau et les fenêtres ===== */
+{ n:1, title:'Le Bureau et les fenêtres', subtitle:'le bureau',
+  intro:{ emoji:'🖥️',
+    lead:'Voici le <b>Bureau</b> de l\'ordinateur, avec ses <b>icônes</b> et, en bas, la <b>barre des tâches</b>. On va apprendre à ouvrir et fermer des <b>fenêtres</b>.',
+    teach:'Pour <b>ouvrir</b> un dossier : <b>double-clique</b> dessus (deux clics rapides). Une <b>fenêtre</b> s\'ouvre. Pour la <b>fermer</b>, clique sur la croix <b>✕</b> en haut à droite. Le bouton <b>▁</b> la <b>réduit</b> dans la barre des tâches.',
+    tools:[{g:'🖱️',n:'Double-clic pour ouvrir'},{g:'✕',n:'Fermer une fenêtre'},{g:'▁',n:'Réduire dans la barre des tâches'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'📂',title:'Ouvre un dossier',
+      desc:'<b>Double-clique</b> sur le dossier <b>Documents</b> pour ouvrir sa fenêtre.',
+      seed:{desktop:homeTree()}, goal:G.windowOpenAt('Documents')},
+    {kind:'mission',label:'Mission 2',emoji:'✕',title:'Ferme la fenêtre',
+      desc:'Une fenêtre est ouverte. <b>Ferme-la</b> en cliquant sur la croix <b>✕</b>.',
+      seed:{desktop:homeTree(), open:'Images'}, goal:G.noWindows()},
+    {kind:'mission',label:'Mission 3',emoji:'🖼️',title:'Ouvre les Images',
+      desc:'Double-clique sur le dossier <b>Images</b> pour l\'ouvrir.',
+      seed:{desktop:homeTree()}, goal:G.windowOpenAt('Images')},
+    {kind:'mission',label:'Mission 4',emoji:'🪟',title:'Deux fenêtres à la fois',
+      desc:'Ouvre <b>Documents</b> ET <b>Musique</b> : tu dois avoir <b>2 fenêtres</b> ouvertes.',
+      seed:{desktop:homeTree()}, goal:G.windowsCount(2)},
+    {kind:'mission',label:'Mission 5',emoji:'▁',title:'Réduis la fenêtre',
+      desc:'Clique sur le bouton <b>▁</b> pour <b>réduire</b> la fenêtre dans la barre des tâches.',
+      seed:{desktop:homeTree(), open:'Documents'}, goal:G.minimized()},
+    {kind:'mission',label:'Mission 6',emoji:'⬆️',title:'Ré-ouvre depuis la barre',
+      desc:'La fenêtre est réduite en bas. <b>Clique sur son bouton</b> dans la barre des tâches pour la ré-afficher.',
+      seed:{desktop:homeTree(), open:'Images', minimize:true}, goal:G.restoredFromTaskbar()},
+    {kind:'mission',label:'Mission 7',emoji:'⊞',title:'Le menu Démarrer',
+      desc:'Clique sur le bouton <b>⊞ Démarrer</b> tout en bas à gauche pour ouvrir le menu.',
+      seed:{desktop:homeTree()}, goal:G.startOpened()},
+    {kind:'mission',label:'Mission 8',emoji:'🎵',title:'Encore une fenêtre',
+      desc:'Ouvre la fenêtre du dossier <b>Musique</b>.',
+      seed:{desktop:homeTree()}, goal:G.windowOpenAt('Musique')},
+    {kind:'jalon',label:'Défi',emoji:'🏆',title:'Maître des fenêtres',
+      desc:'Ouvre les <b>3 dossiers</b> du bureau (Documents, Images, Musique) en même temps : <b>3 fenêtres</b> ouvertes !',
+      seed:{desktop:homeTree()}, goal:G.windowsCount(3)}
+  ]},
+
+/* ===== NIVEAU 2 — Naviguer dans les dossiers ===== */
+{ n:2, title:'Naviguer dans les dossiers', subtitle:'naviguer',
+  intro:{ emoji:'🧭',
+    lead:'Les dossiers contiennent d\'autres dossiers ! On va apprendre à <b>entrer</b> dedans et à <b>revenir en arrière</b> sans se perdre.',
+    teach:'<b>Double-clique</b> un dossier pour <b>entrer</b> dedans. En haut : <b>◀</b> revient en arrière, <b>▶</b> va en avant, <b>⬆</b> remonte au dossier parent. Le <b>fil d\'Ariane</b> (🖥️ Bureau ▸ … ) montre où tu es — clique dessus pour y retourner.',
+    tools:[{g:'◀ ▶',n:'Précédent / Suivant'},{g:'⬆',n:'Dossier parent'},{g:'🍞',n:'Le fil d\'Ariane'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'📂',title:'Entre dans un dossier',
+      desc:'Dans la fenêtre <b>Documents</b>, double-clique sur le dossier <b>École</b> pour entrer dedans.',
+      seed:{desktop:homeTree(), open:'Documents'}, goal:G.atFolder('École')},
+    {kind:'mission',label:'Mission 2',emoji:'◀',title:'Reviens en arrière',
+      desc:'Tu es dans <b>École</b>. Clique sur <b>◀</b> pour <b>revenir</b> au dossier Documents.',
+      seed:{desktop:homeTree(), open:'Documents', go:['École']}, goal:G.usedBack()},
+    {kind:'mission',label:'Mission 3',emoji:'⬆️',title:'Remonte au dossier parent',
+      desc:'Tu es dans <b>Vacances</b>. Clique sur <b>⬆</b> pour remonter au dossier <b>Images</b>.',
+      seed:{desktop:homeTree(), open:'Images', go:['Vacances']}, goal:G.atFolder('Images')},
+    {kind:'mission',label:'Mission 4',emoji:'🏖️',title:'Descends en profondeur',
+      desc:'Va jusqu\'à la <b>Plage</b> : ouvre <b>Images ▸ Vacances ▸ Plage</b>.',
+      seed:{desktop:homeTree(), open:'Images'}, goal:G.atFolder('Plage')},
+    {kind:'mission',label:'Mission 5',emoji:'🍞',title:'Le fil d\'Ariane',
+      desc:'Tu es au fond, dans <b>Plage</b>. Clique sur <b>Vacances</b> dans le fil d\'Ariane en haut pour y retourner d\'un coup.',
+      seed:{desktop:homeTree(), open:'Images', go:['Vacances','Plage']}, goal:G.atFolder('Vacances')},
+    {kind:'mission',label:'Mission 6',emoji:'▶',title:'Va en avant',
+      desc:'Tu viens de revenir en arrière. Clique sur <b>▶</b> (suivant) pour retourner là où tu étais.',
+      seed:{desktop:homeTree(), open:'Documents', go:['École'], back:1}, goal:G.usedFwd()},
+    {kind:'mission',label:'Mission 7',emoji:'🍦',title:'Trouve l\'été',
+      desc:'Navigue jusqu\'à <b>Images ▸ Vacances ▸ Été</b>.',
+      seed:{desktop:homeTree(), open:'Images'}, goal:G.atFolder('Été')},
+    {kind:'mission',label:'Mission 8',emoji:'🖥️',title:'Retour au Bureau',
+      desc:'Tu es dans <b>École</b>. Clique sur <b>🖥️ Bureau</b> dans le fil d\'Ariane pour revenir tout en haut.',
+      seed:{desktop:homeTree(), open:'Documents', go:['École']}, goal:G.atFolder('Bureau')},
+    {kind:'jalon',label:'Défi',emoji:'🏆',title:'L\'explorateur expert',
+      desc:'Pars du Bureau et retrouve la photo de <b>glace 🍦</b> cachée dans <b>Images ▸ Vacances ▸ Été</b>, puis <b>ouvre-la</b> (double-clic).',
+      seed:{desktop:homeTree(), open:'Images'}, goal:G.openedFile('glace')}
+  ]},
+
+/* ===== NIVEAU 3 — Créer et nommer ===== */
+{ n:3, title:'Créer et nommer', subtitle:'créer & renommer',
+  intro:{ emoji:'✏️',
+    lead:'On apprend à <b>créer</b> de nouveaux dossiers et à leur donner un <b>nom</b> bien clair. Ranger commence par là !',
+    teach:'<b>Clic droit</b> dans une fenêtre vide → <b>Nouveau dossier</b>. Le dossier apparaît, prêt à être <b>nommé</b> : tape le nom puis <b>Entrée</b>. Pour renommer plus tard : <b>clic droit → Renommer</b> (ou la touche '+kbd('F2')+').',
+    tools:[{g:'🖱️➕',n:'Clic droit → Nouveau dossier'},{g:'⌨️',n:'Taper un nom + Entrée'},{g:'F2',n:'Renommer'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'📁',title:'Crée un dossier',
+      desc:'<b>Clic droit</b> dans la fenêtre Documents (zone vide) puis <b>Nouveau dossier</b>.',
+      seed:{desktop:homeTree(), open:'Documents'}, goal:G.createdAny()},
+    {kind:'mission',label:'Mission 2',emoji:'🏷️',title:'Nomme-le « Vacances »',
+      desc:'Crée un nouveau dossier et nomme-le <b>Vacances</b> (tape le nom puis Entrée).',
+      seed:{desktop:homeTree(), open:'Documents'}, goal:G.created('Vacances')},
+    {kind:'mission',label:'Mission 3',emoji:'📚',title:'Un dossier « Devoirs »',
+      desc:'Dans <b>Documents</b>, crée un dossier nommé <b>Maths</b>.',
+      seed:{desktop:homeTree(), open:'Documents'}, goal:G.created('Maths','Documents')},
+    {kind:'mission',label:'Mission 4',emoji:'✏️',title:'Renomme un dossier',
+      desc:'Le dossier <b>Nouveau dossier</b> a un nom trop vague. <b>Renomme-le</b> en <b>Photos</b> (clic droit → Renommer).',
+      seed:{desktop:[ folder('Bureau-data') ], custom:'rename1'}, goal:G.renamedTo('Photos')},
+    {kind:'mission',label:'Mission 5',emoji:'🔤',title:'Corrige un nom',
+      desc:'Le fichier <b>sjkqfh</b> est mal nommé. Renomme-le en <b>liste</b>.',
+      seed:{custom:'rename2'}, goal:G.renamedTo('liste')},
+    {kind:'mission',label:'Mission 6',emoji:'📅',title:'Deux dossiers d\'années',
+      desc:'Dans <b>Documents</b>, crée deux dossiers : <b>2024</b> et <b>2025</b>.',
+      seed:{desktop:homeTree(), open:'Documents'}, goal:G.all([G.created('2024','Documents'),G.created('2025','Documents')])},
+    {kind:'mission',label:'Mission 7',emoji:'🗂️',title:'Range par matière',
+      desc:'Dans <b>École</b>, crée les dossiers <b>Français</b> et <b>Sciences</b>.',
+      seed:{desktop:homeTree(), open:'Documents', go:['École']}, goal:G.all([G.created('Français'),G.created('Sciences')])},
+    {kind:'mission',label:'Mission 8',emoji:'✨',title:'Crée et renomme',
+      desc:'Crée un nouveau dossier puis nomme-le <b>Bricolage</b>.',
+      seed:{desktop:homeTree(), open:'Documents'}, goal:G.created('Bricolage')},
+    {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le calendrier',
+      desc:'Dans le dossier <b>Mois</b>, crée <b>3 dossiers</b> : <b>Janvier</b>, <b>Février</b> et <b>Mars</b>.',
+      seed:{custom:'mois'}, goal:G.all([G.created('Janvier','Mois'),G.created('Février','Mois'),G.created('Mars','Mois')])}
+  ]},
+
+/* ===== NIVEAU 4 — Ranger : déplacer et copier ===== */
+{ n:4, title:'Ranger : déplacer et copier', subtitle:'déplacer & copier',
+  intro:{ emoji:'📦',
+    lead:'Le grand rangement ! On apprend à <b>déplacer</b> des fichiers dans le bon dossier, et à les <b>copier</b>.',
+    teach:'<b>Glisse-dépose</b> : clique sur un fichier, garde le doigt appuyé et fais-le glisser <b>sur un dossier</b>, puis lâche. Autre façon : <b>Couper</b> ('+kbd('Ctrl+X')+') puis entrer dans le dossier et <b>Coller</b> ('+kbd('Ctrl+V')+'). Pour <b>copier</b> (garder l\'original) : '+kbd('Ctrl+C')+' puis '+kbd('Ctrl+V')+'.',
+    tools:[{g:'🖐️',n:'Glisser-déposer'},{g:'✂️',n:'Couper / Coller (déplacer)'},{g:'📋',n:'Copier / Coller'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'🖐️',title:'Glisse dans un dossier',
+      desc:'<b>Glisse</b> le fichier <b>photo1</b> sur le dossier <b>Images</b> pour le ranger dedans.',
+      seed:{custom:'move1'}, goal:G.movedInto('photo1.jpg','Images')},
+    {kind:'mission',label:'Mission 2',emoji:'📄',title:'Range le rapport',
+      desc:'Déplace <b>rapport</b> dans le dossier <b>Documents</b> (glisse-le dessus).',
+      seed:{custom:'move2'}, goal:G.movedInto('rapport.txt','Documents')},
+    {kind:'mission',label:'Mission 3',emoji:'🎵',title:'Couper-coller la chanson',
+      desc:'Utilise <b>Couper</b> ('+kbd('Ctrl+X')+') sur <b>chanson</b>, entre dans <b>Musique</b>, puis <b>Colle</b> ('+kbd('Ctrl+V')+').',
+      seed:{custom:'move3'}, goal:G.movedInto('chanson.mp3','Musique')},
+    {kind:'mission',label:'Mission 4',emoji:'📋',title:'Copier (garder l\'original)',
+      desc:'<b>Copie</b> le fichier <b>modèle</b> dans le dossier <b>Sauvegarde</b> : l\'original doit <b>rester</b> à sa place !',
+      seed:{custom:'copy1'}, goal:G.copiedInto('modèle.txt','Sauvegarde')},
+    {kind:'mission',label:'Mission 5',emoji:'🖼️',title:'Range deux images',
+      desc:'Range les fichiers <b>plage</b> et <b>montagne</b> dans le dossier <b>Images</b>.',
+      seed:{custom:'move4'}, goal:G.all([G.movedInto('plage.jpg','Images'),G.movedInto('montagne.jpg','Images')])},
+    {kind:'mission',label:'Mission 6',emoji:'📁',title:'Déplace un dossier entier',
+      desc:'Glisse le dossier <b>Photos-2024</b> à l\'intérieur du dossier <b>Images</b>.',
+      seed:{custom:'move5'}, goal:G.movedInto('Photos-2024','Images')},
+    {kind:'mission',label:'Mission 7',emoji:'🎬',title:'Chaque chose à sa place',
+      desc:'Range <b>film</b> dans <b>Vidéos</b> et <b>musique</b> dans <b>Musique</b>.',
+      seed:{custom:'move6'}, goal:G.all([G.movedInto('film.mp4','Vidéos'),G.movedInto('musique.mp3','Musique')])},
+    {kind:'mission',label:'Mission 8',emoji:'🔁',title:'Copie de sécurité',
+      desc:'Copie <b>devoirs</b> dans <b>Sauvegarde</b> (garde l\'original dans Documents).',
+      seed:{custom:'copy2'}, goal:G.copiedInto('devoirs.doc','Sauvegarde')},
+    {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand tri',
+      desc:'Tout est en désordre sur le bureau ! Range chaque fichier dans le bon dossier : <b>photo</b> → Images, <b>chanson</b> → Musique, <b>devoir</b> → Documents, <b>film</b> → Vidéos.',
+      seed:{custom:'bigsort'}, goal:G.all([G.movedInto('photo.jpg','Images'),G.movedInto('chanson.mp3','Musique'),G.movedInto('devoir.doc','Documents'),G.movedInto('film.mp4','Vidéos')])}
+  ]},
+
+/* ===== NIVEAU 5 — Supprimer et la corbeille ===== */
+{ n:5, title:'Supprimer et la corbeille', subtitle:'corbeille',
+  intro:{ emoji:'🗑️',
+    lead:'On apprend à <b>supprimer</b> ce qui ne sert plus… et surtout à <b>récupérer</b> un fichier jeté par erreur grâce à la <b>Corbeille</b> !',
+    teach:'Pour supprimer : sélectionne puis appuie sur '+kbd('Suppr')+' (ou clic droit → Supprimer, ou glisse vers la 🗑️). Le fichier va dans la <b>Corbeille</b>. Pour le récupérer : ouvre la Corbeille, <b>clic droit → Restaurer</b>. Pour faire de la place pour de bon : clic droit → <b>Vider la corbeille</b> (attention, c\'est définitif !).',
+    tools:[{g:'Suppr',n:'Supprimer (→ corbeille)'},{g:'♻️',n:'Restaurer'},{g:'🧹',n:'Vider la corbeille'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'🗑️',title:'Supprime un brouillon',
+      desc:'Supprime le fichier <b>brouillon</b> : sélectionne-le puis appuie sur '+kbd('Suppr')+'.',
+      seed:{custom:'del1'}, goal:G.deleted('brouillon.txt')},
+    {kind:'mission',label:'Mission 2',emoji:'🗑️',title:'Jette le doublon',
+      desc:'Le fichier <b>copie-inutile</b> ne sert à rien. Supprime-le (clic droit → Supprimer).',
+      seed:{custom:'del2'}, goal:G.deleted('copie-inutile.txt')},
+    {kind:'mission',label:'Mission 3',emoji:'♻️',title:'Oups, restaure !',
+      desc:'Le fichier <b>photo-souvenir</b> est dans la corbeille par erreur. Ouvre la <b>Corbeille</b> et <b>restaure-le</b>.',
+      seed:{custom:'restore1'}, goal:G.restored('photo-souvenir.jpg')},
+    {kind:'mission',label:'Mission 4',emoji:'🖐️',title:'Glisse à la corbeille',
+      desc:'<b>Glisse</b> le fichier <b>pub</b> directement sur la <b>Corbeille 🗑️</b> du bureau.',
+      seed:{custom:'del3'}, goal:G.deleted('pub.txt')},
+    {kind:'mission',label:'Mission 5',emoji:'🧹',title:'Vide la corbeille',
+      desc:'La corbeille est pleine. Ouvre-la, puis clic droit dans le vide → <b>Vider la corbeille</b>.',
+      seed:{custom:'empty1'}, goal:G.binEmpty()},
+    {kind:'mission',label:'Mission 6',emoji:'📁',title:'Supprime un dossier',
+      desc:'Le dossier <b>vieux-trucs</b> ne sert plus. Supprime-le entièrement.',
+      seed:{custom:'del4'}, goal:G.deleted('vieux-trucs')},
+    {kind:'mission',label:'Mission 7',emoji:'🗑️🗑️',title:'Plusieurs d\'un coup',
+      desc:'Supprime les deux fichiers <b>spam1</b> et <b>spam2</b> (sélectionne-les avec '+kbd('Ctrl')+'+clic, puis '+kbd('Suppr')+').',
+      seed:{custom:'del5'}, goal:G.all([G.deleted('spam1.txt'),G.deleted('spam2.txt')])},
+    {kind:'mission',label:'Mission 8',emoji:'♻️',title:'Récupère le bon fichier',
+      desc:'Dans la corbeille, restaure <b>contrat-important</b> (mais laisse le reste).',
+      seed:{custom:'restore2'}, goal:G.restored('contrat-important.pdf')},
+    {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand ménage',
+      desc:'Supprime les <b>3 fichiers poubelle</b> (vieux1, vieux2, vieux3), garde les autres, puis <b>vide la corbeille</b> pour de bon.',
+      seed:{custom:'cleanup'}, goal:G.all([G.vanished('vieux1.txt'),G.vanished('vieux2.txt'),G.vanished('vieux3.txt')])}
+  ]},
+
+/* ===== NIVEAU 6 — Rechercher et trier ===== */
+{ n:6, title:'Rechercher et trier', subtitle:'rechercher & trier',
+  intro:{ emoji:'🔍',
+    lead:'Quand il y a beaucoup de fichiers, deux super-pouvoirs : <b>trier</b> pour mettre de l\'ordre, et <b>rechercher</b> pour retrouver un fichier en une seconde.',
+    teach:'<b>Trier</b> : clic droit dans le vide → <b>Trier par</b> Nom, Type ou Date. <b>Rechercher</b> : écris le nom dans la barre <b>🔍</b> en haut à droite, appuie sur '+kbd('Entrée')+', puis double-clique le bon résultat.',
+    tools:[{g:'🔤',n:'Trier par nom / type / date'},{g:'🔍',n:'Rechercher un fichier'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'🔤',title:'Trie par nom',
+      desc:'Le dossier est en désordre. Clic droit → <b>Trier par → Nom</b>.',
+      seed:{custom:'sort1'}, goal:G.sortedBy('name')},
+    {kind:'mission',label:'Mission 2',emoji:'🏷️',title:'Trie par type',
+      desc:'Regroupe les fichiers du même genre : clic droit → <b>Trier par → Type</b>.',
+      seed:{custom:'sort1'}, goal:G.sortedBy('type')},
+    {kind:'mission',label:'Mission 3',emoji:'🔍',title:'Recherche un trésor',
+      desc:'Retrouve le fichier <b>tresor</b> caché quelque part : tape son nom dans la barre 🔍, Entrée, puis double-clique le résultat.',
+      seed:{custom:'search1'}, goal:G.searchedOpened('tresor')},
+    {kind:'mission',label:'Mission 4',emoji:'🧾',title:'Trouve la facture',
+      desc:'Recherche le fichier <b>facture</b> et ouvre-le depuis les résultats.',
+      seed:{custom:'search2'}, goal:G.searchedOpened('facture')},
+    {kind:'mission',label:'Mission 5',emoji:'📅',title:'Trie par date',
+      desc:'Mets les fichiers les plus récents en premier : clic droit → <b>Trier par → Date</b>.',
+      seed:{custom:'sort1'}, goal:G.sortedBy('date')},
+    {kind:'mission',label:'Mission 6',emoji:'🔍',title:'Recherche une photo',
+      desc:'Retrouve la photo <b>licorne</b> grâce à la recherche, puis ouvre-la.',
+      seed:{custom:'search3'}, goal:G.searchedOpened('licorne')},
+    {kind:'mission',label:'Mission 7',emoji:'🔤',title:'Encore un tri par nom',
+      desc:'Remets de l\'ordre dans ce dossier : <b>Trier par → Nom</b>.',
+      seed:{custom:'sort2'}, goal:G.sortedBy('name')},
+    {kind:'mission',label:'Mission 8',emoji:'🔍',title:'Le bon devoir',
+      desc:'Recherche le fichier <b>exposé-volcan</b> et ouvre-le.',
+      seed:{custom:'search4'}, goal:G.searchedOpened('exposé-volcan')},
+    {kind:'jalon',label:'Défi',emoji:'🏆',title:'Détective des fichiers',
+      desc:'Recherche le fichier <b>secret</b> caché très profond, puis <b>déplace-le</b> dans le dossier <b>Coffre</b> (sur le bureau).',
+      seed:{custom:'detective'}, goal:G.movedInto('secret.txt','Coffre')}
+  ]},
+
+/* ===== NIVEAU 7 — BOSS : le virus ===== */
+{ n:7, title:'Le Virus 🦠', subtitle:'BOSS · le virus',
+  intro:{ emoji:'🦠',
+    lead:'<b>ALERTE !</b> Un <b>virus 🦠</b> s\'est introduit dans l\'ordinateur. Il se cache dans les dossiers et <b>contamine les fichiers</b> (ils deviennent rouges et clignotent). Tu es l\'<b>antivirus</b> !',
+    teach:'<b>Supprime</b> les fichiers infectés (Suppr, glisse à la 🗑️…) pour stopper la contamination. Le <b>cœur du virus 🦠</b> se cache et continue d\'infecter : utilise le bouton <b>🛰️ Scanner</b> pour repérer dans quel dossier il est, fonce le supprimer ! Puis nettoie les derniers fichiers infectés. <b>Attention :</b> si la contamination dépasse <b>la zone rouge</b>, c\'est le <b>crash système</b> ! 💥',
+    tools:[{g:'🛰️',n:'Scanner : localise le virus'},{g:'🗑️',n:'Supprimer l\'infection'},{g:'🦠',n:'Détruire le cœur du virus'}] },
+  rounds:[
+    {kind:'jalon',mode:'boss',label:'BOSS',emoji:'🦠',title:'Chasse au virus',
+      desc:'Traque le virus dans tout l\'ordinateur et élimine la contamination avant le crash !'}
+  ]}
+];
+
+/* ---------------------------------------------------------
+   11. GRAINES SUR-MESURE (scénarios des missions)
+   --------------------------------------------------------- */
+function makeSeed(custom){
+  switch(custom){
+    case 'rename1': return { desktop:[ folder('Documents',[ folder('Nouveau dossier',[]) ]) ], open:'Documents' };
+    case 'rename2': return { desktop:[ folder('Documents',[ file('sjkqfh','txt') ]) ], open:'Documents' };
+    case 'mois':    return { desktop:[ folder('Documents',[ folder('Mois',[]) ]) ], open:'Documents', go:['Mois'] };
+    case 'move1':   return { desktop:[ folder('Images',[]), file('photo1','jpg',{icon:'🖼️'}), file('photo2','jpg',{icon:'🖼️'}) ], open:'Images' };
+    case 'move2':   return { desktop:[ folder('Documents',[]), file('rapport','txt') ], open:'Documents' };
+    case 'move3':   return { desktop:[ folder('Musique',[]), file('chanson','mp3',{icon:'🎵'}) ], open:'Musique' };
+    case 'copy1':   return { desktop:[ folder('Sauvegarde',[]), file('modèle','txt') ], open:'Sauvegarde' };
+    case 'move4':   return { desktop:[ folder('Images',[]), file('plage','jpg',{icon:'🏖️'}), file('montagne','jpg',{icon:'⛰️'}) ], open:'Images' };
+    case 'move5':   return { desktop:[ folder('Images',[]), folder('Photos-2024',[file('janvier','jpg',{icon:'🖼️'})]) ], open:'Images' };
+    case 'move6':   return { desktop:[ folder('Vidéos',[]), folder('Musique',[]), file('film','mp4',{icon:'🎬'}), file('musique','mp3',{icon:'🎵'}) ], open:'Vidéos' };
+    case 'copy2':   return { desktop:[ folder('Documents',[ file('devoirs','doc') ]), folder('Sauvegarde',[]) ], open:'Documents' };
+    case 'bigsort': return { desktop:[ folder('Images',[]), folder('Musique',[]), folder('Documents',[]), folder('Vidéos',[]),
+                              file('photo','jpg',{icon:'📷'}), file('chanson','mp3',{icon:'🎵'}), file('devoir','doc'), file('film','mp4',{icon:'🎬'}) ] };
+    case 'del1':    return { desktop:[ folder('Documents',[ file('brouillon','txt'), file('vrai-travail','doc') ]) ], open:'Documents' };
+    case 'del2':    return { desktop:[ folder('Documents',[ file('copie-inutile','txt'), file('important','doc') ]) ], open:'Documents' };
+    case 'restore1':return { desktop:[ folder('Images',[]) ], bin:[ file('photo-souvenir','jpg',{icon:'📷'}) ] };
+    case 'del3':    return { desktop:[ file('pub','txt',{icon:'📭'}), file('à-garder','doc') ] };
+    case 'empty1':  return { desktop:[ folder('Documents',[]) ], bin:[ file('truc1','txt'), file('truc2','txt'), file('truc3','txt') ] };
+    case 'del4':    return { desktop:[ folder('vieux-trucs',[file('rien','txt')]), folder('à-garder',[]) ] };
+    case 'del5':    return { desktop:[ folder('Documents',[ file('spam1','txt',{icon:'📧'}), file('spam2','txt',{icon:'📧'}), file('lettre','doc') ]) ], open:'Documents' };
+    case 'restore2':return { desktop:[ folder('Documents',[]) ], bin:[ file('contrat-important','pdf'), file('vieux-ticket','txt'), file('note','txt') ] };
+    case 'cleanup': return { desktop:[ folder('Documents',[ file('vieux1','txt'), file('vieux2','txt'), file('vieux3','txt'), file('photo-famille','jpg',{icon:'📷'}), file('important','doc') ]) ], open:'Documents' };
+    case 'sort1':   return { desktop:[ folder('Dossier',[ file('zebre','txt',{date:3}), file('photo','jpg',{icon:'🖼️',date:5}), file('avion','mp3',{icon:'🎵',date:2}), file('banane','txt',{date:9}), file('chat','jpg',{icon:'🐱',date:1}), file('musique','mp3',{icon:'🎵',date:7}) ]) ], open:'Dossier' };
+    case 'sort2':   return { desktop:[ folder('Mélange',[ file('orange','txt'), file('kiwi','txt'), file('ananas','txt'), file('banane','txt'), file('fraise','txt') ]) ], open:'Mélange' };
+    case 'search1': return { desktop:[ folder('Documents',[ folder('Vieux',[ folder('Archives',[ file('tresor','txt',{icon:'💎'}) ]) ]), file('liste','txt') ]) ], open:'Documents' };
+    case 'search2': return { desktop:[ folder('Administratif',[ folder('2024',[ file('facture','pdf') ]) ]), folder('Images',[]) ], open:'Administratif' };
+    case 'search3': return { desktop:[ folder('Images',[ folder('Dessins',[ file('licorne','jpg',{icon:'🦄'}) ]) ]) ], open:'Images' };
+    case 'search4': return { desktop:[ folder('École',[ folder('Sciences',[ file('exposé-volcan','doc',{icon:'🌋'}) ]) ]) ], open:'École' };
+    case 'detective':return { desktop:[ folder('Coffre',[]), folder('A',[ folder('B',[ folder('C',[ file('secret','txt',{icon:'🔐'}) ]) ]) ]) ], open:'Coffre' };
+  }
+  return { desktop:homeTree() };
+}
+
+/* ---------------------------------------------------------
+   12. CHARGEMENT D'UNE MISSION (graine → écran)
+   --------------------------------------------------------- */
+function seedWorld(seed){
+  _uid=1;
+  EX.desktopRoot=buildNode(folder('Bureau', (seed.desktop||[]).slice()), null);
+  BUREAU=EX.desktopRoot;
+  BIN=buildNode(folder('Corbeille', (seed.bin||[]).map(b=>Object.assign({},b))), null);
+  EX.binNode=BIN; BIN.isBin=true; BIN.parent=null; BIN.locked=true;
+  EX.windows.forEach(w=>{ if(w.el) w.el.remove(); });
+  EX.windows=[]; EX.focusedWin=null; EX.winSeq=0;
+  EX.sel=new Set(); EX.selBox=null; EX.clip=null; EX.opened=new Set();
+  EX.evt={};
+  buildScreen();
+  renderDesktop(); renderTaskbar();
+  // ouverture automatique d'une fenêtre + navigation initiale
+  if(seed.open){
+    const target=EX.desktopRoot.kids.find(k=>k.name===seed.open);
+    if(target){
+      const w=openWindow(target, {evt:false});
+      EX.evt.openedAny=false;
+      if(seed.go){ seed.go.forEach(nm=>{ const sub=(w.cur.kids||[]).find(k=>k.name===nm); if(sub) navTo(w, sub); }); }
+      if(seed.back){ for(let i=0;i<seed.back;i++) navBack(w); EX.evt.usedBack=false; }
+      if(seed.minimize){ w.min=true; }
+      renderAll();
+    }
+  }
+  // remise à zéro des drapeaux d'évènements pour la mission
+  EX.evt={};
+  if(EX.windows.length) EX.evt.everHadWindow=true;
+}
+
+/* ---------------------------------------------------------
+   13. DÉROULÉ (flow) — repris du modèle des autres ateliers
+   --------------------------------------------------------- */
+function reviewing(){ return playIdx<progressIdx; }
+function loadLevel(n, stepIdx, showIntro){
+  n=Math.max(1,Math.min(LEVELS.length,n));
+  currentLevel=n; const lvl=LEVELS[n-1];
+  STEPS=lvl.rounds;
+  progressIdx=(typeof stepIdx==='number')?stepIdx:getSavedStep(n);
+  if(isNaN(progressIdx)||progressIdx<0) progressIdx=0;
+  if(progressIdx>STEPS.length) progressIdx=STEPS.length;
+  document.getElementById('lvlTitle').innerHTML='Dossiers et fichiers <span class="dot">·</span> '+lvl.subtitle;
+  store.set('df_curlevel', String(n));
+  refreshLevelBtn();
+  const startIdx=Math.min(progressIdx, STEPS.length-1);
+  if(showIntro) openLevelIntro(n, ()=>startStep(startIdx));
+  else startStep(startIdx);
+}
+function startStep(idx){
+  clearSpots();
+  playIdx=idx; currentStep=STEPS[idx]; _missionDone=false;
+  if(currentStep.mode==='boss'){ seedWorld(bossSeed()); updateProgress(); updateBanner(); openBossBriefing(); return; }
+  const seed=currentStep.seed && currentStep.seed.custom ? makeSeed(currentStep.seed.custom) : (currentStep.seed||{desktop:homeTree()});
+  seedWorld(seed);
+  updateProgress(); updateBanner();
+  openRoundPopup();
+}
+function updateProgress(){
+  const track=document.getElementById('track'); track.innerHTML='';
+  STEPS.forEach((st,i)=>{
+    const d=document.createElement('div');
+    const mile=st.kind==='jalon';
+    d.className='seg'+(mile?' milestone':'');
+    if(i<progressIdx) d.classList.add('done');
+    if(i===playIdx) d.classList.add('current');
+    if(mile) d.textContent=(st.mode==='boss'?'🦠':'🏆');
+    if(i<=progressIdx){
+      d.classList.add('clickable');
+      d.title=(i===playIdx?'Mission en cours : ':'Revenir à ')+(st.label||'')+' · '+(st.title||'');
+      d.onclick=()=>{ if(i<=progressIdx) startStep(i); };
+    }
+    track.appendChild(d);
+  });
+  const shown=Math.min(playIdx+1, STEPS.length);
+  document.getElementById('stepCount').textContent='Niveau '+currentLevel+' · '+(STEPS[playIdx].label||'')+' ('+shown+'/'+STEPS.length+')';
+}
+function updateBanner(){
+  const b=document.getElementById('banner');
+  b.className='banner'+(currentStep.mode==='boss'?' boss':(currentStep.kind==='jalon'?' test':''))+(reviewing()?' review':'');
+  document.getElementById('bEmoji').textContent=currentStep.emoji;
+  document.getElementById('bTitle').textContent=(reviewing()?'Révision · ':'')+(currentStep.label||'')+' : '+(currentStep.title||'');
+  document.getElementById('bSub').innerHTML='<span class="b-goal-label">Objectif :</span> '+stripTags(currentStep.desc);
+}
+function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
+function refreshLevelBtn(){ const b=document.getElementById('levelBtn'); if(b) b.textContent='🗺️ Niveau '+currentLevel+'/'+LEVELS.length; }
+
+function openLevelIntro(n, cont){
+  const lvl=LEVELS[n-1], it=lvl.intro;
+  const tools=(it.tools||[]).map(t=>'<li><span class="ni-glyph">'+t.g+'</span> '+t.n+'</li>').join('');
+  modal.className='modal';
+  modal.innerHTML='<span class="m-emoji">'+it.emoji+'</span>'
+    +'<div class="kicker">Niveau '+n+'</div><h2>'+lvl.title+'</h2>'
+    +'<p>'+it.lead+'</p>'
+    +'<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p></div>'
+    +(tools?'<ul class="newtools">'+tools+'</ul>':'')
+    +'<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
+  openOverlay();
+  document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
+}
+function openRoundPopup(){
+  const s=currentStep, jalon=s.kind==='jalon';
+  modal.className='modal'+(jalon?' test-modal':'');
+  modal.innerHTML='<span class="m-emoji">'+s.emoji+'</span>'
+    +'<div class="kicker">'+(reviewing()?'Entraînement':s.label)+'</div><h2>'+s.title+'</h2>'
+    +'<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta mission :')+'</p><p>'+s.desc+'</p></div>'
+    +'<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
+  openOverlay();
+  document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); };
+}
+function onMissionWin(){
+  beep('win');
+  if(reviewing()){
+    modal.className='modal good';
+    modal.innerHTML='<span class="m-emoji">💪</span><h2>Bien joué !</h2>'
+      +'<p>Tu as refait cette mission. On revient à <b>ta mission en cours</b>, ta progression est gardée.</p>'
+      +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma mission</button></div>';
+    openOverlay(); document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
+    return;
+  }
+  const last=playIdx===STEPS.length-1;
+  if(last){ progressIdx=STEPS.length; saveProgress(); return levelComplete(); }
+  progressIdx=Math.max(progressIdx, playIdx+1); saveProgress();
+  const jalon=currentStep.kind==='jalon';
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">'+(jalon?'🏆':'✅')+'</span>'
+    +'<h2>'+(jalon?'Défi réussi !':'Mission réussie !')+'</h2>'
+    +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la mission suivante !')+'</p>'
+    +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
+  openOverlay(); if(jalon) confetti();
+  document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
+}
+function levelComplete(){
+  if(currentLevel>=LEVELS.length) return courseFinish();
+  const nextN=currentLevel+1;
+  store.set('df_unlocked', String(Math.max(getUnlocked(), nextN)));
+  store.set('df_step_l'+nextN, '0');
+  refreshLevelBtn(); confetti();
+  const lvl=LEVELS[nextN-1];
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">🎉</span>'
+    +'<div class="kicker" style="color:var(--green-d)">Niveau '+nextN+' débloqué</div>'
+    +'<h2>Bravo, tu passes au Niveau '+nextN+' !</h2>'
+    +'<p>Tu as terminé le <b>Niveau '+currentLevel+'</b>. Prochaine étape : <b>'+lvl.title+'</b> !</p>'
+    +'<div class="m-actions">'
+    +'<a class="m-btn ghost" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a>'
+    +'<button class="m-btn primary green" id="goNextLvl">Aller au Niveau '+nextN+' →</button></div>';
+  openOverlay();
+  document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
+}
+function courseFinish(){
+  confetti(); confetti();
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
+    +'<p>Incroyable ! Tu as fini les <b>7 niveaux</b> de <b>Dossiers et fichiers</b> et tu as vaincu le <b>virus 🦠</b> ! Tu sais ouvrir, naviguer, créer, ranger, supprimer, restaurer, rechercher et trier. Un vrai pro de l\'ordinateur ! 👏</p>'
+    +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
+    +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+  openOverlay();
+  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
+}
+
+/* sélecteur de niveaux */
+function openLevelSelector(){
+  const unlocked=getUnlocked();
+  modal.className='modal';
+  const cards=LEVELS.map(lv=>{
+    const locked=lv.n>unlocked, cur=lv.n===currentLevel;
+    const badge=locked?'🔒':(lv.n<currentLevel?'✓':'▶');
+    return '<button class="lvl-card'+(locked?' locked':'')+(cur?' current':'')+'" data-n="'+lv.n+'" '+(locked?'disabled':'')+'>'
+      +'<span class="lc-badge">'+badge+'</span><span class="lc-n">Niveau '+lv.n+'</span><span class="lc-t">'+lv.title+'</span></button>';
+  }).join('');
+  modal.innerHTML='<span class="m-emoji">🗺️</span><h2>Choisis ton niveau</h2>'
+    +'<p>Reviens sur un niveau déjà débloqué quand tu veux : ta progression est <b>gardée</b>.</p>'
+    +'<div class="lvl-grid">'+cards+'</div>'
+    +'<div class="m-actions"><button class="m-btn ghost" id="lsClose">Fermer</button></div>';
+  openOverlay();
+  modal.querySelectorAll('.lvl-card:not(.locked)').forEach(b=>b.onclick=()=>{ closeOverlay(); loadLevel(+b.getAttribute('data-n'), undefined, true); });
+  document.getElementById('lsClose').onclick=()=>closeOverlay();
+}
+
+/* ---------------------------------------------------------
+   14. BOSS — le virus 🦠
+   --------------------------------------------------------- */
+function bossSeed(){
+  return { desktop:[
+    folder('Documents',[ file('rapport','doc'), file('lettre','txt'), file('notes','txt'), folder('Anciens',[file('vieux','txt'),file('archive','txt')]) ]),
+    folder('Images',[ file('photo1','jpg',{icon:'📷'}), file('photo2','jpg',{icon:'🖼️'}), file('dessin','png',{icon:'🎨'}), folder('Vacances',[file('plage','jpg',{icon:'🏖️'}),file('mer','jpg',{icon:'🌊'})]) ]),
+    folder('Musique',[ file('chanson1','mp3',{icon:'🎵'}), file('chanson2','mp3',{icon:'🎸'}), file('podcast','mp3',{icon:'🎙️'}) ]),
+    folder('Téléchargements',[ file('jeu','exe',{icon:'🎮'}), file('image','jpg',{icon:'🖼️'}), file('document','pdf'), file('musique','mp3',{icon:'🎵'}) ]),
+    folder('Système',[ file('config','txt',{locked:true}), file('démarrage','exe',{locked:true,icon:'⚙️'}) ], {locked:true})
+  ]};
+}
+function allFiles(){ const a=[]; walk(EX.desktopRoot, n=>{ if(n!==EX.desktopRoot && n.type==='file' && !n.locked && !n.isCore) a.push(n); }); return a; }
+function allFolders(){ const a=[]; walk(EX.desktopRoot, n=>{ if(n.type==='folder' && !n.locked && n!==EX.desktopRoot) a.push(n); }); return a; }
+
+function openBossBriefing(){
+  const it=LEVELS[currentLevel-1].intro;
+  const resuming=!!(EX.boss && EX.boss.running);
+  modal.className='modal boss-modal';
+  modal.innerHTML='<span class="m-emoji">🦠</span><div class="kicker" style="color:var(--red-d)">Combat de Boss</div>'
+    +'<h2>Alerte virus ! 🚨</h2>'
+    +'<p>'+it.lead+'</p>'
+    +'<div class="howto boss"><p class="h-head">⚔️ Le combat :</p><p>'+it.teach+'</p></div>'
+    +'<ul class="newtools">'
+    +'<li><span class="ni-glyph">🛰️</span> <b>Scanner</b> : localise le cœur du virus</li>'
+    +'<li><span class="ni-glyph">🗑️</span> Supprime les fichiers <b>rouges</b> (infectés)</li>'
+    +'<li><span class="ni-glyph">🦠</span> Détruis le <b>cœur du virus</b> pour stopper la propagation</li>'
+    +'<li><span class="ni-glyph">💥</span> Ne laisse pas la barre atteindre la <b>zone rouge</b> !</li>'
+    +'</ul>'
+    +'<div class="m-actions"><button class="m-btn primary boss" id="bossGo">'+(resuming?'⚔️ Reprendre le combat ▶':'⚔️ Lancer l\'antivirus ! 🚀')+'</button></div>';
+  openOverlay();
+  document.getElementById('bossGo').onclick=()=>{ closeOverlay(); audioCtx(); if(!resuming) startBoss(); };
+}
+
+function startBoss(){
+  if(EX.boss&&EX.boss.raf){ cancelAnimationFrame(EX.boss.raf); }
+  _bossLast=0;
+  seedWorld(bossSeed());
+  // bandeau antivirus
+  const screen=document.getElementById('screen');
+  const hud=document.createElement('div'); hud.className='boss-hud'; hud.id='bossHud';
+  hud.innerHTML='<span class="bh-ttl">🛡️ Antivirus</span>'
+    +'<div class="meter"><i id="bossMeter"></i><span class="lbl" id="bossMeterLbl">0%</span></div>'
+    +'<span class="bh-stat" id="bossCore">🦠 Cœur : ?</span>'
+    +'<button class="scan-btn" id="scanBtn">🛰️ Scanner</button>';
+  screen.insertBefore(hud, screen.firstChild);
+  document.getElementById('desktop').style.top='42px';
+  document.getElementById('winLayer').style.top='42px';
+  // bsod
+  const bsod=document.createElement('div'); bsod.className='bsod'; bsod.id='bsod';
+  bsod.innerHTML='<div class="face">:(</div><h2>Votre ordinateur a planté</h2>'
+    +'<p>Le virus a contaminé trop de fichiers. Le système n\'a pas résisté…</p>'
+    +'<p class="pct" id="bsodPct"></p>';
+  screen.appendChild(bsod);
+  document.getElementById('scanBtn').onclick=bossScan;
+
+  // état du boss
+  const files=allFiles();
+  const folders=allFolders();
+  EX.boss={
+    running:true, files, folders,
+    core:null, coreKilled:false,
+    spreadEvery:3600, lastSpread:0, scanCooldown:0,
+    maxInfect:0.55, gameover:false
+  };
+  // place le cœur du virus dans un dossier au hasard (pas Système)
+  const host=folders[Math.floor(Math.random()*folders.length)];
+  const core=buildNode(file('virus','virus',{icon:'🦠',infected:true,isCore:true}), host); core.seeded=false;
+  host.kids.push(core); EX.boss.core=core;
+  // infecte 1 ou 2 fichiers de départ
+  infectRandom(2);
+  renderAll(); updateBossMeter();
+  beep('alarm');
+  EX.boss.raf=requestAnimationFrame(bossTick);
+}
+function infectRandom(k){
+  const clean=EX.boss.files.filter(f=>!f.infected && inTree(EX.desktopRoot,f));
+  for(let i=0;i<k && clean.length;i++){
+    const idx=Math.floor(Math.random()*clean.length);
+    clean[idx].infected=true; clean.splice(idx,1);
+  }
+}
+function infectionRate(){
+  const files=allFiles();
+  const inf=files.filter(f=>f.infected).length + (EX.boss.core && inTree(EX.desktopRoot,EX.boss.core)?1:0);
+  const total=files.length + (EX.boss.core && inTree(EX.desktopRoot,EX.boss.core)?1:0);
+  return total? inf/Math.max(total,1) : 0;
+}
+function updateBossMeter(){
+  const r=infectionRate();
+  const el=document.getElementById('bossMeter'), lbl=document.getElementById('bossMeterLbl');
+  if(el){ el.style.width=Math.min(100, Math.round(r/EX.boss.maxInfect*100))+'%'; }
+  if(lbl){ lbl.textContent=Math.round(r*100)+'% infecté'; }
+  const core=document.getElementById('bossCore');
+  if(core){ core.textContent = EX.boss.coreKilled ? '🦠 Cœur : détruit ✓' : (EX.boss.core && inTree(EX.desktopRoot,EX.boss.core) ? '🦠 Cœur : actif' : '🦠 Cœur : ?'); }
+}
+let _bossLast=0;
+function bossTick(ts){
+  if(!EX.boss || !EX.boss.running) return;
+  if(!_bossLast) _bossLast=ts;
+  const dt=ts-_bossLast;
+  if(!EX.boss.coreKilled){
+    EX.boss.lastSpread+=dt;
+    if(EX.boss.lastSpread>=EX.boss.spreadEvery){
+      EX.boss.lastSpread=0;
+      // le virus se propage ET le cœur peut se déplacer
+      infectRandom(1);
+      if(Math.random()<0.5) moveCore();
+      renderAll(); updateBossMeter(); pulseInfected();
+      beep('bad');
+    }
+  }
+  _bossLast=ts;
+  // condition de défaite
+  if(!EX.boss.gameover && infectionRate()>=EX.boss.maxInfect){ return bossGameOver(); }
+  // condition de victoire : cœur détruit ET plus aucun fichier infecté
+  if(EX.boss.coreKilled && allFiles().every(f=>!f.infected) && !(EX.boss.core&&inTree(EX.desktopRoot,EX.boss.core))){
+    return bossWin();
+  }
+  EX.boss.raf=requestAnimationFrame(bossTick);
+}
+function moveCore(){
+  const core=EX.boss.core; if(!core || !inTree(EX.desktopRoot,core)) return;
+  const folders=allFolders().filter(f=>f!==core.parent);
+  if(!folders.length) return;
+  const dest=folders[Math.floor(Math.random()*folders.length)];
+  if(core.parent) core.parent.kids=core.parent.kids.filter(x=>x!==core);
+  core.parent=dest; dest.kids.push(core);
+}
+function pulseInfected(){ const s=document.getElementById('screen'); if(s){ s.classList.add('shake'); setTimeout(()=>s.classList.remove('shake'),420); } }
+
+function bossScan(){
+  if(!EX.boss || EX.boss.scanCooldown>0) return;
+  const core=EX.boss.core;
+  if(EX.boss.coreKilled || !inTree(EX.desktopRoot,core)){ toast('🛰️ Plus de cœur viral détecté !'); return; }
+  const loc=pathOf(core.parent).map(p=>p.name).join(' ▸ ');
+  toast('🛰️ Virus localisé dans : '+loc+' — fonce le supprimer !');
+  beep('ding');
+  // ping radar si le dossier est ouvert
+  const w=EX.windows.find(x=>!x.min && x.cur===core.parent);
+  if(w&&w.el){ const r=w.el.getBoundingClientRect(), sc=document.getElementById('screen').getBoundingClientRect();
+    const ping=document.createElement('div'); ping.className='radar-ping';
+    ping.style.left=(r.left-sc.left)+'px'; ping.style.top=(r.top-sc.top)+'px'; ping.style.width=r.width+'px'; ping.style.height=r.height+'px';
+    document.getElementById('screen').appendChild(ping); setTimeout(()=>ping.remove(),2500);
+  }
+  EX.boss.scanCooldown=1;
+  const btn=document.getElementById('scanBtn'); if(btn){ btn.disabled=true; let t=4; btn.textContent='🛰️ '+t+'s';
+    const iv=setInterval(()=>{ t--; if(t<=0){ clearInterval(iv); EX.boss.scanCooldown=0; if(btn){btn.disabled=false; btn.textContent='🛰️ Scanner';} } else if(btn) btn.textContent='🛰️ '+t+'s'; },1000);
+  }
+}
+
+/* surcharge des opérations pendant le boss : détecter la suppression du cœur / fichiers infectés */
+const _doDelete=doDelete;
+doDelete=function(nodes){
+  const hadCore = EX.boss && !EX.boss.coreKilled && nodes.indexOf(EX.boss.core)>=0;
+  const infectedKilled = EX.boss ? nodes.filter(n=>n.infected && !n.isCore).length : 0;
+  _doDelete(nodes);
+  if(EX.boss && EX.boss.running){
+    if(hadCore){ EX.boss.coreKilled=true; beep('win'); toast('🦠💥 Cœur du virus détruit ! La propagation s\'arrête.'); confetti(); }
+    else if(infectedKilled){ beep('good'); }
+    // vider la corbeille n'est pas obligatoire : la suppression suffit
+    updateBossMeter();
+    if(!EX.boss.raf && !EX.boss.gameover){ _bossLast=0; EX.boss.raf=requestAnimationFrame(bossTick); }
+  }
+};
+
+function bossGameOver(){
+  EX.boss.gameover=true; EX.boss.running=false; cancelAnimationFrame(EX.boss.raf);
+  beep('crash');
+  const s=document.getElementById('screen'); if(s) s.classList.add('shake');
+  document.getElementById('bsodPct').textContent='Contamination : '+Math.round(infectionRate()*100)+'%';
+  setTimeout(()=>{ const b=document.getElementById('bsod'); if(b) b.classList.add('show'); }, 500);
+  setTimeout(()=>{
+    modal.className='modal bad';
+    modal.innerHTML='<span class="m-emoji">💥</span><h2>Crash système !</h2>'
+      +'<div class="howto boss" style="margin-top:4px"><p class="h-head">💡 Conseil</p><p>Le virus a gagné cette fois. La prochaine fois : utilise le <b>🛰️ Scanner</b> dès le début pour trouver le <b>cœur du virus 🦠</b> et détruis-le <b>vite</b> — c\'est lui qui propage l\'infection. Supprime aussi les fichiers rouges sans attendre !</p></div>'
+      +'<div class="m-actions"><button class="m-btn primary boss" id="bossRetry">↺ Réessayer le combat</button></div>';
+    openOverlay();
+    document.getElementById('bossRetry').onclick=()=>{ closeOverlay(); startBoss(); };
+  }, 1500);
+}
+function bossWin(){
+  EX.boss.running=false; cancelAnimationFrame(EX.boss.raf);
+  beep('win'); confetti(); confetti();
+  progressIdx=STEPS.length; saveProgress();
+  setTimeout(()=>{
+    modal.className='modal good';
+    modal.innerHTML='<span class="m-emoji">🛡️</span><h2>Virus éliminé ! 🎉</h2>'
+      +'<p>Tu as traqué le <b>cœur du virus</b>, nettoyé tous les fichiers infectés et <b>sauvé l\'ordinateur</b> du crash ! Tu es un véritable <b>antivirus humain</b>. 🦸</p>'
+      +'<div class="m-actions"><button class="m-btn primary green" id="bossNext">Continuer →</button></div>';
+    openOverlay();
+    document.getElementById('bossNext').onclick=()=>{ closeOverlay(); levelComplete(); };
+  }, 700);
+}
+
+/* ---------------------------------------------------------
+   15. OVERLAY / TOAST / CONFETTI
+   --------------------------------------------------------- */
+function openOverlay(){ overlay.classList.add('open'); }
+function closeOverlay(){ overlay.classList.remove('open'); }
+let _toastT=null;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove('show'),2200); }
+function confetti(){
+  const wrap=document.createElement('div'); wrap.className='confetti';
+  const colors=['#2563eb','#16a34a','#f59e0b','#ef4444','#a855f7','#06b6d4'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('i');
+    p.style.left=Math.random()*100+'%';
+    p.style.background=colors[i%colors.length];
+    p.style.animationDuration=(2.4+Math.random()*1.6)+'s';
+    p.style.animationDelay=(Math.random()*.5)+'s';
+    p.style.transform='rotate('+Math.random()*360+'deg)';
+    wrap.appendChild(p);
+  }
+  document.body.appendChild(wrap); setTimeout(()=>wrap.remove(),4200);
+}
+
+/* boutons topbar/banner */
+function restartMission(){ commitRename(); cancelRenameTimer(); clearSpots(); if(currentStep && currentStep.mode==='boss'){ startBoss(); } else { startStep(playIdx); } }
+document.getElementById('levelBtn').onclick=openLevelSelector;
+document.getElementById('resetBtn').onclick=restartMission;
+document.getElementById('restartBtn').onclick=restartMission;
+document.getElementById('hintBtn').onclick=onHint;
+document.getElementById('seeMission').onclick=()=>{ if(currentStep && currentStep.mode==='boss') openBossBriefing(); else openRoundPopup(); };
+
+/* ---------------------------------------------------------
+   ASTUCE — guide pas à pas + surbrillance des éléments à utiliser
+   --------------------------------------------------------- */
+let _spots=[], _spotT=null;
+function clearSpots(){ _spots.forEach(s=>s.remove()); _spots=[]; if(_spotT){ clearTimeout(_spotT); _spotT=null; } }
+function spotEl(el){
+  if(!el) return false;
+  const screen=document.getElementById('screen'); if(!screen) return false;
+  const r=el.getBoundingClientRect(), sc=screen.getBoundingClientRect();
+  if(!r.width || !r.height) return false;
+  const sp=document.createElement('div'); sp.className='spot';
+  sp.style.left=(r.left-sc.left-4)+'px'; sp.style.top=(r.top-sc.top-4)+'px';
+  sp.style.width=(r.width+8)+'px'; sp.style.height=(r.height+8)+'px';
+  screen.appendChild(sp); _spots.push(sp); return true;
+}
+/* surligne les icônes (bureau + fenêtres) dont le nom correspond */
+function spotByName(nm){
+  let found=false;
+  const base=nm.replace(/\.[a-z0-9]+$/i,'');
+  document.querySelectorAll('#desktop .dt-icon, .win-body .fitem').forEach(el=>{
+    const node=nodeById(el.dataset.id); if(!node) return;
+    if(node.name===nm || displayName(node)===nm || node.name===base){ if(spotEl(el)) found=true; }
+  });
+  return found;
+}
+/* déduit, à partir de la consigne, les éléments à mettre en surbrillance */
+function highlightForStep(){
+  clearSpots();
+  const s=currentStep; if(!s) return;
+  const fw=(EX.focusedWin && !EX.focusedWin.min) ? EX.focusedWin : EX.windows.find(w=>!w.min) || null;
+  const d=s.desc||'';
+  // 1. noms en gras présents à l'écran
+  (d.match(/<b>([^<]+)<\/b>/g)||[]).map(m=>m.replace(/<\/?b>/g,'').trim())
+    .filter(t=>t && t.length<40 && !/ctrl|maj|suppr|entrée|\bf2\b/i.test(t))
+    .forEach(nm=>spotByName(nm));
+  // 2. corbeille
+  if(/corbeille|🗑️/i.test(d) && EX.binNode){
+    spotEl(document.querySelector('#desktop .dt-icon[data-id="'+EX.binNode.id+'"]'));
+  }
+  // 3. boutons de la fenêtre active
+  if(fw && fw.el){
+    if(/◀|précédent|arrière|reviens|revenir/i.test(d)) spotEl(fw.el.querySelector('.nav-back'));
+    if(/▶|suivant|en avant/i.test(d))                  spotEl(fw.el.querySelector('.nav-fwd'));
+    if(/⬆|parent|remonte/i.test(d))                    spotEl(fw.el.querySelector('.nav-up'));
+    if(/🔍|recherch/i.test(d))                          spotEl(fw.el.querySelector('.win-search'));
+    if(/ariane|🍞/i.test(d))                            spotEl(fw.el.querySelector('.crumbs'));
+    if(/croix|✕|ferme/i.test(d))                        spotEl(fw.el.querySelector('.win-btn.close'));
+    if(/rédui|▁/i.test(d))                              spotEl(fw.el.querySelector('.win-btn.min'));
+    if(/clic droit|nouveau dossier|trier|coller/i.test(d)) spotEl(fw.el.querySelector('.win-body'));
+  }
+  // 4. menu Démarrer / barre des tâches
+  if(/démarrer|⊞/i.test(d))          spotEl(document.getElementById('tbStart'));
+  if(/barre des tâches/i.test(d))    spotEl(document.querySelector('.tb-apps'));
+  // 5. boss : bouton scanner
+  if(s.mode==='boss'){ spotEl(document.getElementById('scanBtn')); document.querySelectorAll('.fitem.infected, .dt-icon.infected').forEach(spotEl); }
+  if(_spots.length) _spotT=setTimeout(clearSpots, 6000);
+}
+function onHint(){
+  if(overlay.classList.contains('open')) return;
+  const s=currentStep; if(!s) return;
+  const hintTxt = s.mode==='boss'
+    ? 'Clique sur <b>🛰️ Scanner</b> pour localiser le <b>cœur du virus 🦠</b>, fonce le <b>supprimer</b>, puis nettoie les fichiers <b>rouges</b> qui clignotent.'
+    : ((s.goal && s.goal.hint) ? s.goal.hint : stripTags(s.desc));
+  modal.className='modal test-modal';
+  modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker" style="color:var(--amber-d)">Astuce</div>'
+    +'<h2>'+(s.title||'Astuce')+'</h2>'
+    +'<div class="howto test"><p class="h-head">👉 Comment faire :</p><p>'+hintTxt+'</p></div>'
+    +'<p style="font-size:.95rem;color:var(--muted)">Les éléments importants vont <b>briller en jaune</b> ✨ sur l\'écran.</p>'
+    +'<div class="m-actions"><button class="m-btn primary test" id="hintGo">Montre-moi ✨</button></div>';
+  openOverlay();
+  document.getElementById('hintGo').onclick=()=>{ closeOverlay(); highlightForStep(); };
+}
+
+/* ---------------------------------------------------------
+   16. INIT
+   --------------------------------------------------------- */
+(function init(){
+  refreshSoundBtn();
+  const go=/[?&]go=(\d+)(?:[.\-_](\d+))?/.exec(location.search);
+  if(go){
+    const L=Math.max(1,Math.min(LEVELS.length, parseInt(go[1],10)));
+    store.set('df_unlocked', String(Math.max(getUnlocked(), L)));
+    store.set('df_curlevel', String(L));
+    if(go[2]!=null) store.set('df_step_l'+L, String(Math.max(0, parseInt(go[2],10))));
+  }
+  let lvl=parseInt(store.get('df_curlevel')||'1',10);
+  if(isNaN(lvl)||lvl<1||lvl>LEVELS.length) lvl=1;
+  lvl=Math.min(lvl, getUnlocked());
+  loadLevel(lvl, getSavedStep(lvl), !go);
+})();
+
+/* ---------------------------------------------------------
+   17. ACCÈS DÉVELOPPEUR
+   --------------------------------------------------------- */
+(function devkit(){
+  const UNLOCK='df_unlocked', CUR='df_curlevel', STEP='df_step_l', HOME='dossiers-fichiers.html';
+  const css=`
+  #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;}
+  #devkit .dk-toggle{display:inline-flex;align-items:center;gap:6px;background:#1e2733;color:#e7eef6;border:none;
+    border-radius:999px;padding:9px 14px;font-weight:800;font-size:.85rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.28);}
+  #devkit .dk-toggle:hover{background:#2a3645;}
+  #devkit .dk-panel{display:none;position:absolute;right:0;bottom:48px;width:320px;max-height:72vh;overflow:auto;
+    background:#1e2733;color:#e7eef6;border-radius:14px;padding:12px 12px 14px;box-shadow:0 16px 40px rgba(0,0,0,.42);}
+  #devkit.open .dk-panel{display:block;}
+  #devkit .dk-head{font-weight:800;font-size:.95rem;margin:0 0 2px;}
+  #devkit .dk-note{color:#9fb0c4;font-size:.72rem;margin:0 0 6px;line-height:1.35;}
+  #devkit .dk-lv{font-weight:800;color:#9fc3ff;margin:11px 0 4px;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;}
+  #devkit .dk-step{display:block;width:100%;text-align:left;background:#2b3949;color:#e7eef6;border:1px solid #3a4a5c;
+    border-radius:8px;padding:6px 9px;margin:3px 0;cursor:pointer;font-size:.78rem;line-height:1.3;}
+  #devkit .dk-step:hover{background:#37485c;border-color:#5a7088;}
+  #devkit .dk-step.jalon{border-color:#f6b73c;}
+  #devkit .dk-step b{color:#ffd479;}
+  #devkit .dk-actions{display:flex;gap:6px;margin-top:12px;}
+  #devkit .dk-act{flex:1;background:#33455a;color:#e7eef6;border:1px solid #44586e;border-radius:8px;padding:7px;
+    font-weight:700;font-size:.74rem;cursor:pointer;}
+  #devkit .dk-act:hover{background:#3d5167;}`;
+  const style=document.createElement('style'); style.textContent=css; document.head.appendChild(style);
+  const root=document.createElement('div'); root.id='devkit';
+  let html='<button class="dk-toggle" id="dkToggle">🛠️ Dev</button>'
+    +'<div class="dk-panel"><p class="dk-head">🛠️ Accès développeur</p>'
+    +'<p class="dk-note">Saute à une mission : tout ce qui précède est considéré comme réussi.</p>';
+  LEVELS.forEach(lv=>{
+    html+='<div class="dk-lv">Niveau '+lv.n+' — '+lv.title+'</div>';
+    lv.rounds.forEach((d,i)=>{
+      const isJ=(d.kind==='jalon');
+      html+='<button class="dk-step'+(isJ?' jalon':'')+'" data-l="'+lv.n+'" data-s="'+i+'"><b>'+(d.label||('Mission '+(i+1)))+'</b> · '+(d.title||'')+'</button>';
+    });
+  });
+  html+='<div class="dk-actions"><button class="dk-act" id="dkUnlockAll">🔓 Tout débloquer</button>'
+    +'<button class="dk-act" id="dkReset">🧹 Reset complet</button></div></div>';
+  root.innerHTML=html; document.body.appendChild(root);
+  function devJump(L,S){
+    L=Math.max(1,Math.min(LEVELS.length,L));
+    const maxS=LEVELS[L-1].rounds.length-1; S=Math.max(0,Math.min(maxS,S||0));
+    store.set(UNLOCK, String(Math.max(getUnlocked(),L))); store.set(CUR, String(L)); store.set(STEP+L, String(S));
+    closeOverlay(); loadLevel(L,S,false);
+  }
+  document.getElementById('dkToggle').onclick=()=>root.classList.toggle('open');
+  root.querySelectorAll('.dk-step').forEach(b=>b.onclick=()=>{ root.classList.remove('open'); devJump(+b.getAttribute('data-l'), +b.getAttribute('data-s')); });
+  document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
+  document.getElementById('dkReset').onclick=()=>{ const keys=[UNLOCK,CUR]; for(let i=1;i<=LEVELS.length;i++) keys.push(STEP+i); keys.forEach(k=>store.del(k)); location.href=HOME; };
+})();
+</script>
+<script>
+/* Bouton bascule OpenDyslexic — préférence partagée entre toutes les pages */
+(function(){
+  var KEY='a11y_dys', root=document.documentElement;
+  var btn=document.createElement('button');
+  btn.type='button'; btn.className='dys-toggle';
+  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dyslexique</span><span class="dys-switch"><span class="dys-knob"></span></span>';
+  function apply(on){ root.classList.toggle('dys',on); btn.setAttribute('aria-pressed',on?'true':'false');
+    btn.title=on?'Mode Dyslexique activé — clique pour revenir à la police normale':'Activer le Mode Dyslexique (police OpenDyslexic)'; }
+  btn.addEventListener('click',function(){ var want=!root.classList.contains('dys'); try{localStorage.setItem(KEY,want?'1':'0');}catch(e){} apply(want); });
+  document.body.appendChild(btn);
+  var on=false; try{on=localStorage.getItem(KEY)==='1';}catch(e){} apply(on);
+})();
+</script>
+</body>
+</html>

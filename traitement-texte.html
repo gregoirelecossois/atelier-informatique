@@ -63,7 +63,7 @@
   .seg.clickable{cursor:pointer;transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;}
   .seg.clickable:hover{filter:brightness(1.07);transform:translateY(-2px);}
   .seg.clickable.done:hover{box-shadow:0 0 0 3px #b9eccd;}
-  /* étape « en cours » à laquelle on peut revenir quand on révise un exercice précédent */
+  /* mission « en cours » à laquelle on peut revenir quand on révise un exercice précédent */
   .seg.return{box-shadow:0 0 0 3px rgba(245,158,11,.55);animation:segReturn 1.1s ease-in-out infinite;}
   @keyframes segReturn{0%,100%{box-shadow:0 0 0 3px rgba(245,158,11,.55);}50%{box-shadow:0 0 0 7px rgba(245,158,11,.12);}}
   /* exercice actuellement révisé */
@@ -180,6 +180,28 @@
   /* glow on hint */
   .glow{position:relative;z-index:25;animation:glowpulse 1s ease-in-out infinite;border-color:var(--amber)!important;}
   @keyframes glowpulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.55);}50%{box-shadow:0 0 0 9px rgba(245,158,11,0);}}
+
+  /* ===== Barre de menus (Fichier, Édition, …) ===== */
+  .menubar{display:flex;align-items:center;gap:1px;padding:2px 7px;background:#f4f7fb;
+    border-bottom:1px solid var(--line);position:relative;z-index:40;}
+  .menu-top{border:none;background:none;font-family:inherit;font-weight:700;font-size:.9rem;color:var(--ink);
+    padding:6px 12px;border-radius:7px;cursor:pointer;transition:background .12s;}
+  .menu-top:hover{background:#e4ecf7;}
+  .menu-top.open{background:#dbe7f7;}
+  /* rendu sur <body> en position:fixed pour échapper au overflow:hidden de l'éditeur */
+  .menu-pop{position:fixed;min-width:226px;background:#fff;border:1px solid #d4ddea;
+    border-radius:11px;box-shadow:0 16px 38px rgba(20,30,42,.24);padding:5px;display:flex;flex-direction:column;gap:1px;z-index:90;}
+  .menu-item{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;
+    border-radius:8px;padding:9px 12px;font-family:inherit;font-weight:600;font-size:.92rem;color:var(--ink);cursor:pointer;}
+  .menu-item .mi-ic{width:18px;text-align:center;font-size:1rem;flex:none;}
+  .menu-item .mi-key{margin-left:auto;font-size:.76rem;color:var(--muted);font-weight:600;padding-left:14px;}
+  .menu-item:hover{background:#eef4ff;}
+  .menu-item.off{color:#9aa8b8;}
+  .menu-item.off .mi-ic{opacity:.6;}
+  .menu-item.off:hover{background:#f4f6f9;}
+  .menu-item.go{color:var(--green-d);}
+  .menu-item.go .mi-ic{filter:none;}
+  .menu-sep{height:1px;background:#e7edf5;margin:4px 7px;}
 
   .canvas{background:var(--canvas);padding:18px 16px;display:flex;justify-content:center;}
   .page{
@@ -413,6 +435,29 @@
   .fx-namebox{flex:1;min-width:130px;border:1px solid #cdd8e4;border-radius:8px;padding:8px 11px;
     font-size:.88rem;font-weight:700;color:var(--ink);background:#fff;}
   .fx-type{border:1px solid #cdd8e4;border-radius:8px;padding:8px 9px;font-size:.8rem;color:var(--muted);background:#fff;}
+  /* « Enregistrer sous » : champ de nom éditable + fil d'Ariane cliquable + bandeau d'aide */
+  input.fx-namebox{font-family:inherit;outline:none;}
+  input.fx-namebox:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(96,165,250,.35);}
+  .fx-crumb .fx-seg{background:none;border:none;font:inherit;font-weight:700;color:var(--blue-d);cursor:pointer;padding:0;border-radius:4px;}
+  .fx-crumb .fx-seg:hover{text-decoration:underline;}
+  .fx-crumb .fx-seg.cur{color:var(--ink);cursor:default;text-decoration:none;}
+  .fx-crumb .fx-sep{color:var(--muted);margin:0 5px;font-weight:800;}
+  .fx-guide{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid #eef2f7;
+    background:#fff7e6;color:#7c4a03;font-weight:700;font-size:.86rem;line-height:1.35;}
+  .fx-guide b{color:#9a3412;}
+  .fx-file.is-folder .fx-thumb{background:#fff3d4;color:#b8860b;font-size:2rem;}
+  /* volet gauche scrollable (façon Windows) : on descend jusqu'à « Ce PC » */
+  .fx-modal .fx-side{max-height:296px;overflow-y:auto;}
+  .fx-pcrow{display:flex;align-items:center;width:100%;border-radius:9px;margin:1px 0;}
+  .fx-pcrow.active{background:#dbeafe;box-shadow:inset 0 0 0 2px #bcd2ff;}
+  .fx-chev{border:none;background:none;cursor:pointer;font-size:.72rem;color:var(--muted);
+    padding:7px 3px 7px 6px;border-radius:6px;line-height:1;flex:none;}
+  .fx-chev:hover{background:#e4ecf7;color:var(--ink);}
+  .fx-pclabel{flex:1;display:flex;align-items:center;gap:9px;text-align:left;border:none;background:none;
+    font-family:inherit;font-weight:700;font-size:.9rem;color:var(--ink);padding:8px 6px;border-radius:7px;cursor:pointer;}
+  .fx-pclabel:hover{background:#eef4ff;}
+  .fx-pcrow.active .fx-pclabel{color:var(--blue-d);}
+  .fx-folder.sub{padding-left:30px;font-size:.88rem;}
 
   @media (max-width:560px){
     .page{padding:28px 22px;}
@@ -428,6 +473,27 @@
     .lock-burst,.lock-glow,.lock-star,.seg.return{animation:none;}
   }
 </style>
+<style>
+  /* ===== Bascule police OpenDyslexic (accessibilité lecture/dyslexie) ===== */
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
+  html.dys, html.dys *{font-family:"OpenDyslexic","Fluent Emoji",sans-serif !important;}
+  .dys-toggle{position:fixed;bottom:16px;left:16px;z-index:500;display:inline-flex;align-items:center;gap:9px;
+    border:2px solid #d7e0ea;background:#fff;color:#22303f;border-radius:999px;padding:7px 9px 7px 13px;
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-weight:800;font-size:.82rem;line-height:1;cursor:pointer;
+    box-shadow:0 6px 18px rgba(34,48,63,.20);transition:border-color .2s,background .2s,box-shadow .2s;}
+  .dys-toggle:hover{box-shadow:0 8px 22px rgba(34,48,63,.28);}
+  .dys-toggle:focus-visible{outline:3px solid #2563eb;outline-offset:2px;}
+  .dys-toggle .dys-ic{font-size:1.05rem;}
+  .dys-toggle .dys-label{white-space:nowrap;}
+  .dys-toggle .dys-switch{position:relative;width:38px;height:22px;border-radius:999px;background:#cdd7e3;transition:background .2s;flex:none;}
+  .dys-toggle .dys-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s;}
+  html.dys .dys-toggle{border-color:#16a34a;background:#f1fbf4;}
+  html.dys .dys-toggle .dys-switch{background:#16a34a;}
+  html.dys .dys-toggle .dys-knob{left:18px;}
+  @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
+</style>
+<script>try{if(localStorage.getItem('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
 </head>
 <body>
   <div class="topbar">
@@ -436,7 +502,7 @@
       Accueil
     </a>
     <h1 class="display" id="lvlTitle">Traitement de texte <span class="dot">·</span> les bases</h1>
-    <span class="step-count" id="stepCount">Niveau 1 · Étape 1 / 9</span>
+    <span class="step-count" id="stepCount">Niveau 1 · Mission 1 / 9</span>
     <button class="reset-btn" id="levelBtn" title="Voir les niveaux / changer de niveau">🗺️ Niveau 1/3</button>
     <button class="reset-btn" id="resetBtn" title="Recommencer ce niveau">↺ Recommencer</button>
   </div>
@@ -456,6 +522,14 @@
   </div>
 
   <div class="editor-wrap">
+    <div class="menubar" id="menubar">
+      <button class="menu-top" id="menu-fichier" data-menu="fichier">Fichier</button>
+      <button class="menu-top" data-menu="edition">Édition</button>
+      <button class="menu-top" data-menu="affichage">Affichage</button>
+      <button class="menu-top" data-menu="insertion">Insertion</button>
+      <button class="menu-top" data-menu="outils">Outils</button>
+      <button class="menu-top" data-menu="aide">Aide</button>
+    </div>
     <div class="toolbar" id="toolbar">
       <div class="tgroup">
         <button class="t-btn" id="btn-undo" title="Annuler (Ctrl+Z)">↶</button>
@@ -645,6 +719,25 @@ const DEFAULT = {
   lh:1, spb:0, spa:0, indl:0, indr:0, ind1:0, hl:'transparent',
   list:'none', lvl:0, bul:'disc'
 };
+
+/* ===== Mode Dyslexique : police de base du document ===== */
+// Si le Mode Dyslexique est actif, OpenDyslexic devient la police par défaut de TOUT le
+// document (titres, paragraphes, tableaux, zones de texte). L'utilisateur peut toujours
+// choisir une autre police : la valeur du modèle est appliquée en inline !important, donc
+// elle l'emporte sur la règle globale html.dys * (cf. <style> Bascule OpenDyslexic).
+const DYS_ON = (function(){ try{ return localStorage.getItem('a11y_dys')==='1'; }catch(e){ return false; } })();
+const BASE_FONT = DYS_ON ? 'OpenDyslexic' : 'Arial';
+DEFAULT.font = BASE_FONT;
+function fontCss(f){ return (f||BASE_FONT)+', "Fluent Emoji", sans-serif'; }
+(function(){
+  // En Mode Dyslexique, OpenDyslexic apparaît comme un choix de police à part entière
+  if(!DYS_ON) return;
+  const sf=document.getElementById('sel-font');
+  if(sf && !sf.querySelector('option[value="OpenDyslexic"]')){
+    const o=document.createElement('option'); o.value='OpenDyslexic'; o.textContent='OpenDyslexic';
+    sf.insertBefore(o, sf.firstChild);
+  }
+})();
 
 function buildDoc(){
   const arr=[];
@@ -2059,7 +2152,7 @@ function buildSteps(defs){
   defs.forEach(def=>{
     let from, goal;
     if(def.tableMode || def.objectMode){
-      // étapes TABLEAU / OBJETS : pas de modèle caractère, on garde les scènes du def
+      // missions TABLEAU / OBJETS : pas de modèle caractère, on garde les scènes du def
       const step=Object.assign({}, def);
       if(def.kind==='test') prepJalon(step);
       steps.push(step);
@@ -2067,7 +2160,7 @@ function buildSteps(defs){
       return;
     }
     if(def.contentMode){
-      // étapes d'ÉDITION DE CONTENU : chacune part du texte de base, cible = texte transformé
+      // missions d'ÉDITION DE CONTENU : chacune part du texte de base, cible = texte transformé
       const startText=baseText;
       const goalText=applyTextTransforms(startText, def.transforms);
       from=docFromText(startText);
@@ -2180,7 +2273,7 @@ function render(){
     sp.style.textDecoration=a.u?'underline':'none';
     sp.style.fontSize=a.size+'px';
     sp.style.color=a.color;
-    sp.style.fontFamily=a.font;
+    sp.style.setProperty('font-family', fontCss(a.font), 'important');
     sp.style.background=(a.hl && a.hl!=='transparent')?a.hl:'';   // surlignage par caractère
     if(firstCharOfPara===null) firstCharOfPara=i;
     para.appendChild(sp);
@@ -2652,6 +2745,7 @@ editor.addEventListener('keydown', e=>{
    7. FLOW
    ========================================================= */
 function startStep(idx){
+  awaitingSave=false; pendingSaveDone=null; closeMenus();   // on n'est plus en attente d'enregistrement
   stepIndex=idx; replayState=null;
   currentStep=STEPS[idx];
   jalonIdx=0; jalonAnimating=false;
@@ -2680,7 +2774,7 @@ function startStep(idx){
 }
 function resetToolbarDefaults(){
   document.getElementById('sel-size').value='16';
-  document.getElementById('sel-font').value='Arial';
+  document.getElementById('sel-font').value=BASE_FONT;
   document.getElementById('sel-size').classList.remove('active');
   document.getElementById('sel-font').classList.remove('active');
   clearToolbarActive();
@@ -2692,22 +2786,22 @@ function resetToolbarDefaults(){
 }
 function updateProgress(){
   const track=document.getElementById('track'); track.innerHTML='';
-  const real = replayState ? replayState.returnIndex : stepIndex;   // l'étape réellement « en cours »
-  const viewed = STEPS.indexOf(currentStep);                        // l'étape affichée (révision incluse)
+  const real = replayState ? replayState.returnIndex : stepIndex;   // la mission réellement « en cours »
+  const viewed = STEPS.indexOf(currentStep);                        // la mission affichée (révision incluse)
   STEPS.forEach((st,i)=>{
     const d=document.createElement('div');
     const isMile = st.kind==='test';
     d.className='seg'+(isMile?' milestone':'');
     if(i<stepIndex) d.classList.add('done');
     if(i===real) d.classList.add('current');
-    if(replayState && i===real) d.classList.add('return');     // « reviens à ton étape en cours »
-    if(replayState && i===viewed && i!==real) d.classList.add('viewing'); // étape en cours de révision
+    if(replayState && i===real) d.classList.add('return');     // « reviens à ta mission en cours »
+    if(replayState && i===viewed && i!==real) d.classList.add('viewing'); // mission en cours de révision
     if(isMile) d.textContent = (replayState && i===real) ? '↩' : '🏆';
-    // Navigation : on peut revenir sur n'importe quelle étape déjà atteinte — exercice OU jalon
+    // Navigation : on peut revenir sur n'importe quelle mission déjà atteinte — exercice OU jalon
     const reachable = i<=stepIndex;
     if(reachable && (st.kind==='mission' || st.kind==='test')){
       d.classList.add('clickable');
-      if(replayState && i===real) d.title='↩ Revenir à ton étape en cours';
+      if(replayState && i===real) d.title='↩ Revenir à ta mission en cours';
       else if(i===real) d.title=(st.kind==='test'?'Revoir les consignes de ce défi':'Revoir '+st.label+' : '+st.title);
       else if(st.kind==='test') d.title='↻ Refaire le défi : '+st.title+' (ta progression est gardée)';
       else d.title='Revenir à '+st.label+' : '+st.title+' (ta progression est gardée)';
@@ -2716,7 +2810,7 @@ function updateProgress(){
     track.appendChild(d);
   });
   const shown=Math.min(real+1, STEPS.length);
-  document.getElementById('stepCount').textContent='Niveau '+currentLevel+' · Étape '+shown+' / '+STEPS.length;
+  document.getElementById('stepCount').textContent='Niveau '+currentLevel+' · Mission '+shown+' / '+STEPS.length;
 }
 function onSegClick(i){
   if(i>stepIndex) return;                                   // pas encore débloqué
@@ -2740,7 +2834,7 @@ function visitStep(i){
     tableRender(); updateProgress(); updateBanner(); openMissionPopup();
     return;
   }
-  // Sauvegarde l'état réel une seule fois : préserve le travail en cours sur l'étape actuelle
+  // Sauvegarde l'état réel une seule fois : préserve le travail en cours sur la mission actuelle
   if(!replayState) replayState={ savedDoc: clone(doc), returnIndex: stepIndex };
   currentStep=STEPS[i];
   doc=clone(currentStep.startDoc); curSel=null; resetHistory(); resetToolbarDefaults();
@@ -2881,7 +2975,7 @@ document.getElementById('restartBtn').onclick=()=>{
   modal.innerHTML=`
     <span class="m-emoji">↺</span>
     <h2>Réinitialiser cet exercice ?</h2>
-    <p>Le texte de cet exercice sera remis <b>comme au début</b>. Ton travail sur cette étape sera perdu, mais ta <b>progression générale est conservée</b>.</p>
+    <p>Le texte de cet exercice sera remis <b>comme au début</b>. Ton travail sur cette mission sera perdu, mais ta <b>progression générale est conservée</b>.</p>
     <div class="m-actions">
       <button class="m-btn ghost" id="cancelRestart">Annuler</button>
       <button class="m-btn primary test" id="doRestart">↺ Réinitialiser</button>
@@ -2889,6 +2983,29 @@ document.getElementById('restartBtn').onclick=()=>{
   openOverlay();
   document.getElementById('cancelRestart').onclick=closeOverlay;
   document.getElementById('doRestart').onclick=()=>{ closeOverlay(); restartCurrent(); };
+};
+
+/* ---- Bascule du Mode Dyslexique (depuis le bouton flottant) : prévient que la mission
+   en cours va recommencer, puis recharge la page pour régénérer le document dans la bonne
+   police de base. Branché sur le bouton partagé via window.__dysConfirm. ---- */
+window.__dysConfirm=function(want){
+  modal.className='modal warn';
+  modal.innerHTML=`
+    <span class="m-emoji">🔤</span>
+    <h2>${want?'Passer en Mode Dyslexique ?':'Revenir au mode classique ?'}</h2>
+    <p>${want?'La police OpenDyslexic remplacera l\'écriture de tout le traitement de texte.':'La police d\'écriture normale sera rétablie dans tout le traitement de texte.'}
+       Pour l'appliquer proprement, <b>la mission en cours va recommencer depuis le début</b>
+       (ta <b>progression générale est conservée</b>).</p>
+    <div class="m-actions">
+      <button class="m-btn ghost" id="dysCancel">${want?'Rester en mode classique':'Garder le Mode Dyslexique'}</button>
+      <button class="m-btn primary test" id="dysOk">${want?'🔤 Passer en Mode Dyslexique':'Revenir au mode classique'}</button>
+    </div>`;
+  openOverlay();
+  document.getElementById('dysCancel').onclick=closeOverlay;
+  document.getElementById('dysOk').onclick=()=>{
+    try{ localStorage.setItem('a11y_dys', want?'1':'0'); }catch(e){}
+    location.reload();
+  };
 };
 function onValidate(){
   if(currentStep.kind==='test' && currentStep._jalon){ jalonTick(true); return; }
@@ -3129,6 +3246,11 @@ function onSuccess(){
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(stepIndex+1); };
 }
 function onLevelComplete(){
+  // Final guidé de chaque niveau : on demande d'« enregistrer sous » dans
+  // « Ce PC › Ma Classe › Restitution de devoirs » AVANT de débloquer la suite.
+  startSaveAsFlow(proceedLevelComplete);
+}
+function proceedLevelComplete(){
   updateProgressFinished();
   if(currentLevel>=LEVELS.length) return onCourseFinish();
   const nextN=currentLevel+1;
@@ -3185,6 +3307,15 @@ function blinkCells(cells, seq){
   else { setTimeout(()=>tds.forEach(td=>{ td.classList.add('blink'); setTimeout(()=>td.classList.remove('blink'),650); }), 1100); }
 }
 function onHint(){
+  if(awaitingSave){   // fin de niveau : on montre où cliquer pour « Enregistrer sous »
+    modal.className='modal warn';
+    modal.innerHTML=`<span class="m-emoji">💡</span><h2>Enregistre ton devoir</h2>
+      <div class="howto" style="margin-top:4px"><p>Clique sur le menu <b>Fichier</b> 📂 en haut, puis sur <b>Enregistrer sous</b> 💾.<br>Ensuite, range ton devoir dans <b>Ce PC › Ma Classe › Restitution de devoirs</b>.</p></div>
+      <div class="m-actions"><button class="m-btn primary" id="okHint">Montre-moi ✨</button></div>`;
+    openOverlay();
+    document.getElementById('okHint').onclick=()=>{ closeOverlay(); highlightSavePath(); };
+    return;
+  }
   if(currentStep.kind==='test' && currentStep.replayRefs && currentStep.replayRefs.length && !replayState) return openReplayPanel();
   const h=currentStep.hint;
   if(!h){   // jalon sans entraînement (ex. tableaux) : petit rappel
@@ -3438,7 +3569,7 @@ const tableToolbar=document.getElementById('table-toolbar');
 function newTable(rows,cols){
   const cells={};
   for(let r=0;r<rows;r++) for(let c=0;c<cols;c++)
-    cells[r+','+c]={text:'',b:false,i:false,u:false,color:'#22303f',hl:'transparent',font:'Arial',size:16,align:'left',
+    cells[r+','+c]={text:'',b:false,i:false,u:false,color:'#22303f',hl:'transparent',font:BASE_FONT,size:16,align:'left',
                     bg:'transparent',bord:'thin',colspan:1,rowspan:1,covered:false,nowrap:true};
   return {rows,cols,colW:Array(cols).fill(120),rowH:Array(rows).fill(40),cells};
 }
@@ -3483,7 +3614,7 @@ function tableRender(){
       cin.style.fontStyle=cl.i?'italic':'normal';
       cin.style.textDecoration=cl.u?'underline':'none';
       cin.style.color=cl.color||'#22303f';
-      cin.style.fontFamily=cl.font||'Arial';
+      cin.style.setProperty('font-family', fontCss(cl.font), 'important');
       cin.style.fontSize=(cl.size||16)+'px';
       cin.style.textAlign=cl.align||'left';
       if(cl.hl&&cl.hl!=='transparent') cin.style.background=cl.hl;
@@ -3618,7 +3749,7 @@ function tableSig(t){ if(!t) return 'null';
   const cells={};
   for(let r=0;r<t.rows;r++) for(let c=0;c<t.cols;c++){ const x=cellAt(t,r,c);
     cells[r+','+c]={t:(x.text||'').trim(),b:!!x.b,i:!!x.i,u:!!x.u,color:x.color||'#22303f',hl:x.hl||'transparent',
-      font:x.font||'Arial',size:x.size||16,align:x.align||'left',bg:x.bg||'transparent',bord:x.bord||'thin',
+      font:x.font||BASE_FONT,size:x.size||16,align:x.align||'left',bg:x.bg||'transparent',bord:x.bord||'thin',
       cs:x.colspan||1,rs:x.rowspan||1,cv:!!x.covered}; }
   return JSON.stringify({rows:t.rows,cols:t.cols,cells});
 }
@@ -3629,7 +3760,7 @@ function rowNotTruncated(r){ const tds=tableArea.querySelectorAll('td[data-r="'+
 // Lecture normalisée des attributs d'une cellule (mêmes règles que tableSig)
 const CELL_ATTRS=[
   x=>(x.text||'').trim(), x=>!!x.b, x=>!!x.i, x=>!!x.u, x=>x.color||'#22303f', x=>x.hl||'transparent',
-  x=>x.font||'Arial', x=>x.size||16, x=>x.align||'left', x=>x.bg||'transparent', x=>x.bord||'thin',
+  x=>x.font||BASE_FONT, x=>x.size||16, x=>x.align||'left', x=>x.bg||'transparent', x=>x.bord||'thin',
   x=>x.colspan||1, x=>x.rowspan||1, x=>!!x.covered ];
 function tableMkStatus(missing,extra){
   let status;
@@ -3808,7 +3939,7 @@ function objContentEl(o, editing, cropMode){
   if(o.u) tb.style.textDecoration='underline';
   if(o.color) tb.style.color=o.color;
   if(o.hl && o.hl!=='transparent') tb.style.background=o.hl;
-  if(o.font) tb.style.fontFamily=o.font;
+  tb.style.setProperty('font-family', fontCss(o.font), 'important');
   if(o.size) tb.style.fontSize=o.size+'px';
   if(o.align) tb.style.textAlign=o.align;
   tb.textContent=o.text||'';
@@ -4053,6 +4184,325 @@ function openFileExplorer(startFolder, onPick){
   modal.querySelector('#fxCancel').onclick=closeOverlay;
   modal.querySelector('#fxInsert').onclick=doInsert;
 }
+
+/* =========================================================
+   BARRE DE MENUS  +  « ENREGISTRER SOUS » — final guidé de chaque niveau
+   Le final de chaque niveau renvoie l'enfant dans le traitement de texte et
+   le guide pour cliquer sur « Fichier › Enregistrer sous ». L'explorateur
+   simulé (volet gauche façon Windows : on scrolle jusqu'à « Ce PC », qu'on
+   développe pour voir les disques) impose de ranger le devoir dans
+   « Ce PC › Ma Classe › Restitution de devoirs ». L'enfant n'est jamais
+   renvoyé au début du défi : s'il se trompe, on lui réexplique simplement.
+   ========================================================= */
+
+/* ---- petites fabriques de nœuds (fichier / dossier) ---- */
+const _F=(n,ic)=>({name:n, icon:ic||'📄', kind:'file'});
+const _D=(n,ch,ex)=>Object.assign({name:n, icon:'📁', kind:'folder', children:ch||[]}, ex||{});
+
+/* ---- disques cachés sous « Ce PC » (visibles seulement si on développe) ---- */
+const SD_C = {name:'C :', icon:'💽', kind:'disk', children:[
+  _D('Windows',[ _F('explorer.exe','⚙️'), _F('notes-système.txt') ]),
+  _D('Programmes',[ _D('Jeux',[ _F('démineur.exe','⚙️'), _F('solitaire.exe','⚙️') ]), _F('lecteur-vidéo.exe','⚙️') ]),
+  _F('lisez-moi.txt')
+]};
+const SD_PART = {name:'Espace de Partage', icon:'🗄️', kind:'disk', children:[
+  _F('Photos kermesse.zip','🗜️'), _F('Affiche spectacle.pdf','📕'), _F('Liste du matériel.txt')
+]};
+const SD_STOCK = {name:'Stockage', icon:'💽', kind:'disk', children:[
+  _D('Sauvegardes',[ _F('sauvegarde-2025.zip','🗜️'), _F('sauvegarde-2024.zip','🗜️') ]),
+  _F('anciens-travaux.zip','🗜️')
+]};
+const SD_CLASSE = {name:'Ma Classe', icon:'🏫', kind:'disk', children:[
+  _D("Espace d'échange",[ _F('Idées de sortie.txt'), _F('Photos classe verte.zip','🗜️'), _F('Recette des crêpes.pdf','📕') ]),
+  _D('Documents en consultation',[ _F('Règlement de la classe.pdf','📕'), _F('Poésie de la semaine.txt'), _F('Calendrier des vacances.pdf','📕') ]),
+  _D('Restitution de devoirs',[ _F('Devoir de Léa.txt'), _F('Exposé de Tom.txt'), _F('Rédaction de Inès.txt') ], {target:true})
+]};
+const SD_CEPC = {name:'Ce PC', icon:'💻', kind:'pc', children:[SD_C, SD_PART, SD_STOCK, SD_CLASSE]};
+
+/* ---- volet gauche : beaucoup de dossiers AVANT « Ce PC » (il faut scroller) ---- */
+const SAVE_SIDEBAR = [
+  {node:_D('Accueil',[ _F('Bienvenue.txt'), _D('Épinglés',[ _F('Mon poème.txt'), _F('Liste de courses.txt') ]) ], {icon:'🏠'})},
+  {node:_D('Galerie',[ _F('coucher-de-soleil.jpg','🖼️'), _F('montagne.png','🖼️'), _F('photo-de-classe.jpg','🖼️') ], {icon:'🖼️'})},
+  {node:_D('Apps',[ _F('Calculatrice','🧮'), _F('Horloge','⏰'), _F('Météo','🌤️'), _F('Dessin','🎨') ], {icon:'📦'})},
+  {node:_D('Documents',[ _F('Lettre au maire.txt'), _F('Recette.pdf','📕'), _D('Exposés',[ _F('Les volcans.txt'), _F('Le système solaire.txt') ]) ], {icon:'📄'})},
+  {node:_D('Images',[ _F('avatar.png','🖼️'), _D('Vacances',[ _F('plage.jpg','🖼️'), _F('piscine.jpg','🖼️') ]) ], {icon:'🖼️'})},
+  {node:_D('Vidéos',[ _F('anniversaire.mp4','🎬'), _F('spectacle.mp4','🎬') ], {icon:'🎬'})},
+  {node:_D('Bureau',[ _F('raccourci-jeu.lnk','🔗'), _D('Projets',[ _F('maquette.txt') ]) ], {icon:'🖥️'})},
+  {node:_D('Téléchargements',[ _F('installeur.exe','⚙️'), _F('image-drôle.gif','🖼️'), _F('manuel.pdf','📕') ], {icon:'⬇️'})},
+  {node:_D('Documents',[ _F('Brouillon.txt'), _D('Devoirs maison',[ _F('maths.txt'), _F('français.txt') ]) ], {icon:'📄'})},
+  {node:_D('Images',[ _F('fond-écran.jpg','🖼️'), _F('logo-école.png','🖼️') ], {icon:'🖼️'})},
+  {node:_D('Musique',[ _F('chanson-de-classe.mp3','🎵'), _F('comptine.mp3','🎵') ], {icon:'🎵'})},
+  {node:_D('Vidéos',[ _F('sortie-forêt.mp4','🎬') ], {icon:'🎬'})},
+  {node:SD_CEPC, pc:true},
+  {node:_D('Réseau',[ _F('Imprimante salle info','🖨️'), _F("Serveur de l'école",'🖥️') ], {icon:'🌐'})}
+];
+
+/* =========================================================
+   Barre de menus : seul « Fichier › Enregistrer sous » fonctionne.
+   ========================================================= */
+const MENU_DEFS = {
+  fichier:{label:'Fichier', items:[
+    {ic:'📄', name:'Nouveau', key:'Ctrl+N'},
+    {ic:'📂', name:'Ouvrir', key:'Ctrl+O'},
+    {ic:'💾', name:'Enregistrer', key:'Ctrl+S'},
+    {ic:'💾', name:'Enregistrer sous', key:'Ctrl+Maj+S', action:()=>triggerSaveAs()},
+    {sep:true},
+    {ic:'🖨️', name:'Imprimer', key:'Ctrl+P'},
+    {ic:'🔗', name:'Partager'},
+    {sep:true},
+    {ic:'✖️', name:'Fermer'}
+  ]},
+  edition:{label:'Édition', items:[
+    {ic:'↶', name:'Annuler', key:'Ctrl+Z'},
+    {ic:'↷', name:'Rétablir', key:'Ctrl+Y'},
+    {sep:true},
+    {ic:'✂️', name:'Couper', key:'Ctrl+X'},
+    {ic:'📋', name:'Copier', key:'Ctrl+C'},
+    {ic:'📥', name:'Coller', key:'Ctrl+V'},
+    {sep:true},
+    {ic:'🔤', name:'Tout sélectionner', key:'Ctrl+A'}
+  ]},
+  affichage:{label:'Affichage', items:[
+    {ic:'🔍', name:'Zoom'},
+    {ic:'📏', name:'Règle'},
+    {ic:'🗖', name:'Plein écran', key:'F11'}
+  ]},
+  insertion:{label:'Insertion', items:[
+    {ic:'🖼️', name:'Image'},
+    {ic:'➕', name:'Tableau'},
+    {ic:'😀', name:'Symbole'},
+    {ic:'🔢', name:'Numéro de page'}
+  ]},
+  outils:{label:'Outils', items:[
+    {ic:'🔤', name:'Orthographe', key:'F7'},
+    {ic:'🔢', name:'Statistiques'},
+    {ic:'🌐', name:'Langue'}
+  ]},
+  aide:{label:'Aide', items:[
+    {ic:'❓', name:'Aide', key:'F1'},
+    {ic:'ℹ️', name:'À propos'}
+  ]}
+};
+let openMenuKey=null;
+function closeMenus(){
+  document.querySelectorAll('#menubar .menu-top.open').forEach(b=>b.classList.remove('open'));
+  const pop=document.getElementById('menuPop'); if(pop) pop.remove();
+  openMenuKey=null;
+}
+function openMenu(key){
+  closeMenus();
+  const def=MENU_DEFS[key]; const top=document.querySelector('#menubar .menu-top[data-menu="'+key+'"]');
+  if(!def||!top) return;
+  top.classList.add('open'); openMenuKey=key;
+  const pop=document.createElement('div'); pop.className='menu-pop'; pop.id='menuPop';
+  def.items.forEach(it=>{
+    if(it.sep){ const s=document.createElement('div'); s.className='menu-sep'; pop.appendChild(s); return; }
+    const b=document.createElement('button'); b.className='menu-item'+(it.action?' go':' off');
+    if(it.action) b.dataset.go='1';
+    b.innerHTML='<span class="mi-ic">'+it.ic+'</span><span>'+it.name+'</span>'+(it.key?'<span class="mi-key">'+it.key+'</span>':'');
+    b.onclick=e=>{ e.stopPropagation(); closeMenus();
+      if(it.action) it.action();
+      else toast('🙂 Dans cet atelier, seul « Fichier › Enregistrer sous » fonctionne.');
+    };
+    pop.appendChild(b);
+  });
+  document.body.appendChild(pop);
+  const r=top.getBoundingClientRect();
+  pop.style.top=(r.bottom+3)+'px';
+  // on garde le menu dans la fenêtre (bord droit)
+  const w=pop.offsetWidth||226;
+  pop.style.left=Math.max(6, Math.min(r.left, window.innerWidth-w-8))+'px';
+}
+// surbrillance « astuce » : on ouvre le menu Fichier et on fait briller le bon chemin
+function highlightSavePath(){
+  const top=document.getElementById('menu-fichier');
+  if(top) top.classList.add('glow');
+  // on diffère l'ouverture du menu pour laisser le clic courant finir de remonter au document
+  // (sinon l'écouteur global de fermeture refermerait aussitôt le menu qu'on vient d'ouvrir).
+  setTimeout(()=>{
+    openMenu('fichier');
+    if(top) top.classList.add('glow');
+    const item=document.querySelector('#menuPop .menu-item.go');
+    if(item) item.classList.add('glow');
+  }, 30);
+  setTimeout(()=>{ document.querySelectorAll('#menubar .glow, #menuPop .glow').forEach(el=>el.classList.remove('glow')); }, 5200);
+}
+// câblage de la barre de menus (les éléments existent déjà dans le DOM)
+(function wireMenubar(){
+  document.querySelectorAll('#menubar .menu-top').forEach(btn=>{
+    btn.onclick=e=>{ e.stopPropagation(); const k=btn.dataset.menu; if(openMenuKey===k) closeMenus(); else openMenu(k); };
+  });
+  document.addEventListener('click',()=>{ if(openMenuKey) closeMenus(); });
+})();
+
+/* =========================================================
+   Flux de fin de niveau : on demande d'utiliser « Fichier › Enregistrer sous »
+   ========================================================= */
+let awaitingSave=false, pendingSaveDone=null;
+function startSaveAsFlow(onDone){
+  awaitingSave=true; pendingSaveDone=onDone||null;
+  promptUseFileMenu();
+}
+function promptUseFileMenu(){
+  modal.className='modal good';
+  modal.innerHTML=`
+    <span class="m-emoji">💾</span>
+    <div class="kicker" style="color:var(--green-d)">Dernière action du niveau</div>
+    <h2>Enregistre ton travail !</h2>
+    <p>Bravo ! Avant de continuer, tu dois <b>enregistrer ton devoir</b>, comme un vrai élève.</p>
+    <div class="howto"><p class="h-head">👉 Comment faire :</p>
+      <ol style="margin:4px 0 0;padding-left:22px;line-height:1.7">
+        <li>En haut, clique sur le menu <b>Fichier</b> 📂</li>
+        <li>Puis clique sur <b>Enregistrer sous</b> 💾</li>
+      </ol>
+      <p style="margin:8px 0 0">Besoin d'aide ? Clique sur <b>💡 J'ai besoin d'aide</b> : les boutons à cliquer vont <b>briller</b> ✨.</p></div>
+    <div class="m-actions"><button class="m-btn primary green" id="sauOk">C'est parti ! 🚀</button></div>`;
+  openOverlay();
+  document.getElementById('sauOk').onclick=()=>closeOverlay();
+}
+function triggerSaveAs(){
+  const enforce=awaitingSave;
+  openSaveAs(()=>{
+    if(awaitingSave){ awaitingSave=false; const cb=pendingSaveDone; pendingSaveDone=null; if(cb) cb(); }
+  }, enforce);
+}
+
+function openSaveAs(onSaved, enforce){
+  let path=[SAVE_SIDEBAR[0].node];      // on démarre sur « Accueil » (Ce PC est plus bas → il faut scroller)
+  let sbExpanded=false;                 // « Ce PC » développé dans le volet gauche ?
+  let sideScroll=0;                     // on préserve la position de défilement du volet gauche
+  const cur=()=>path[path.length-1];
+  let name='';                          // nom tapé par l'enfant
+  function guideText(){
+    const c=cur();
+    if(c.target) return "📁 Tu y es ! Écris un <b>nom court</b> en bas, puis clique sur <b>Enregistrer</b>.";
+    if(c===SD_CLASSE) return "Ouvre le dossier <b>Restitution de devoirs</b> 📁.";
+    if(c===SD_CEPC) return "Ouvre le disque <b>Ma Classe</b> 🏫.";
+    if(!sbExpanded) return "Dans le volet de gauche, <b>descends</b> jusqu'à <b>Ce PC</b> 💻 et clique sur le chevron <b>▸</b> pour l'ouvrir.";
+    return "Ouvre <b>Ce PC › Ma Classe › Restitution de devoirs</b>.";
+  }
+  function render(){
+    modal.className='modal fx-modal';
+    modal.innerHTML=`
+     <div class="fx">
+      <div class="fx-win">
+        <div class="fx-title">💾 Enregistrer sous <span class="fx-dot"><i></i><i></i><i></i></span></div>
+        <div class="fx-addr"><span style="font-weight:800">📁</span><span class="fx-crumb" id="saCrumb"></span></div>
+        <div class="fx-guide" id="saGuide"><span>🧭</span><span>${guideText()}</span></div>
+        <div class="fx-body">
+          <div class="fx-side" id="saSide"></div>
+          <div class="fx-main" id="saMain"></div>
+        </div>
+        <div class="fx-foot">
+          <span style="font-weight:800;font-size:.85rem;color:var(--muted)">Nom du fichier :</span>
+          <input class="fx-namebox" id="saName" maxlength="40" placeholder="Mon devoir" value="${name.replace(/"/g,'&quot;')}">
+          <span class="fx-type">Document (*.txt)</span>
+          <button class="m-btn ghost" id="saCancel" style="padding:9px 16px;font-size:.95rem">Annuler</button>
+          <button class="m-btn primary green" id="saSave" style="padding:9px 16px;font-size:.95rem">Enregistrer</button>
+        </div>
+      </div>
+     </div>`;
+    // fil d'Ariane cliquable
+    const crumb=modal.querySelector('#saCrumb'); crumb.innerHTML='';
+    path.forEach((node,i)=>{
+      if(i) crumb.insertAdjacentHTML('beforeend','<span class="fx-sep">›</span>');
+      const last=i===path.length-1;
+      const b=document.createElement('button'); b.className='fx-seg'+(last?' cur':''); b.textContent=node.name;
+      if(!last) b.onclick=()=>{ path=path.slice(0,i+1); render(); };
+      crumb.appendChild(b);
+    });
+    // volet gauche : la liste complète (façon Windows), avec « Ce PC » développable
+    const side=modal.querySelector('#saSide'); side.innerHTML='';
+    function navTo(p){ path=p; render(); }
+    SAVE_SIDEBAR.forEach(entry=>{
+      const node=entry.node;
+      if(entry.pc){
+        // ligne spéciale « Ce PC » : chevron (développe les disques) + libellé (navigue)
+        const row=document.createElement('div');
+        const inPc = cur()===node;
+        row.className='fx-pcrow'+(inPc?' active':'');
+        const chev=document.createElement('button'); chev.className='fx-chev'; chev.textContent=sbExpanded?'▾':'▸';
+        chev.title=sbExpanded?'Réduire':'Développer';
+        chev.onclick=e=>{ e.stopPropagation(); sbExpanded=!sbExpanded; render(); };
+        const lab=document.createElement('button'); lab.className='fx-pclabel';
+        lab.innerHTML='<span>'+node.icon+'</span> '+node.name;
+        lab.onclick=()=>{ sbExpanded=true; navTo([node]); };
+        row.appendChild(chev); row.appendChild(lab); side.appendChild(row);
+        if(sbExpanded){
+          node.children.forEach(dk=>{ const b=document.createElement('button');
+            b.className='fx-folder sub'+(cur()===dk?' active':'');
+            b.innerHTML='<span>'+dk.icon+'</span> '+dk.name;
+            b.onclick=()=>navTo([node,dk]);
+            side.appendChild(b); });
+        }
+      } else {
+        const b=document.createElement('button');
+        b.className='fx-folder'+(cur()===node?' active':'');
+        b.innerHTML='<span>'+node.icon+'</span> '+node.name;
+        b.onclick=()=>navTo([node]);
+        side.appendChild(b);
+      }
+    });
+    side.scrollTop=sideScroll;                       // on restaure le défilement (Ce PC est tout en bas)
+    side.onscroll=()=>{ sideScroll=side.scrollTop; };
+    // contenu du dossier courant
+    const main=modal.querySelector('#saMain'); main.innerHTML='';
+    const items=cur().children||[];
+    if(!items.length){ main.innerHTML='<div class="fx-empty">📂 Ce dossier est vide.</div>'; }
+    else{
+      const grid=document.createElement('div'); grid.className='fx-grid';
+      items.forEach(node=>{ const isFolder=node.kind!=='file';
+        const f=document.createElement('button'); f.className='fx-file'+(isFolder?' is-folder':'');
+        f.innerHTML='<span class="fx-thumb"'+(isFolder?'':' style="background:#eef4ff;font-size:1.9rem"')+'>'+node.icon+'</span><span class="fx-fn">'+node.name+'</span>';
+        if(isFolder) f.onclick=()=>{ path=path.concat(node); render(); };
+        else f.onclick=()=>toast('📄 Ce fichier est déjà rangé ici. À toi de créer le tien !');
+        grid.appendChild(f); });
+      main.appendChild(grid);
+    }
+    const nameEl=modal.querySelector('#saName');
+    nameEl.oninput=e=>{ name=e.target.value; };
+    nameEl.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); doSave(); } };
+    modal.querySelector('#saCancel').onclick=onCancel;
+    modal.querySelector('#saSave').onclick=doSave;
+    if(cur().target) setTimeout(()=>{ try{ nameEl.focus(); }catch(e){} },30);
+  }
+  function remind(emoji, title, body){
+    modal.className='modal warn';
+    modal.innerHTML=`<span class="m-emoji">${emoji}</span><h2>${title}</h2>
+      <div class="howto" style="margin-top:4px"><p>${body}</p></div>
+      <div class="m-actions"><button class="m-btn primary" id="saBack">↩ Revenir à l'enregistrement</button></div>`;
+    document.getElementById('saBack').onclick=render;
+  }
+  function onCancel(){
+    if(!enforce){ closeOverlay(); return; }   // hors fin de niveau : on peut simplement fermer
+    remind('💾','Il faut d\'abord enregistrer',
+      'Tu ne peux pas refaire le défi : ton travail est terminé ! 🎉<br>Il te reste juste à le <b>ranger</b> dans <b>Ma Classe › Restitution de devoirs</b>, à lui donner un <b>nom court</b> et à cliquer sur <b>Enregistrer</b>.');
+  }
+  function doSave(){
+    const clean=name.trim();
+    if(!clean){
+      remind('✏️','Donne un nom à ton devoir',
+        'Avant d\'enregistrer, écris un <b>nom court</b> dans la case <b>« Nom du fichier »</b> (par exemple <b>« Mon devoir »</b>), puis clique sur <b>Enregistrer</b>.');
+      return;
+    }
+    if(!cur().target){
+      remind('📁','Ce n\'est pas le bon dossier',
+        'Ton devoir doit être rangé dans <b>Ce PC › Ma Classe › Restitution de devoirs</b>.<br><br>Dans le volet de gauche, descends jusqu\'à <b>Ce PC</b> 💻, développe-le avec le chevron <b>▸</b>, clique sur <b>Ma Classe</b> 🏫 puis ouvre <b>Restitution de devoirs</b>, et enregistre dedans.');
+      return;
+    }
+    // réussite : on ajoute le fichier dans le dossier (pour le réalisme) et on continue
+    const fname=clean.replace(/\.txt$/i,'')+'.txt';
+    const folder=cur();
+    if(folder.children && !folder.children.some(f=>f.name===fname))
+      folder.children.push({name:fname, icon:'⭐', kind:'file'});
+    closeOverlay();
+    toast('💾 Devoir enregistré dans « Restitution de devoirs » ✅');
+    if(typeof onSaved==='function') onSaved(fname);
+  }
+  render();
+  openOverlay();
+}
+
 function openLibrary(onPick){
   modal.className='modal';
   modal.innerHTML=`<span class="m-emoji">🗂️</span><h2>Bibliothèque d'images</h2>
@@ -4114,7 +4564,7 @@ document.getElementById('ob-back').onclick =()=>{ if(objSel<0){ toast('Choisis d
 function objMatchKey(o){ if(o.type==='image') return 'image|'+o.img; if(o.type==='shape') return 'shape|'+o.shape; return 'textbox'; }
 function objNormText(o){ return (o.text||'').trim().toLowerCase().replace(/\s+/g,' '); }
 // Mise en forme normalisée d'une zone de texte (valeurs « par défaut » = pas de mise en forme)
-const TB_DEF={b:false,i:false,u:false,color:'#22303f',hl:'transparent',font:'Arial',size:16,align:'left'};
+const TB_DEF={b:false,i:false,u:false,color:'#22303f',hl:'transparent',font:BASE_FONT,size:16,align:'left'};
 function objTbFmt(o){ o=o||{}; return {b:!!o.b,i:!!o.i,u:!!o.u,color:o.color||TB_DEF.color,hl:o.hl||TB_DEF.hl,font:o.font||TB_DEF.font,size:o.size||TB_DEF.size,align:o.align||TB_DEF.align}; }
 function objRankMap(arr){ const list=arr.filter(o=>o.wrap!=='inline').slice().sort((a,b)=>(a.z||0)-(b.z||0));
   const m={}; list.forEach((o,r)=>{ m[objMatchKey(o)]=r; }); return m; }
@@ -4282,7 +4732,7 @@ function startObjectStep(){
     steps(lv).forEach((d,i)=>{
       const isJ=(d.kind==='test'||d.kind==='jalon');
       html+='<button class="dk-step'+(isJ?' jalon':'')+'" data-l="'+lv.n+'" data-s="'+i+'">'
-        +'<b>'+(d.label||('Étape '+(i+1)))+'</b> · '+(d.title||'')+'</button>';
+        +'<b>'+(d.label||('Mission '+(i+1)))+'</b> · '+(d.title||'')+'</button>';
     });
   });
   html+='<div class="dk-actions"><button class="dk-act" id="dkUnlockAll">🔓 Tout débloquer</button>'
@@ -4312,6 +4762,29 @@ function startObjectStep(){
     location.href=HOME;
   };
   // (Le saut par URL ?go=L.S est traité dans init, pour éviter un double chargement.)
+})();
+</script>
+<script>
+/* Bouton bascule OpenDyslexic — préférence partagée entre toutes les pages */
+(function(){
+  var KEY='a11y_dys', root=document.documentElement;
+  var btn=document.createElement('button');
+  btn.type='button'; btn.className='dys-toggle';
+  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dyslexique</span><span class="dys-switch"><span class="dys-knob"></span></span>';
+  function apply(on){
+    root.classList.toggle('dys',on);
+    btn.setAttribute('aria-pressed',on?'true':'false');
+    btn.title=on?'Mode Dyslexique activé — clique pour revenir à la police normale':'Activer le Mode Dyslexique (police OpenDyslexic)';
+  }
+  btn.addEventListener('click',function(){
+    var want=!root.classList.contains('dys');
+    if(typeof window.__dysConfirm==='function'){ window.__dysConfirm(want); return; }
+    try{localStorage.setItem(KEY,want?'1':'0');}catch(e){}
+    apply(want);
+  });
+  document.body.appendChild(btn);
+  var on=false; try{on=localStorage.getItem(KEY)==='1';}catch(e){}
+  apply(on);
 })();
 </script>
 </body>
