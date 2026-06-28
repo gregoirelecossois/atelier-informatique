@@ -93,7 +93,27 @@
   @media (prefers-reduced-motion: reduce){
     .card .go svg{transition:none;}
   }
+
+  /* ===== Bascule police OpenDyslexic (accessibilité lecture/dyslexie) ===== */
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
+  html.dys, html.dys *{font-family:"OpenDyslexic","Fluent Emoji",sans-serif !important;}
+  .dys-toggle{position:fixed;top:16px;right:16px;z-index:500;display:inline-flex;align-items:center;gap:9px;
+    border:2px solid #d7e0ea;background:#fff;color:#22303f;border-radius:999px;padding:7px 9px 7px 13px;
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-weight:800;font-size:.82rem;line-height:1;cursor:pointer;
+    box-shadow:0 6px 18px rgba(34,48,63,.20);transition:border-color .2s,background .2s,box-shadow .2s;}
+  .dys-toggle:hover{box-shadow:0 8px 22px rgba(34,48,63,.28);}
+  .dys-toggle:focus-visible{outline:3px solid #2563eb;outline-offset:2px;}
+  .dys-toggle .dys-ic{font-size:1.05rem;}
+  .dys-toggle .dys-label{white-space:nowrap;}
+  .dys-toggle .dys-switch{position:relative;width:38px;height:22px;border-radius:999px;background:#cdd7e3;transition:background .2s;flex:none;}
+  .dys-toggle .dys-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s;}
+  html.dys .dys-toggle{border-color:#16a34a;background:#f1fbf4;}
+  html.dys .dys-toggle .dys-switch{background:#16a34a;}
+  html.dys .dys-toggle .dys-knob{left:18px;}
+  @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
 </style>
+<script>try{if(localStorage.getItem('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
 </head>
 <body>
   <div class="wrap">
@@ -161,13 +181,24 @@
         </span>
       </a>
 
-      <div class="card soon" aria-disabled="true">
+      <a class="card active" href="dossiers-fichiers.html">
         <span class="num">04</span>
         <span class="emoji">&#x1F5C2;&#xFE0F;</span>
         <h2>Dossiers et fichiers</h2>
-        <p>Range, renomme et retrouve tes documents.</p>
-        <span class="badge">Bient&#244;t disponible</span>
-      </div>
+        <p>Ouvre, range, renomme, supprime et retrouve tes fichiers&#160;: un vrai explorateur &#224; ma&#238;triser&#160;!</p>
+        <div class="levels" id="dfLevels">
+          <span class="lvl-chip" data-n="1"><span class="ic">&#x2022;</span>Niv. 1</span>
+          <span class="lvl-chip" data-n="2"><span class="ic">&#x2022;</span>Niv. 2</span>
+          <span class="lvl-chip" data-n="3"><span class="ic">&#x2022;</span>Niv. 3</span>
+          <span class="lvl-chip" data-n="4"><span class="ic">&#x2022;</span>Niv. 4</span>
+          <span class="lvl-chip" data-n="5"><span class="ic">&#x2022;</span>Niv. 5</span>
+          <span class="lvl-chip" data-n="6"><span class="ic">&#x2022;</span>Niv. 6</span>
+          <span class="lvl-chip" data-n="7"><span class="ic">&#x1F9A0;</span> Boss</span>
+        </div>
+        <span class="go">Commencer
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
 
       <div class="card soon" aria-disabled="true">
         <span class="num">05</span>
@@ -200,6 +231,7 @@
     paint('#msLevels','ms_unlocked','ms_curlevel');
     paint('#kbLevels','kb_unlocked','kb_curlevel');
     paint('#ttLevels','tt_unlocked','tt_curlevel');
+    paint('#dfLevels','df_unlocked','df_curlevel');
   })();
 
   /* ===== Acc&#232;s d&#233;veloppeur (raccourcis vers chaque niveau) ===== */
@@ -210,7 +242,9 @@
       {file:'le-clavier.html', name:'⌨️ Le clavier', unlock:'kb_unlocked', cur:'kb_curlevel', stepN:7,
        levels:['Les lettres','Les majuscules','Les accents','Les chiffres','Les symboles','Frappe libre','La chasse à la lave']},
       {file:'traitement-texte.html', name:'📝 Traitement de texte', unlock:'tt_unlocked', cur:'tt_curlevel', stepN:7,
-       levels:['Les bases','Paragraphes & Alignements','Listes & Structure','Le clavier magique','Écrire et déplacer','Les tableaux','Images & Objets']}
+       levels:['Les bases','Paragraphes & Alignements','Listes & Structure','Le clavier magique','Écrire et déplacer','Les tableaux','Images & Objets']},
+      {file:'dossiers-fichiers.html', name:'🗂️ Dossiers et fichiers', unlock:'df_unlocked', cur:'df_curlevel', stepN:7,
+       levels:['Le Bureau et les fenêtres','Naviguer dans les dossiers','Créer et nommer','Ranger : déplacer et copier','Supprimer et la corbeille','Rechercher et trier','🦠 Le Virus (Boss)']}
     ];
     const css=`
     #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;}
@@ -260,6 +294,27 @@
       del('tt_step');
       location.reload();
     };
+  })();
+
+  /* Bouton bascule OpenDyslexic — préférence partagée entre toutes les pages */
+  (function(){
+    var KEY='a11y_dys', root=document.documentElement;
+    var btn=document.createElement('button');
+    btn.type='button'; btn.className='dys-toggle';
+    btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dyslexique</span><span class="dys-switch"><span class="dys-knob"></span></span>';
+    function apply(on){
+      root.classList.toggle('dys',on);
+      btn.setAttribute('aria-pressed',on?'true':'false');
+      btn.title=on?'Mode Dyslexique activé — clique pour revenir à la police normale':'Activer le Mode Dyslexique (police OpenDyslexic)';
+    }
+    btn.addEventListener('click',function(){
+      var on=!root.classList.contains('dys');
+      try{localStorage.setItem(KEY,on?'1':'0');}catch(e){}
+      apply(on);
+    });
+    document.body.appendChild(btn);
+    var on=false; try{on=localStorage.getItem(KEY)==='1';}catch(e){}
+    apply(on);
   })();
 </script>
 </body>

@@ -363,6 +363,27 @@
     .spell.word .rune,.spell.pop .rune,.atk-word .card,.atk-word.hit .card{animation:none!important;}
   }
 </style>
+<style>
+  /* ===== Bascule police OpenDyslexic (accessibilité lecture/dyslexie) ===== */
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
+  html.dys, html.dys *{font-family:"OpenDyslexic","Fluent Emoji",sans-serif !important;}
+  .dys-toggle{position:fixed;bottom:16px;left:16px;z-index:500;display:inline-flex;align-items:center;gap:9px;
+    border:2px solid #d7e0ea;background:#fff;color:#22303f;border-radius:999px;padding:7px 9px 7px 13px;
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-weight:800;font-size:.82rem;line-height:1;cursor:pointer;
+    box-shadow:0 6px 18px rgba(34,48,63,.20);transition:border-color .2s,background .2s,box-shadow .2s;}
+  .dys-toggle:hover{box-shadow:0 8px 22px rgba(34,48,63,.28);}
+  .dys-toggle:focus-visible{outline:3px solid #2563eb;outline-offset:2px;}
+  .dys-toggle .dys-ic{font-size:1.05rem;}
+  .dys-toggle .dys-label{white-space:nowrap;}
+  .dys-toggle .dys-switch{position:relative;width:38px;height:22px;border-radius:999px;background:#cdd7e3;transition:background .2s;flex:none;}
+  .dys-toggle .dys-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s;}
+  html.dys .dys-toggle{border-color:#16a34a;background:#f1fbf4;}
+  html.dys .dys-toggle .dys-switch{background:#16a34a;}
+  html.dys .dys-toggle .dys-knob{left:18px;}
+  @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
+</style>
+<script>try{if(localStorage.getItem('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
 </head>
 <body>
   <div class="topbar">
@@ -371,7 +392,7 @@
       Accueil
     </a>
     <h1 class="display" id="lvlTitle">Le clavier <span class="dot">·</span> le parachute</h1>
-    <span class="step-count" id="stepCount">Niveau 1 · Manche 1 / 4</span>
+    <span class="step-count" id="stepCount">Niveau 1 · Mission 1 / 4</span>
     <button class="reset-btn" id="soundBtn" title="Activer / couper le son">🔊 Son</button>
     <button class="reset-btn" id="levelBtn" title="Voir les niveaux">🗺️ Niveau 1/6</button>
     <button class="reset-btn danger" id="resetBtn" title="Recommencer ce niveau">↺ Recommencer</button>
@@ -382,7 +403,7 @@
   <div class="banner" id="banner">
     <span class="b-emoji" id="bEmoji">🪂</span>
     <div class="b-txt">
-      <div class="b-title" id="bTitle">Manche</div>
+      <div class="b-title" id="bTitle">Mission</div>
       <div class="b-sub" id="bSub"></div>
     </div>
     <button class="b-btn" id="seeMission">📋 Revoir la consigne</button>
@@ -392,7 +413,7 @@
 
   <div class="actions">
     <button class="btn btn-hint" id="hintBtn">💡 Astuce</button>
-    <button class="btn btn-restart" id="restartBtn">↺ Recommencer la manche</button>
+    <button class="btn btn-restart" id="restartBtn">↺ Recommencer</button>
   </div>
 
   <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
@@ -473,7 +494,7 @@ function keyHint(ch){
   }
   return {hl:{keys:S([ch])}, cap:'La touche '+kbd(ch)};
 }
-// Surlignage combiné pour plusieurs caractères (image d'une manche entière)
+// Surlignage combiné pour plusieurs caractères (image d'une mission entière)
 function comboHint(chars){
   const keys=new Set(); let maj=false, altgr=false;
   chars.forEach(ch=>{ const {hl}=keyHint(ch); (hl.keys||new Set()).forEach(k=>keys.add(k)); if(hl.maj)maj=true; if(hl.altgr)altgr=true; });
@@ -529,16 +550,16 @@ const LEVELS=[
       kb:{letters:true},
       tools:[{g:'⌨️',n:'Trouver les lettres'},{g:'🪂',n:'Taper avant le sol'}] },
     rounds:[
-      {kind:'mission',label:'Manche 1',emoji:'🟢',title:'Les touches du milieu',
+      {kind:'mission',label:'Mission 1',emoji:'🟢',title:'Les touches du milieu',
        desc:'Fais éclater les lettres '+kbd('f')+' '+kbd('j')+' '+kbd('d')+' '+kbd('k')+' '+kbd('s')+' '+kbd('l')+'. Ce sont les touches du milieu, là où on pose les doigts.',
        pool:['f','j','d','k','s','l'],target:15,lives:6,speed:58,spawnMs:1550},
-      {kind:'mission',label:'Manche 2',emoji:'🅰️',title:'Les voyelles',
+      {kind:'mission',label:'Mission 2',emoji:'🅰️',title:'Les voyelles',
        desc:'Les voyelles '+kbd('a')+' '+kbd('e')+' '+kbd('i')+' '+kbd('o')+' '+kbd('u')+' '+kbd('y')+'. On les trouve dans presque tous les mots !',
        pool:['a','e','i','o','u','y'],target:15,lives:6,speed:64,spawnMs:1480},
-      {kind:'mission',label:'Manche 3',emoji:'🤚',title:'Le bord du clavier',
+      {kind:'mission',label:'Mission 3',emoji:'🤚',title:'Le bord du clavier',
        desc:'Les lettres un peu plus loin des doigts : '+kbd('a')+' '+kbd('z')+' '+kbd('p')+' '+kbd('q')+' '+kbd('m')+' '+kbd('w')+' '+kbd('x')+' '+kbd('c')+'. Va les chercher !',
        pool:['a','z','p','q','m','w','x','c'],target:18,lives:6,speed:70,spawnMs:1420},
-      {kind:'mission',label:'Manche 4',emoji:'🔤',title:'Les consonnes restantes',
+      {kind:'mission',label:'Mission 4',emoji:'🔤',title:'Les consonnes restantes',
        desc:'On termine l\'alphabet avec '+kbd('b')+' '+kbd('g')+' '+kbd('h')+' '+kbd('n')+' '+kbd('r')+' '+kbd('t')+' '+kbd('v')+'.',
        pool:['b','g','h','n','r','t','v'],target:16,lives:6,speed:74,spawnMs:1360},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Toutes les lettres !',
@@ -553,13 +574,13 @@ const LEVELS=[
       kb:{maj:true,caps:true,letters:true},
       tools:[{g:'⇧',n:'La touche Maj'},{g:'⇪',n:'Caps Lock'}] },
     rounds:[
-      {kind:'mission',label:'Manche 1',emoji:'🔠',title:'Les majuscules des prénoms',
+      {kind:'mission',label:'Mission 1',emoji:'🔠',title:'Les majuscules des prénoms',
        desc:'Comme au début d\'un prénom : '+kbd('A')+' '+kbd('E')+' '+kbd('L')+' '+kbd('M')+' '+kbd('N')+' '+kbd('S')+' '+kbd('T')+'. Souviens-toi : '+kbd('Maj ⇧')+' enfoncé + la lettre.',
        pool:['A','E','L','M','N','S','T'],target:16,lives:7,speed:52,spawnMs:1750},
-      {kind:'mission',label:'Manche 2',emoji:'🔠',title:'D\'autres majuscules',
+      {kind:'mission',label:'Mission 2',emoji:'🔠',title:'D\'autres majuscules',
        desc:'On continue avec '+kbd('B')+' '+kbd('C')+' '+kbd('D')+' '+kbd('F')+' '+kbd('G')+' '+kbd('J')+' '+kbd('P')+' '+kbd('R')+' '+kbd('V')+'.',
        pool:['B','C','D','F','G','J','P','R','V'],target:20,lives:7,speed:56,spawnMs:1620},
-      {kind:'mission',label:'Manche 3',emoji:'🔡',title:'Majuscules et minuscules mélangées',
+      {kind:'mission',label:'Mission 3',emoji:'🔡',title:'Majuscules et minuscules mélangées',
        desc:'Attention : des majuscules <b>et</b> des minuscules tombent ensemble ! Lis bien chaque lettre avant de taper.',
        pool:['A','a','Z','z','E','e','R','r','T','t','I','i','O','o','N','n'],target:24,lives:6,speed:66,spawnMs:1500},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Grand mélange — de A à Z',
@@ -574,16 +595,16 @@ const LEVELS=[
       kb:{accents:true},
       tools:[{g:'é',n:'Touches directes'},{g:'^',n:'La touche chapeau'}] },
     rounds:[
-      {kind:'mission',label:'Manche 1',emoji:'é',title:'Aigu et grave',
+      {kind:'mission',label:'Mission 1',emoji:'é',title:'Aigu et grave',
        desc:'Les accents directs '+kbd('é')+' '+kbd('è')+' '+kbd('à')+'. Une seule touche à chaque fois !',
        pool:['é','è','à'],target:10,lives:7,speed:46,spawnMs:1900,showTips:true},
-      {kind:'mission',label:'Manche 2',emoji:'ç',title:'Cédille et accent sur le u',
+      {kind:'mission',label:'Mission 2',emoji:'ç',title:'Cédille et accent sur le u',
        desc:'On ajoute '+kbd('ç')+' et '+kbd('ù')+', toujours en touches directes.',
        pool:['ç','ù','é','è','à'],target:14,lives:7,speed:52,spawnMs:1700,showTips:true},
-      {kind:'mission',label:'Manche 3',emoji:'ê',title:'Le chapeau (circonflexe)',
+      {kind:'mission',label:'Mission 3',emoji:'ê',title:'Le chapeau (circonflexe)',
        desc:'La touche morte '+kbd('^')+' puis la lettre. Prends ton temps, c\'est un peu plus difficile !',
        pool:['ê','â','ô','î','û'],target:14,lives:8,speed:42,spawnMs:2250,showTips:true},
-      {kind:'mission',label:'Manche 4',emoji:'ë',title:'Le tréma (les deux points)',
+      {kind:'mission',label:'Mission 4',emoji:'ë',title:'Le tréma (les deux points)',
        desc:'Le tréma se fait avec '+kbd('Maj ⇧')+' + '+kbd('^')+' puis la lettre. Essaie '+kbd('ë')+' '+kbd('ï')+' '+kbd('ü')+'.',
        pool:['ë','ï','ü'],target:9,lives:8,speed:42,spawnMs:2300,showTips:true},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tous les accents',
@@ -598,7 +619,7 @@ const LEVELS=[
       kb:{maj:true,digits:true},
       tools:[{g:'123',n:'La rangée des chiffres'},{g:'🔢',n:'Le pavé numérique'}] },
     rounds:[
-      {kind:'mission',label:'Manche 1',emoji:'🔢',title:'Tous les chiffres d\'un coup',
+      {kind:'mission',label:'Mission 1',emoji:'🔢',title:'Tous les chiffres d\'un coup',
        desc:'Tous les chiffres de '+kbd('0')+' à '+kbd('9')+' tombent mélangés. Montre que tu les retrouves tous !',
        pool:'0123456789'.split(''),target:24,lives:6,speed:60,spawnMs:1600},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Chiffres en rafale',
@@ -613,9 +634,9 @@ const LEVELS=[
       kb:{maj:true, altgr:true, keys:new Set([';',',','!',':','(',')','=','"','à','e'])},
       tools:[{g:'⇧',n:'Maj + touche'},{g:'AltGr',n:'AltGr + touche'}] },
     rounds:[
-      {kind:'mission',label:'Manche 1',emoji:'❓',title:'La ponctuation',desc:'Les signes '+kbd('.')+' '+kbd(',')+' '+kbd('?')+' '+kbd('!')+' '+kbd(';')+' '+kbd(':')+'. Clique sur 💡 si tu cherches une touche.',pool:['.',',','?','!',';',':'],target:16,lives:7,speed:46,spawnMs:2050,showTips:true},
-      {kind:'mission',label:'Manche 2',emoji:'🔣',title:'Parenthèses et signes',desc:'Les touches directes '+kbd('(')+' '+kbd(')')+' '+kbd('=')+', le tiret '+kbd('-')+' et les guillemets '+kbd('"')+'.',pool:['(',')','=','"','-'],target:15,lives:7,speed:48,spawnMs:2100,showTips:true},
-      {kind:'mission',label:'Manche 3',emoji:'＠',title:'Les symboles spéciaux',desc:'Les symboles '+kbd('@')+' '+kbd('#')+' '+kbd('€')+' '+kbd('+')+' avec '+kbd('AltGr')+' ou '+kbd('Maj ⇧')+'.',pool:['@','#','€','+'],target:12,lives:7,speed:48,spawnMs:2150,showTips:true},
+      {kind:'mission',label:'Mission 1',emoji:'❓',title:'La ponctuation',desc:'Les signes '+kbd('.')+' '+kbd(',')+' '+kbd('?')+' '+kbd('!')+' '+kbd(';')+' '+kbd(':')+'. Clique sur 💡 si tu cherches une touche.',pool:['.',',','?','!',';',':'],target:16,lives:7,speed:46,spawnMs:2050,showTips:true},
+      {kind:'mission',label:'Mission 2',emoji:'🔣',title:'Parenthèses et signes',desc:'Les touches directes '+kbd('(')+' '+kbd(')')+' '+kbd('=')+', le tiret '+kbd('-')+' et les guillemets '+kbd('"')+'.',pool:['(',')','=','"','-'],target:15,lives:7,speed:48,spawnMs:2100,showTips:true},
+      {kind:'mission',label:'Mission 3',emoji:'＠',title:'Les symboles spéciaux',desc:'Les symboles '+kbd('@')+' '+kbd('#')+' '+kbd('€')+' '+kbd('+')+' avec '+kbd('AltGr')+' ou '+kbd('Maj ⇧')+'.',pool:['@','#','€','+'],target:12,lives:7,speed:48,spawnMs:2150,showTips:true},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tous les symboles',desc:'Ponctuation, parenthèses et symboles spéciaux tombent ensemble. Sers-toi de 💡 quand tu hésites !',pool:['.',',','?','!',';',':','(',')','=','"','-','@','#','€','+'],target:30,lives:7,speed:60,spawnMs:1450,showTips:true},
       {kind:'jalon',mode:'boss',label:'Combat de Boss',emoji:'🐉',title:'le Dragon des Touches',
        desc:'Tu as réveillé le <b>Dragon des Touches</b> et il t\'attaque ! <b>Tape la bonne touche</b> pour esquiver puis pour l\'attaquer. Ne te trompe pas de touche et attention aux <b>majuscules</b> !',
@@ -643,7 +664,7 @@ const LEVELS=[
   { n:7, title:'La chasse à la lave', subtitle:'la chasse à la lave', game:'dactylo',
     intro:{ emoji:'🔥',
       lead:'Le grand défi final ! Tape le texte <b>avant que la vague de lave</b> 🔥 ne te rattrape.',
-      teach:'Le <b>repère vert</b> montre où tu en es. La <b>lave rouge</b> avance toute seule derrière toi : reste devant elle ! Si elle te rattrape, on recommence la manche. Plus le niveau monte, plus la lave est rapide.',
+      teach:'Le <b>repère vert</b> montre où tu en es. La <b>lave rouge</b> avance toute seule derrière toi : reste devant elle ! Si elle te rattrape, on recommence la mission. Plus le niveau monte, plus la lave est rapide.',
       tools:[{g:'🔥',n:'Rester devant la lave'},{g:'⚡',n:'La vitesse de frappe'}] },
     rounds:[
       {kind:'mission',label:'Poursuite 1',emoji:'🐢',title:'En douceur',desc:'La lave avance lentement. Tape la phrase avant qu\'elle te rattrape.',text:'je tape vite et je reste devant la vague de lave',pursuit:2.0,grace:2600,lead:5},
@@ -1240,7 +1261,7 @@ function updateProgress(){
     if(mile) d.textContent = '🏆';
     if(i<=progressIdx){
       d.classList.add('clickable');
-      d.title = (i===playIdx?'Manche en cours : ':'Revenir à ')+st.label+' · '+st.title;
+      d.title = (i===playIdx?'Mission en cours : ':'Revenir à ')+st.label+' · '+st.title;
       d.onclick=()=>{ if(i<=progressIdx) startStep(i); };
     }
     track.appendChild(d);
@@ -1283,7 +1304,7 @@ function openRoundPopup(){
   const s=currentStep, jalon=s.kind==='jalon';
   if(s.mode==='boss') return openBossBriefing(s);
   const lvl=LEVELS[currentLevel-1];
-  // Briefing image-first : pour les manches à astuces, on montre les touches sur le clavier
+  // Briefing image-first : pour les missions à astuces, on montre les touches sur le clavier
   let kbimg='';
   if(lvl.game==='parachute' && s.showTips && s.pool){
     const c=comboHint(s.pool);
@@ -1294,7 +1315,7 @@ function openRoundPopup(){
     '<span class="m-emoji">'+s.emoji+'</span>'
     + '<div class="kicker">'+(reviewing()?'Entraînement':s.label)+'</div>'
     + '<h2>'+s.title+'</h2>'
-    + '<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta manche :')+'</p><p>'+s.desc+'</p></div>'
+    + '<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta mission :')+'</p><p>'+s.desc+'</p></div>'
     + kbimg
     + '<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
   openOverlay();
@@ -1309,8 +1330,8 @@ function onWin(){
   if(reviewing()){
     modal.className='modal good';
     modal.innerHTML='<span class="m-emoji">💪</span><h2>Bien joué !</h2>'
-      +'<p>Tu as refait cette manche. On revient à <b>ta manche en cours</b>, ta progression est gardée.</p>'
-      +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma manche</button></div>';
+      +'<p>Tu as refait cette mission. On revient à <b>ta mission en cours</b>, ta progression est gardée.</p>'
+      +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma mission</button></div>';
     openOverlay();
     document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
     return;
@@ -1321,8 +1342,8 @@ function onWin(){
   const jalon=currentStep.kind==='jalon';
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">'+(jalon?'🏆':'✅')+'</span>'
-    +'<h2>'+(jalon?'Défi réussi !':'Manche réussie !')+'</h2>'
-    +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la manche suivante !')+'</p>'
+    +'<h2>'+(jalon?'Défi réussi !':'Mission réussie !')+'</h2>'
+    +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la mission suivante !')+'</p>'
     +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
   openOverlay(); if(jalon) confetti();
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
@@ -1513,7 +1534,7 @@ function playUnlock(nextN, done){
 document.getElementById('resetBtn').onclick=()=>{
   modal.className='modal warn';
   modal.innerHTML='<span class="m-emoji">↺</span><h2>Recommencer ce niveau ?</h2>'
-    +'<p>Tu repartiras de la <b>première manche du Niveau '+currentLevel+'</b>. Les autres niveaux ne changent pas.</p>'
+    +'<p>Tu repartiras de la <b>première mission du Niveau '+currentLevel+'</b>. Les autres niveaux ne changent pas.</p>'
     +'<div class="m-actions"><button class="m-btn ghost" id="cR">Annuler</button>'
     +'<button class="m-btn primary" id="dR">Oui, recommencer</button></div>';
   openOverlay();
@@ -1599,7 +1620,7 @@ function confetti(){
 })();
 
 /* =========================================================
-   10. ACCÈS DÉVELOPPEUR — sauter à n'importe quelle manche
+   10. ACCÈS DÉVELOPPEUR — sauter à n'importe quelle mission
    ========================================================= */
 (function devkit(){
   function steps(lv){ return lv.rounds; }
@@ -1630,13 +1651,13 @@ function confetti(){
   const root=document.createElement('div'); root.id='devkit';
   let html='<button class="dk-toggle" id="dkToggle">🛠️ Dev</button>'
     +'<div class="dk-panel"><p class="dk-head">🛠️ Accès développeur</p>'
-    +'<p class="dk-note">Saute à une manche : tout ce qui précède est considéré comme réussi.</p>';
+    +'<p class="dk-note">Saute à une mission : tout ce qui précède est considéré comme réussi.</p>';
   LEVELS.forEach(lv=>{
     html+='<div class="dk-lv">Niveau '+lv.n+' — '+lv.title+'</div>';
     steps(lv).forEach((d,i)=>{
       const isJ=(d.kind==='test'||d.kind==='jalon');
       html+='<button class="dk-step'+(isJ?' jalon':'')+'" data-l="'+lv.n+'" data-s="'+i+'">'
-        +'<b>'+(d.label||('Manche '+(i+1)))+'</b> · '+(d.title||'')+'</button>';
+        +'<b>'+(d.label||('Mission '+(i+1)))+'</b> · '+(d.title||'')+'</button>';
     });
   });
   html+='<div class="dk-actions"><button class="dk-act" id="dkUnlockAll">🔓 Tout débloquer</button>'
@@ -1666,6 +1687,29 @@ function confetti(){
     location.href=HOME;
   };
   // (Le saut par URL ?go=L.S est traité dans init, pour éviter un double chargement.)
+})();
+</script>
+<script>
+/* Bouton bascule OpenDyslexic — préférence partagée entre toutes les pages */
+(function(){
+  var KEY='a11y_dys', root=document.documentElement;
+  var btn=document.createElement('button');
+  btn.type='button'; btn.className='dys-toggle';
+  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dyslexique</span><span class="dys-switch"><span class="dys-knob"></span></span>';
+  function apply(on){
+    root.classList.toggle('dys',on);
+    btn.setAttribute('aria-pressed',on?'true':'false');
+    btn.title=on?'Mode Dyslexique activé — clique pour revenir à la police normale':'Activer le Mode Dyslexique (police OpenDyslexic)';
+  }
+  btn.addEventListener('click',function(){
+    var want=!root.classList.contains('dys');
+    if(typeof window.__dysConfirm==='function'){ window.__dysConfirm(want); return; }
+    try{localStorage.setItem(KEY,want?'1':'0');}catch(e){}
+    apply(want);
+  });
+  document.body.appendChild(btn);
+  var on=false; try{on=localStorage.getItem(KEY)==='1';}catch(e){}
+  apply(on);
 })();
 </script>
 </body>

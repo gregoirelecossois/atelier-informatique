@@ -369,6 +369,18 @@
   /* ---------- Combat de Boss (Niveau 7) ---------- */
   .bossfield{position:relative;height:clamp(440px,62vh,620px);overflow:hidden;
     background:linear-gradient(#2a1530 0%,#3a1d2e 42%,#241018 74%,#160a10 100%);}
+  /* Plein écran : on garde la taille LOGIQUE normale du terrain (physique inchangée = même
+     difficulté) et on agrandit visuellement via un scaler. Le wrapper est l'élément plein écran ;
+     le scaler porte le transform (isolé des animations de tremblement du terrain). */
+  .boss-fs-wrap, .boss-scaler{display:block;}
+  .boss-fs-wrap:fullscreen{display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#000;}
+  .boss-fs-wrap:-webkit-full-screen{display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#000;}
+  .boss-fs-wrap:fullscreen .boss-scaler{transform:scale(var(--bfs-scale,1));transform-origin:center center;}
+  .boss-fs-wrap:-webkit-full-screen .boss-scaler{transform:scale(var(--bfs-scale,1));transform-origin:center center;}
+  .boss-fs-btn{flex:0 0 auto;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;
+    border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#ffe9c2;border-radius:9px;
+    font-size:1.15rem;line-height:1;cursor:pointer;padding:0;}
+  .boss-fs-btn:hover{border-color:#ffd76a;background:rgba(0,0,0,.55);}
   .bossfield::after{content:'';position:absolute;left:0;right:0;bottom:0;height:24%;
     background:repeating-linear-gradient(90deg,#3a2a3a 0 42px,#322232 42px 84px);
     border-top:4px solid #140810;opacity:.6;pointer-events:none;}
@@ -397,6 +409,11 @@
   .boss-mode-btn.is-hard .bm-tag{background:#fca5a5;}
   .boss-mode-btn.is-easy{border-color:#bbf7d0;}
   .boss-mode-btn.is-easy .bm-tag{background:#86efac;}
+  .boss-mode-btn.is-extreme{border-color:#7f1d1d;background:linear-gradient(#1f1014,#2c141b);}
+  .boss-mode-btn.is-extreme .bm-name{color:#fee2e2;}
+  .boss-mode-btn.is-extreme .bm-sub{color:#fca5a5;}
+  .boss-mode-btn.is-extreme .bm-tag{background:#7f1d1d;color:#ffe4e6;}
+  .boss-mode-btn.is-extreme:hover{border-color:#ef4444;box-shadow:0 6px 16px -6px rgba(239,68,68,.6);}
   .boss-hpbar{height:16px;border-radius:0;background:rgba(0,0,0,.5);border:3px solid #000;overflow:hidden;box-shadow:2px 2px 0 #000,inset 1px 1px 0 rgba(0,0,0,.6);image-rendering:pixelated;}
   .boss-hpbar > i{display:block;height:100%;width:100%;background:#e53e3e;transition:width .35s ease;}
   /* position de base du démon : partie HAUTE, juste sous la barre d'attaque/piège (90-112px),
@@ -582,6 +599,27 @@
     .target .bub,.target.pop .bub,.scrollrow.star .sr-star{animation:none!important;}
   }
 </style>
+<style>
+  /* ===== Bascule police OpenDyslexic (accessibilité lecture/dyslexie) ===== */
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
+  html.dys, html.dys *{font-family:"OpenDyslexic","Fluent Emoji",sans-serif !important;}
+  .dys-toggle{position:fixed;bottom:16px;left:16px;z-index:500;display:inline-flex;align-items:center;gap:9px;
+    border:2px solid #d7e0ea;background:#fff;color:#22303f;border-radius:999px;padding:7px 9px 7px 13px;
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-weight:800;font-size:.82rem;line-height:1;cursor:pointer;
+    box-shadow:0 6px 18px rgba(34,48,63,.20);transition:border-color .2s,background .2s,box-shadow .2s;}
+  .dys-toggle:hover{box-shadow:0 8px 22px rgba(34,48,63,.28);}
+  .dys-toggle:focus-visible{outline:3px solid #2563eb;outline-offset:2px;}
+  .dys-toggle .dys-ic{font-size:1.05rem;}
+  .dys-toggle .dys-label{white-space:nowrap;}
+  .dys-toggle .dys-switch{position:relative;width:38px;height:22px;border-radius:999px;background:#cdd7e3;transition:background .2s;flex:none;}
+  .dys-toggle .dys-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s;}
+  html.dys .dys-toggle{border-color:#16a34a;background:#f1fbf4;}
+  html.dys .dys-toggle .dys-switch{background:#16a34a;}
+  html.dys .dys-toggle .dys-knob{left:18px;}
+  @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
+</style>
+<script>try{if(localStorage.getItem('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
 </head>
 <body>
   <div class="topbar">
@@ -590,7 +628,7 @@
       Accueil
     </a>
     <h1 class="display" id="lvlTitle">La souris <span class="dot">·</span> clique !</h1>
-    <span class="step-count" id="stepCount">Niveau 1 · Manche 1 / 6</span>
+    <span class="step-count" id="stepCount">Niveau 1 · Mission 1 / 6</span>
     <button class="reset-btn" id="soundBtn" title="Activer / couper le son">🔊 Son</button>
     <button class="reset-btn" id="levelBtn" title="Voir les niveaux">🗺️ Niveau 1/6</button>
     <button class="reset-btn danger" id="resetBtn" title="Recommencer ce niveau">↺ Recommencer</button>
@@ -601,7 +639,7 @@
   <div class="banner" id="banner">
     <span class="b-emoji" id="bEmoji">🖱️</span>
     <div class="b-txt">
-      <div class="b-title" id="bTitle">Manche</div>
+      <div class="b-title" id="bTitle">Mission</div>
       <div class="b-sub" id="bSub"></div>
     </div>
     <button class="b-btn" id="seeMission">📋 Revoir la consigne</button>
@@ -611,7 +649,7 @@
 
   <div class="actions">
     <button class="btn btn-hint" id="hintBtn">💡 Astuce</button>
-    <button class="btn btn-restart" id="restartBtn">↺ Recommencer le boss</button>
+    <button class="btn btn-restart" id="restartBtn">↺ Recommencer</button>
     <button class="btn btn-restart" id="diffBtn" style="display:none">⚙️ Difficulté</button>
   </div>
 
@@ -637,22 +675,22 @@ const LEVELS=[
   /* ---------- N1 : CLIQUER ---------- */
   { n:1, title:'Clique !', subtitle:'clique !', game:'click',
     intro:{ emoji:'🖱️', lead:'Bienvenue dans le jeu de la souris ! On commence par le plus important : <b>cliquer</b> au bon endroit.',
-      teach:'Place le pointeur sur une cible, puis appuie une fois sur le <b>bouton gauche</b> de la souris. Les manches se valident <b>toutes seules</b> dès que tu as réussi !',
+      teach:'Place le pointeur sur une cible, puis appuie une fois sur le <b>bouton gauche</b> de la souris. Les missions se valident <b>toutes seules</b> dès que tu as réussi !',
       tools:[{g:'👆',n:'Le clic gauche'},{g:'🎯',n:'La précision'},{g:'⚡',n:'La rapidité'}] },
     rounds:[
-      {kind:'mission',variant:'pop',emoji:'🎈',label:'Manche 1',title:'Les ballons',
+      {kind:'mission',variant:'pop',emoji:'🎈',label:'Mission 1',title:'Les ballons',
         desc:'Clique sur les <b>ballons</b> pour les faire éclater ! Fais-en éclater <b>8</b>.',
         target:8, maxOn:5, size:96, spawnMs:480},
-      {kind:'mission',variant:'pop',emoji:'🫧',label:'Manche 2',title:'Plus petits',
+      {kind:'mission',variant:'pop',emoji:'🫧',label:'Mission 2',title:'Plus petits',
         desc:'Les bulles sont plus petites : vise bien ! Éclates-en <b>10</b>.',
         target:10, maxOn:6, size:64, spawnMs:430},
-      {kind:'mission',variant:'move',emoji:'🦋',label:'Manche 3',title:'Ça bouge !',
+      {kind:'mission',variant:'move',emoji:'🦋',label:'Mission 3',title:'Ça bouge !',
         desc:'Les papillons se promènent. Attrape-en <b>10</b> en cliquant dessus.',
         target:10, maxOn:5, size:66, spawnMs:650, speed:13},
-      {kind:'mission',variant:'mole',emoji:'🐹',label:'Manche 4',title:'Tape-taupe',
+      {kind:'mission',variant:'mole',emoji:'🐹',label:'Mission 4',title:'Tape-taupe',
         desc:'Les hamsters sortent puis se cachent ! Clique-les <b>vite</b> avant qu\'ils disparaissent. Attrape-en <b>10</b>.',
         target:10, maxOn:3, size:78, spawnMs:820, life:1250, lives:5},
-      {kind:'mission',variant:'mole',emoji:'⚡',label:'Manche 5',title:'Rapide comme l\'éclair',
+      {kind:'mission',variant:'mole',emoji:'⚡',label:'Mission 5',title:'Rapide comme l\'éclair',
         desc:'Encore plus vite ! Attrape <b>12</b> hamsters avant qu\'ils filent.',
         target:12, maxOn:4, size:66, spawnMs:660, life:950, lives:5},
       {kind:'jalon',variant:'move',emoji:'🏆',label:'Défi final',title:'Le défi du clic',
@@ -666,19 +704,19 @@ const LEVELS=[
       teach:'Appuie sur le bouton gauche <b>sans relâcher</b>, déplace l\'objet, puis <b>relâche</b> au bon endroit. C\'est comme ça qu\'on range les fichiers dans l\'ordinateur !',
       tools:[{g:'✋',n:'Attraper'},{g:'➡️',n:'Déplacer'},{g:'📂',n:'Déposer'}] },
     rounds:[
-      {kind:'mission',emoji:'📁',label:'Manche 1',title:'Ranger les fichiers',
+      {kind:'mission',emoji:'📁',label:'Mission 1',title:'Ranger les fichiers',
         desc:'Fais <b>glisser</b> chaque fichier 📄 dans le dossier 📁.',
         items:[{e:'📄',t:'file'},{e:'📄',t:'file'},{e:'📄',t:'file'}],
         zones:[{e:'📁',t:'file',label:'Dossier'}]},
-      {kind:'mission',emoji:'🖼️',label:'Manche 2',title:'Coller les photos',
+      {kind:'mission',emoji:'🖼️',label:'Mission 2',title:'Coller les photos',
         desc:'Glisse chaque photo 🖼️ dans le <b>cadre</b>.',
         items:[{e:'🖼️',t:'pic'},{e:'🖼️',t:'pic'},{e:'🖼️',t:'pic'},{e:'🖼️',t:'pic'}],
         zones:[{e:'🖼️',t:'pic',label:'Cadre'}]},
-      {kind:'mission',emoji:'🗂️',label:'Manche 3',title:'Chaque chose à sa place',
+      {kind:'mission',emoji:'🗂️',label:'Mission 3',title:'Chaque chose à sa place',
         desc:'Range les fichiers 📄 dans le dossier et les images 🖼️ dans l\'album.',
         items:[{e:'📄',t:'file'},{e:'🖼️',t:'pic'},{e:'📄',t:'file'},{e:'🖼️',t:'pic'}],
         zones:[{e:'📁',t:'file',label:'Dossier'},{e:'📷',t:'pic',label:'Album'}]},
-      {kind:'mission',emoji:'🎨',label:'Manche 4',title:'Le tri des couleurs',
+      {kind:'mission',emoji:'🎨',label:'Mission 4',title:'Le tri des couleurs',
         desc:'Glisse chaque forme dans la boîte de <b>sa couleur</b>.',
         items:[{e:'🔴',t:'red'},{e:'🔵',t:'blue'},{e:'🟢',t:'green'},{e:'🔴',t:'red'},{e:'🔵',t:'blue'},{e:'🟢',t:'green'}],
         zones:[{e:'🟥',t:'red',label:'Rouge'},{e:'🟦',t:'blue',label:'Bleu'},{e:'🟩',t:'green',label:'Vert'}]},
@@ -694,16 +732,16 @@ const LEVELS=[
       teach:'Appuie <b>deux fois très vite</b> sur le bouton gauche, sans bouger la souris. Un seul clic ne fait que sélectionner : il faut deux clics rapides pour ouvrir !',
       tools:[{g:'👆',n:'Deux clics rapides'},{g:'📂',n:'Ouvrir'},{g:'🚀',n:'Lancer une appli'}] },
     rounds:[
-      {kind:'mission',emoji:'📂',label:'Manche 1',title:'Ouvre les dossiers',
+      {kind:'mission',emoji:'📂',label:'Mission 1',title:'Ouvre les dossiers',
         desc:'<b>Double-clique</b> sur chaque dossier 📁 pour l\'ouvrir. Ouvre-les tous !',
         items:[{e:'📁',l:'Photos'},{e:'📁',l:'Jeux'},{e:'📁',l:'École'}], target:3},
-      {kind:'mission',emoji:'🚀',label:'Manche 2',title:'Lance les applis',
+      {kind:'mission',emoji:'🚀',label:'Mission 2',title:'Lance les applis',
         desc:'Double-clique sur chaque application pour la lancer.',
         items:[{e:'🎮',l:'Jeu'},{e:'🎨',l:'Dessin'},{e:'🎵',l:'Musique'},{e:'🧮',l:'Calcul'}], target:4},
-      {kind:'mission',emoji:'👆',label:'Manche 3',title:'Double, pas simple !',
+      {kind:'mission',emoji:'👆',label:'Mission 3',title:'Double, pas simple !',
         desc:'Souviens-toi : <b>deux clics rapides</b>. Ouvre les <b>5</b> dossiers.',
         items:[{e:'📁',l:'Vacances'},{e:'📁',l:'Devoirs'},{e:'📁',l:'Dessins'},{e:'📁',l:'Vidéos'},{e:'📁',l:'Musique'}], target:5},
-      {kind:'mission',emoji:'⚡',label:'Manche 4',title:'Vite, ouvre tout !',
+      {kind:'mission',emoji:'⚡',label:'Mission 4',title:'Vite, ouvre tout !',
         desc:'Ouvre les <b>6</b> éléments en double-cliquant.',
         items:[{e:'📁',l:'Photos'},{e:'🎮',l:'Jeu'},{e:'📄',l:'Texte'},{e:'🎨',l:'Dessin'},{e:'📁',l:'École'},{e:'🎵',l:'Chanson'}], target:6},
       {kind:'jalon',emoji:'🏆',label:'Défi final',title:'Le défi du double-clic',
@@ -717,23 +755,23 @@ const LEVELS=[
       teach:'Appuie sur le bouton <b>droit</b> de la souris sur un fichier. Un menu apparaît : clique ensuite sur la bonne action (Ouvrir, Copier, Renommer, Propriétés, Supprimer…).',
       tools:[{g:'🖱️',n:'Le clic droit'},{g:'📋',n:'Le menu'},{g:'🗑️',n:'Choisir l\'action'}] },
     rounds:[
-      {kind:'mission',emoji:'🗑️',label:'Manche 1',title:'Supprimer un fichier',
+      {kind:'mission',emoji:'🗑️',label:'Mission 1',title:'Supprimer un fichier',
         desc:'<b>Clic droit</b> sur le fichier puis choisis <b>Supprimer</b> 🗑️.',
         items:[{id:'a',e:'📄',l:'note.txt'},{id:'b',e:'📁',l:'Dossier'},{id:'c',e:'🖼️',l:'photo.jpg'}],
         tasks:[{item:'a',action:'delete'}]},
-      {kind:'mission',emoji:'⚙️',label:'Manche 2',title:'Voir les propriétés',
+      {kind:'mission',emoji:'⚙️',label:'Mission 2',title:'Voir les propriétés',
         desc:'Clic droit sur le <b>dossier</b> 📁 puis choisis <b>Propriétés</b> ⚙️.',
         items:[{id:'a',e:'📄',l:'liste.txt'},{id:'b',e:'📁',l:'Vacances'},{id:'c',e:'🎵',l:'chanson.mp3'}],
         tasks:[{item:'b',action:'props'}]},
-      {kind:'mission',emoji:'✏️',label:'Manche 3',title:'Renommer',
+      {kind:'mission',emoji:'✏️',label:'Mission 3',title:'Renommer',
         desc:'Clic droit sur la <b>photo</b> 🖼️ puis choisis <b>Renommer</b> ✏️.',
         items:[{id:'a',e:'🖼️',l:'image.jpg'},{id:'b',e:'📁',l:'École'},{id:'c',e:'📄',l:'devoir.txt'}],
         tasks:[{item:'a',action:'rename'}]},
-      {kind:'mission',emoji:'📋',label:'Manche 4',title:'Copier',
+      {kind:'mission',emoji:'📋',label:'Mission 4',title:'Copier',
         desc:'Clic droit sur le fichier <b>texte</b> 📄 puis choisis <b>Copier</b> 📋.',
         items:[{id:'a',e:'🎮',l:'jeu.exe'},{id:'b',e:'📄',l:'recette.txt'},{id:'c',e:'🖼️',l:'dessin.png'}],
         tasks:[{item:'b',action:'copy'}]},
-      {kind:'mission',emoji:'🔁',label:'Manche 5',title:'Plusieurs actions',
+      {kind:'mission',emoji:'🔁',label:'Mission 5',title:'Plusieurs actions',
         desc:'Suis les consignes l\'une après l\'autre : à chaque fois, clic droit sur le bon élément et choisis la bonne action.',
         items:[{id:'a',e:'📄',l:'texte.txt'},{id:'b',e:'📁',l:'Photos'},{id:'c',e:'🖼️',l:'chat.jpg'},{id:'d',e:'🎵',l:'musique.mp3'}],
         tasks:[{item:'c',action:'open'},{item:'a',action:'copy'},{item:'d',action:'delete'}]},
@@ -749,14 +787,14 @@ const LEVELS=[
       teach:'Appuie sur le bouton gauche dans le <b>vide</b>, garde appuyé et déplace la souris : un rectangle bleu apparaît. Tout ce qui est dedans est sélectionné. Ensuite tu peux les <b>déplacer ensemble</b> !',
       tools:[{g:'🔲',n:'Le cadre de sélection'},{g:'✅',n:'Choisir plusieurs objets'},{g:'📦',n:'Déplacer le groupe'}] },
     rounds:[
-      {kind:'mission',emoji:'⭐',label:'Manche 1',title:'Entoure le groupe',
+      {kind:'mission',emoji:'⭐',label:'Mission 1',title:'Entoure le groupe',
         desc:'Trace un cadre autour de <b>toutes les étoiles</b> ⭐ pour les sélectionner.',
         items:[{e:'⭐',x:34,y:38,w:1},{e:'⭐',x:48,y:34,w:1},{e:'⭐',x:42,y:52,w:1},{e:'⭐',x:56,y:48,w:1},{e:'⭐',x:30,y:54,w:1}]},
-      {kind:'mission',emoji:'🖼️',label:'Manche 2',title:'Choisis les photos',
+      {kind:'mission',emoji:'🖼️',label:'Mission 2',title:'Choisis les photos',
         desc:'Sélectionne <b>seulement</b> les photos 🖼️ (laisse les fichiers 📄 en dehors du cadre).',
         items:[{e:'🖼️',l:'photo',x:28,y:32,w:1},{e:'🖼️',l:'photo',x:44,y:30,w:1},{e:'🖼️',l:'photo',x:36,y:46,w:1},
                {e:'📄',l:'texte',x:72,y:60,w:0},{e:'📄',l:'texte',x:80,y:40,w:0},{e:'📄',l:'texte',x:66,y:74,w:0}]},
-      {kind:'mission',emoji:'📦',label:'Manche 3',title:'Sélectionne et déplace',
+      {kind:'mission',emoji:'📦',label:'Mission 3',title:'Sélectionne et déplace',
         desc:'Sélectionne les <b>3 photos</b>, puis <b>glisse-les</b> dans l\'album 📷 en bas à droite.',
         items:[{e:'🖼️',l:'photo',x:26,y:30,w:1},{e:'🖼️',l:'photo',x:40,y:26,w:1},{e:'🖼️',l:'photo',x:32,y:44,w:1}],
         move:{e:'📷',label:'Album'}},
@@ -773,13 +811,13 @@ const LEVELS=[
       teach:'Fais tourner la molette vers le <b>haut</b> pour remonter, vers le <b>bas</b> pour descendre. Cherche les <b>étoiles</b> ⭐ cachées dans la liste et clique dessus !',
       tools:[{g:'🎡',n:'La molette'},{g:'⬆️',n:'Monter'},{g:'⬇️',n:'Descendre'}] },
     rounds:[
-      {kind:'mission',emoji:'⬇️',label:'Manche 1',title:'Descends tout en bas',
+      {kind:'mission',emoji:'⬇️',label:'Mission 1',title:'Descends tout en bas',
         desc:'Utilise la <b>molette</b> pour descendre et clique sur l\'étoile ⭐ tout <b>en bas</b> de la liste.',
         listLen:18, targets:[17]},
-      {kind:'mission',emoji:'⬆️',label:'Manche 2',title:'Remonte en haut',
+      {kind:'mission',emoji:'⬆️',label:'Mission 2',title:'Remonte en haut',
         desc:'Remonte avec la molette et clique sur l\'étoile ⭐ tout <b>en haut</b>.',
         listLen:18, targets:[0], startBottom:true},
-      {kind:'mission',emoji:'🔍',label:'Manche 3',title:'Cherche les étoiles',
+      {kind:'mission',emoji:'🔍',label:'Mission 3',title:'Cherche les étoiles',
         desc:'Des étoiles ⭐ sont cachées dans la liste. Trouve-les <b>toutes</b> avec la molette ! (3 étoiles)',
         listLen:28, targets:[5,15,25]},
       {kind:'jalon',emoji:'🏆',label:'Défi final',title:'Le défi de la molette',
@@ -963,7 +1001,7 @@ function sparkAt(field, xPx, yPx){
   }
   field.appendChild(burst); setTimeout(()=>burst.remove(),500);
 }
-function sparkAtEl(el){ const r=el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(); sparkAt(B.field, r.left+r.width/2-fr.left, r.top+r.height/2-fr.top); }
+function sparkAtEl(el){ const r=el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(), S=bScale(); sparkAt(B.field, (r.left+r.width/2-fr.left)/S, (r.top+r.height/2-fr.top)/S); }
 /* éclaboussures cauldron */
 function splashAt(field, xPx, yPx, color){
   const N=10, burst=document.createElement('div'); burst.className='burst';
@@ -980,7 +1018,7 @@ function splashAt(field, xPx, yPx, color){
   }
   field.appendChild(burst); setTimeout(()=>burst.remove(),600);
 }
-function splashAtEl(el, color){ const r=el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(); splashAt(B.field, r.left+r.width/2-fr.left, r.top+r.height/2-fr.top, color); }
+function splashAtEl(el, color){ const r=el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(), S=bScale(); splashAt(B.field, (r.left+r.width/2-fr.left)/S, (r.top+r.height/2-fr.top)/S, color); }
 /* nuage de fumée (monstres horde) */
 function smokePuffAt(field, xPx, yPx){
   const N=4, burst=document.createElement('div'); burst.className='burst';
@@ -1000,7 +1038,7 @@ function smokePuffAt(field, xPx, yPx){
   }
   field.appendChild(burst); setTimeout(()=>burst.remove(),650);
 }
-function smokePuffAtEl(el){ const r=el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(); smokePuffAt(B.field, r.left+r.width/2-fr.left, r.top+r.height/2-fr.top); }
+function smokePuffAtEl(el){ const r=el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(), S=bScale(); smokePuffAt(B.field, (r.left+r.width/2-fr.left)/S, (r.top+r.height/2-fr.top)/S); }
 
 /* ---------------------------------------------------------
    JEU 1 — CLIC (variantes pop / move / mole)
@@ -1217,7 +1255,7 @@ const CTX_MENU=[
   {action:'props', label:'Propriétés', ic:'⚙️'},
   {action:'delete',label:'Supprimer',  ic:'🗑️', danger:true}
 ];
-const ACTION_VERB={open:'Ouvre',copy:'Copie',rename:'Renomme',props:'Ouvre les Propriétés de',delete:'Supprime'};
+const ACTION_VERB={open:'Ouvre',copy:'Copie',rename:'Renomme',props:'Regarde les propriétés',delete:'Supprime'};
 const ACTION_ICO={open:'📂',copy:'📋',rename:'✏️',props:'⚙️',delete:'🗑️'};
 function startContext(step){
   stopGame(); MG.cleanup=[];
@@ -1241,9 +1279,13 @@ function curTask(){ return MG.step.tasks[MG.taskIdx]; }
 function showCtxPrompt(enter){
   const t=curTask(); const it=MG.step.items.find(i=>i.id===t.item);
   const p=document.getElementById('hudPrompt'); if(!p) return;
+  // Accorde le nom (dossier/fichier) au type de l'élément, et l'article à l'action
+  // (« Regarde les propriétés DU dossier… » vs « Supprime LE fichier… »).
+  const noun = it.e==='📁' ? 'dossier' : 'fichier';
+  const lead = (t.action==='props' ? 'du ' : 'le ') + noun;
   p.innerHTML='<div class="jalon-head"><span class="b-goal-label">Objectif '+(MG.taskIdx+1)+' / '+MG.total+'</span></div>'
     +'<div class="jalon-obj'+(enter?' entering':'')+'"><span class="jo-check">'+(MG.taskIdx+1)+'</span>'
-    +'<span class="jo-text"><b>'+ACTION_VERB[t.action]+'</b> '+ACTION_ICO[t.action]+' le fichier <b>'+escapeHtml(it.l)+'</b> '+it.e+'</span></div>';
+    +'<span class="jo-text"><b>'+ACTION_VERB[t.action]+'</b> '+ACTION_ICO[t.action]+' '+lead+' <b>'+escapeHtml(it.l)+'</b> '+it.e+'</span></div>';
   if(enter) requestAnimationFrame(()=>{ const el=p.querySelector('.jalon-obj'); if(el) el.classList.remove('entering'); });
   // pulse l'élément cible pour guider
   Object.values(MG.iconEls).forEach(e=>e.classList.remove('target-pulse'));
@@ -1622,7 +1664,13 @@ const BOSS_MODES={
   medium: {key:'medium', label:'Moyen',    emoji:'⚔️', sub:'Un bon équilibre',  tag:'30% plus facile',
            fireMul:1.43, countMul:0.7, gaugeGain:1.3, gaugeDecay:0.7, speedMul:0.85, fairyMul:0.7, livesBonus:1},
   hard:   {key:'hard',   label:'Difficile',emoji:'🔥', sub:'Le vrai défi',      tag:'Mode complet',
-           fireMul:1.0,  countMul:1.0, gaugeGain:1.0, gaugeDecay:1.0, speedMul:1.0,  fairyMul:1.0, livesBonus:0}
+           fireMul:1.0,  countMul:1.0, gaugeGain:1.0, gaugeDecay:1.0, speedMul:1.0,  fairyMul:1.0, livesBonus:0},
+  // « Extrême » : plus dur que « Difficile » sur TOUS les paramètres (plus de feu, plus de
+  // cibles, jauge ingrate, horde plus rapide, plus de fées, et seulement 3 cœurs).
+  extreme:{key:'extreme',label:'Extrême',  emoji:'💀', sub:'Pour les pros',     tag:'Au-delà du défi',
+           // ~10% plus facile que l'ancien Extrême : feu un peu plus espacé, moins de cibles/fées,
+           // jauge moins ingrate et horde un peu plus lente (livesBonus reste à -2).
+           fireMul:0.72, countMul:1.26, gaugeGain:0.86, gaugeDecay:1.35, speedMul:1.22, fairyMul:1.62, livesBonus:-2}
 };
 let bossMode = (function(){ try{ const m=localStorage.getItem('ms_bossmode'); return BOSS_MODES[m]?m:'hard'; }catch(e){ return 'hard'; } })();
 function bd(){ return BOSS_MODES[bossMode]||BOSS_MODES.hard; }
@@ -1680,18 +1728,20 @@ function playImgFrames(img, frames, opts){
 function stopImgFrames(img){ if(img&&img._frT){ clearInterval(img._frT); img._frT=0; } }
 
 function bossArenaHTML(){
-  return '<div class="bossfield" id="bossField">'
+  return '<div class="boss-fs-wrap" id="bossFsWrap"><div class="boss-scaler" id="bossScaler">'
+    + '<div class="bossfield" id="bossField">'
     + '<div class="boss-hud">'
     +   '<span class="boss-hearts" id="bossHearts"></span>'
     +   '<div class="boss-hpwrap"><div class="boss-name">Gruk, le Démon Gardien <span class="boss-mode-tag" id="bossModeTag"></span></div>'
     +     '<div class="boss-hpbar"><i id="bossHpFill"></i></div></div>'
+    +   '<button class="boss-fs-btn" id="bossFsBtn" title="Plein écran" aria-label="Plein écran">⛶</button>'
     + '</div>'
     + '<div class="boss-slot" id="bossSlot"></div>'
     + '<div class="hero-slot" id="heroSlot"></div>'
     + '<div class="phase-layer" id="phaseLayer"></div>'
     + '<div class="fire-layer" id="fireLayer"></div>'
     + '<div class="health-potion" id="healthPotion" title="Potion de vie" ondragstart="return false"><img class="hp-bottle" id="hpBottle" src="'+POTION_FULL+'" alt="🧪" draggable="false"><span class="hp-hint">🖱️ clic droit</span></div>'
-    + '</div>';
+    + '</div></div></div>';
 }
 /* ---- Préchargement des sprites AVANT le combat (évite les emojis de repli en jeu) ---- */
 /* Liste à plat de toutes les images du combat : personnages (frames embarquées) + objets. */
@@ -1774,6 +1824,7 @@ function startBossArena(step){
   actorPlay(B.boss,'idle',{loop:true}); actorPlay(B.hero,'idle',{loop:true});
   preloadChars().then(()=>{ if(!B.stopped){ actorPlay(B.boss,'idle',{loop:true}); actorPlay(B.hero,'idle',{loop:true}); } });
   setupHealthPotion();
+  setupBossFullscreen();
   updateBossHud();
   B.phases=buildPhaseSequence();
   startBossMusic();
@@ -1793,7 +1844,50 @@ function bossIntro(){
     pTimeout(()=>{ if(!B.stopped) nextPhase(); }, 1300);             // → popup « L'ASSAUT » (démon idle)
   }, 1100);
 }
-function stopBoss(){ B.running=false; B.stopped=true; B.curPhase=null; if(B.raf) cancelAnimationFrame(B.raf); stopBossMusic(); closeHealthMenu(); closeBriefing(); clearPhase(); }
+function stopBoss(){ B.running=false; B.stopped=true; B.curPhase=null; if(B.raf) cancelAnimationFrame(B.raf); stopBossMusic(); closeHealthMenu(); closeBriefing(); clearPhase(); teardownBossFullscreen(); }
+/* ---- Plein écran de l'arène du boss ----
+   On agrandit visuellement SANS changer la taille logique du terrain : la physique (vitesses,
+   tailles, %) reste identique au mode normal → la difficulté ne change pas. Toutes les
+   conversions écran→terrain divisent par bScale() (=1 hors plein écran, donc inoffensif). */
+function fsElement(){ return document.fullscreenElement||document.webkitFullscreenElement||null; }
+function bScale(){ const f=B.field; if(!f) return 1; const w=f.clientWidth; if(!w) return 1; return (f.getBoundingClientRect().width/w)||1; }
+function setupBossFullscreen(){
+  const btn=document.getElementById('bossFsBtn'); if(!btn) return;
+  const wrap=document.getElementById('bossFsWrap'); B.fsWrap=wrap;
+  B.fsSync=function(){ const on=fsElement()===wrap; btn.textContent=on?'🗗':'⛶'; btn.title=on?'Quitter le plein écran':'Plein écran';
+    if(on) layoutBossFullscreen(); else clearBossFullscreen(); };
+  btn.onclick=function(){
+    try{
+      if(fsElement()){ const ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex){ const p=ex.call(document); if(p&&p.catch) p.catch(function(){}); } }
+      else { B._fsW=B.field?B.field.clientWidth:0; B._fsH=B.field?B.field.clientHeight:0;
+        const rq=wrap&&(wrap.requestFullscreen||wrap.webkitRequestFullscreen); if(rq){ const p=rq.call(wrap); if(p&&p.catch) p.catch(function(){}); } }
+    }catch(e){}
+  };
+  B.fsResize=function(){ if(fsElement()===wrap) layoutBossFullscreen(); };
+  document.addEventListener('fullscreenchange',B.fsSync);
+  document.addEventListener('webkitfullscreenchange',B.fsSync);
+  window.addEventListener('resize',B.fsResize);
+  B.fsSync();
+}
+function layoutBossFullscreen(){
+  const f=B.field, sc=document.getElementById('bossScaler'); if(!f||!sc) return;
+  if(!B._fsW){ B._fsW=f.clientWidth; B._fsH=f.clientHeight; }
+  f.style.width=B._fsW+'px'; f.style.height=B._fsH+'px';          // verrouille la taille logique normale
+  const S=Math.max(0.2, Math.min(window.innerWidth/B._fsW, window.innerHeight/B._fsH));
+  sc.style.setProperty('--bfs-scale', S);                          // agrandissement purement visuel
+}
+function clearBossFullscreen(){
+  const f=B.field, sc=document.getElementById('bossScaler');
+  if(f){ f.style.width=''; f.style.height=''; }
+  if(sc) sc.style.removeProperty('--bfs-scale');
+  B._fsW=0; B._fsH=0;
+}
+function teardownBossFullscreen(){
+  if(B.fsSync){ document.removeEventListener('fullscreenchange',B.fsSync); document.removeEventListener('webkitfullscreenchange',B.fsSync); B.fsSync=null; }
+  if(B.fsResize){ window.removeEventListener('resize',B.fsResize); B.fsResize=null; }
+  clearBossFullscreen();
+  if(fsElement()){ const ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex) try{ const p=ex.call(document); if(p&&p.catch) p.catch(function(){}); }catch(e){} }
+}
 
 /* ---- potion de vie (clic droit → Boire), dispo tout le combat ---- */
 function setupHealthPotion(){
@@ -1809,8 +1903,8 @@ function openHealthMenu(e){
   b.onclick=ev=>{ ev.stopPropagation(); drinkPotion(); };
   menu.appendChild(b); B.field.appendChild(menu); B.healthMenu=menu;
   const fr=B.field.getBoundingClientRect();
-  menu.style.left=Math.min(Math.max(0,e.clientX-fr.left), B.field.clientWidth-menu.offsetWidth-6)+'px';
-  menu.style.top=Math.min(e.clientY-fr.top, B.field.clientHeight-menu.offsetHeight-6)+'px';
+  menu.style.left=Math.min(Math.max(0,(e.clientX-fr.left)/bScale()), B.field.clientWidth-menu.offsetWidth-6)+'px';
+  menu.style.top=Math.min((e.clientY-fr.top)/bScale(), B.field.clientHeight-menu.offsetHeight-6)+'px';
   beep('click');
   const off=ev=>{ if(B.healthMenu && !B.healthMenu.contains(ev.target)) closeHealthMenu(); };
   setTimeout(()=>document.addEventListener('pointerdown',off),0); B._healthOff=off;
@@ -1865,10 +1959,10 @@ function bossBanner(title, sub, cb){
   pTimeout(()=>{ b.remove(); cb&&cb(); }, 1400);
 }
 function prompt(html){ const pl=document.getElementById('phaseLayer'); const p=document.createElement('div'); p.className='boss-prompt'; p.innerHTML=html; pl.appendChild(p); return p; }
-function burstAtEl(el){ const r=el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(); burstAt(B.field, r.left+r.width/2-fr.left, r.top+r.height/2-fr.top); }
+function burstAtEl(el){ const r=el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(), S=bScale(); burstAt(B.field, (r.left+r.width/2-fr.left)/S, (r.top+r.height/2-fr.top)/S); }
 function slashFx(){ sparkAtEl(B.boss.el); }
 function boltFx(){ const pl=document.getElementById('phaseLayer'); const r=B.boss.el.getBoundingClientRect(), fr=B.field.getBoundingClientRect();
-  const z=document.createElement('div'); z.className='bolt-fx'; z.textContent='⚡'; z.style.left=(r.left+r.width/2-fr.left)+'px'; z.style.top=(r.top+r.height/2-fr.top)+'px'; pl.appendChild(z); setTimeout(()=>{try{z.remove();}catch(e){}},650); beep('ding'); }
+  const S=bScale(); const z=document.createElement('div'); z.className='bolt-fx'; z.textContent='⚡'; z.style.left=((r.left+r.width/2-fr.left)/S)+'px'; z.style.top=((r.top+r.height/2-fr.top)/S)+'px'; pl.appendChild(z); setTimeout(()=>{try{z.remove();}catch(e){}},650); beep('ding'); }
 
 /* ---- animations & effets du démon ---- */
 /* anim de fond vers laquelle on revient après un coup (idle / channeling_fire / channel_horde / boucle_roar) */
@@ -2096,8 +2190,8 @@ function tutoSpell(ov, ph, start){
     });
     ov.appendChild(menu);
     const fr=B.field.getBoundingClientRect();
-    menu.style.left=Math.min(e.clientX-fr.left, B.field.clientWidth-menu.offsetWidth-6)+'px';
-    menu.style.top=Math.min(e.clientY-fr.top, B.field.clientHeight-menu.offsetHeight-6)+'px';
+    menu.style.left=Math.min((e.clientX-fr.left)/bScale(), B.field.clientWidth-menu.offsetWidth-6)+'px';
+    menu.style.top=Math.min((e.clientY-fr.top)/bScale(), B.field.clientHeight-menu.offsetHeight-6)+'px';
     beep('click');
     off=ev=>{ if(menu && !menu.contains(ev.target)) closeMenu(); };
     setTimeout(()=>document.addEventListener('pointerdown',off),0);
@@ -2239,9 +2333,10 @@ function bossMoveTick(dt){
 function clearFireballs(){ (B.fireballs||[]).forEach(f=>{ try{ stopImgFrames(f.el&&f.el.querySelector('img')); f.el.remove(); }catch(e){} }); B.fireballs=[]; }
 function spawnFireball(){
   if(!B.fireLayer||!B.boss) return;
+  const S=bScale();
   const fre=B.field.getBoundingClientRect(), br=B.boss.el.getBoundingClientRect(), hr=B.hero.el.getBoundingClientRect();
-  const bx=br.left+br.width/2-fre.left, by=br.top+br.height*0.55-fre.top;
-  const hx=hr.left+hr.width/2-fre.left, hy=hr.top+hr.height/2-fre.top;
+  const bx=(br.left+br.width/2-fre.left)/S, by=(br.top+br.height*0.55-fre.top)/S;
+  const hx=(hr.left+hr.width/2-fre.left)/S, hy=(hr.top+hr.height/2-fre.top)/S;
   let ang, sp;
   if(B.fireChaos){ ang=rnd(0,6.2832); sp=rnd(95,150)*bd().speedMul; }      // direction folle au départ
   else { ang=Math.atan2(hy-by,hx-bx)+rnd(-0.28,0.28); sp=rnd(125,175)*bd().speedMul; }
@@ -2260,8 +2355,8 @@ function removeFireball(f){ const i=B.fireballs.indexOf(f); if(i>=0)B.fireballs.
 function fireTick(dt){
   if(B.fireActive){ B.fireSpawnT-=dt; if(B.fireSpawnT<=0){ spawnFireball(); B.fireSpawnT=B.fireRate*bd().fireMul; } }
   if(!B.fireballs.length) return;
-  const fr=B.field, hr=B.hero.el.getBoundingClientRect(), fre=fr.getBoundingClientRect();
-  const hx=hr.left+hr.width/2-fre.left, hy=hr.top+hr.height/2-fre.top;
+  const fr=B.field, hr=B.hero.el.getBoundingClientRect(), fre=fr.getBoundingClientRect(), S=bScale();
+  const hx=(hr.left+hr.width/2-fre.left)/S, hy=(hr.top+hr.height/2-fre.top)/S;
   const W=fr.clientWidth, H=fr.clientHeight;
   for(const f of B.fireballs.slice()){
     if(f.chaos){
@@ -2307,12 +2402,12 @@ function placeGrid(n, z){
 /* placement dispersé (en %) évitant le boss, le héros (et options) — jamais de superposition */
 function scatterPositions(n, opts){
   opts=opts||{};
-  const fr=B.field.getBoundingClientRect();
+  const fr=B.field.getBoundingClientRect(), S=bScale();
   const W=B.field.clientWidth||1, H=B.field.clientHeight||1;
   const avoid=[];
   const addAvoid=(el,padPx)=>{ if(!el) return; const r=el.getBoundingClientRect();
-    avoid.push({x:(r.left+r.width/2-fr.left)/W*100, y:(r.top+r.height/2-fr.top)/H*100,
-      rx:Math.max(7,(r.width/2+padPx)/W*100), ry:Math.max(9,(r.height/2+padPx)/H*100)}); };
+    avoid.push({x:((r.left+r.width/2-fr.left)/S)/W*100, y:((r.top+r.height/2-fr.top)/S)/H*100,
+      rx:Math.max(7,(r.width/S/2+padPx)/W*100), ry:Math.max(9,(r.height/S/2+padPx)/H*100)}); };
   const pad=opts.pad!=null?opts.pad:28;
   addAvoid(B.boss&&B.boss.el,pad); addAvoid(B.hero&&B.hero.el,pad);
   addAvoid(document.getElementById('healthPotion'), pad+10);   // JAMAIS de cristal/ingrédient sur la potion de vie
@@ -2400,7 +2495,12 @@ function phasePotion(ph){
   const pl=document.getElementById('phaseLayer');
   const cau=document.createElement('div'); cau.className='cauldron';
   cau.innerHTML='<img class="cauldron-img" src="'+CALDRON_IDLE+'" alt="🫕">'; pl.appendChild(cau);
-  const items=INGREDIENTS.slice();   // 5 bons (Eye, Mandragore, Bone, Herbs, Mushrooms) + 5 mauvais
+  // Assez de BONS ingrédients pour atteindre "need" : en mode Extrême, need (7) dépasse les
+  // 5 bons disponibles → on duplique les bons pour ne jamais rester bloqué. (≤ Difficile : inchangé.)
+  const goods=INGREDIENTS.filter(i=>i.good), bads=INGREDIENTS.filter(i=>!i.good);
+  const items=[];
+  for(let i=0;i<Math.max(need,goods.length);i++) items.push(goods[i%goods.length]);
+  bads.forEach(b=>items.push(b));
   const pos=scatterPositions(items.length,{y0:36,y1:78,sep:13,pad:26,avoid:[cau],avoidPad:24});
   let placed=0;
   shuffle(items).forEach((it,i)=>{
@@ -2415,7 +2515,7 @@ function phasePotion(ph){
 }
 function bingrDrag(e,el,it,cau,onGood){
   e.preventDefault();
-  const move=ev=>{ const fr=B.field.getBoundingClientRect(); el.style.left=(ev.clientX-fr.left)+'px'; el.style.top=(ev.clientY-fr.top)+'px'; el.style.transform='translate(-50%,-50%) scale(1.15)'; };
+  const move=ev=>{ const fr=B.field.getBoundingClientRect(), S=bScale(); el.style.left=((ev.clientX-fr.left)/S)+'px'; el.style.top=((ev.clientY-fr.top)/S)+'px'; el.style.transform='translate(-50%,-50%) scale(1.15)'; };
   const up=ev=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up);
     const cr=cau.getBoundingClientRect(); const over=ev.clientX>=cr.left&&ev.clientX<=cr.right&&ev.clientY>=cr.top&&ev.clientY<=cr.bottom;
     if(over && it.good){ try{el.remove();}catch(e){} beep('good'); splashAtEl(cau,'#22c55e');
@@ -2449,11 +2549,11 @@ function phaseSpells(ph){
   function show(){
     const need=seq[ri];
     aura.innerHTML='<span class="aw-tag">⚠️ POINT FAIBLE</span><span class="aw-icon">'+NEED_ICON[need]+'</span>';
-    const br=B.boss.el.getBoundingClientRect(), fr=B.field.getBoundingClientRect();
-    aura.style.left=(br.left+br.width/2-fr.left)+'px';
+    const br=B.boss.el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(), S=bScale();
+    aura.style.left=((br.left+br.width/2-fr.left)/S)+'px';
     // l'encadré flotte juste au-dessus des cornes visibles (~22,6% de marge transparente en haut du sprite).
     // top = centre de l'encadré (transform translate(-50%,-50%)) ; clamp pour rester sous la barre de vie.
-    const hornsTop=(br.top-fr.top)+0.226*br.height;
+    const hornsTop=((br.top-fr.top)+0.226*br.height)/S;
     aura.style.top=Math.max(56+aura.offsetHeight/2, hornsTop-aura.offsetHeight/2-16)+'px';
     pr.innerHTML='📜 Sort '+(ri+1)+'/'+rounds+' — clic droit sur le démon → <b>'+NEED_NAME[need]+'</b> ☝️';
   }
@@ -2470,8 +2570,8 @@ function phaseSpells(ph){
     });
     pl.appendChild(menu); B.spellMenu=menu;
     const fr=B.field.getBoundingClientRect();
-    menu.style.left=Math.min(e.clientX-fr.left, B.field.clientWidth-menu.offsetWidth-6)+'px';
-    menu.style.top=Math.min(e.clientY-fr.top, B.field.clientHeight-menu.offsetHeight-6)+'px';
+    menu.style.left=Math.min((e.clientX-fr.left)/bScale(), B.field.clientWidth-menu.offsetWidth-6)+'px';
+    menu.style.top=Math.min((e.clientY-fr.top)/bScale(), B.field.clientHeight-menu.offsetHeight-6)+'px';
     beep('click');
     // clic (gauche ou droit) en dehors du menu → on le ferme
     const off=ev=>{ if(B.spellMenu && !B.spellMenu.contains(ev.target)) closeSpellMenu(); };
@@ -2537,7 +2637,7 @@ function phaseHorde(ph){
     pl.appendChild(a.el); actorPlay(a, key==='slime'?'idle':'fly',{loop:true}); B.actors.push(a);
     B.minions.push(m);
   }
-  function heroPct(){ const r=B.hero.el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(); return {x:(r.left+r.width/2-fr.left)/B.field.clientWidth*100, y:(r.top+r.height/2-fr.top)/B.field.clientHeight*100}; }
+  function heroPct(){ const r=B.hero.el.getBoundingClientRect(), fr=B.field.getBoundingClientRect(), S=bScale(); return {x:((r.left+r.width/2-fr.left)/S)/B.field.clientWidth*100, y:((r.top+r.height/2-fr.top)/S)/B.field.clientHeight*100}; }
   B.phaseUpdate=(dt)=>{
     if(!started) return;   // la horde n'arrive qu'après l'anim d'invocation
     spawnT-=dt;
@@ -2566,11 +2666,11 @@ function phaseHorde(ph){
   function startBossLasso(e){
     if(e.target.closest('.ctxmenu')||e.target.closest('.boss-prompt')||e.target.closest('.boss-gauge')||e.target.closest('.health-potion')) return;
     e.preventDefault();
-    const fr=B.field.getBoundingClientRect(); const x0=e.clientX-fr.left, y0=e.clientY-fr.top;
+    const fr=B.field.getBoundingClientRect(), S=bScale(); const x0=(e.clientX-fr.left)/S, y0=(e.clientY-fr.top)/S;
     const box=document.createElement('div'); box.className='selbox'; pl.appendChild(box);
-    const move=ev=>{ const x=ev.clientX-fr.left, y=ev.clientY-fr.top, L=Math.min(x0,x),T=Math.min(y0,y),W=Math.abs(x-x0),H=Math.abs(y-y0);
+    const move=ev=>{ const x=(ev.clientX-fr.left)/S, y=(ev.clientY-fr.top)/S, L=Math.min(x0,x),T=Math.min(y0,y),W=Math.abs(x-x0),H=Math.abs(y-y0);
       box.style.left=L+'px'; box.style.top=T+'px'; box.style.width=W+'px'; box.style.height=H+'px';
-      B.minions.forEach(m=>{ if(!m.alive) return; const r=m.el.getBoundingClientRect(); const cx=r.left+r.width/2-fr.left, cy=r.top+r.height/2-fr.top;
+      B.minions.forEach(m=>{ if(!m.alive) return; const r=m.el.getBoundingClientRect(); const cx=(r.left+r.width/2-fr.left)/S, cy=(r.top+r.height/2-fr.top)/S;
         m.sel=cx>=L&&cx<=L+W&&cy>=T&&cy<=T+H; m.el.classList.toggle('lassosel',m.sel); }); };
     const up=()=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); try{box.remove();}catch(e){} resolveLasso(); };
     document.addEventListener('pointermove',move); document.addEventListener('pointerup',up);
@@ -2654,7 +2754,7 @@ function phaseImprison(ph){
 }
 
 /* =========================================================
-   FLOW : étapes, popups, validation auto
+   FLOW : missions, popups, validation auto
    ========================================================= */
 function startStep(idx){
   playIdx=idx; currentStep=STEPS[idx];
@@ -2679,7 +2779,7 @@ function updateProgress(){
     if(mile) d.textContent='🏆';
     if(i<=progressIdx){
       d.classList.add('clickable');
-      d.title=(i===playIdx?'Manche en cours : ':'Revenir à ')+st.label+' · '+st.title;
+      d.title=(i===playIdx?'Mission en cours : ':'Revenir à ')+st.label+' · '+st.title;
       d.onclick=()=>{ if(i<=progressIdx) startStep(i); };
     }
     track.appendChild(d);
@@ -2694,7 +2794,11 @@ function updateBanner(){
   document.getElementById('bTitle').textContent=(reviewing()?'Révision · ':'')+currentStep.label+' : '+currentStep.title;
   document.getElementById('bSub').innerHTML='<span class="b-goal-label">Objectif :</span> '+stripTags(currentStep.desc);
   // Le bouton « Difficulté » n'a de sens que pour le boss final.
-  document.getElementById('diffBtn').style.display = (LEVELS[currentLevel-1].game==='boss') ? '' : 'none';
+  const onBoss = currentStep.mode==='boss';
+  document.getElementById('diffBtn').style.display = onBoss ? '' : 'none';
+  // Le bouton « Recommencer » prend son libellé selon ce que l'enfant a en face de lui :
+  // « Recommencer le boss » face au boss, sinon simplement « Recommencer ».
+  document.getElementById('restartBtn').textContent = onBoss ? '↺ Recommencer le boss' : '↺ Recommencer';
 }
 function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
 
@@ -2706,7 +2810,7 @@ function openRoundPopup(){
     '<span class="m-emoji">'+s.emoji+'</span>'
     + '<div class="kicker">'+(reviewing()?'Entraînement':s.label)+'</div>'
     + '<h2>'+s.title+'</h2>'
-    + '<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta manche :')+'</p><p>'+s.desc+'</p></div>'
+    + '<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta mission :')+'</p><p>'+s.desc+'</p></div>'
     + '<div class="demo"><span class="mouse-emoji">🖱️</span><span>'+gameHintLine()+'</span></div>'
     + '<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
   openOverlay();
@@ -2749,7 +2853,7 @@ function openBossGate(){
    devant le boss et le bouton « Difficulté » de la barre d'actions. */
 function bossModeChooserHTML(){
   return '<div class="boss-modes">'
-    + ['easy','medium','hard'].map(k=>{ const m=BOSS_MODES[k];
+    + ['easy','medium','hard','extreme'].map(k=>{ const m=BOSS_MODES[k];
         return '<button class="boss-mode-btn is-'+k+'" data-mode="'+k+'">'
           + '<span class="bm-ic">'+m.emoji+'</span>'
           + '<span class="bm-txt"><span class="bm-name">'+m.label+'</span><span class="bm-sub">'+m.sub+'</span></span>'
@@ -2799,8 +2903,8 @@ function onWin(){
   if(reviewing()){
     modal.className='modal good';
     modal.innerHTML='<span class="m-emoji">💪</span><h2>Bien joué !</h2>'
-      +'<p>Tu as refait cette manche. On revient à <b>ta manche en cours</b>, ta progression est gardée.</p>'
-      +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma manche</button></div>';
+      +'<p>Tu as refait cette mission. On revient à <b>ta mission en cours</b>, ta progression est gardée.</p>'
+      +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma mission</button></div>';
     openOverlay();
     document.getElementById('bk').onclick=()=>{ closeOverlay(); if(progressIdx>=STEPS.length) courseFinish(); else startStep(progressIdx); };
     return;
@@ -2811,8 +2915,8 @@ function onWin(){
   const jalon=currentStep.kind==='jalon';
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">'+(jalon?'🏆':'✅')+'</span>'
-    +'<h2>'+(jalon?'Défi réussi !':'Manche réussie !')+'</h2>'
-    +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la manche suivante !')+'</p>'
+    +'<h2>'+(jalon?'Défi réussi !':'Mission réussie !')+'</h2>'
+    +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la mission suivante !')+'</p>'
     +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
   openOverlay(); if(jalon) confetti();
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
@@ -2891,7 +2995,7 @@ function courseFinish(){
     +'<div class="m-actions"><button class="m-btn ghost" id="replayBoss">⚔️ Rejouer le Boss</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   openOverlay();
-  // « Rejouer le Boss » : on recharge le niveau du boss (et non la dernière manche du niveau courant).
+  // « Rejouer le Boss » : on recharge le niveau du boss (et non la dernière mission du niveau courant).
   document.getElementById('replayBoss').onclick=()=>{ closeOverlay(); audioCtx(); const bossLvl=LEVELS.findIndex(l=>l.game==='boss')+1; loadLevel(bossLvl>0?bossLvl:LEVELS.length, 0, false); };
 }
 
@@ -2967,7 +3071,7 @@ function playUnlock(nextN, done){
 document.getElementById('resetBtn').onclick=()=>{
   modal.className='modal warn';
   modal.innerHTML='<span class="m-emoji">↺</span><h2>Recommencer ce niveau ?</h2>'
-    +'<p>Tu repartiras de la <b>première manche du Niveau '+currentLevel+'</b>. Les autres niveaux ne changent pas.</p>'
+    +'<p>Tu repartiras de la <b>première mission du Niveau '+currentLevel+'</b>. Les autres niveaux ne changent pas.</p>'
     +'<div class="m-actions"><button class="m-btn ghost" id="cR">Annuler</button>'
     +'<button class="m-btn primary" id="dR">Oui, recommencer</button></div>';
   openOverlay();
@@ -2994,7 +3098,7 @@ document.getElementById('hintBtn').onclick=()=>{
   } else {
     modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker">Astuce</div>'
       +'<h2>'+currentStep.title+'</h2>'
-      +'<div class="howto"><p class="h-head">👉 Ta manche :</p><p>'+currentStep.desc+'</p></div>'
+      +'<div class="howto"><p class="h-head">👉 Ta mission :</p><p>'+currentStep.desc+'</p></div>'
       +'<div class="demo"><span class="mouse-emoji">🖱️</span><span>'+gameHintLine()+'</span></div>'
       +'<div class="m-actions"><button class="m-btn primary green" id="okHint">J\'ai compris ▶</button></div>';
   }
@@ -3005,8 +3109,21 @@ document.getElementById('hintBtn').onclick=()=>{
 /* =========================================================
    OVERLAY / TOAST / CONFETTI
    ========================================================= */
-function openOverlay(){ pauseActive(); overlay.classList.add('open'); }
-function closeOverlay(){ overlay.classList.remove('open'); }
+function openOverlay(){
+  pauseActive();
+  // En plein écran (combat de boss), seuls les descendants de l'élément plein écran sont
+  // affichés : on déplace donc l'overlay DANS cet élément pour que les popups « Bien joué »,
+  // « Le démon t'a vaincu… » et la victoire restent visibles sans devoir quitter le plein écran.
+  const fs=(typeof fsElement==='function')?fsElement():null;
+  if(fs && overlay.parentNode!==fs) fs.appendChild(overlay);
+  else if(!fs && overlay.parentNode!==document.body) document.body.appendChild(overlay);
+  overlay.classList.add('open');
+}
+function closeOverlay(){
+  overlay.classList.remove('open');
+  // on remet l'overlay à sa place normale une fois refermé
+  if(overlay.parentNode!==document.body) document.body.appendChild(overlay);
+}
 let toastTimer=null;
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),8800); }
@@ -3072,13 +3189,13 @@ function confetti(){
   const root=document.createElement('div'); root.id='devkit';
   let html='<button class="dk-toggle" id="dkToggle">🛠️ Dev</button>'
     +'<div class="dk-panel"><p class="dk-head">🛠️ Accès développeur</p>'
-    +'<p class="dk-note">Saute à une manche : tout ce qui précède est considéré comme réussi.</p>';
+    +'<p class="dk-note">Saute à une mission : tout ce qui précède est considéré comme réussi.</p>';
   LEVELS.forEach(lv=>{
     html+='<div class="dk-lv">Niveau '+lv.n+' — '+lv.title+'</div>';
     steps(lv).forEach((d,i)=>{
       const isJ=(d.kind==='jalon');
       html+='<button class="dk-step'+(isJ?' jalon':'')+'" data-l="'+lv.n+'" data-s="'+i+'">'
-        +'<b>'+(d.label||('Manche '+(i+1)))+'</b> · '+(d.title||'')+'</button>';
+        +'<b>'+(d.label||('Mission '+(i+1)))+'</b> · '+(d.title||'')+'</button>';
     });
   });
   html+='<div class="dk-actions"><button class="dk-act" id="dkUnlockAll">🔓 Tout débloquer</button>'
@@ -3101,6 +3218,29 @@ function confetti(){
     keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
     location.href=HOME;
   };
+})();
+</script>
+<script>
+/* Bouton bascule OpenDyslexic — préférence partagée entre toutes les pages */
+(function(){
+  var KEY='a11y_dys', root=document.documentElement;
+  var btn=document.createElement('button');
+  btn.type='button'; btn.className='dys-toggle';
+  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dyslexique</span><span class="dys-switch"><span class="dys-knob"></span></span>';
+  function apply(on){
+    root.classList.toggle('dys',on);
+    btn.setAttribute('aria-pressed',on?'true':'false');
+    btn.title=on?'Mode Dyslexique activé — clique pour revenir à la police normale':'Activer le Mode Dyslexique (police OpenDyslexic)';
+  }
+  btn.addEventListener('click',function(){
+    var want=!root.classList.contains('dys');
+    if(typeof window.__dysConfirm==='function'){ window.__dysConfirm(want); return; }
+    try{localStorage.setItem(KEY,want?'1':'0');}catch(e){}
+    apply(want);
+  });
+  document.body.appendChild(btn);
+  var on=false; try{on=localStorage.getItem(KEY)==='1';}catch(e){}
+  apply(on);
 })();
 </script>
 </body>
