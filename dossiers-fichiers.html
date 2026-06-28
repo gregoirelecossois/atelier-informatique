@@ -131,6 +131,7 @@
   .desktop{position:absolute;inset:0 0 46px 0;display:flex;flex-direction:column;flex-wrap:wrap;
     align-content:flex-start;padding:12px 8px;gap:2px;}
   .desktop.dragover{outline:3px dashed rgba(255,255,255,.55);outline-offset:-8px;}
+  .lasso-rect{position:absolute;border:2px solid #60a5fa;background:rgba(96,165,250,.16);border-radius:3px;pointer-events:none;z-index:20;}
   .dt-icon{width:92px;min-height:84px;display:flex;flex-direction:column;align-items:center;gap:4px;
     padding:8px 4px 6px;border-radius:10px;cursor:default;text-align:center;border:2px solid transparent;}
   .dt-icon .ic{font-size:2.5rem;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));pointer-events:none;}
@@ -173,8 +174,8 @@
     border:1px solid var(--win-line);border-radius:8px;padding:3px 8px;}
   .win-search input{border:none;outline:none;width:100%;font-family:inherit;font-weight:700;font-size:.82rem;background:transparent;color:var(--ink);}
   .win-search .si{font-size:.85rem;color:#90a2b6;}
-  .win-body{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;flex-wrap:wrap;
-    align-content:flex-start;gap:4px;position:relative;background:#fff;}
+  .win-body{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:row;flex-wrap:wrap;
+    align-content:flex-start;align-items:flex-start;gap:4px;position:relative;background:#fff;}
   .win-body.dragover{outline:3px dashed var(--sel-line);outline-offset:-6px;border-radius:8px;}
   .win-body.empty-note::after{content:'Ce dossier est vide';position:absolute;top:46%;left:0;right:0;
     text-align:center;color:#9aabbd;font-weight:800;font-size:.95rem;pointer-events:none;}
@@ -207,7 +208,8 @@
   .fitem.infected{background:rgba(239,68,68,.07);}
   .fitem.drop-ok{background:#d7ebff;border-color:#5aa0e6;}
   .fitem .rn,.dt-icon .rn{font-size:.8rem;font-weight:700;width:84px;max-width:84px;text-align:center;color:var(--ink);
-    background:#fff;border:2px solid var(--blue);border-radius:6px;padding:1px 3px;font-family:inherit;outline:none;}
+    background:#fff;border:2px solid var(--blue);border-radius:6px;padding:2px 3px;font-family:inherit;outline:none;
+    white-space:pre-wrap;word-break:break-all;resize:none;overflow:hidden;line-height:1.3;}
   @keyframes virusPulse{0%,100%{filter:drop-shadow(0 0 0 rgba(239,68,68,0));transform:scale(1)}
     50%{filter:drop-shadow(0 0 7px rgba(239,68,68,.95));transform:scale(1.08)}}
   .win-status{height:24px;border-top:1px solid var(--win-line);background:#f7fafd;
@@ -315,8 +317,8 @@
   .cm-sub-label{padding:8px 11px;font-weight:800;color:#7a8b9d;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;}
 
   /* spotlight (astuce qui montre où agir) */
-  .spot{position:absolute;border-radius:12px;border:3px solid #ffd54a;box-shadow:0 0 0 4px rgba(255,213,74,.35),0 0 22px rgba(255,213,74,.7);
-    z-index:70;pointer-events:none;animation:spotPulse 1.1s ease-in-out infinite;}
+  .spot{position:fixed;border-radius:12px;border:3px solid #ffd54a;box-shadow:0 0 0 4px rgba(255,213,74,.35),0 0 22px rgba(255,213,74,.7);
+    z-index:500;pointer-events:none;animation:spotPulse 1.1s ease-in-out infinite;}
   @keyframes spotPulse{0%,100%{opacity:.55}50%{opacity:1}}
 
   /* ---------- Barre d'actions (en bas) ---------- */
@@ -382,6 +384,7 @@
   .modal .tasklist{list-style:none;padding:0;margin:8px 0 2px;display:flex;flex-direction:column;gap:6px;text-align:left;}
   .modal .tasklist li{display:flex;align-items:flex-start;gap:9px;font-weight:700;font-size:.97rem;color:#3a4a59;line-height:1.4;}
   .modal .tasklist li::before{content:'◻';color:var(--blue);font-weight:800;flex:none;}
+  .modal .tasklist li span{flex:1;min-width:0;}
   .modal .howto.test .tasklist li::before{color:var(--amber-d);}
   .modal .m-emoji{font-size:3rem;line-height:1;display:block;margin-bottom:6px;}
   .modal .kicker{font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:.78rem;color:var(--blue-d);margin-bottom:4px;}
@@ -682,6 +685,7 @@ function renderTaskbar(){
     b.className='tb-btn'+(w===EX.focusedWin&&!w.min?' active':'')+(w.min?' min':'');
     b.innerHTML='<span class="ic">'+iconFor(w.cur)+'</span><span class="lb">'+w.cur.name+'</span>';
     b.onclick=()=>{
+      if(currentStep&&currentStep.lockWin){ toast('🔒 La fenêtre est verrouillée pour cette mission.'); return; }
       if(w.min){ w.min=false; focusWin(w); EX.evt.taskbarRestore=true; }
       else if(w===EX.focusedWin){ w.min=true; }
       else focusWin(w);
@@ -736,11 +740,11 @@ function openWindow(node, opts){
   // titlebar : déplacement + focus
   const bar=el.querySelector('.win-bar');
   bar.addEventListener('mousedown', e=>{ if(e.button!==0) return; if(e.target.closest('.win-btn')) return; focusWin(w); startWinDrag(e, w); });
-  bar.addEventListener('dblclick', e=>{ if(e.target.closest('.win-btn')) return; toggleMax(w); });
+  bar.addEventListener('dblclick', e=>{ if(e.target.closest('.win-btn')) return; if(currentStep&&currentStep.lockWin){ toast('🔒 La fenêtre est verrouillée pour cette mission.'); return; } toggleMax(w); });
   el.addEventListener('mousedown', ()=>focusWin(w), true);
-  el.querySelector('.win-btn.min').onclick=(e)=>{ e.stopPropagation(); w.min=true; renderAll(); checkMission(); };
-  el.querySelector('.win-btn.max').onclick=(e)=>{ e.stopPropagation(); toggleMax(w); };
-  el.querySelector('.win-btn.close').onclick=(e)=>{ e.stopPropagation(); closeWindow(w); };
+  el.querySelector('.win-btn.min').onclick=(e)=>{ e.stopPropagation(); if(currentStep&&currentStep.lockWin){ toast('🔒 La fenêtre est verrouillée pour cette mission.'); return; } w.min=true; renderAll(); checkMission(); };
+  el.querySelector('.win-btn.max').onclick=(e)=>{ e.stopPropagation(); if(currentStep&&currentStep.lockWin){ toast('🔒 La fenêtre est verrouillée pour cette mission.'); return; } toggleMax(w); };
+  el.querySelector('.win-btn.close').onclick=(e)=>{ e.stopPropagation(); if(currentStep&&currentStep.lockWin){ toast('🔒 La fenêtre est verrouillée pour cette mission.'); return; } closeWindow(w); };
   el.querySelector('.nav-back').onclick=()=>navBack(w);
   el.querySelector('.nav-fwd').onclick=()=>navFwd(w);
   el.querySelector('.nav-up').onclick=()=>navUp(w);
@@ -752,6 +756,7 @@ function openWindow(node, opts){
   inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ runSearch(w, inp.value); } e.stopPropagation(); });
   el.querySelectorAll('.rz').forEach(h=>h.addEventListener('mousedown', e=>startWinResize(e, w, h.dataset.d)));
   focusWin(w);
+  if(currentStep && currentStep.lockWin){ w.max=true; el.classList.add('max'); updateMaxBtn(w); }
   renderWinBody(w);
   renderTaskbar();
   if(opts.evt!==false) EX.evt.openedAny=true;
@@ -897,7 +902,7 @@ function sortKids(kids, by){
 function runSearch(w, term){
   term=(term||'').trim();
   if(term.length<2){ w.searchResults=null; renderWinBody(w); return; }
-  const res=[]; walk(EX.desktopRoot, n=>{ if(n!==EX.desktopRoot && displayName(n).toLowerCase().includes(term.toLowerCase())) res.push(n); });
+  const res=[]; walk(w.cur, n=>{ if(n!==w.cur && displayName(n).toLowerCase().includes(term.toLowerCase())) res.push(n); });
   w.searchResults={term, res}; EX.evt.searched=term;
   renderWinBody(w); checkMission();
 }
@@ -905,7 +910,7 @@ function renderSearchResults(w, body){
   const {term,res}=w.searchResults;
   if(!res.length){ body.classList.add('empty-note'); body.innerHTML='<div style="width:100%;text-align:center;color:#9aabbd;font-weight:800;padding:40px 10px;">Aucun résultat pour « '+term+' »</div>'; return; }
   res.forEach(node=>{
-    const loc=pathOf(node.parent||EX.desktopRoot).map(p=>p.name).join(' ▸ ');
+    const fullPath=pathOf(node.parent||EX.desktopRoot); const curIdx=fullPath.indexOf(w.cur); const loc=fullPath.slice(curIdx>=0?curIdx:0).map(p=>p.name).join(' ▸ ');
     const el=document.createElement('div');
     el.className='fitem'+(node.infected?' infected':'');
     el.dataset.id=node.id;
@@ -1011,6 +1016,11 @@ function onItemMouseDown(e, node, box){
 function onPendMove(e){
   if(!pendDrag) return;
   if(Math.abs(e.clientX-pendDrag.sx)>5 || Math.abs(e.clientY-pendDrag.sy)>5){
+    if(currentStep && currentStep.noDrag){
+      window.removeEventListener('mousemove', onPendMove); window.removeEventListener('mouseup', onPendUp); pendDrag=null;
+      toast('🚫 Glisser-déposer désactivé — utilise Couper/Copier + Coller !');
+      return;
+    }
     beginDrag(e);
   }
 }
@@ -1054,6 +1064,8 @@ function dropTargetAt(e){
     if(fi){ const node=nodeById(fi.dataset.id); if(node && node.type==='folder' && dragging.nodes.indexOf(node)<0) return {kind:'folder', node, el:fi}; if(node && node.type!=='folder') continue; }
     const dti=el.closest && el.closest('.dt-icon');
     if(dti){ const node=nodeById(dti.dataset.id); if(node===EX.binNode) return {kind:'bin', node, el:dti}; if(node && node.type==='folder' && dragging.nodes.indexOf(node)<0) return {kind:'folder', node, el:dti}; }
+    const nr=el.closest && el.closest('.nav-row');
+    if(nr){ const node=nodeById(nr.dataset.id); if(node && node.type==='folder' && dragging.nodes.every(n=>n!==node && n.parent!==node)) return {kind:'folder', node, el:nr}; }
     if(el.classList && el.classList.contains('win-body')){ const w=EX.windows.find(x=>x.el&&x.el.querySelector('.win-body')===el); if(w) return {kind:'body', node:w.cur, el, w}; }
     if(el.id==='desktop') return {kind:'desktop', node:EX.desktopRoot, el};
   }
@@ -1081,6 +1093,8 @@ function openNode(node, w){
     checkMission();
   } else {
     if(node.noext || !node.ext){ beep('bad'); openNoExtDialog(node); checkMission(); return; }
+    const VALID_EXTS=new Set(['txt','doc','pdf','jpg','jpeg','png','gif','mp3','mp4','zip','exe','xls','ppt','html','app','virus']);
+    if(currentStep && currentStep.editExt && !VALID_EXTS.has(node.ext)){ beep('bad'); openBadExtDialog(node); checkMission(); return; }
     EX.opened.add(node.name); beep('open');
     openFilePreview(node); checkMission();
   }
@@ -1094,6 +1108,16 @@ function openNoExtDialog(node){
     +'<div class="m-actions"><button class="m-btn primary test" id="neClose">Compris&nbsp;!</button></div>';
   openOverlay();
   document.getElementById('neClose').onclick=()=>closeOverlay();
+}
+function openBadExtDialog(node){
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">❌</span><div class="kicker" style="color:var(--red-d)">Erreur</div>'
+    +'<h2>Impossible d\'ouvrir le fichier</h2>'
+    +'<p>L\'extension <b>.'+node.ext+'</b> n\'est pas reconnue : l\'ordinateur ne sait pas comment ouvrir <b>'+displayName(node)+'</b>.</p>'
+    +'<div class="howto test"><p class="h-head">👉 Astuce :</p><p>Corrige l\'extension avec '+kbd('F2')+' ! Si c\'est une image, écris <b>.jpg</b> ; si c\'est un texte, écris <b>.txt</b> ; si c\'est une musique, écris <b>.mp3</b>.</p></div>'
+    +'<div class="m-actions"><button class="m-btn primary test" id="beClose">Compris&nbsp;!</button></div>';
+  openOverlay();
+  document.getElementById('beClose').onclick=()=>closeOverlay();
 }
 function doMove(nodes, dest){
   let moved=0;
@@ -1185,14 +1209,16 @@ function startRename(node, box){
   // (ex. « photo.jpg »). Sinon, on n'édite que le nom : l'extension est protégée.
   const editExt=!!(currentStep && currentStep.editExt) && node.type==='file';
   const cur=editExt ? displayName(node) : node.name;
-  const inp=document.createElement('input'); inp.className='rn'; inp.value=cur;
-  el.replaceWith(inp); inp.focus();
+  const inp=document.createElement('textarea'); inp.className='rn'; inp.value=cur; inp.rows=1;
+  function autoResize(){ inp.style.height='auto'; inp.style.height=inp.scrollHeight+'px'; }
+  el.replaceWith(inp); autoResize(); inp.focus();
   // sélectionne le nom sans l'extension (comme Windows) quand on édite l'extension
   if(editExt){ const dot=cur.lastIndexOf('.'); inp.setSelectionRange(0, dot>0?dot:cur.length); } else inp.select();
+  inp.addEventListener('input', autoResize);
   let done=false;
   function commit(){
     if(done) return; done=true; _activeRename=null;
-    const v=inp.value.trim();
+    const v=inp.value.trim().replace(/\n/g,'');
     if(v && v!==cur){
       if(editExt){
         const m=/^(.*?)\.([A-Za-z0-9]+)$/.exec(v);
@@ -1208,7 +1234,8 @@ function startRename(node, box){
   }
   function cancel(){ if(done) return; done=true; _activeRename=null; renderAll(); checkMission(); }
   _activeRename={commit, cancel, inp};
-  inp.addEventListener('keydown', e=>{ e.stopPropagation(); if(e.key==='Enter'){ commit(); } else if(e.key==='Escape'){ cancel(); } });
+  inp.addEventListener('mousedown', e=>e.stopPropagation());
+  inp.addEventListener('keydown', e=>{ e.stopPropagation(); if(e.key==='Enter'){ e.preventDefault(); commit(); } else if(e.key==='Escape'){ e.preventDefault(); cancel(); } });
   inp.addEventListener('blur', commit);
 }
 
@@ -1221,7 +1248,7 @@ const FILE_TEXTS={
   'poésie':"🌸 Poésie\n\nLe petit escargot\nPorte sur son dos\nSa jolie maison.\nIl part en vacances\nTout doux, sans se presser :\nle roi de la lenteur ! 🐌",
   'exposé-volcan':"🌋 Exposé : les volcans\n\nUn volcan, c'est une montagne qui éternue de la lave ! Quand il fait « ATCHOUM 🔥 », mieux vaut être très, TRÈS loin... avec un parapluie ignifugé.",
   'exposé':"🦖 Exposé : le T-Rex\n\nLe T-Rex avait d'énormes dents mais de tout petits bras. Il ne pouvait même pas faire ses lacets tout seul. Mais bizarrement, personne n'osait se moquer de lui !",
-  'tresor':"🏴‍☠️ CARTE AU TRÉSOR\n\nFais 10 pas vers le palmier rigolo 🌴, tourne à gauche au rocher en forme de patate, et creuse là où brille le grand X. Le trésor t'attend ! 💎",
+  'trésor':"🏴‍☠️ CARTE AU TRÉSOR\n\nFais 10 pas vers le palmier rigolo 🌴, tourne à gauche au rocher en forme de patate, et creuse là où brille le grand X. Le trésor t'attend ! 💎",
   'secret':"🤫 ULTRA TOP SECRET\n\nLe vrai secret du monde : les chats commandent tout pendant qu'on dort. Ne le répète à PERSONNE... surtout pas à ton chat, il le sait déjà. 🐱",
   'rapport':"📋 Rapport très très sérieux\n\nAprès une longue enquête, c'est prouvé : les chaussettes disparaissent dans la machine à laver pour partir en vacances aux Bahamas. 🧦🏝️\nDossier classé.",
   'contrat':"📜 Contrat ultra-important\n\nArticle 1 : on a le droit de rigoler.\nArticle 2 : le goûter est obligatoire 🍫.\nArticle 3 : en cas de doute, relire l'article 2.\n\nSigné : le Grand Chef des Rigolos ✍️",
@@ -1424,13 +1451,55 @@ function onDesktopContext(e){
   ];
   showCtx(e.clientX, e.clientY, items);
 }
-function onDesktopMouseDown(e){ if(e.target.id==='desktop'){ commitRename(); cancelRenameTimer(); EX.sel=new Set(); EX.selBox='desktop'; refreshSel(); closeStart(); closeCtx(); } }
-function onBodyEmptyMouseDown(e, w){ commitRename(); cancelRenameTimer(); EX.sel=new Set(); EX.selBox=w.id; renderWinBody(w); closeStart(); closeCtx(); }
+function onDesktopMouseDown(e){
+  if(e.target.id!=='desktop') return;
+  commitRename(); cancelRenameTimer(); closeStart(); closeCtx();
+  startLasso(e, document.getElementById('desktop'), 'desktop',
+    ()=>{ EX.sel=new Set(); EX.selBox='desktop'; refreshSel(); },
+    ids=>{ EX.sel=new Set(ids); EX.selBox='desktop'; refreshSel(); });
+}
+function onBodyEmptyMouseDown(e, w){
+  commitRename(); cancelRenameTimer(); closeStart(); closeCtx();
+  startLasso(e, w.el.querySelector('.win-body'), w.id,
+    ()=>{ EX.sel=new Set(); EX.selBox=w.id; renderWinBody(w); },
+    ids=>{ EX.sel=new Set(ids); EX.selBox=w.id; renderWinBody(w); });
+}
+function startLasso(e, container, box, onStart, onEnd){
+  if(e.button!==0) return;
+  onStart();
+  const rect=container.getBoundingClientRect();
+  const x0=e.clientX-rect.left, y0=e.clientY-rect.top;
+  const lassoEl=document.createElement('div'); lassoEl.className='lasso-rect';
+  lassoEl.style.left=x0+'px'; lassoEl.style.top=y0+'px';
+  container.appendChild(lassoEl);
+  function move(ev){
+    const x=ev.clientX-rect.left, y=ev.clientY-rect.top;
+    const L=Math.min(x0,x), T=Math.min(y0,y), W=Math.abs(x-x0), H=Math.abs(y-y0);
+    lassoEl.style.left=L+'px'; lassoEl.style.top=T+'px';
+    lassoEl.style.width=W+'px'; lassoEl.style.height=H+'px';
+    const ids=[];
+    container.querySelectorAll('[data-id]').forEach(el=>{
+      const r=el.getBoundingClientRect();
+      const cx=r.left+r.width/2-rect.left, cy=r.top+r.height/2-rect.top;
+      if(cx>=L&&cx<=L+W&&cy>=T&&cy<=T+H) ids.push(el.dataset.id);
+    });
+    EX.sel=new Set(ids); EX.selBox=box; refreshSel();
+  }
+  function up(){
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', up);
+    try{ lassoEl.remove(); }catch(err){}
+    const ids=Array.from(EX.sel);
+    onEnd(ids);
+  }
+  document.addEventListener('mousemove', move);
+  document.addEventListener('mouseup', up);
+}
 
 /* ---------------------------------------------------------
    7. MENU DÉMARRER
    --------------------------------------------------------- */
-function toggleStart(){ const m=document.getElementById('startmenu'); if(m.classList.contains('open')) closeStart(); else openStart(); }
+function toggleStart(){ if(currentStep&&currentStep.lockWin){ toast('🔒 Le menu Démarrer est verrouillé pour cette mission.'); return; } const m=document.getElementById('startmenu'); if(m.classList.contains('open')) closeStart(); else openStart(); }
 function openStart(){
   const m=document.getElementById('startmenu');
   const apps=[
@@ -1580,6 +1649,16 @@ const G={
   sortedBy:(by)=>({hint:'Clic droit dans le vide → Trier par…', test:c=>c.win && c.win.sortBy===by}),
   searchedOpened:(name)=>({hint:'Tape le nom dans la barre 🔍 en haut à droite, appuie sur Entrée, puis double-clique le résultat.', test:c=>c.evt.searchOpened && c.evt.searchOpened.has(name)}),
   all:(arr)=>({multi:true, parts:arr, test:c=>arr.every(g=>g.test(c))}),
+  deletedTogether:(names)=>({
+    togetherNames:names,
+    hint:'Sélectionne <b>tous</b> les fichiers en même temps ('+kbd('Ctrl')+'+clic ou lasso), puis supprime-les d\'un seul coup.',
+    test:c=>names.every(n=>c.bin.some(b=>b.name===n||displayName(b)===n))
+  }),
+  lassoDeleted:(names)=>({
+    togetherNames:names, lasso:true,
+    hint:'Clique dans un coin vide et <b>glisse ta souris</b> pour entourer <b>tous</b> les fichiers en même temps, puis appuie sur '+kbd('Suppr')+'.',
+    test:c=>names.every(n=>c.bin.some(b=>b.name===n||displayName(b)===n))
+  }),
 };
 
 /* construit, à partir des objectifs, la liste des actions destructives autorisées */
@@ -1589,6 +1668,8 @@ function buildGuard(step){
     if(o.del) g.del=g.del.concat(o.del);
     if(o.ren) g.ren=g.ren.concat(o.ren);
     if(o.mov) g.mov=g.mov.concat(o.mov);
+    // deletedTogether / lassoDeleted : les noms sont dans le goal lui-même
+    if(o.goal && o.goal.togetherNames) g.del=g.del.concat(o.goal.togetherNames);
   });
   return g;
 }
@@ -1626,12 +1707,37 @@ function checkMission(){
   const v=missionViolation();
   if(v){ _missionDone=true; setTimeout(()=>missionFail(v), 200); return; }
   const objs=currentStep.objectives; if(!objs || !objs.length) return;
-  // affichage séquentiel (un objectif à la fois) pour les missions ET les défis
   if(currentStep._jalonAnim) return;
   const ctx=buildCtx();
   const i=currentStep._jalonIdx;
-  if(i<objs.length && !currentStep._objDone[i] && objs[i].goal.test(ctx)){
-    currentStep._objDone[i]=true; beep('good'); jalonAdvanceDF();
+  if(i<objs.length && !currentStep._objDone[i]){
+    const goal=objs[i].goal;
+    // vérification partielle pour deletedTogether : si certains fichiers sont dans la corbeille
+    // mais pas tous → l'utilisateur les a supprimés un par un → recommencer la mission
+    if(goal.togetherNames){
+      const inBin=goal.togetherNames.filter(n=>ctx.bin.some(b=>b.name===n||displayName(b)===n));
+      if(inBin.length>0 && inBin.length<goal.togetherNames.length){
+        _missionDone=true;
+        setTimeout(()=>{
+          beep('bad');
+          modal.className='modal warn';
+          const isLasso=goal.lasso;
+          modal.innerHTML='<span class="m-emoji">'+(isLasso?'🖱️':'🤝')+'</span>'
+            +'<h2>'+(isLasso?'Il faut entourer tous les fichiers !':'Il faut tout sélectionner d\'abord !')+'</h2>'
+            +'<p>'+(isLasso
+              ? 'Tu as supprimé des fichiers <b>un par un</b>. Pour cette mission, tu dois <b>entourer tous les fichiers au lasso</b> (clique dans un coin vide et glisse ta souris pour tout encadrer), puis appuyer sur '+kbd('Suppr')+' une seule fois.'
+              : 'Tu les as supprimés <b>un par un</b>. Pour cette mission, tu dois sélectionner <b>tous les fichiers en même temps</b> ('+kbd('Ctrl')+'+clic sur chacun, ou entoure-les au <b>lasso</b>), puis supprimer d\'un seul coup.'
+            )+'</p>'
+            +'<div class="m-actions"><button class="m-btn primary test" id="failRetry">↺ Recommencer la mission</button></div>';
+          openOverlay();
+          document.getElementById('failRetry').onclick=()=>{ closeOverlay(); startStep(playIdx); };
+        }, 300);
+        return;
+      }
+    }
+    if(goal.test(ctx)){
+      currentStep._objDone[i]=true; beep('good'); jalonAdvanceDF();
+    }
   }
 }
 function renderJalonObjective(enter){
@@ -1702,8 +1808,8 @@ const LEVELS=[
         {t:'<b>Ferme</b> une fenêtre : il en reste <b>1</b>', goal:G.windowsCount(1)},
         {t:'<b>Ferme</b> la dernière fenêtre', goal:G.noWindows()}
       ]},
-    {kind:'mission',label:'Mission 3',emoji:'▁',title:'Réduire et le menu',
-      intro:'On range une fenêtre dans la <b>barre des tâches</b>, on ouvre le <b>menu Démarrer</b> et une appli.',
+    {kind:'mission',label:'Mission 3',emoji:'▁',title:'Réduire et menu Démarrer',
+      intro:'Le bouton <b>▁</b> <b>réduit</b> la fenêtre dans la barre des tâches — elle n\'est pas fermée, juste rangée ! Clique son bouton en bas pour la <b>ré-afficher</b>. Ensuite tu ouvriras le <b>⊞ menu Démarrer</b> (en bas à gauche) pour lancer la <b>Calculatrice 🧮</b>.',
       seed:{desktop:homeTree(), open:'Documents'},
       objectives:[
         {t:'<b>Réduis</b> la fenêtre avec le bouton <b>▁</b>', goal:G.minimized()},
@@ -1748,7 +1854,7 @@ const LEVELS=[
         {t:'Reviens au <b>🖥️ Bureau</b> par le fil d\'Ariane', goal:G.atFolder('Bureau')}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'🗂️',title:'Le volet de gauche',
-      intro:'À gauche se trouve l\'<b>arbre des dossiers</b>. Sers-t\'en pour déplier, naviguer et trouver un dossier <b>caché</b> qui n\'apparaît que là !',
+      intro:'Le <b>volet de gauche</b> donne accès à <b>tous les dossiers</b> — même ceux qui ne s\'affichent pas dans la fenêtre principale. C\'est ton raccourci de navigation !',
       seed:{desktop:[
         folder('Documents',[ folder('Cours',[file('maths','txt')]), file('liste','txt') ]),
         folder('Images',[]),
@@ -1828,15 +1934,33 @@ const LEVELS=[
         {t:'Range <b>photo2</b> dans <b>Images</b>', goal:G.movedInto('photo2.jpg','Images'), mov:'photo2.jpg'},
         {t:'Range <b>rapport</b> dans <b>Documents</b>', goal:G.movedInto('rapport.txt','Documents'), mov:'rapport.txt'}
       ]},
-    {kind:'mission',label:'Mission 2',emoji:'✂️',title:'Déplacer et copier',
-      intro:'<b>Déplacer</b> = Couper ('+kbd('Ctrl+X')+') + Coller ('+kbd('Ctrl+V')+'). <b>Copier</b> ('+kbd('Ctrl+C')+') garde l\'original !',
+    {kind:'mission',label:'Mission 2',emoji:'✂️',title:'Couper-coller et copier-coller',
+      noDrag:true,
+      intro:'Le glisser-déposer est <b>désactivé</b> ici : utilise le clavier ! <b>Couper</b> ('+kbd('Ctrl+X')+') + <b>Coller</b> ('+kbd('Ctrl+V')+') <b>déplace</b> le fichier. <b>Copier</b> ('+kbd('Ctrl+C')+') + <b>Coller</b> en garde l\'<b>original</b> en place.',
       seed:{desktop:[ folder('Musique',[]), folder('Sauvegarde',[]), file('chanson','mp3',{icon:'🎵'}), file('rock','mp3',{icon:'🎸'}), file('modèle','txt') ], open:'Musique'},
       objectives:[
-        {t:'<b>Déplace</b> <b>chanson</b> dans <b>Musique</b> (couper-coller)', goal:G.movedInto('chanson.mp3','Musique'), mov:'chanson.mp3'},
-        {t:'<b>Déplace</b> <b>rock</b> dans <b>Musique</b>', goal:G.movedInto('rock.mp3','Musique'), mov:'rock.mp3'},
-        {t:'<b>Copie</b> <b>modèle</b> dans <b>Sauvegarde</b> (garde l\'original !)', goal:G.copiedInto('modèle.txt','Sauvegarde')}
+        {t:'<b>Déplace</b> <b>chanson</b> dans <b>Musique</b> (Ctrl+X puis Ctrl+V)', goal:{hint:'Sélectionne chanson → '+kbd('Ctrl+X')+' → ouvre Musique → '+kbd('Ctrl+V')+'.', test:c=>c.inFolder('Musique','chanson.mp3')}, mov:'chanson.mp3'},
+        {t:'<b>Déplace</b> <b>rock</b> dans <b>Musique</b> (Ctrl+X puis Ctrl+V)', goal:{hint:'Sélectionne rock → '+kbd('Ctrl+X')+' → ouvre Musique → '+kbd('Ctrl+V')+'.', test:c=>c.inFolder('Musique','rock.mp3')}, mov:'rock.mp3'},
+        {t:'<b>Copie</b> <b>modèle</b> dans <b>Sauvegarde</b> (Ctrl+C puis Ctrl+V — garde l\'original !)', goal:G.copiedInto('modèle.txt','Sauvegarde')}
       ]},
-    {kind:'mission',label:'Mission 3',emoji:'🎬',title:'Chaque chose à sa place',
+    {kind:'mission',label:'Mission 3',emoji:'✂️',title:'Couper-coller : tout au clavier !',
+      noDrag:true,
+      intro:'Entraîne-toi encore au <b>couper-coller</b> : '+kbd('Ctrl+X')+' sur le fichier, entre dans le dossier de destination, puis '+kbd('Ctrl+V')+' pour le déposer.',
+      seed:{desktop:[ folder('Documents',[]), folder('Images',[]), folder('Musique',[]), file('rapport','doc'), file('photo','jpg',{icon:'🖼️'}), file('chanson2','mp3',{icon:'🎵'}) ]},
+      objectives:[
+        {t:'<b>Coupe-colle</b> <b>rapport</b> dans <b>Documents</b>', goal:{hint:'Sélectionne rapport → '+kbd('Ctrl+X')+' → ouvre Documents → '+kbd('Ctrl+V')+'.', test:c=>c.inFolder('Documents','rapport.doc')}, mov:'rapport.doc'},
+        {t:'<b>Coupe-colle</b> <b>photo</b> dans <b>Images</b>', goal:{hint:'Sélectionne photo → '+kbd('Ctrl+X')+' → ouvre Images → '+kbd('Ctrl+V')+'.', test:c=>c.inFolder('Images','photo.jpg')}, mov:'photo.jpg'},
+        {t:'<b>Coupe-colle</b> <b>chanson2</b> dans <b>Musique</b>', goal:{hint:'Sélectionne chanson2 → '+kbd('Ctrl+X')+' → ouvre Musique → '+kbd('Ctrl+V')+'.', test:c=>c.inFolder('Musique','chanson2.mp3')}, mov:'chanson2.mp3'}
+      ]},
+    {kind:'mission',label:'Mission 4',emoji:'📋',title:'Copier-coller : garde l\'original !',
+      noDrag:true,
+      intro:'<b>Copier</b> ('+kbd('Ctrl+C')+') + <b>Coller</b> ('+kbd('Ctrl+V')+') : le fichier <b>reste à sa place</b> et une copie apparaît dans le dossier cible. Parfait pour faire une <b>sauvegarde</b> !',
+      seed:{desktop:[ folder('Sauvegarde',[]), folder('Archives',[]), file('devoir','doc'), file('photo-famille','jpg',{icon:'📷'}) ]},
+      objectives:[
+        {t:'<b>Copie</b> <b>devoir</b> dans <b>Sauvegarde</b> (l\'original doit rester sur le bureau !)', goal:G.copiedInto('devoir.doc','Sauvegarde')},
+        {t:'<b>Copie</b> <b>photo-famille</b> dans <b>Archives</b> (l\'original doit rester sur le bureau !)', goal:G.copiedInto('photo-famille.jpg','Archives')}
+      ]},
+    {kind:'mission',label:'Mission 5',emoji:'🎬',title:'Chaque chose à sa place',
       intro:'Range chaque fichier dans le dossier qui lui correspond.',
       seed:{desktop:[ folder('Vidéos',[]), folder('Musique',[]), folder('Documents',[]), file('film','mp4',{icon:'🎬'}), file('musique','mp3',{icon:'🎵'}), file('notes','txt') ]},
       objectives:[
@@ -1844,16 +1968,59 @@ const LEVELS=[
         {t:'Range <b>musique</b> dans <b>Musique</b>', goal:G.movedInto('musique.mp3','Musique'), mov:'musique.mp3'},
         {t:'Range <b>notes</b> dans <b>Documents</b>', goal:G.movedInto('notes.txt','Documents'), mov:'notes.txt'}
       ]},
-    {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand tri',
-      intro:'Tout est en désordre sur le bureau ! Range chaque fichier dans le bon dossier (et laisse le reste tranquille).',
-      seed:{desktop:[ folder('Images',[]), folder('Musique',[]), folder('Documents',[]), folder('Vidéos',[]),
-        file('photo','jpg',{icon:'📷'}), file('chanson','mp3',{icon:'🎵'}), file('devoir','doc'), file('film','mp4',{icon:'🎬'}), file('notes','txt') ]},
+    {kind:'mission',label:'Mission 6',emoji:'🗂️',title:'Range avec le volet',
+      lockWin:true,
+      intro:'La fenêtre est en <b>plein écran</b> et le <b>volet de gauche</b> montre les dossiers. Tu peux <b>glisser</b> un fichier directement sur un dossier du volet, ou le <b>couper-coller</b> ('+kbd('Ctrl+X')+' puis '+kbd('Ctrl+V')+').',
+      seed:{desktop:[ folder('Documents',[
+        folder('École',[],{panelOnly:true}),
+        folder('Famille',[],{panelOnly:true}),
+        file('devoir-maths','doc'),
+        file('exposé-sciences','doc'),
+        file('photo-anniversaire','jpg',{icon:'🎂'}),
+        file('liste-fournitures','txt')
+      ]) ], open:'Documents'},
       objectives:[
-        {t:'<b>photo</b> → <b>Images</b>', goal:G.movedInto('photo.jpg','Images'), mov:'photo.jpg'},
-        {t:'<b>chanson</b> → <b>Musique</b>', goal:G.movedInto('chanson.mp3','Musique'), mov:'chanson.mp3'},
-        {t:'<b>devoir</b> → <b>Documents</b>', goal:G.movedInto('devoir.doc','Documents'), mov:'devoir.doc'},
-        {t:'<b>film</b> → <b>Vidéos</b>', goal:G.movedInto('film.mp4','Vidéos'), mov:'film.mp4'},
-        {t:'<b>notes</b> → <b>Documents</b>', goal:G.movedInto('notes.txt','Documents'), mov:'notes.txt'}
+        {t:'Range <b>devoir-maths</b> dans <b>École</b>', goal:G.movedInto('devoir-maths.doc','École'), mov:'devoir-maths.doc'},
+        {t:'Range <b>exposé-sciences</b> dans <b>École</b>', goal:G.movedInto('exposé-sciences.doc','École'), mov:'exposé-sciences.doc'},
+        {t:'Range <b>liste-fournitures</b> dans <b>École</b>', goal:G.movedInto('liste-fournitures.txt','École'), mov:'liste-fournitures.txt'},
+        {t:'Range <b>photo-anniversaire</b> dans <b>Famille</b>', goal:G.movedInto('photo-anniversaire.jpg','Famille'), mov:'photo-anniversaire.jpg'}
+      ]},
+    {kind:'mission',label:'Mission 7',emoji:'📂',title:'Le grand classement',
+      lockWin:true,
+      intro:'Utilise le <b>volet de gauche</b> pour tout ranger d\'un coup. <b>Glisse</b> chaque fichier sur le bon dossier dans le volet, ou <b>couper-coller</b> ('+kbd('Ctrl+X')+' puis '+kbd('Ctrl+V')+').',
+      seed:{desktop:[ folder('Documents',[
+        folder('Travail',[],{panelOnly:true}),
+        folder('Personnel',[],{panelOnly:true}),
+        folder('Vacances',[],{panelOnly:true}),
+        file('rapport-annuel','doc'),
+        file('budget','xls'),
+        file('agenda','txt'),
+        file('recette','txt'),
+        file('photo-plage','jpg',{icon:'🏖️'}),
+        file('ticket-train','pdf')
+      ]) ], open:'Documents'},
+      objectives:[
+        {t:'Range <b>rapport-annuel</b> dans <b>Travail</b>', goal:G.movedInto('rapport-annuel.doc','Travail'), mov:'rapport-annuel.doc'},
+        {t:'Range <b>budget</b> dans <b>Travail</b>', goal:G.movedInto('budget.xls','Travail'), mov:'budget.xls'},
+        {t:'Range <b>agenda</b> dans <b>Personnel</b>', goal:G.movedInto('agenda.txt','Personnel'), mov:'agenda.txt'},
+        {t:'Range <b>recette</b> dans <b>Personnel</b>', goal:G.movedInto('recette.txt','Personnel'), mov:'recette.txt'},
+        {t:'Range <b>photo-plage</b> dans <b>Vacances</b>', goal:G.movedInto('photo-plage.jpg','Vacances'), mov:'photo-plage.jpg'},
+        {t:'Range <b>ticket-train</b> dans <b>Vacances</b>', goal:G.movedInto('ticket-train.pdf','Vacances'), mov:'ticket-train.pdf'}
+      ]},
+    {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand tri',
+      noDrag:true,
+      intro:'Tout est en désordre ! <b>Déplace</b> chaque fichier dans son dossier (Ctrl+X → Ctrl+V), et <b>copie</b> les deux fichiers importants dans <b>Sauvegarde</b> (Ctrl+C → Ctrl+V) pour garder l\'original.',
+      seed:{desktop:[ folder('Images',[]), folder('Musique',[]), folder('Documents',[]), folder('Vidéos',[]), folder('Sauvegarde',[]),
+        file('photo','jpg',{icon:'📷'}), file('chanson','mp3',{icon:'🎵'}), file('devoir','doc'), file('film','mp4',{icon:'🎬'}), file('notes','txt'),
+        file('contrat','pdf'), file('plan-vacances','doc') ]},
+      objectives:[
+        {t:'<b>Déplace</b> <b>photo</b> → <b>Images</b>', goal:G.movedInto('photo.jpg','Images'), mov:'photo.jpg'},
+        {t:'<b>Déplace</b> <b>chanson</b> → <b>Musique</b>', goal:G.movedInto('chanson.mp3','Musique'), mov:'chanson.mp3'},
+        {t:'<b>Déplace</b> <b>devoir</b> → <b>Documents</b>', goal:G.movedInto('devoir.doc','Documents'), mov:'devoir.doc'},
+        {t:'<b>Déplace</b> <b>film</b> → <b>Vidéos</b>', goal:G.movedInto('film.mp4','Vidéos'), mov:'film.mp4'},
+        {t:'<b>Déplace</b> <b>notes</b> → <b>Documents</b>', goal:G.movedInto('notes.txt','Documents'), mov:'notes.txt'},
+        {t:'<b>Copie</b> <b>contrat</b> → <b>Sauvegarde</b> (l\'original reste !)', goal:G.copiedInto('contrat.pdf','Sauvegarde')},
+        {t:'<b>Copie</b> <b>plan-vacances</b> → <b>Sauvegarde</b> (l\'original reste !)', goal:G.copiedInto('plan-vacances.doc','Sauvegarde')}
       ]}
   ]},
 
@@ -1888,13 +2055,27 @@ const LEVELS=[
         {t:'Supprime aussi le fichier <b>spam</b>', goal:G.deleted('spam.txt'), del:'spam.txt'},
         {t:'<b>Vide</b> la corbeille (clic droit → Vider)', goal:G.binEmpty()}
       ]},
-    {kind:'mission',label:'Mission 4',emoji:'🗑️',title:'Plusieurs d\'un coup',
-      intro:'Sélectionne plusieurs fichiers avec '+kbd('Ctrl')+'+clic, puis '+kbd('Suppr')+'.',
+    {kind:'mission',label:'Mission 4',emoji:'🖱️',title:'La sélection au lasso',
+      intro:'<b>Agrandis</b> la fenêtre avec le bouton <b>▢</b>, puis <b>clique dans un coin vide et glisse</b> ta souris pour entourer <b>tous</b> les fichiers d\'un coup. Appuie ensuite sur '+kbd('Suppr')+'. Si tu en supprimes un seul à la fois, c\'est une erreur !',
+      seed:{desktop:[ folder('Corbeille à trier',[
+        file('spam-robot','txt',{icon:'📧'}), file('pub-chaussettes','txt',{icon:'📭'}),
+        file('pub-chapeau','txt',{icon:'📭'}), file('vieux-doc','txt',{icon:'🗒️'}),
+        file('brouillon1','txt',{icon:'📝'}), file('brouillon2','txt',{icon:'📝'}),
+        file('brouillon3','txt',{icon:'📝'}), file('photo-floue','txt',{icon:'🖼️'}),
+        file('note-inutile','txt',{icon:'🗒️'}), file('liste-vide','txt',{icon:'📋'}),
+        file('copie-copie','txt',{icon:'📄'}), file('bruit','txt',{icon:'🔇'})
+      ]) ], open:'Corbeille à trier'},
+      objectives:[
+        {t:'<b>Agrandis</b> la fenêtre avec le bouton <b>▢</b> (en haut à droite)', goal:G.maximized()},
+        {t:'<b>Entoure au lasso</b> les 12 fichiers (clique dans un coin vide et glisse), puis supprime-les <b>tous d\'un coup</b>',
+          goal:G.lassoDeleted(['spam-robot.txt','pub-chaussettes.txt','pub-chapeau.txt','vieux-doc.txt','brouillon1.txt','brouillon2.txt','brouillon3.txt','photo-floue.txt','note-inutile.txt','liste-vide.txt','copie-copie.txt','bruit.txt']),
+          del:['spam-robot.txt','pub-chaussettes.txt','pub-chapeau.txt','vieux-doc.txt','brouillon1.txt','brouillon2.txt','brouillon3.txt','photo-floue.txt','note-inutile.txt','liste-vide.txt','copie-copie.txt','bruit.txt']}
+      ]},
+    {kind:'mission',label:'Mission 5',emoji:'🗑️',title:'Plusieurs d\'un coup',
+      intro:'Ces 3 spams doivent partir <b>ensemble</b>. Sélectionne-les tous avec '+kbd('Ctrl')+'+clic (ou au lasso), puis '+kbd('Suppr')+' — si tu en supprimes un seul à la fois, c\'est une erreur !',
       seed:{desktop:[ folder('Documents',[ file('spam1','txt',{icon:'📧'}), file('spam2','txt',{icon:'📧'}), file('spam3','txt',{icon:'📧'}), file('lettre','doc') ]) ], open:'Documents'},
       objectives:[
-        {t:'Supprime <b>spam1</b>', goal:G.deleted('spam1.txt'), del:'spam1.txt'},
-        {t:'Supprime <b>spam2</b>', goal:G.deleted('spam2.txt'), del:'spam2.txt'},
-        {t:'Supprime <b>spam3</b>', goal:G.deleted('spam3.txt'), del:'spam3.txt'}
+        {t:'Sélectionne <b>spam1</b>, <b>spam2</b> et <b>spam3</b> en même temps et supprime-les d\'un seul coup', goal:G.deletedTogether(['spam1.txt','spam2.txt','spam3.txt'])}
       ]},
     {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand ménage',
       intro:'Fais disparaître les <b>3 fichiers poubelle</b> pour de bon (supprime-les puis vide la corbeille), et garde le reste !',
@@ -1922,10 +2103,36 @@ const LEVELS=[
         {t:'Trie par <b>Date</b>', goal:G.sortedBy('date')}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'🔍',title:'Retrouve avec la recherche',
-      intro:'Tape le nom dans la barre <b>🔍</b> (en haut à droite), '+kbd('Entrée')+', puis double-clique le résultat.',
-      seed:{desktop:[ folder('Documents',[ folder('Vieux',[ folder('Archives',[ file('tresor','txt',{icon:'💎'}) ]) ]), file('liste','txt') ]), folder('Administratif',[ folder('2024',[ file('facture','pdf') ]), folder('Archives-2023',[ file('diplôme','pdf',{icon:'🎓'}) ]) ]) ], open:'Documents'},
+      intro:'La <b>recherche 🔍</b> (en haut à droite) cherche <b>dans le dossier où tu es</b> et ses sous-dossiers uniquement. Tape les <b>premières lettres</b> du nom, appuie sur '+kbd('Entrée')+', puis double-clique le résultat.',
+      seed:{desktop:[ folder('Documents',[
+        folder('Scolaire',[
+          folder('CE2',[ folder('Devoirs',[ folder('Maths',[]), folder('Français',[]), folder('Sciences',[]) ]), folder('Projets',[]), folder('Dessins',[]) ]),
+          folder('Primaire',[ folder('CE1',[]), folder('CP',[]), folder('Maternelle',[]) ]),
+          folder('Collège',[ folder('6ème',[]), folder('5ème',[]) ]),
+        ]),
+        folder('Famille',[ folder('Photos',[ folder('Vacances-2022',[]), folder('Vacances-2023',[]), folder('Noël-2023',[]), folder('Anniversaires',[]) ]), folder('Vidéos',[ folder('Concerts',[]) ]), folder('Recettes',[]) ]),
+        folder('Travail',[
+          folder('Projets',[ folder('Projet-Alpha',[]), folder('Projet-Beta',[]), folder('Projet-Gamma',[]), folder('Idées',[]) ]),
+          folder('Rapports',[ folder('2022',[]), folder('2023',[]), folder('2024',[ file('facture','pdf') ]) ]),
+          folder('Clients',[ folder('Client-A',[]), folder('Client-B',[]), folder('Client-C',[]) ]),
+          folder('Réunions',[ folder('Janvier',[]), folder('Février',[]), folder('Mars',[]) ]),
+        ]),
+        folder('Administratif',[
+          folder('Impôts',[ folder('2022',[]), folder('2023',[]) ]),
+          folder('Santé',[ folder('Ordonnances',[]), folder('Résultats',[]) ]),
+          folder('Archives-2023',[ file('diplôme','pdf',{icon:'🎓'}) ]),
+          folder('Banque',[ folder('Relevés',[]) ]),
+        ]),
+        folder('Vieux',[
+          folder('Archives',[ file('trésor','txt',{icon:'💎'}) ]),
+          folder('Anciens-devoirs',[ folder('CP',[]), folder('CE1',[]) ]),
+          folder('Vieilles-photos',[ folder('2015',[]), folder('2016',[]), folder('2017',[]) ]),
+        ]),
+        folder('Téléchargements',[ folder('Logiciels',[]), folder('Images-web',[]), folder('Vidéos-web',[]), folder('Musique',[]) ]),
+        file('liste','txt'),
+      ]) ], open:'Documents'},
       objectives:[
-        {t:'Recherche et ouvre <b>tresor</b>', goal:G.searchedOpened('tresor')},
+        {t:'Recherche et ouvre <b>trésor</b>', goal:G.searchedOpened('trésor')},
         {t:'Recherche et ouvre <b>facture</b>', goal:G.searchedOpened('facture')},
         {t:'Recherche et ouvre <b>diplôme</b>', goal:G.searchedOpened('diplôme')}
       ]},
@@ -1938,8 +2145,26 @@ const LEVELS=[
         {t:'Recherche et ouvre <b>chanson-secrète</b>', goal:G.searchedOpened('chanson-secrète')}
       ]},
     {kind:'jalon',label:'Défi',emoji:'🏆',title:'Détective des fichiers',
-      intro:'Retrouve le fichier <b>secret</b> caché très profond, puis range-le dans le <b>Coffre</b> (et ne touche à rien d\'autre).',
-      seed:{desktop:[ folder('Coffre',[]), folder('A',[ folder('B',[ folder('C',[ file('secret','txt',{icon:'🔐'}) ]) ]) ]), file('leurre','txt',{icon:'🎭'}) ], open:'Coffre'},
+      intro:'Retrouve le fichier <b>secret</b> caché très profond dans les dossiers, puis range-le dans le <b>Coffre</b> (et ne touche à rien d\'autre). Utilise la <b>recherche 🔍</b> depuis le bon dossier !',
+      seed:{desktop:[
+        folder('Coffre',[]),
+        folder('Maison',[
+          folder('Chambre',[ folder('Bureau',[ folder('Tiroir-1',[]), folder('Tiroir-2',[]), folder('Tiroir-3',[]) ]), folder('Bibliothèque',[ folder('Romans',[]), folder('BD',[]), folder('Manuels',[]) ]), folder('Placard',[ folder('Hiver',[]), folder('Été',[]) ]) ]),
+          folder('Salon',[
+            folder('Jeux',[
+              folder('Société',[ folder('Cartes',[ folder('Jeux-anciens',[ file('secret','txt',{icon:'🔐'}) ]) ]) ]),
+              folder('Vidéo',[ folder('Console',[]), folder('PC',[]) ]),
+              folder('Puzzles',[ folder('500-pièces',[]), folder('1000-pièces',[]) ]),
+            ]),
+            folder('Films',[ folder('Action',[]), folder('Comédie',[]), folder('Animation',[]) ]),
+          ]),
+          folder('Cuisine',[ folder('Recettes',[ folder('Entrées',[]), folder('Plats',[]), folder('Desserts',[ folder('Gâteaux',[]), folder('Glaces',[]) ]) ]), folder('Courses',[ folder('Semaine',[]), folder('Week-end',[]) ]) ]),
+          folder('Garage',[ folder('Outils',[ folder('Électricité',[]), folder('Plomberie',[]), folder('Jardinage',[]) ]), folder('Voiture',[ folder('Documents',[]), folder('Entretien',[]) ]) ]),
+          folder('Grenier',[ folder('Cartons',[ folder('Enfance',[]), folder('Vacances',[]), folder('Vêtements',[]) ]), folder('Jouets-anciens',[ folder('Poupées',[]), folder('Voitures',[]) ]), folder('Déco',[]) ]),
+        ]),
+        file('leurre','txt',{icon:'🎭'}),
+        file('piège','txt',{icon:'🎣'}),
+      ], open:'Coffre'},
       objectives:[
         {t:'Recherche et ouvre <b>secret</b>', goal:G.searchedOpened('secret')},
         {t:'Déplace <b>secret</b> dans le <b>Coffre</b>', goal:G.movedInto('secret.txt','Coffre'), mov:'secret.txt'}
@@ -2043,11 +2268,11 @@ function makeSeed(custom){
     case 'cleanup': return { desktop:[ folder('Documents',[ file('vieux1','txt'), file('vieux2','txt'), file('vieux3','txt'), file('photo-famille','jpg',{icon:'📷'}), file('important','doc') ]) ], open:'Documents' };
     case 'sort1':   return { desktop:[ folder('Dossier',[ file('zebre','txt',{date:3}), file('photo','jpg',{icon:'🖼️',date:5}), file('avion','mp3',{icon:'🎵',date:2}), file('banane','txt',{date:9}), file('chat','jpg',{icon:'🐱',date:1}), file('musique','mp3',{icon:'🎵',date:7}) ]) ], open:'Dossier' };
     case 'sort2':   return { desktop:[ folder('Mélange',[ file('orange','txt'), file('kiwi','txt'), file('ananas','txt'), file('banane','txt'), file('fraise','txt') ]) ], open:'Mélange' };
-    case 'search1': return { desktop:[ folder('Documents',[ folder('Vieux',[ folder('Archives',[ file('tresor','txt',{icon:'💎'}) ]) ]), file('liste','txt') ]) ], open:'Documents' };
+    case 'search1': return { desktop:[ folder('Documents',[ folder('Vieux',[ folder('Archives',[ file('trésor','txt',{icon:'💎'}) ]) ]), folder('Travail',[ folder('Rapports',[ folder('2024',[ file('facture','pdf') ]) ]) ]), folder('Administratif',[ folder('Archives-2023',[ file('diplôme','pdf',{icon:'🎓'}) ]) ]), file('liste','txt') ]) ], open:'Documents' };
     case 'search2': return { desktop:[ folder('Administratif',[ folder('2024',[ file('facture','pdf') ]) ]), folder('Images',[]) ], open:'Administratif' };
     case 'search3': return { desktop:[ folder('Images',[ folder('Dessins',[ file('licorne','jpg',{icon:'🦄'}) ]) ]) ], open:'Images' };
     case 'search4': return { desktop:[ folder('École',[ folder('Sciences',[ file('exposé-volcan','doc',{icon:'🌋'}) ]) ]) ], open:'École' };
-    case 'detective':return { desktop:[ folder('Coffre',[]), folder('A',[ folder('B',[ folder('C',[ file('secret','txt',{icon:'🔐'}) ]) ]) ]) ], open:'Coffre' };
+    case 'detective':return { desktop:[ folder('Coffre',[]), folder('Maison',[ folder('Salon',[ folder('Jeux',[ folder('Société',[ folder('Cartes',[ folder('Jeux-anciens',[ file('secret','txt',{icon:'🔐'}) ]) ]) ]) ]) ]) ]), file('leurre','txt',{icon:'🎭'}) ], open:'Coffre' };
   }
   return { desktop:homeTree() };
 }
@@ -2161,7 +2386,7 @@ function openLevelIntro(n, cont){
 }
 function openRoundPopup(){
   const s=currentStep, jalon=s.kind==='jalon';
-  const list=(s.objectives||[]).map(o=>'<li>'+o.t+'</li>').join('');
+  const list=(s.objectives||[]).map(o=>'<li><span>'+o.t+'</span></li>').join('');
   modal.className='modal'+(jalon?' test-modal':'');
   modal.innerHTML='<span class="m-emoji">'+s.emoji+'</span>'
     +'<div class="kicker">'+(reviewing()?'Entraînement':s.label)+'</div><h2>'+s.title+'</h2>'
@@ -2471,17 +2696,34 @@ document.getElementById('seeMission').onclick=()=>{ if(currentStep && currentSte
 /* ---------------------------------------------------------
    ASTUCE — guide pas à pas + surbrillance des éléments à utiliser
    --------------------------------------------------------- */
-let _spots=[], _spotT=null;
-function clearSpots(){ _spots.forEach(s=>s.remove()); _spots=[]; if(_spotT){ clearTimeout(_spotT); _spotT=null; } }
+let _spots=[], _spotT=null, _spotRAF=null;
+function clearSpots(){
+  _spots.forEach(({sp})=>sp.remove()); _spots=[];
+  if(_spotT){ clearTimeout(_spotT); _spotT=null; }
+  if(_spotRAF){ cancelAnimationFrame(_spotRAF); _spotRAF=null; }
+}
+function _runSpotRAF(){
+  _spotRAF=null;
+  if(!_spots.length) return;
+  _spots.forEach(({el,sp})=>{
+    const r=el.getBoundingClientRect();
+    if(!r.width||!r.height){ sp.style.display='none'; return; }
+    sp.style.display='';
+    sp.style.left=(r.left-4)+'px'; sp.style.top=(r.top-4)+'px';
+    sp.style.width=(r.width+8)+'px'; sp.style.height=(r.height+8)+'px';
+  });
+  _spotRAF=requestAnimationFrame(_runSpotRAF);
+}
 function spotEl(el){
   if(!el) return false;
-  const screen=document.getElementById('screen'); if(!screen) return false;
-  const r=el.getBoundingClientRect(), sc=screen.getBoundingClientRect();
-  if(!r.width || !r.height) return false;
+  const r=el.getBoundingClientRect();
+  if(!r.width||!r.height) return false;
   const sp=document.createElement('div'); sp.className='spot';
-  sp.style.left=(r.left-sc.left-4)+'px'; sp.style.top=(r.top-sc.top-4)+'px';
+  sp.style.left=(r.left-4)+'px'; sp.style.top=(r.top-4)+'px';
   sp.style.width=(r.width+8)+'px'; sp.style.height=(r.height+8)+'px';
-  screen.appendChild(sp); _spots.push(sp); return true;
+  document.body.appendChild(sp); _spots.push({el,sp});
+  if(!_spotRAF) _spotRAF=requestAnimationFrame(_runSpotRAF);
+  return true;
 }
 /* surligne les icônes (bureau + fenêtres) dont le nom correspond */
 function spotByName(nm){
