@@ -808,8 +808,10 @@ function saveProgress(){ store.set('df_step_l'+currentLevel, String(progressIdx)
 /* ---------------------------------------------------------
    2. SON (WebAudio, sans fichier externe)
    --------------------------------------------------------- */
-let actx=null;
+let actx=null, bossMusic=null;
 function audioCtx(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } } return actx; }
+function pauseBossMusic(){ if(bossMusic){ try{ bossMusic.pause(); }catch(e){} } }
+function resumeBossMusic(){ if(bossMusic && soundOn){ try{ const p=bossMusic.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
 function beep(kind){
   if(!soundOn) return; const a=audioCtx(); if(!a) return; const now=a.currentTime;
   function tone(freq,dur,type,vol,delay){
@@ -828,7 +830,7 @@ function beep(kind){
   else if(kind==='crash'){ [400,300,200,120,80].forEach((f,i)=>tone(f,.22,'sawtooth',.12,i*.12)); }
 }
 function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
-document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('df_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); } };
+document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('df_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); resumeBossMusic(); } else { pauseBossMusic(); } };
 
 /* ---------------------------------------------------------
    3. RENDU DE L'ÉCRAN (bureau, fenêtres, barre des tâches)
@@ -2985,10 +2987,11 @@ function startBoss(diffKey){
   EX.boss={ running:true, diff:diff, diffKey:_corrDiffKey, contam:8, phasesTotal:BOSS_PHASES.length, cleared:0,
     phaseIdx:0, phase:null, raf:0, last:0, saboT:0, startTime:Date.now(), errors:0, skills:new Set(),
     spawnIv:null, over:false, won:false, saboLock:false, cooldowns:{}, timers:[] };
+  if(!bossMusic){ bossMusic=new Audio('musics/musique_corruptus.mp3'); bossMusic.loop=true; bossMusic.volume=0.45; }
   beep('alarm');
   updateContamUI(); updatePips(); updatePhaseLbl();
   EX.boss.raf=requestAnimationFrame(bossTick);
-  bossAlert(()=>goPhase(0));
+  bossAlert(()=>{ resumeBossMusic(); goPhase(0); });
 }
 
 /* ---- Phase 0 : alerte système + terminal qui s'écrit ---- */
@@ -3748,6 +3751,7 @@ doDelete=function(nodes){
 function bossGameOver(){
   if(!EX.boss || EX.boss.over) return;
   EX.boss.over=true; EX.boss.running=false; cancelAnimationFrame(EX.boss.raf); bossStopSpawn(); bossClearTimers(); hideBossTrack();
+  pauseBossMusic();
   beep('crash');
   const screen=document.getElementById('screen');
   if(screen){
@@ -3771,6 +3775,7 @@ function bossGameOver(){
 function bossWin(){
   if(!EX.boss || EX.boss.won) return;
   EX.boss.won=true; EX.boss.running=false; cancelAnimationFrame(EX.boss.raf); bossStopSpawn(); bossClearTimers(); hideBossTrack();
+  pauseBossMusic();
   beep('win'); confetti(); confetti();
   progressIdx=STEPS.length; saveProgress();
   EX.boss.contam=0; const f=document.getElementById('contamFill'); if(f){ f.style.background='#22c55e'; f.style.width='0%'; }
