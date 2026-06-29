@@ -414,6 +414,51 @@
   .m-btn.primary.boss:hover{background:var(--red-d);}
   .m-btn.ghost{background:#fff;color:var(--muted);}
   .m-btn.ghost:hover{border-color:var(--blue);color:var(--blue-d);}
+
+  /* ---------- Fenêtre Propriétés (style Windows, dans le screen) ---------- */
+  .props-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    z-index:200;background:rgba(0,0,0,0.10);}
+  .props-overlay.open{display:flex;}
+  .props-modal{background:#fff;border-radius:14px;width:340px;max-width:calc(100% - 24px);
+    box-shadow:0 12px 40px rgba(0,0,0,.35);animation:modalIn .18s ease;padding:0;overflow:hidden;text-align:left;}
+  .prop-header{display:flex;align-items:center;gap:10px;padding:14px 18px 12px;background:#f3f7fc;
+    border-bottom:2px solid var(--line);}
+  .prop-header .ph-ic{font-size:2rem;line-height:1;flex:none;}
+  .prop-header .ph-name{font-weight:800;font-size:1rem;color:var(--ink);word-break:break-all;}
+  .prop-tabs{display:flex;border-bottom:2px solid var(--line);background:#f8fafc;padding:0 10px;}
+  .prop-tab{border:none;background:transparent;font-family:inherit;font-weight:700;font-size:.88rem;
+    color:var(--muted);padding:9px 14px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;}
+  .prop-tab.active{color:var(--blue-d);border-bottom-color:var(--blue);}
+  .prop-tab:hover:not(.active){color:var(--ink);}
+  .prop-body{padding:14px 18px;}
+  .prop-icon-row{display:flex;align-items:center;gap:12px;padding:10px 0 14px;border-bottom:1px solid var(--line);margin-bottom:12px;}
+  .prop-icon-row .pi-ic{font-size:2.4rem;line-height:1;}
+  .prop-icon-row .pi-name{font-weight:800;font-size:1rem;word-break:break-all;}
+  .prop-table{width:100%;border-collapse:collapse;font-size:.88rem;}
+  .prop-table tr td{padding:4px 0;vertical-align:top;}
+  .prop-table tr td:first-child{color:#6a7b8c;font-weight:700;white-space:nowrap;padding-right:14px;width:40%;}
+  .prop-table tr td:last-child{font-weight:700;color:var(--ink);}
+  .prop-table .prop-sep td{padding:6px 0 4px;}
+  .prop-table .prop-sep td::after{content:'';display:block;border-top:1px solid var(--line);}
+  .prop-table .det-head td{padding-top:10px;padding-bottom:2px;font-size:.78rem;font-weight:800;
+    text-transform:uppercase;letter-spacing:.04em;color:var(--blue-d);font-variant:none;}
+  .props-modal .m-actions{padding:12px 18px;border-top:2px solid var(--line);margin:0;background:#f8fafc;}
+
+  /* ---------- Bloc-notes éditable (missions Propriétés) ---------- */
+  .notepad-view{background:#fffef0;border:2px solid #e0d96a;border-radius:10px;padding:12px 14px;
+    font-family:monospace;font-size:.9rem;text-align:left;}
+  .notepad-view .np-line{color:#555;margin-bottom:8px;line-height:1.4;}
+  .notepad-view .np-answer{display:flex;align-items:center;gap:8px;margin-top:6px;}
+  .notepad-view .np-input{flex:1;border:2px solid #c8bb3a;border-radius:7px;padding:6px 10px;
+    font-family:monospace;font-size:.9rem;font-weight:700;outline:none;}
+  .notepad-view .np-input:focus{border-color:var(--blue);}
+  .notepad-view .np-ok{background:var(--green);border:none;color:#fff;font-weight:800;border-radius:7px;
+    padding:7px 14px;font-size:.86rem;cursor:pointer;font-family:inherit;}
+  .notepad-view .np-ok:hover{background:var(--green-d);}
+  .notepad-view .np-feedback{margin-top:6px;font-weight:700;font-size:.84rem;}
+  .notepad-view .np-feedback.ok{color:var(--green-d);}
+  .notepad-view .np-feedback.err{color:var(--red-d);}
+
   .lvl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0 4px;}
   .lvl-card{display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:2px solid var(--line);
     background:#fff;border-radius:12px;padding:11px 12px;text-align:left;}
@@ -522,11 +567,21 @@ function iconFor(node){
   if(node.type==='folder') return node===EX.binNode ? (BIN.kids.length?ICON.binFull:ICON.bin) : ICON.folder;
   return ICON[node.ext] || ICON.generic;
 }
+function formatSize(kb){
+  if(kb>=1024) return (kb/1024).toFixed(1).replace('.',',')+' Mo';
+  return kb+' Ko';
+}
+function sizeKbByExt(ext){
+  const map={txt:12,doc:48,pdf:320,jpg:1400,png:820,gif:2100,photo:2800,mp3:4200,mp4:24000,zip:6700,exe:1100,xls:30,ppt:2400,html:8,virus:0};
+  return map[ext]||10;
+}
+function nodeSizeKb(node){
+  if(node.type==='file') return node.sizeKb||sizeKbByExt(node.ext);
+  return (node.kids||[]).reduce((s,k)=>s+nodeSizeKb(k), 0);
+}
 function fakeSize(node){
   if(node.type==='folder'){ return countAll(node)+' élément'+(countAll(node)>1?'s':''); }
-  const map={txt:'12 Ko',doc:'48 Ko',pdf:'320 Ko',jpg:'1,4 Mo',png:'820 Ko',gif:'2,1 Mo',photo:'2,8 Mo',
-    mp3:'4,2 Mo',mp4:'24 Mo',zip:'6,7 Mo',exe:'1,1 Mo',xls:'30 Ko',ppt:'2,4 Mo',html:'8 Ko',virus:'??? Ko'};
-  return map[node.ext]||'10 Ko';
+  return node.sizeKb ? formatSize(node.sizeKb) : formatSize(sizeKbByExt(node.ext));
 }
 function typeLabel(node){
   if(node.type==='folder') return 'Dossier';
@@ -842,7 +897,9 @@ function renderWinBody(w){
     el.dataset.id=node.id;
     el.innerHTML='<span class="ic">'+iconFor(node)+'</span><span class="nm">'+displayName(node)+'</span>';
     el.addEventListener('mousedown', e=>onItemMouseDown(e, node, w.id));
-    el.addEventListener('dblclick', e=>{ e.stopPropagation(); cancelRenameTimer(); openNode(node, w); });
+    el.addEventListener('dblclick', e=>{ e.stopPropagation(); cancelRenameTimer();
+      if(node.type==='folder' && currentStep && currentStep.lockMainNav){ toast('🔒 Utilise le <b>volet de gauche</b> pour naviguer dans cette mission.'); return; }
+      openNode(node, w); });
     el.addEventListener('contextmenu', e=>onItemContext(e, node, w.id));
     body.appendChild(el);
   });
@@ -859,8 +916,8 @@ function renderNavPane(w){
   if(!w.el) return;
   const pane=w.el.querySelector('.win-nav'); if(!pane) return;
   if(!w.navOpen) w.navOpen=new Set();
-  // déplie automatiquement le chemin du dossier courant pour qu'il reste visible
-  pathOf(w.cur).forEach(n=>{ if(n.type==='folder') w.navOpen.add(n.id); });
+  // déplie automatiquement le chemin du dossier courant, sauf ceux explicitement refermés
+  pathOf(w.cur).forEach(n=>{ if(n.type==='folder' && !(w.navClosed&&w.navClosed.has(n.id))) w.navOpen.add(n.id); });
   pane.innerHTML='';
   navRows(pane, EX.desktopRoot, 0, w);
   pane.scrollTop=w.navScroll||0;
@@ -878,7 +935,8 @@ function navRows(pane, node, depth, w){
   chev.textContent=open?'▾':'▸';
   chev.title=open?'Réduire':'Développer';
   chev.onclick=(e)=>{ e.stopPropagation(); if(!kids.length) return;
-    if(open) w.navOpen.delete(node.id); else { w.navOpen.add(node.id); EX.evt.navExpanded=true; }
+    if(open){ w.navOpen.delete(node.id); (w.navClosed=w.navClosed||new Set()).add(node.id); }
+    else { w.navOpen.add(node.id); EX.evt.navExpanded=true; if(w.navClosed) w.navClosed.delete(node.id); }
     beep('click'); renderNavPane(w); checkMission(); };
   const lab=document.createElement('button'); lab.className='nav-label';
   lab.innerHTML='<span class="nic">'+(node===EX.desktopRoot?'🖥️':iconFor(node))+'</span><span class="nlb">'+node.name+'</span>';
@@ -1345,7 +1403,14 @@ function playTune(node){
 function openFilePreview(node){
   if(node.infected){ return; } // géré par le boss
   const ext=node.ext; let body='', music=false;
-  if(ext==='txt'||ext==='doc'||ext==='pdf'){
+  if(node.editable){
+    const prev=(EX.evt.notepadAnswers&&EX.evt.notepadAnswers[node.name])||'';
+    body='<div class="notepad-view">'
+      +'<div class="np-line">'+node.editPrompt+'</div>'
+      +'<div class="np-answer"><input class="np-input" id="npInput" type="text" placeholder="Tape ta réponse…" value="'+prev+'">'
+      +'<button class="np-ok" id="npOk">✓ Valider</button></div>'
+      +'<div class="np-feedback" id="npFb"></div></div>';
+  } else if(ext==='txt'||ext==='doc'||ext==='pdf'){
     body='<div class="doc-paper">'+fileText(node).replace(/\n/g,'<br>')+'</div>';
   } else if(ext==='mp3'||ext==='mp4'){
     music=true;
@@ -1363,17 +1428,108 @@ function openFilePreview(node){
     +'<div class="m-actions"><button class="m-btn primary" id="pvClose">Fermer ✕</button></div>';
   openOverlay();
   if(music){ playTune(node); const rp=document.getElementById('mpReplay'); if(rp) rp.onclick=()=>playTune(node); }
+  if(node.editable){
+    const inp=document.getElementById('npInput'), fb=document.getElementById('npFb');
+    const validate=()=>{
+      const v=inp.value.trim();
+      if(!v){ fb.textContent='Tape ta réponse avant de valider.'; fb.className='np-feedback err'; return; }
+      EX.evt.notepadAnswers=EX.evt.notepadAnswers||{};
+      EX.evt.notepadAnswers[node.name]=v;
+      const ok=v.toLowerCase()===node.editKey.toLowerCase();
+      fb.textContent=ok?'✓ Bonne réponse !':'✗ Pas tout à fait, vérifie dans les propriétés.';
+      fb.className='np-feedback '+(ok?'ok':'err');
+      checkMission();
+    };
+    document.getElementById('npOk').onclick=validate;
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') validate(); });
+    inp.focus();
+  }
   document.getElementById('pvClose').onclick=()=>{ stopTune(); closeOverlay(); };
 }
+function propDateStr(d, fallback){ return d||fallback||'—'; }
 function openProps(node){
-  modal.className='modal';
-  modal.innerHTML='<span class="m-emoji">'+iconFor(node)+'</span><div class="kicker">Propriétés</div><h2>'+displayName(node)+'</h2>'
-    +'<ul class="newtools">'
-    +'<li><span class="ni-glyph">🏷️</span> Type : '+typeLabel(node)+'</li>'
-    +'<li><span class="ni-glyph">📦</span> Taille : '+fakeSize(node)+'</li>'
-    +'<li><span class="ni-glyph">📍</span> Emplacement : '+pathOf(node.parent||EX.desktopRoot).map(p=>p.name).join(' ▸ ')+'</li>'
-    +'</ul><div class="m-actions"><button class="m-btn primary" id="prClose">OK</button></div>';
-  openOverlay(); document.getElementById('prClose').onclick=()=>closeOverlay();
+  EX.evt.propsOpened=(EX.evt.propsOpened||new Set()).add(node.name);
+  const isFile=node.type==='file';
+  const path=pathOf(node.parent||EX.desktopRoot).filter(n=>n!==EX.desktopRoot).map(n=>n.name);
+  const pathStr=path.length?'Ce PC › '+path.join(' › '):'Ce PC';
+  const created=propDateStr(node.created,'01/01/2025 09:00');
+  const modified=propDateStr(node.modified, created);
+
+  function genTab(){
+    if(!isFile){
+      const total=nodeSizeKb(node); const cnt=countAll(node);
+      return '<div class="prop-icon-row"><span class="pi-ic">'+iconFor(node)+'</span><span class="pi-name">'+node.name+'</span></div>'
+        +'<table class="prop-table">'
+        +'<tr><td>Type</td><td>Dossier de fichiers</td></tr>'
+        +'<tr><td>Emplacement</td><td>'+pathStr+'</td></tr>'
+        +'<tr><td>Contient</td><td>'+cnt+' élément'+(cnt>1?'s':'')+'</td></tr>'
+        +'<tr><td>Taille</td><td>'+formatSize(total)+'</td></tr>'
+        +'<tr class="prop-sep"><td colspan="2"></td></tr>'
+        +'<tr><td>Créé le</td><td>'+created+'</td></tr>'
+        +'<tr><td>Modifié le</td><td>'+modified+'</td></tr>'
+        +'</table>';
+    }
+    return '<div class="prop-icon-row"><span class="pi-ic">'+iconFor(node)+'</span><span class="pi-name">'+displayName(node)+'</span></div>'
+      +'<table class="prop-table">'
+      +'<tr><td>Type</td><td>'+typeLabel(node)+'</td></tr>'
+      +'<tr><td>Emplacement</td><td>'+pathStr+'</td></tr>'
+      +'<tr><td>Taille</td><td>'+fakeSize(node)+'</td></tr>'
+      +'<tr class="prop-sep"><td colspan="2"></td></tr>'
+      +'<tr><td>Créé le</td><td>'+created+'</td></tr>'
+      +'<tr><td>Modifié le</td><td>'+modified+'</td></tr>'
+      +'</table>';
+  }
+  function detTab(){
+    const ext=node.ext||'';
+    const isImg=(['jpg','png','gif','photo'].includes(ext));
+    const isMedia=(['mp3','mp4'].includes(ext));
+    let rows='<table class="prop-table">'
+      +'<tr class="det-head"><td colspan="2">Description</td></tr>'
+      +'<tr><td>Titre</td><td>'+(node.docTitle||displayName(node))+'</td></tr>'
+      +'<tr><td>Auteur</td><td>'+(node.author||'—')+'</td></tr>'
+      +'<tr><td>Mots-clés</td><td>'+(node.keywords||'—')+'</td></tr>';
+    if(isImg && (node.imgW||node.imgH)){
+      rows+='<tr class="det-head"><td colspan="2">Image</td></tr>'
+        +'<tr><td>Dimensions</td><td>'+(node.imgW||'?')+' × '+(node.imgH||'?')+' px</td></tr>';
+    }
+    if(isMedia && node.duration){
+      rows+='<tr class="det-head"><td colspan="2">Média</td></tr>'
+        +'<tr><td>Durée</td><td>'+node.duration+'</td></tr>';
+    }
+    return rows+'</table>';
+  }
+
+  const hasDet=isFile;
+  const tabsDet=hasDet?'<button class="prop-tab" id="ptDet">Détails</button>':'';
+  const html='<div class="props-modal">'
+    +'<div class="prop-header"><span class="ph-ic">'+iconFor(node)+'</span>'
+    +'<span class="ph-name">'+displayName(node)+' — Propriétés</span></div>'
+    +'<div class="prop-tabs"><button class="prop-tab active" id="ptGen">Général</button>'+tabsDet+'</div>'
+    +'<div class="prop-body" id="propBody">'+genTab()+'</div>'
+    +'<div class="m-actions"><button class="m-btn primary" id="prClose">OK</button></div>'
+    +'</div>';
+  let po=document.getElementById('propsOverlay');
+  if(!po){ po=document.createElement('div'); po.id='propsOverlay'; po.className='props-overlay';
+    document.getElementById('screen').appendChild(po); }
+  po.innerHTML=html; po.classList.add('open');
+  po.addEventListener('mousedown',e=>{ if(e.target===po) closeProps(); },{once:false});
+  document.getElementById('ptGen').onclick=()=>{
+    document.querySelectorAll('.prop-tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('ptGen').classList.add('active');
+    document.getElementById('propBody').innerHTML=genTab();
+  };
+  if(hasDet) document.getElementById('ptDet').onclick=()=>{
+    EX.evt.propsDetailsOpened=(EX.evt.propsDetailsOpened||new Set()).add(node.name);
+    document.querySelectorAll('.prop-tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('ptDet').classList.add('active');
+    document.getElementById('propBody').innerHTML=detTab();
+    checkMission();
+  };
+  document.getElementById('prClose').onclick=()=>{ closeProps(); checkMission(); };
+}
+function closeProps(){
+  const po=document.getElementById('propsOverlay');
+  if(po) po.classList.remove('open');
 }
 
 /* ---------------------------------------------------------
@@ -1659,6 +1815,9 @@ const G={
     hint:'Clique dans un coin vide et <b>glisse ta souris</b> pour entourer <b>tous</b> les fichiers en même temps, puis appuie sur '+kbd('Suppr')+'.',
     test:c=>names.every(n=>c.bin.some(b=>b.name===n||displayName(b)===n))
   }),
+  propsOpened:(name)=>({hint:'Clic droit sur l\'élément → <b>Propriétés</b>.', test:c=>c.evt.propsOpened && c.evt.propsOpened.has(name)}),
+  propsDetailsTab:(name)=>({hint:'Dans la fenêtre Propriétés, clique sur l\'onglet <b>Détails</b>.', test:c=>c.evt.propsDetailsOpened && c.evt.propsDetailsOpened.has(name)}),
+  notepadFilled:(fileName,expected)=>({hint:'Ouvre le fichier, tape la valeur trouvée dans les Propriétés, puis clique <b>Valider</b>.', test:c=>c.evt.notepadAnswers && c.evt.notepadAnswers[fileName] && c.evt.notepadAnswers[fileName].toLowerCase()===expected.toLowerCase()}),
 };
 
 /* construit, à partir des objectifs, la liste des actions destructives autorisées */
@@ -1867,7 +2026,8 @@ const LEVELS=[
         {t:'<b>Ouvre</b> le fichier <b>médaille-d-or 🏅</b> (double-clic)', goal:G.openedFile('médaille-d-or')}
       ]},
     {kind:'jalon',label:'Défi',emoji:'🏆',title:'L\'explorateur expert',
-      intro:'Sers-toi du <b>volet de gauche</b> pour plonger tout au fond et retrouver la photo de <b>glace 🍦</b>.',
+      intro:'Sers-toi du <b>volet de gauche</b> pour plonger tout au fond et retrouver la photo de <b>glace 🍦</b>. La fenêtre principale est <b>bloquée</b> : tu dois tout faire depuis le volet !',
+      lockMainNav:true,
       seed:{desktop:homeTree()},
       objectives:[
         {t:'Déplie <b>Images</b> dans le volet de gauche (chevron <b>▸</b>)', goal:G.expandedTree()},
@@ -2227,8 +2387,79 @@ const LEVELS=[
       ]}
   ]},
 
-/* ===== NIVEAU 8 — BOSS : le virus ===== */
-{ n:8, title:'Le Virus 🦠', subtitle:'BOSS · le virus',
+/* ===== NIVEAU 8 — Propriétés des fichiers ===== */
+{ n:8, title:'Propriétés des fichiers', subtitle:'les propriétés',
+  intro:{ emoji:'🔍',
+    lead:'Chaque fichier et chaque dossier a une <b>carte d\'identité</b> : ses <b>Propriétés</b>. On y trouve sa taille, sa date de création, son auteur… C\'est très utile pour retrouver des infos ou comprendre ce qui se passe sur l\'ordinateur !',
+    teach:'Pour ouvrir les Propriétés : <b>clic droit</b> sur un fichier ou un dossier → <b>Propriétés</b>. Il y a deux onglets : <b>Général</b> (taille, dates, emplacement) et <b>Détails</b> (auteur, titre, dimensions…).',
+    tools:[{g:'🖱️',n:'Clic droit → Propriétés'},{g:'📋',n:'Onglet Général : taille, dates'},{g:'🔎',n:'Onglet Détails : auteur, titre…'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'🔍',title:'Ouvre les Propriétés',
+      intro:'Apprends à ouvrir les <b>Propriétés</b> d\'un fichier et d\'un dossier : <b>clic droit</b> dessus → <b>Propriétés</b>.',
+      seed:{desktop:[folder('Documents',[
+        file('devoir','doc',{author:'Marie Dupont',docTitle:'Mon exposé sur les volcans',created:'08/09/2024 09:15',modified:'15/11/2024 16:42',sizeKb:62}),
+        folder('Photos',[file('plage','jpg',{icon:'🏖️',created:'12/07/2024 14:30',modified:'12/07/2024 14:30',sizeKb:1800})]) ])], open:'Documents'},
+      objectives:[
+        {t:'Ouvre les <b>Propriétés</b> du fichier <b>devoir.doc</b> (clic droit → Propriétés)', goal:G.propsOpened('devoir')},
+        {t:'Ouvre les <b>Propriétés</b> du dossier <b>Photos</b> (clic droit → Propriétés)', goal:G.propsOpened('Photos')}
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'✍️',title:'L\'onglet Détails',
+      intro:'L\'onglet <b>Détails</b> des Propriétés révèle des infos cachées : le <b>nom de l\'auteur</b>, le titre du document… Trouve l\'auteur de ce devoir et note-le dans le fichier réponse !',
+      seed:{desktop:[folder('Documents',[
+        file('devoir','doc',{author:'Lucie Martin',docTitle:'Les dinosaures',keywords:'préhistoire, fossiles',created:'03/10/2024 08:55',modified:'07/11/2024 17:20',sizeKb:55}),
+        file('réponse','txt',{editable:true,editPrompt:'Auteur de devoir.doc :',editKey:'Lucie Martin',created:'07/11/2024 17:25',modified:'07/11/2024 17:25',sizeKb:1}) ])], open:'Documents'},
+      objectives:[
+        {t:'Ouvre l\'onglet <b>Détails</b> des Propriétés de <b>devoir.doc</b>', goal:G.propsDetailsTab('devoir')},
+        {t:'Ouvre <b>réponse.txt</b> et tape le <b>nom de l\'auteur</b> trouvé', goal:G.notepadFilled('réponse','Lucie Martin')}
+      ]},
+    {kind:'mission',label:'Mission 3',emoji:'📅',title:'La date de modification',
+      intro:'Les Propriétés indiquent quand un fichier a été <b>modifié pour la dernière fois</b>. Trouve cette date et recopie-la dans le fichier fiche !',
+      seed:{desktop:[folder('Images',[
+        file('vacances','jpg',{icon:'🏖️',created:'20/06/2024 11:00',modified:'15/07/2024 19:33',sizeKb:1800,imgW:3024,imgH:4032}),
+        file('fiche','txt',{editable:true,editPrompt:'Date de modification de vacances.jpg :',editKey:'15/07/2024',created:'15/07/2024 20:00',modified:'15/07/2024 20:00',sizeKb:1}) ])], open:'Images'},
+      objectives:[
+        {t:'Ouvre les <b>Propriétés</b> de <b>vacances.jpg</b>', goal:G.propsOpened('vacances')},
+        {t:'Dans les Propriétés, lis la <b>date de modification</b>, puis ouvre <b>fiche.txt</b> et tape-la (format JJ/MM/AAAA)', goal:G.notepadFilled('fiche','15/07/2024')}
+      ]},
+    {kind:'mission',label:'Mission 4',emoji:'🕵️',title:'Retrouve l\'auteur',
+      intro:'Un message mystérieux traîne dans les Documents. Qui l\'a écrit ? Utilise l\'onglet <b>Détails</b> des Propriétés pour trouver l\'auteur, et note-le dans le rapport.',
+      seed:{desktop:[folder('Documents',[
+        file('message','doc',{author:'Pierre Durand',docTitle:'Message confidentiel',keywords:'secret',created:'01/04/2025 00:01',modified:'01/04/2025 00:01',sizeKb:32}),
+        file('rapport','txt',{editable:true,editPrompt:'L\'auteur du message est :',editKey:'Pierre Durand',created:'01/04/2025 08:00',modified:'01/04/2025 08:00',sizeKb:1}) ])], open:'Documents'},
+      objectives:[
+        {t:'Ouvre l\'onglet <b>Détails</b> de <b>message.doc</b> pour trouver son auteur', goal:G.propsDetailsTab('message')},
+        {t:'Ouvre <b>rapport.txt</b> et tape le <b>nom de l\'auteur</b>', goal:G.notepadFilled('rapport','Pierre Durand')}
+      ]},
+    {kind:'mission',label:'Mission 5',emoji:'⚖️',title:'Lequel est le plus lourd ?',
+      intro:'Deux fichiers sont là : <b>film.mp4</b> et <b>notes.txt</b>. Regarde leur <b>taille</b> dans les Propriétés, puis glisse le <b>plus lourd</b> dans le dossier <b>À archiver</b>.',
+      seed:{desktop:[
+        folder('À archiver',[]),
+        file('film','mp4',{icon:'🎬',created:'15/03/2025 20:00',modified:'22/03/2025 11:15',sizeKb:24576}),
+        file('notes','txt',{created:'10/05/2025 09:30',modified:'10/05/2025 09:30',sizeKb:8}) ]},
+      objectives:[
+        {t:'Ouvre les <b>Propriétés</b> de <b>film.mp4</b> pour voir sa taille', goal:G.propsOpened('film'), mov:'film'},
+        {t:'Ouvre les <b>Propriétés</b> de <b>notes.txt</b> pour voir sa taille', goal:G.propsOpened('notes')},
+        {t:'<b>film.mp4</b> est bien plus lourd — glisse-le dans le dossier <b>À archiver</b>', goal:G.movedInto('film','À archiver'), mov:'film'}
+      ]},
+    {kind:'jalon',label:'Défi',emoji:'🏆',title:'L\'enquête des fichiers',
+      intro:'Trois fichiers suspects ! Trouve l\'auteur du rapport, la date de modification de la photo, et archive le fichier le plus lourd dans le dossier <b>Preuves</b>.',
+      seed:{desktop:[
+        folder('Preuves',[]),
+        folder('Dossier-enquête',[
+          file('rapport','doc',{author:'Emma Rousseau',docTitle:'Rapport secret',keywords:'confidentiel',created:'14/02/2025 10:00',modified:'14/02/2025 23:59',sizeKb:88}),
+          file('photo','jpg',{icon:'📷',created:'14/02/2025 08:30',modified:'14/02/2025 08:30',sizeKb:2200,imgW:4032,imgH:3024}),
+          file('archive','zip',{created:'10/01/2025 15:00',modified:'10/01/2025 15:00',sizeKb:6700}),
+          file('réponse','txt',{editable:true,editPrompt:'Auteur du rapport :',editKey:'Emma Rousseau',created:'14/02/2025 08:00',modified:'14/02/2025 08:00',sizeKb:1}) ]) ], open:'Dossier-enquête'},
+      objectives:[
+        {t:'Ouvre l\'onglet <b>Détails</b> de <b>rapport.doc</b> et trouve son auteur', goal:G.propsDetailsTab('rapport')},
+        {t:'Note l\'auteur dans <b>réponse.txt</b>', goal:G.notepadFilled('réponse','Emma Rousseau')},
+        {t:'Ouvre les <b>Propriétés</b> de <b>photo.jpg</b> et de <b>archive.zip</b> pour comparer leurs tailles', goal:G.all([G.propsOpened('photo'),G.propsOpened('archive')]), mov:'archive'},
+        {t:'<b>archive.zip</b> est le plus lourd — glisse-le dans le dossier <b>Preuves</b>', goal:G.movedInto('archive','Preuves'), mov:'archive'}
+      ]}
+  ]},
+
+/* ===== NIVEAU 9 — BOSS : le virus ===== */
+{ n:9, title:'Le Virus 🦠', subtitle:'BOSS · le virus',
   intro:{ emoji:'🦠',
     lead:'<b>ALERTE !</b> Un <b>virus 🦠</b> s\'est introduit dans l\'ordinateur. Il se cache dans les dossiers et <b>contamine les fichiers</b> (ils deviennent rouges et clignotent). Tu es l\'<b>antivirus</b> !',
     teach:'<b>Supprime</b> les fichiers infectés (Suppr, glisse à la 🗑️…) pour stopper la contamination. Le <b>cœur du virus 🦠</b> se cache et continue d\'infecter : utilise le bouton <b>🛰️ Scanner</b> pour repérer dans quel dossier il est, fonce le supprimer ! Puis nettoie les derniers fichiers infectés. <b>Attention :</b> si la contamination dépasse <b>la zone rouge</b>, c\'est le <b>crash système</b> ! 💥',
@@ -2669,7 +2900,7 @@ function bossWin(){
 function openOverlay(){ overlay.classList.add('open'); }
 function closeOverlay(){ overlay.classList.remove('open'); }
 let _toastT=null;
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove('show'),2200); }
+function toast(msg){ const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove('show'),8000); }
 function confetti(){
   const wrap=document.createElement('div'); wrap.className='confetti';
   const colors=['#2563eb','#16a34a','#f59e0b','#ef4444','#a855f7','#06b6d4'];
