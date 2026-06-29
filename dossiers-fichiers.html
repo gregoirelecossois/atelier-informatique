@@ -206,6 +206,9 @@
   .fitem.cut{opacity:.45;}
   .fitem.infected .ic{animation:virusPulse 1s ease-in-out infinite;}
   .fitem.infected{background:rgba(239,68,68,.07);}
+  .fitem.neutralized{background:rgba(100,116,139,.08);opacity:.65;filter:grayscale(.7);}
+  .fitem.neutralized .ic{filter:grayscale(1) brightness(.7);}
+  .fitem.neutralized .nm{color:#64748b;text-decoration:line-through;}
   .fitem.drop-ok{background:#d7ebff;border-color:#5aa0e6;}
   .fitem .rn,.dt-icon .rn{font-size:.8rem;font-weight:700;width:84px;max-width:84px;text-align:center;color:var(--ink);
     background:#fff;border:2px solid var(--blue);border-radius:6px;padding:2px 3px;font-family:inherit;outline:none;
@@ -368,6 +371,152 @@
   .bsod h2{font-size:1.7rem;margin:14px 0 8px;font-weight:600;}
   .bsod p{font-size:1rem;font-weight:400;line-height:1.5;max-width:560px;}
   .bsod .pct{font-size:.86rem;margin-top:16px;opacity:.85;}
+  .bsod.show{display:flex;}
+  .bsod .reboot{font-size:.8rem;margin-top:22px;opacity:.7;}
+  .bsod .bsod-help{background:rgba(255,255,255,.13);border-radius:10px;padding:12px 18px;max-width:540px;margin-top:22px;}
+  .bsod .bsod-help p{font-size:.92rem;margin:0;opacity:1;line-height:1.55;}
+  .bsod .bsod-retry{position:absolute;bottom:8%;left:50%;transform:translateX(-50%);
+    background:rgba(255,255,255,.18);border:2.5px solid rgba(255,255,255,.55);color:#fff;
+    font-weight:800;font-size:1rem;padding:11px 32px;border-radius:13px;cursor:pointer;
+    font-family:inherit;white-space:nowrap;letter-spacing:.01em;}
+  .bsod .bsod-retry:hover{background:rgba(255,255,255,.30);}
+
+  /* ---------- Boss CORRUPTUS : HUD enrichi ---------- */
+  .boss-hud{flex-wrap:wrap;min-height:42px;height:auto;padding:5px 12px;gap:10px;}
+  .bh-avatar{font-size:1.55rem;line-height:1;flex:none;filter:drop-shadow(0 0 6px #a855f7);animation:corrFloat 2.4s ease-in-out infinite;}
+  .bh-avatar.sabotage{animation:corrGlitch .45s steps(2) 3;}
+  @keyframes corrFloat{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-3px) rotate(3deg);}}
+  @keyframes corrGlitch{0%{transform:translate(0,0);filter:drop-shadow(2px 0 #ef4444) drop-shadow(-2px 0 #38bdf8);}
+    50%{transform:translate(-3px,1px) skewX(8deg);}100%{transform:translate(2px,-1px);}}
+  .bh-info{flex:none;min-width:96px;display:flex;flex-direction:column;line-height:1.1;}
+  .bh-name{font-weight:800;font-size:.84rem;letter-spacing:.02em;}
+  .bh-phase{display:block;font-weight:700;font-size:.68rem;color:#c4b5fd;}
+  .boss-hud .meter{min-width:120px;}
+  .boss-hud .meter > i{transition:width .35s ease;}
+  .boss-hud .meter.crit{animation:contamPulse .7s ease-in-out infinite;}
+  @keyframes contamPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.0);}50%{box-shadow:0 0 0 4px rgba(239,68,68,.45);}}
+  .bh-contam-tag{font-size:1rem;flex:none;}
+  .bh-pips{display:flex;gap:4px;flex:none;align-items:center;}
+  .bh-pips i{width:15px;height:15px;border-radius:50%;background:#3a1d2a;box-shadow:inset 0 0 0 2px #7f1d1d;transition:.3s;}
+  .bh-pips i.alive{background:radial-gradient(circle at 35% 30%,#e9d5ff,#a855f7 70%);box-shadow:0 0 9px #a855f7,inset 0 0 0 2px #d8b4fe;}
+  .bh-pips i.dying{animation:pipPop .5s ease;}
+  @keyframes pipPop{0%{transform:scale(1.5);filter:brightness(2);}100%{transform:scale(1);}}
+  .bh-corr-name{font-family:"Fredoka","Fluent Emoji",sans-serif;}
+
+  /* trace / cible de navigation (phases 1 & 5) */
+  .boss-track{position:absolute;left:50%;top:48px;transform:translateX(-50%);z-index:48;max-width:88%;
+    background:linear-gradient(#1e1033ee,#2a1a44ee);border:2px solid #7c3aed;border-radius:11px;
+    padding:7px 14px;color:#ede9fe;font-weight:700;font-size:.84rem;text-align:center;box-shadow:0 8px 24px rgba(124,58,237,.4);
+    display:flex;align-items:center;gap:9px;animation:popUp .2s ease;}
+  .boss-track b{color:#fcd34d;}
+  .boss-track .bt-path{font-family:"Fredoka","Fluent Emoji",sans-serif;background:#0d0820;border-radius:7px;padding:3px 9px;color:#a5b4fc;}
+  /* variante antivirus (phase traque) */
+  .boss-track.av-track{background:linear-gradient(#2d2000ee,#3d3000ee);border-color:#eab308;
+    box-shadow:0 8px 28px rgba(234,179,8,.38);flex-direction:column;align-items:center;gap:4px;padding:9px 20px;}
+  .boss-track.av-track .av-label{font-size:.75rem;font-weight:700;color:#fde68a;letter-spacing:.05em;text-transform:uppercase;opacity:.9;}
+  .boss-track.av-track .av-path{font-size:1.22rem;font-weight:800;color:#fff;line-height:1.3;text-align:center;}
+
+  /* fausse erreur Windows (sabotage) */
+  .fake-err{position:absolute;width:min(310px,84%);background:#f4f6f9;border:1px solid #8a9bb0;border-radius:8px;
+    box-shadow:0 16px 44px rgba(0,0,0,.5);z-index:160;overflow:hidden;animation:errPop .18s ease;}
+  @keyframes errPop{from{opacity:0;transform:scale(.9);}to{opacity:1;transform:scale(1);}}
+  .fake-err.glitch{animation:errShake .3s steps(2) infinite;}
+  @keyframes errShake{0%{transform:translate(0,0);}50%{transform:translate(2px,-1px);}100%{transform:translate(-1px,1px);}}
+  .fake-err .fe-bar{background:linear-gradient(#c0392b,#a33025);color:#fff;font-weight:800;font-size:.8rem;
+    padding:6px 10px;display:flex;align-items:center;justify-content:space-between;}
+  .fake-err .fe-bar button{border:none;background:rgba(255,255,255,.18);color:#fff;width:20px;height:20px;border-radius:4px;font-weight:800;}
+  .fake-err .fe-body{padding:13px 14px;display:flex;gap:11px;align-items:flex-start;font-size:.85rem;font-weight:700;color:#2a2a2a;}
+  .fake-err .fe-ic{font-size:1.7rem;line-height:1;flex:none;}
+  .fake-err .fe-actions{padding:0 14px 13px;text-align:right;}
+  .fake-err .fe-actions button{border:1px solid #9aa7b8;background:#e7ecf3;color:#1f2a37;font-weight:800;
+    border-radius:7px;padding:6px 16px;font-size:.84rem;}
+  .fake-err .fe-actions button:hover{background:#dbe3ee;}
+
+  /* sélecteur de difficulté */
+  .diff-grid{display:flex;flex-direction:column;gap:9px;margin:14px 0 4px;}
+  .diff-btn{display:flex;align-items:center;gap:13px;width:100%;text-align:left;cursor:pointer;
+    border:2px solid var(--line);background:#fff;border-radius:14px;padding:11px 15px;transition:.15s;}
+  .diff-btn:hover{border-color:var(--red);transform:translateY(-1px);box-shadow:0 7px 16px -8px rgba(239,68,68,.5);}
+  .diff-btn .db-ic{font-size:1.9rem;line-height:1;flex:none;}
+  .diff-btn .db-tx{flex:1;display:flex;flex-direction:column;line-height:1.2;}
+  .diff-btn .db-name{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.08rem;color:var(--ink);}
+  .diff-btn .db-sub{font-size:.84rem;font-weight:700;color:var(--muted);}
+  .diff-btn .db-tag{margin-left:auto;font-size:.72rem;font-weight:800;border-radius:999px;padding:3px 11px;white-space:nowrap;}
+  .diff-btn.easy{border-color:#bbf7d0;} .diff-btn.easy .db-tag{background:#86efac;color:#14532d;}
+  .diff-btn.medium .db-tag{background:#fde68a;color:#713f12;}
+  .diff-btn.hard{border-color:#fca5a5;} .diff-btn.hard .db-tag{background:#fca5a5;color:#7f1d1d;}
+
+  /* rapport terminal (victoire) */
+  .term-report{background:#070b12;border:2px solid #1f6feb;border-radius:12px;padding:16px 18px;margin:12px 0 4px;
+    font-family:"Fredoka",monospace;color:#5ce08a;text-align:left;font-size:.92rem;line-height:1.65;
+    box-shadow:inset 0 0 30px rgba(31,111,235,.25);min-height:210px;}
+  .term-report .tr-head{color:#7cc5ff;font-weight:700;margin-bottom:6px;}
+  .term-report .tr-line{white-space:pre-wrap;}
+  .term-report .tr-line.good{color:#5ce08a;} .term-report .tr-line.dim{color:#6b89a8;}
+  .term-report .tr-line.score{color:#fcd34d;font-size:1.15rem;font-weight:700;margin-top:6px;}
+  .term-report .tr-cur{display:inline-block;width:9px;background:#5ce08a;animation:curBlink 1s steps(1) infinite;}
+  @keyframes curBlink{50%{opacity:0;}}
+
+  /* dossier verrouillé par CORRUPTUS */
+  .fitem.corr-locked .ic, .dt-icon.corr-locked .ic{filter:drop-shadow(0 0 5px #a855f7);}
+  .fitem.corr-locked::after{content:'🔒';position:absolute;font-size:.9rem;margin:-4px 0 0 26px;}
+  .win.boss-shut{animation:winShut .3s ease forwards;}
+  @keyframes winShut{to{transform:scale(.6);opacity:0;}}
+
+  /* grosse popup d'avertissement / résultat (style erreur, plus grande) */
+  .fake-err.warn-big{width:min(400px,90%);border-color:#c0392b;}
+  .fake-err.warn-big .fe-body{font-size:1rem;line-height:1.5;}
+  .fake-err.warn-big .fe-ic{font-size:2.2rem;}
+  .fake-err .fe-count{color:#c0392b;font-size:1.15rem;}
+
+  /* terminal de lutte anti-déconnexion */
+  .cmd-term{position:absolute;inset:0;z-index:185;background:rgba(2,6,12,.93);display:flex;align-items:center;justify-content:center;padding:18px;animation:popUp .18s ease;}
+  .cmd-win{width:min(580px,95%);background:#06090f;border:2px solid #1f6feb;border-radius:10px;overflow:hidden;
+    box-shadow:0 0 44px rgba(31,111,235,.55);font-family:"Fredoka",monospace;}
+  .cmd-bar2{background:#0d1320;color:#9fc3ff;font-weight:700;font-size:.82rem;padding:7px 12px;border-bottom:1px solid #1f3350;}
+  .cmd-body{padding:15px 18px 18px;color:#5ce08a;font-size:.96rem;line-height:1.6;}
+  .cmd-body .cl{white-space:pre-wrap;margin-bottom:3px;}
+  .cmd-body .cl.warn{color:#ff7676;font-weight:800;font-size:1.05rem;}
+  .cmd-discwrap{margin:13px 0 4px;color:#cfe3ff;font-weight:700;}
+  .cmd-discbar{margin-top:6px;height:24px;border:2px solid #b91c1c;border-radius:5px;background:#170a0a;position:relative;overflow:hidden;}
+  .cmd-discbar > i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,#ef4444 0,#ef4444 9px,#b91c1c 9px,#b91c1c 18px);transition:width .1s linear;}
+  .cmd-discbar .dl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff;text-shadow:0 1px 2px #000;}
+  .cmd-discbar.crit{animation:contamPulse .5s ease-in-out infinite;}
+  .cmd-prog{color:#9fc3ff;font-weight:700;margin:12px 0 2px;}
+  .cmd-prompt{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .cmd-prompt .ps{color:#5ce08a;font-weight:800;}
+  .cmd-prompt .cmd-cmdname{color:#fcd34d;font-weight:800;letter-spacing:.06em;background:#1a1405;padding:2px 9px;border-radius:5px;}
+  .cmd-input{flex:1;min-width:120px;background:#02040a;border:2px solid #1f6feb;border-radius:6px;color:#5ce08a;
+    font-family:"Fredoka",monospace;font-size:1rem;font-weight:700;padding:8px 11px;outline:none;}
+  .cmd-input:focus{border-color:#5ce08a;}
+  .cmd-input.shake{animation:screenShake .35s;}
+
+  /* mini-tuto de phase (dans la modale) */
+  .btuto{margin:8px 0 2px;}
+  .btuto-hint{font-weight:800;color:var(--red-d);font-size:1rem;margin-bottom:10px;text-align:center;line-height:1.35;}
+  .btuto-stage{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;
+    background:#fdeeee;border:2px dashed #f6c9c9;border-radius:14px;padding:16px;min-height:96px;}
+  .btuto-stage.done{background:#eafaf0;border-color:#86efac;}
+  .bt-chip{display:flex;flex-direction:column;align-items:center;gap:3px;width:86px;padding:10px 6px;border:2px solid var(--line);
+    border-radius:11px;background:#fff;cursor:pointer;font-weight:700;font-size:.78rem;user-select:none;transition:.12s;}
+  .bt-chip:hover{border-color:var(--blue);}
+  .bt-chip .ic{font-size:2rem;line-height:1;}
+  .bt-chip.infected{background:rgba(239,68,68,.08);border-color:#f3b4b4;}
+  .bt-chip.infected .ic{animation:virusPulse 1s ease-in-out infinite;}
+  .bt-chip.sel{background:var(--sel);border-color:var(--sel-line);}
+  .bt-drop{width:104px;height:84px;border:3px dashed #7aa7ec;border-radius:13px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;color:var(--blue-d);font-weight:800;font-size:.82rem;background:#eaf3ff;text-align:center;}
+  .bt-drop.over{background:#d7ebff;border-color:#2563eb;}
+  .bt-btn{border:2px solid var(--line);background:#fff;font-weight:800;border-radius:11px;padding:10px 16px;font-size:.96rem;cursor:pointer;}
+  .bt-btn:hover{border-color:var(--blue);}
+  .bt-btn.trash{border-color:#f0b8b8;color:var(--red-d);}
+  .bt-btn.trash:hover{background:#fdecec;}
+  .bt-author{font-weight:800;color:var(--muted);font-size:.92rem;}
+
+  @media (prefers-reduced-motion: reduce){
+    .bh-avatar,.bh-avatar.sabotage,.boss-track,.fake-err.glitch,.term-report .tr-cur,.win.boss-shut,
+    .cmd-discbar.crit,.cmd-input.shake,.bt-chip.infected .ic{animation:none!important;}
+  }
 
   /* ---------- Overlay / modale ---------- */
   .overlay{position:fixed;inset:0;background:rgba(20,30,45,.55);backdrop-filter:blur(3px);
@@ -884,16 +1033,21 @@ function renderWinBody(w){
     renderSearchResults(w, body); return;
   }
   // les dossiers « volet uniquement » ne s'affichent pas dans la liste principale
-  let kids=(w.cur.kids||[]).filter(k=>!k.panelOnly);
+  // pendant la phase clones, les copies CORRUPTUS sont invisibles en navigation normale (search seulement)
+  const _clonesPhase=EX.boss&&EX.boss.running&&EX.boss.phase&&EX.boss.phase.key==='clones';
+  const _q=_clonesPhase&&bossQuarantaine?bossQuarantaine():null;
+  const _cloneVisible=!_clonesPhase || w.cur===_q || w.cur===EX.binNode;
+  let kids=(w.cur.kids||[]).filter(k=>!k.panelOnly && (!_clonesPhase || !k.isClone || _cloneVisible));
   if(w.sortBy) kids=sortKids(kids, w.sortBy);
   const term=(w.search||'').trim().toLowerCase();
   const visible=kids.filter(k=>!term || displayName(k).toLowerCase().includes(term));
   body.classList.toggle('empty-note', visible.length===0);
   visible.forEach(node=>{
     const el=document.createElement('div');
+    const _neutralized=_clonesPhase && node.isClone && _q && node.parent===_q;
     el.className='fitem'+(EX.sel.has(node.id)&&EX.selBox===w.id?' sel':'')
       +(EX.clip&&EX.clip.mode==='cut'&&EX.clip.ids.indexOf(node.id)>=0?' cut':'')
-      +(node.infected?' infected':'');
+      +(_neutralized?' neutralized':(node.infected?' infected':''));
     el.dataset.id=node.id;
     el.innerHTML='<span class="ic">'+iconFor(node)+'</span><span class="nm">'+displayName(node)+'</span>';
     el.addEventListener('mousedown', e=>onItemMouseDown(e, node, w.id));
@@ -979,6 +1133,7 @@ function renderSearchResults(w, body){
       else { const pf=node.parent; if(pf){ navTo(w, pf); } selectOnly(node, w.id); EX.opened.add(node.name); openFilePreview(node); }
       checkMission();
     });
+    el.addEventListener('mousedown', e=>onItemMouseDown(e, node, w.id));
     el.addEventListener('contextmenu', e=>onItemContext(e, node, w.id));
     body.appendChild(el);
   });
@@ -2458,15 +2613,15 @@ const LEVELS=[
       ]}
   ]},
 
-/* ===== NIVEAU 9 — BOSS : le virus ===== */
-{ n:9, title:'Le Virus 🦠', subtitle:'BOSS · le virus',
-  intro:{ emoji:'🦠',
-    lead:'<b>ALERTE !</b> Un <b>virus 🦠</b> s\'est introduit dans l\'ordinateur. Il se cache dans les dossiers et <b>contamine les fichiers</b> (ils deviennent rouges et clignotent). Tu es l\'<b>antivirus</b> !',
-    teach:'<b>Supprime</b> les fichiers infectés (Suppr, glisse à la 🗑️…) pour stopper la contamination. Le <b>cœur du virus 🦠</b> se cache et continue d\'infecter : utilise le bouton <b>🛰️ Scanner</b> pour repérer dans quel dossier il est, fonce le supprimer ! Puis nettoie les derniers fichiers infectés. <b>Attention :</b> si la contamination dépasse <b>la zone rouge</b>, c\'est le <b>crash système</b> ! 💥',
-    tools:[{g:'🛰️',n:'Scanner : localise le virus'},{g:'🗑️',n:'Supprimer l\'infection'},{g:'🦠',n:'Détruire le cœur du virus'}] },
+/* ===== NIVEAU 9 — BOSS : CORRUPTUS, le Virus Fantôme ===== */
+{ n:9, title:'CORRUPTUS 👾', subtitle:'BOSS · le virus fantôme',
+  intro:{ emoji:'👾',
+    lead:'<b>INTRUSION DÉTECTÉE !</b> <b>CORRUPTUS.EXE</b>, un virus fantôme 👾, s\'est échappé dans tes fichiers. Il se déplace de dossier en dossier, sème des fichiers contaminés et se reproduit. Tu es le <b>dernier rempart</b> du système !',
+    teach:'Le combat se déroule en <b>5 phases</b>. À chaque phase, CORRUPTUS utilise une ruse différente : tu devras <b>naviguer</b>, <b>désinfecter</b>, <b>rechercher</b>, lire les <b>propriétés</b>, et le <b>traquer</b> jusqu\'à sa dernière cache. En haut, la <b>jauge de contamination ☣️</b> monte sans cesse : si elle atteint <b>100 %</b>, c\'est le <b>crash système</b> ! 💥 Détruis CORRUPTUS avant qu\'il ne prenne le contrôle.',
+    tools:[{g:'🧭',n:'Naviguer & lire les chemins'},{g:'🖱️',n:'Sélection multiple & lasso'},{g:'🔍',n:'Rechercher les clones'},{g:'ℹ️',n:'Propriétés & extensions'},{g:'🗑️',n:'Supprimer & vider la Corbeille'}] },
   rounds:[
-    {kind:'jalon',mode:'boss',label:'BOSS',emoji:'🦠',title:'Chasse au virus',
-      desc:'Traque le virus dans tout l\'ordinateur et élimine la contamination avant le crash !'}
+    {kind:'jalon',mode:'boss',label:'BOSS',emoji:'👾',title:'CORRUPTUS, le Virus Fantôme',
+      desc:'Traque CORRUPTUS à travers 5 phases et élimine-le avant le crash système !'}
   ]}
 ];
 
@@ -2557,7 +2712,8 @@ function loadLevel(n, stepIdx, showIntro){
   store.set('df_curlevel', String(n));
   refreshLevelBtn();
   const startIdx=Math.min(progressIdx, STEPS.length-1);
-  if(showIntro) openLevelIntro(n, ()=>startStep(startIdx));
+  const isBossLevel=STEPS[startIdx]&&STEPS[startIdx].mode==='boss';
+  if(showIntro && !isBossLevel) openLevelIntro(n, ()=>startStep(startIdx));
   else startStep(startIdx);
 }
 function startStep(idx){
@@ -2580,7 +2736,7 @@ function updateProgress(){
     d.className='seg'+(mile?' milestone':'');
     if(i<progressIdx) d.classList.add('done');
     if(i===playIdx) d.classList.add('current');
-    if(mile) d.textContent=(st.mode==='boss'?'🦠':'🏆');
+    if(mile) d.textContent=(st.mode==='boss'?'👾':'🏆');
     if(i<=progressIdx){
       d.classList.add('clickable');
       d.title=(i===playIdx?'Mission en cours : ':'Revenir à ')+(st.label||'')+' · '+(st.title||'');
@@ -2699,199 +2855,952 @@ function openLevelSelector(){
   document.getElementById('lsClose').onclick=()=>closeOverlay();
 }
 
-/* ---------------------------------------------------------
-   14. BOSS — le virus 🦠
-   --------------------------------------------------------- */
+/* =========================================================
+   14. BOSS — CORRUPTUS, le Virus Fantôme (combat 5 phases)
+   ========================================================= */
+/* ---- modes de difficulté ----
+   rate    : montée de contamination (% / seconde)
+   mistake : pénalité de contamination quand on supprime un fichier sain
+   saboMul : facteur sur l'intervalle de sabotage (↑ = sabotage plus rare)
+   spawnMs : intervalle de multiplication des fichiers dans le Nid (phase 2)
+   relief  : contamination retirée à chaque phase nettoyée
+   cap     : nb max de fichiers dans le Nid avant pic de contamination */
+const CORR_MODES={
+  easy:  {key:'easy',  label:'Facile',   emoji:'🛡️', tag:'Pour débuter',  sub:'Jauge lente, peu de sabotage',
+          rate:0.18, mistake:34, saboMul:1.7, spawnMs:1000, relief:30, cap:16, discPen:8,  discFill:6500},
+  medium:{key:'medium',label:'Moyen',    emoji:'⚔️', tag:'Bon équilibre', sub:'Le combat complet',
+          rate:0.38, mistake:44, saboMul:1.0, spawnMs:680,  relief:24, cap:14, discPen:12, discFill:5000},
+  hard:  {key:'hard',  label:'Difficile',emoji:'🔥', tag:'Le vrai défi',  sub:'CORRUPTUS déchaîné',
+          rate:0.60, mistake:55, saboMul:0.62,spawnMs:470,  relief:18, cap:12, discPen:16, discFill:3900}
+};
+let _corrDiffKey='medium';
+
+/* ---- monde « riche » (plein de sous-dossiers pour se perdre) ---- */
 function bossSeed(){
   return { desktop:[
-    folder('Documents',[ file('rapport','doc'), file('lettre','txt'), file('notes','txt'), folder('Anciens',[file('vieux','txt'),file('archive','txt')]) ]),
-    folder('Images',[ file('photo1','jpg',{icon:'📷'}), file('photo2','jpg',{icon:'🖼️'}), file('dessin','png',{icon:'🎨'}), folder('Vacances',[file('plage','jpg',{icon:'🏖️'}),file('mer','jpg',{icon:'🌊'})]) ]),
-    folder('Musique',[ file('chanson1','mp3',{icon:'🎵'}), file('chanson2','mp3',{icon:'🎸'}), file('podcast','mp3',{icon:'🎙️'}) ]),
-    folder('Téléchargements',[ file('jeu','exe',{icon:'🎮'}), file('image','jpg',{icon:'🖼️'}), file('document','pdf'), file('musique','mp3',{icon:'🎵'}) ]),
+    folder('Documents',[
+      folder('École',[ folder('Maths',[file('devoir1','doc'),file('exercices','pdf')]),
+        folder('Français',[file('rédaction','doc'),file('poésie','txt')]),
+        folder('Sciences',[file('exposé','doc',{icon:'🔬'})]) ]),
+      folder('Administratif',[ folder('Factures',[file('électricité','pdf'),file('internet','pdf')]),
+        folder('Impôts',[file('déclaration','pdf')]) ]),
+      folder('Projets',[ file('idées','txt'), folder('Brouillons',[file('plan','txt')]) ])
+    ]),
+    folder('Images',[
+      folder('Vacances',[ folder('2023',[file('mer','jpg',{icon:'🌊'})]),
+        folder('2024',[file('plage','jpg',{icon:'🏖️'}),file('montagne','jpg',{icon:'⛰️'})]),
+        folder('Été',[file('glace','jpg',{icon:'🍦'})]) ]),
+      folder('Famille',[file('anniversaire','jpg',{icon:'🎂'}),file('noël','jpg',{icon:'🎄'})]),
+      folder('Captures',[file('écran1','png',{icon:'🖼️'})])
+    ]),
+    folder('Musique',[ folder('Rock',[file('guitare','mp3',{icon:'🎸'})]),
+      folder('Classique',[file('piano','mp3',{icon:'🎹'})]),
+      folder('Podcasts',[file('histoire','mp3',{icon:'🎙️'})]) ]),
+    folder('Vidéos',[ folder('Films',[file('aventure','mp4',{icon:'🎬'})]),
+      folder('Clips',[file('concert','mp4',{icon:'🎤'})]) ]),
+    folder('Téléchargements',[ folder('Logiciels',[file('jeu','exe',{icon:'🎮'})]),
+      folder('Divers',[file('document','pdf'),file('image','jpg',{icon:'🖼️'})]) ]),
     folder('Système',[ file('config','txt',{locked:true}), file('démarrage','exe',{locked:true,icon:'⚙️'}) ], {locked:true})
   ]};
 }
-function allFiles(){ const a=[]; walk(EX.desktopRoot, n=>{ if(n!==EX.desktopRoot && n.type==='file' && !n.locked && !n.isCore) a.push(n); }); return a; }
-function allFolders(){ const a=[]; walk(EX.desktopRoot, n=>{ if(n.type==='folder' && !n.locked && n!==EX.desktopRoot) a.push(n); }); return a; }
 
+/* ---- petits utilitaires ---- */
+function shuffleArr(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function bossFindFlag(flag){ const a=[]; walk(EX.desktopRoot,n=>{ if(n[flag]) a.push(n); }); return a; }
+function bossInfectedAll(){ const a=[]; walk(EX.desktopRoot,n=>{ if(n.infected) a.push(n); }); return a; }
+function bossQuarantaine(){ return findFolderByName(EX.desktopRoot,'Quarantaine'); }
+function bossPaused(){ return overlay.classList.contains('open'); }
+function pulseScreen(){ const s=document.getElementById('screen'); if(s){ s.classList.add('shake'); setTimeout(()=>s.classList.remove('shake'),420); } }
+function contam(){ return EX.boss?EX.boss.contam:0; }
+function addContam(n){ if(!EX.boss) return; EX.boss.contam=Math.max(0,Math.min(100,EX.boss.contam+n)); }
+
+/* ---- HUD ---- */
+function bossMountHud(){
+  const screen=document.getElementById('screen'); if(!screen) return;
+  let hud=document.getElementById('bossHud');
+  if(hud) hud.remove();
+  hud=document.createElement('div'); hud.className='boss-hud'; hud.id='bossHud';
+  hud.innerHTML='<span class="bh-avatar" id="corrAvatar">👾</span>'
+    +'<div class="bh-info"><div class="bh-name bh-corr-name">CORRUPTUS</div><span class="bh-phase" id="bossPhaseLbl"></span></div>'
+    +'<span class="bh-contam-tag" title="Contamination">☣️</span>'
+    +'<div class="meter" id="contamMeter"><i id="contamFill"></i><span class="lbl" id="contamLbl">0%</span></div>'
+    +'<span class="bh-pips" id="bossPips" title="Intégrité de CORRUPTUS"></span>';
+  screen.insertBefore(hud, screen.firstChild);
+  const h=hud.offsetHeight||42;
+  const desk=document.getElementById('desktop'), wl=document.getElementById('winLayer');
+  if(desk) desk.style.top=h+'px';
+  if(wl) wl.style.top=h+'px';
+  updateContamUI(); updatePips(); updatePhaseLbl();
+}
+function updateContamUI(){
+  if(!EX.boss) return;
+  const v=Math.round(EX.boss.contam);
+  const f=document.getElementById('contamFill'), l=document.getElementById('contamLbl'), m=document.getElementById('contamMeter');
+  if(f) f.style.width=v+'%';
+  if(l) l.textContent=v+'%';
+  if(m) m.classList.toggle('crit', v>=75);
+}
+function updatePips(){
+  const el=document.getElementById('bossPips'); if(!el||!EX.boss) return;
+  const alive=EX.boss.phasesTotal-EX.boss.cleared;
+  let h=''; for(let i=0;i<EX.boss.phasesTotal;i++) h+='<i class="'+(i<alive?'alive':'')+'"></i>';
+  el.innerHTML=h;
+}
+function updatePhaseLbl(){
+  const el=document.getElementById('bossPhaseLbl'); if(!el||!EX.boss) return;
+  const def=BOSS_PHASES[EX.boss.phaseIdx];
+  el.textContent=def?('Phase '+(EX.boss.phaseIdx+1)+'/'+EX.boss.phasesTotal+' · '+def.title):'';
+}
+function showBossTrack(html){ hideBossTrack(); const s=document.getElementById('screen'); if(!s) return;
+  const t=document.createElement('div'); t.className='boss-track'; t.id='bossTrack'; t.innerHTML=html; s.appendChild(t); }
+function hideBossTrack(){ const t=document.getElementById('bossTrack'); if(t) t.remove(); }
+
+/* ---- reseed du monde entre les phases (on ré-affiche le HUD) ---- */
+function bossReseed(seed){ seedWorld(seed); bossMountHud(); }
+
+/* ---- briefing + sélecteur de difficulté ---- */
 function openBossBriefing(){
   const it=LEVELS[currentLevel-1].intro;
-  const resuming=!!(EX.boss && EX.boss.running);
   modal.className='modal boss-modal';
-  modal.innerHTML='<span class="m-emoji">🦠</span><div class="kicker" style="color:var(--red-d)">Combat de Boss</div>'
-    +'<h2>Alerte virus ! 🚨</h2>'
-    +'<p>'+it.lead+'</p>'
-    +'<div class="howto boss"><p class="h-head">⚔️ Le combat :</p><p>'+it.teach+'</p></div>'
-    +'<ul class="newtools">'
-    +'<li><span class="ni-glyph">🛰️</span> <b>Scanner</b> : localise le cœur du virus</li>'
-    +'<li><span class="ni-glyph">🗑️</span> Supprime les fichiers <b>rouges</b> (infectés)</li>'
-    +'<li><span class="ni-glyph">🦠</span> Détruis le <b>cœur du virus</b> pour stopper la propagation</li>'
-    +'<li><span class="ni-glyph">💥</span> Ne laisse pas la barre atteindre la <b>zone rouge</b> !</li>'
-    +'</ul>'
-    +'<div class="m-actions"><button class="m-btn primary boss" id="bossGo">'+(resuming?'⚔️ Reprendre le combat ▶':'⚔️ Lancer l\'antivirus ! 🚀')+'</button></div>';
+  modal.innerHTML='<span class="m-emoji">👾</span><div class="kicker" style="color:var(--red-d)">Combat de Boss · 5 phases</div>'
+    +'<h2>CORRUPTUS, le Virus Fantôme</h2>'
+    +'<div class="howto boss"><p>En haut, la jauge de contamination ☣️ monte sans cesse : si elle atteint <b>100 %</b>, c\'est le <b>crash système</b> ! 💥 Détruis CORRUPTUS avant qu\'il ne prenne le contrôle.</p></div>'
+    +'<p style="font-weight:800;color:var(--red-d);margin:10px 0 0">Choisis ta difficulté :</p>'
+    +'<div class="diff-grid">'+['easy','medium','hard'].map(k=>{ const m=CORR_MODES[k];
+        return '<button class="diff-btn '+m.key+'" data-k="'+m.key+'"><span class="db-ic">'+m.emoji+'</span>'
+          +'<span class="db-tx"><span class="db-name">'+m.label+'</span><span class="db-sub">'+m.sub+'</span></span>'
+          +'<span class="db-tag">'+m.tag+'</span></button>'; }).join('')
+    +'</div>';
   openOverlay();
-  document.getElementById('bossGo').onclick=()=>{ closeOverlay(); audioCtx(); if(!resuming) startBoss(); };
+  modal.querySelectorAll('.diff-btn').forEach(b=>b.onclick=()=>{ closeOverlay(); audioCtx(); startBoss(b.getAttribute('data-k')); });
 }
 
-function startBoss(){
-  if(EX.boss&&EX.boss.raf){ cancelAnimationFrame(EX.boss.raf); }
-  _bossLast=0;
-  seedWorld(bossSeed());
-  // bandeau antivirus
-  const screen=document.getElementById('screen');
-  const hud=document.createElement('div'); hud.className='boss-hud'; hud.id='bossHud';
-  hud.innerHTML='<span class="bh-ttl">🛡️ Antivirus</span>'
-    +'<div class="meter"><i id="bossMeter"></i><span class="lbl" id="bossMeterLbl">0%</span></div>'
-    +'<span class="bh-stat" id="bossCore">🦠 Cœur : ?</span>'
-    +'<button class="scan-btn" id="scanBtn">🛰️ Scanner</button>';
-  screen.insertBefore(hud, screen.firstChild);
-  document.getElementById('desktop').style.top='42px';
-  document.getElementById('winLayer').style.top='42px';
-  // bsod
-  const bsod=document.createElement('div'); bsod.className='bsod'; bsod.id='bsod';
-  bsod.innerHTML='<div class="face">:(</div><h2>Votre ordinateur a planté</h2>'
-    +'<p>Le virus a contaminé trop de fichiers. Le système n\'a pas résisté…</p>'
-    +'<p class="pct" id="bsodPct"></p>';
-  screen.appendChild(bsod);
-  document.getElementById('scanBtn').onclick=bossScan;
-
-  // état du boss
-  const files=allFiles();
-  const folders=allFolders();
-  EX.boss={
-    running:true, files, folders,
-    core:null, coreKilled:false,
-    spreadEvery:3600, lastSpread:0, scanCooldown:0,
-    maxInfect:0.55, gameover:false
-  };
-  // place le cœur du virus dans un dossier au hasard (pas Système)
-  const host=folders[Math.floor(Math.random()*folders.length)];
-  const core=buildNode(file('virus','virus',{icon:'🦠',infected:true,isCore:true}), host); core.seeded=false;
-  host.kids.push(core); EX.boss.core=core;
-  // infecte 1 ou 2 fichiers de départ
-  infectRandom(2);
-  renderAll(); updateBossMeter();
+/* ---- démarrage du combat ---- */
+function startBoss(diffKey){
+  if(EX.boss&&EX.boss.raf) cancelAnimationFrame(EX.boss.raf);
+  bossStopSpawn(); bossClearTimers();
+  _corrDiffKey=diffKey||_corrDiffKey||'medium';
+  const diff=CORR_MODES[_corrDiffKey]||CORR_MODES.medium;
+  bossReseed(bossSeed());
+  EX.boss={ running:true, diff:diff, diffKey:_corrDiffKey, contam:8, phasesTotal:BOSS_PHASES.length, cleared:0,
+    phaseIdx:0, phase:null, raf:0, last:0, saboT:0, startTime:Date.now(), errors:0, skills:new Set(),
+    spawnIv:null, over:false, won:false, saboLock:false, cooldowns:{}, timers:[] };
   beep('alarm');
+  updateContamUI(); updatePips(); updatePhaseLbl();
   EX.boss.raf=requestAnimationFrame(bossTick);
-}
-function infectRandom(k){
-  const clean=EX.boss.files.filter(f=>!f.infected && inTree(EX.desktopRoot,f));
-  for(let i=0;i<k && clean.length;i++){
-    const idx=Math.floor(Math.random()*clean.length);
-    clean[idx].infected=true; clean.splice(idx,1);
-  }
-}
-function infectionRate(){
-  const files=allFiles();
-  const inf=files.filter(f=>f.infected).length + (EX.boss.core && inTree(EX.desktopRoot,EX.boss.core)?1:0);
-  const total=files.length + (EX.boss.core && inTree(EX.desktopRoot,EX.boss.core)?1:0);
-  return total? inf/Math.max(total,1) : 0;
-}
-function updateBossMeter(){
-  const r=infectionRate();
-  const el=document.getElementById('bossMeter'), lbl=document.getElementById('bossMeterLbl');
-  if(el){ el.style.width=Math.min(100, Math.round(r/EX.boss.maxInfect*100))+'%'; }
-  if(lbl){ lbl.textContent=Math.round(r*100)+'% infecté'; }
-  const core=document.getElementById('bossCore');
-  if(core){ core.textContent = EX.boss.coreKilled ? '🦠 Cœur : détruit ✓' : (EX.boss.core && inTree(EX.desktopRoot,EX.boss.core) ? '🦠 Cœur : actif' : '🦠 Cœur : ?'); }
-}
-let _bossLast=0;
-function bossTick(ts){
-  if(!EX.boss || !EX.boss.running) return;
-  if(!_bossLast) _bossLast=ts;
-  const dt=ts-_bossLast;
-  if(!EX.boss.coreKilled){
-    EX.boss.lastSpread+=dt;
-    if(EX.boss.lastSpread>=EX.boss.spreadEvery){
-      EX.boss.lastSpread=0;
-      // le virus se propage ET le cœur peut se déplacer
-      infectRandom(1);
-      if(Math.random()<0.5) moveCore();
-      renderAll(); updateBossMeter(); pulseInfected();
-      beep('bad');
-    }
-  }
-  _bossLast=ts;
-  // condition de défaite
-  if(!EX.boss.gameover && infectionRate()>=EX.boss.maxInfect){ return bossGameOver(); }
-  // condition de victoire : cœur détruit ET plus aucun fichier infecté
-  if(EX.boss.coreKilled && allFiles().every(f=>!f.infected) && !(EX.boss.core&&inTree(EX.desktopRoot,EX.boss.core))){
-    return bossWin();
-  }
-  EX.boss.raf=requestAnimationFrame(bossTick);
-}
-function moveCore(){
-  const core=EX.boss.core; if(!core || !inTree(EX.desktopRoot,core)) return;
-  const folders=allFolders().filter(f=>f!==core.parent);
-  if(!folders.length) return;
-  const dest=folders[Math.floor(Math.random()*folders.length)];
-  if(core.parent) core.parent.kids=core.parent.kids.filter(x=>x!==core);
-  core.parent=dest; dest.kids.push(core);
-}
-function pulseInfected(){ const s=document.getElementById('screen'); if(s){ s.classList.add('shake'); setTimeout(()=>s.classList.remove('shake'),420); } }
-
-function bossScan(){
-  if(!EX.boss || EX.boss.scanCooldown>0) return;
-  const core=EX.boss.core;
-  if(EX.boss.coreKilled || !inTree(EX.desktopRoot,core)){ toast('🛰️ Plus de cœur viral détecté !'); return; }
-  const loc=pathOf(core.parent).map(p=>p.name).join(' ▸ ');
-  toast('🛰️ Virus localisé dans : '+loc+' — fonce le supprimer !');
-  beep('ding');
-  // ping radar si le dossier est ouvert
-  const w=EX.windows.find(x=>!x.min && x.cur===core.parent);
-  if(w&&w.el){ const r=w.el.getBoundingClientRect(), sc=document.getElementById('screen').getBoundingClientRect();
-    const ping=document.createElement('div'); ping.className='radar-ping';
-    ping.style.left=(r.left-sc.left)+'px'; ping.style.top=(r.top-sc.top)+'px'; ping.style.width=r.width+'px'; ping.style.height=r.height+'px';
-    document.getElementById('screen').appendChild(ping); setTimeout(()=>ping.remove(),2500);
-  }
-  EX.boss.scanCooldown=1;
-  const btn=document.getElementById('scanBtn'); if(btn){ btn.disabled=true; let t=4; btn.textContent='🛰️ '+t+'s';
-    const iv=setInterval(()=>{ t--; if(t<=0){ clearInterval(iv); EX.boss.scanCooldown=0; if(btn){btn.disabled=false; btn.textContent='🛰️ Scanner';} } else if(btn) btn.textContent='🛰️ '+t+'s'; },1000);
-  }
+  bossAlert(()=>goPhase(0));
 }
 
-/* surcharge des opérations pendant le boss : détecter la suppression du cœur / fichiers infectés */
-const _doDelete=doDelete;
-doDelete=function(nodes){
-  const hadCore = EX.boss && !EX.boss.coreKilled && nodes.indexOf(EX.boss.core)>=0;
-  const infectedKilled = EX.boss ? nodes.filter(n=>n.infected && !n.isCore).length : 0;
-  _doDelete(nodes);
-  if(EX.boss && EX.boss.running){
-    if(hadCore){ EX.boss.coreKilled=true; beep('win'); toast('🦠💥 Cœur du virus détruit ! La propagation s\'arrête.'); confetti(); }
-    else if(infectedKilled){ beep('good'); }
-    // vider la corbeille n'est pas obligatoire : la suppression suffit
-    updateBossMeter();
-    if(!EX.boss.raf && !EX.boss.gameover){ _bossLast=0; EX.boss.raf=requestAnimationFrame(bossTick); }
-  }
-};
-
-function bossGameOver(){
-  EX.boss.gameover=true; EX.boss.running=false; cancelAnimationFrame(EX.boss.raf);
-  beep('crash');
-  const s=document.getElementById('screen'); if(s) s.classList.add('shake');
-  document.getElementById('bsodPct').textContent='Contamination : '+Math.round(infectionRate()*100)+'%';
-  setTimeout(()=>{ const b=document.getElementById('bsod'); if(b) b.classList.add('show'); }, 500);
+/* ---- Phase 0 : alerte système + terminal qui s'écrit ---- */
+const FAKE_ERRS=[
+  {ic:'❌',t:'Erreur critique',m:'Le fichier système kernel32.dll a cessé de répondre.'},
+  {ic:'⚠️',t:'Avertissement',m:'CORRUPTUS.EXE tente de modifier vos dossiers.'},
+  {ic:'💀',t:'C0RRUPT10N',m:'V0s f1ch13rs n0us 4pp4rt13nn3nt m41nt3n4nt…'},
+  {ic:'🦠',t:'Alerte sécurité',m:'Propagation détectée dans plusieurs dossiers.'},
+  {ic:'❌',t:'explorer.exe',m:'Ce programme ne répond plus. 👾'}
+];
+/* ttl : durée avant disparition auto (ms). null = reste jusqu'au clic. */
+function bossFakeError(ttl){
+  const screen=document.getElementById('screen'); if(!screen) return null;
+  const e=FAKE_ERRS[Math.floor(Math.random()*FAKE_ERRS.length)];
+  const box=document.createElement('div'); box.className='fake-err'+(Math.random()<0.4?' glitch':'');
+  box.innerHTML='<div class="fe-bar"><span>'+e.t+'</span><button title="Fermer">✕</button></div>'
+    +'<div class="fe-body"><span class="fe-ic">'+e.ic+'</span><span>'+e.m+'</span></div>'
+    +'<div class="fe-actions"><button>OK</button></div>';
+  const W=300, H=120;
+  box.style.left=Math.max(6,Math.random()*Math.max(20,screen.clientWidth-W-12))+'px';
+  box.style.top=Math.max(50,52+Math.random()*Math.max(40,screen.clientHeight-H-120))+'px';
+  screen.appendChild(box);
+  const kill=()=>{ try{box.remove();}catch(err){} };
+  box.querySelectorAll('button').forEach(b=>b.onclick=kill);
+  if(ttl!==null) setTimeout(kill, ttl||4500);
+  return box;
+}
+/* grosse popup d'avertissement ou de résultat (reste à l'écran jusqu'au clic) */
+function bossBigError(title, msg, withCount){
+  const screen=document.getElementById('screen'); if(!screen) return null;
+  const box=document.createElement('div'); box.className='fake-err warn-big glitch';
+  box.innerHTML='<div class="fe-bar"><span>'+title+'</span><button title="Fermer">✕</button></div>'
+    +'<div class="fe-body"><span class="fe-ic">⚠️</span><span>'+msg+(withCount?' <b class="fe-count">'+withCount+' s</b>':'')+'</span></div>'
+    +'<div class="fe-actions"><button>OK</button></div>';
+  box.style.left='50%'; box.style.top='42%'; box.style.transform='translate(-50%,-50%)';
+  screen.appendChild(box);
+  const kill=()=>{ try{box.remove();}catch(err){} };
+  box.querySelectorAll('button').forEach(b=>b.onclick=kill);
+  return box;
+}
+function bossClearTimers(){
+  if(!EX.boss) return;
+  (EX.boss.timers||[]).forEach(t=>{ clearInterval(t); clearTimeout(t); }); EX.boss.timers=[];
+  const ct=document.getElementById('cmdTerm'); if(ct) ct.remove();
+  document.querySelectorAll('.fake-err').forEach(e=>e.remove());
+  EX.boss.saboLock=false;
+}
+function typeTerminal(el, lines, onDone){
+  if(!el){ onDone&&onDone(); return; }
+  let li=0;
+  (function nextLine(){
+    if(li>=lines.length){ onDone&&onDone(); return; }
+    const ln=lines[li++]; const div=document.createElement('div'); div.className='tr-line '+(ln.cls||''); el.appendChild(div);
+    const txt=ln.text||''; let ci=0;
+    (function typeChar(){
+      div.textContent=txt.slice(0,ci); ci++;
+      if(ci<=txt.length){ setTimeout(typeChar, 14); }
+      else { setTimeout(nextLine, ln.pause||170); }
+    })();
+  })();
+}
+function bossAlert(cb){
+  const screen=document.getElementById('screen'); if(screen) screen.classList.add('shake');
+  bossFakeError(1600); setTimeout(()=>bossFakeError(1600),450); setTimeout(()=>bossFakeError(1600),950);
   setTimeout(()=>{
-    modal.className='modal bad';
-    modal.innerHTML='<span class="m-emoji">💥</span><h2>Crash système !</h2>'
-      +'<div class="howto boss" style="margin-top:4px"><p class="h-head">💡 Conseil</p><p>Le virus a gagné cette fois. La prochaine fois : utilise le <b>🛰️ Scanner</b> dès le début pour trouver le <b>cœur du virus 🦠</b> et détruis-le <b>vite</b> — c\'est lui qui propage l\'infection. Supprime aussi les fichiers rouges sans attendre !</p></div>'
-      +'<div class="m-actions"><button class="m-btn primary boss" id="bossRetry">↺ Réessayer le combat</button></div>';
+    if(screen) screen.classList.remove('shake');
+    modal.className='modal boss-modal';
+    modal.innerHTML='<span class="m-emoji">🖥️</span><div class="kicker" style="color:var(--red-d)">Alerte système</div>'
+      +'<h2>Intrusion détectée</h2>'
+      +'<div class="term-report" id="alertTerm"></div>'
+      +'<div class="m-actions"><button class="m-btn primary" style="display:none;background:#eab308;border-color:#ca9a00;color:#1c1917" id="alertGo">🔍 Scanner les fichiers pour trouver Corruptus.exe</button></div>';
     openOverlay();
-    document.getElementById('bossRetry').onclick=()=>{ closeOverlay(); startBoss(); };
+    typeTerminal(document.getElementById('alertTerm'),[
+      {cls:'tr-head',text:'C:\\> antivirus --scan'},
+      {cls:'',text:'Analyse du système ...............'},
+      {cls:'dim',text:'⚠ INTRUSION DÉTECTÉE'},
+      {cls:'',text:'CORRUPTUS.EXE s\'est échappé dans vos fichiers.'},
+      {cls:'',text:'Il se déplace, contamine et se reproduit.'},
+      {cls:'good',text:'Mission : le traquer en 5 phases et l\'éliminer.'},
+      {cls:'dim',text:'Surveille la jauge de contamination en haut !'}
+    ], ()=>{ const g=document.getElementById('alertGo'); if(g){ g.style.display=''; g.onclick=()=>{ closeOverlay(); cb&&cb(); }; } });
   }, 1500);
 }
+
+/* ---- boucle principale ---- */
+function bossTick(ts){
+  if(!EX.boss || !EX.boss.running) return;
+  EX.boss.raf=requestAnimationFrame(bossTick);
+  if(!EX.boss.last) EX.boss.last=ts;
+  const dt=Math.min(0.1,(ts-EX.boss.last)/1000); EX.boss.last=ts;
+  if(bossPaused() || EX.boss.busy) return;   // un briefing/une astuce est ouvert → on met le danger en pause
+  addContam(EX.boss.diff.rate*dt);
+  // sabotage croissant
+  EX.boss.saboT+=dt*1000;
+  if(EX.boss.saboT>=bossSaboInterval()){ EX.boss.saboT=0; bossSabotage(); }
+  // logique de la phase en cours
+  if(EX.boss.phase && EX.boss.phase.tick) EX.boss.phase.tick();
+  updateContamUI();
+  if(EX.boss.contam>=100) return bossGameOver();
+}
+function bossSaboInterval(){
+  const base=12000*EX.boss.diff.saboMul*(1-EX.boss.phaseIdx*0.06);
+  return Math.max(6500, base);
+}
+
+/* ---- sabotage : surtout des fausses erreurs, la lutte terminal et la tempête.
+   Les déplacements / fermetures sont RARES et toujours ANNONCÉS 6 s à l'avance. ---- */
+function bossSabotage(){
+  if(bossPaused()||EX.boss.busy||EX.boss.saboLock) return;
+  const av=document.getElementById('corrAvatar'); if(av){ av.classList.remove('sabotage'); void av.offsetWidth; av.classList.add('sabotage'); }
+  const now=Date.now(), cd=EX.boss.cooldowns, key=EX.boss.phase&&EX.boss.phase.key;
+  const pool=['fake','fake'];                                   // léger, fréquent
+  if(now-(cd.struggle||0) > 26000) pool.push('struggle','struggle');
+  if(now-(cd.storm||0)    > 42000) pool.push('storm');
+  if(key!=='cache' && now-(cd.teleport||0) > 24000) pool.push('teleport');
+  if(now-(cd.closeAll||0) > 75000 && EX.windows.some(w=>!w.min)) pool.push('closeAll');   // rare
+  const pick=pool[Math.floor(Math.random()*pool.length)];
+  beep('bad');
+  if(pick==='fake'){ bossFakeError(); if(Math.random()<0.4) setTimeout(()=>bossFakeError(),220); addContam(1.2); }
+  else if(pick==='struggle'){ cd.struggle=now; bossDisconnectStruggle(); }
+  else if(pick==='storm'){ cd.storm=now; bossErrorStorm(); }
+  else if(pick==='teleport'){ cd.teleport=now; bossWarnThen({
+    title:'⚠️ Alerte sécurité', warn:'CORRUPTUS va te <b>déplacer</b> dans un autre dossier dans',
+    act:bossActTeleport }); }
+  else if(pick==='closeAll'){ cd.closeAll=now; bossWarnThen({
+    title:'⚠️ Alerte sécurité', warn:'CORRUPTUS va <b>fermer toutes tes fenêtres</b> dans',
+    act:bossActCloseAll }); }
+}
+
+/* ---- action annoncée : grosse popup d'avertissement (6 s) → action → popup résultat ---- */
+function bossWarnThen(opts){
+  EX.boss.saboLock=true;
+  let s=6;
+  const box=bossBigError(opts.title, opts.warn, s);
+  const cnt=box&&box.querySelector('.fe-count');
+  const iv=setInterval(()=>{
+    s--; if(cnt) cnt.textContent=s+' s';
+    if(s<=0){ clearInterval(iv);
+      if(box){ try{box.remove();}catch(e){} }
+      if(EX.boss&&EX.boss.running){ const res=opts.act(); bossBigError('❌ CORRUPTUS.EXE', res); beep('bad'); pulseScreen(); }
+      EX.boss.saboLock=false;
+    }
+  }, 1000);
+  (EX.boss.timers=EX.boss.timers||[]).push(iv);
+}
+function bossActTeleport(){
+  const w=(EX.focusedWin&&!EX.focusedWin.min)?EX.focusedWin:EX.windows.find(x=>!x.min);
+  const fs=[]; walk(EX.desktopRoot,n=>{ if(n.type==='folder'&&!n.locked&&n!==EX.desktopRoot) fs.push(n); });
+  if(!w||!fs.length) return 'CORRUPTUS.EXE a tenté de te déplacer, sans succès.';
+  const dest=fs[Math.floor(Math.random()*fs.length)]; navTo(w,dest);
+  return 'CORRUPTUS.EXE vous a déplacé dans : <b>'+pathOf(dest).slice(1).map(p=>p.name).join(' ▸ ')+'</b>';
+}
+function bossActCloseAll(){
+  const wins=EX.windows.slice();
+  if(!wins.length) return 'CORRUPTUS.EXE n\'a trouvé aucune fenêtre à fermer.';
+  wins.forEach(w=>{ if(w.el) w.el.classList.add('boss-shut'); });
+  setTimeout(()=>wins.forEach(w=>{ try{closeWindow(w);}catch(e){} }), 300);
+  return 'CORRUPTUS.EXE a fermé <b>toutes les fenêtres</b> de l\'explorateur.';
+}
+
+/* ---- tempête de pop-ups : l'écran se couvre, à fermer une par une ---- */
+function bossErrorStorm(){
+  EX.boss.saboLock=true;
+  const total=EX.boss.diffKey==='easy'?8:(EX.boss.diffKey==='hard'?16:12);
+  toast('🌩️ Tempête de pop-ups ! Ferme-les vite pour continuer !');
+  let made=0;
+  const iv=setInterval(()=>{
+    if(!EX.boss||!EX.boss.running){ clearInterval(iv); EX.boss.saboLock=false; return; }
+    bossFakeError(null);   // reste jusqu'au clic
+    made++;
+    if(made>=total){ clearInterval(iv); EX.boss.saboLock=false; }
+  }, 170);
+  (EX.boss.timers=EX.boss.timers||[]).push(iv);
+}
+
+/* ---- lutte dans le terminal contre la déconnexion ---- */
+const CMD_LIST=['scanner','nettoyer','bloquer','defendre','reconnecter','firewall'];
+function bossDisconnectStruggle(){
+  const screen=document.getElementById('screen'); if(!screen) return;
+  EX.boss.saboLock=true; EX.boss.busy=true;
+  const N=EX.boss.diffKey==='easy'?3:(EX.boss.diffKey==='hard'?5:4);
+  const fillMs=EX.boss.diff.discFill;
+  const queue=shuffleArr(CMD_LIST.slice()).slice(0,N);
+  let idx=0, prog=0;
+  const ov=document.createElement('div'); ov.className='cmd-term'; ov.id='cmdTerm';
+  ov.innerHTML='<div class="cmd-win">'
+    +'<div class="cmd-bar2">⌨️ C:\\WINDOWS\\system32\\cmd.exe — CORRUPTUS</div>'
+    +'<div class="cmd-body">'
+    +'<div class="cl warn">⚠️ CORRUPTUS essaie de te DÉCONNECTER !</div>'
+    +'<div class="cl">Tape les commandes pour résister.</div>'
+    +'<div class="cmd-discwrap">Déconnexion en cours…'
+    +'<div class="cmd-discbar" id="discBar"><i id="discFill"></i><span class="dl" id="discLbl">0 %</span></div></div>'
+    +'<div class="cmd-prog" id="cmdProg"></div>'
+    +'<div class="cmd-prompt"><span class="ps">C:\\&gt;</span><span>tape&nbsp;:</span>'
+    +'<span class="cmd-cmdname" id="cmdName"></span>'
+    +'<input class="cmd-input" id="cmdInput" autocomplete="off" spellcheck="false" placeholder="ta commande puis Entrée"></div>'
+    +'</div></div>';
+  screen.appendChild(ov);
+  const fillEl=ov.querySelector('#discFill'), lblEl=ov.querySelector('#discLbl'), barEl=ov.querySelector('#discBar'),
+        nameEl=ov.querySelector('#cmdName'), progEl=ov.querySelector('#cmdProg'), inp=ov.querySelector('#cmdInput');
+  const norm=s=>(s||'').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  function refresh(){ nameEl.textContent=queue[idx].toUpperCase(); progEl.textContent='Commandes réussies : '+idx+' / '+N+' ✅'; }
+  function paint(){ fillEl.style.width=Math.min(100,prog)+'%'; lblEl.textContent=Math.round(Math.min(100,prog))+' %'; barEl.classList.toggle('crit',prog>=70); }
+  refresh(); paint(); setTimeout(()=>{ try{inp.focus();}catch(e){} },60);
+  function finish(win){
+    clearInterval(iv); try{ov.remove();}catch(e){}
+    EX.boss.busy=false; EX.boss.saboLock=false; EX.boss.last=0;
+    if(win){ beep('win'); updateContamUI(); toast('✅ Connexion rétablie !'); }
+  }
+  const step=10000/fillMs;   // % ajouté toutes les 100 ms
+  const iv=setInterval(()=>{
+    if(!EX.boss||!EX.boss.running){ clearInterval(iv); return; }
+    prog+=step;
+    if(prog>=100){ prog=0; addContam(EX.boss.diff.discPen); updateContamUI(); beep('bad'); pulseScreen();
+      if(EX.boss.contam>=100){ finish(false); return bossGameOver(); } }
+    paint();
+  }, 100);
+  (EX.boss.timers=EX.boss.timers||[]).push(iv);
+  inp.addEventListener('keydown',e=>{
+    e.stopPropagation();
+    if(e.key!=='Enter') return;
+    e.preventDefault();
+    if(norm(inp.value)===norm(queue[idx])){
+      inp.value=''; prog=0; paint(); idx++; beep('good');
+      if(idx>=N){ finish(true); return; }
+      refresh();
+    } else { inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); beep('bad');
+      toast('Commande incorrecte. Tape bien : '+queue[idx].toUpperCase()); }
+  });
+}
+
+/* ---- enchaînement des phases ---- */
+function goPhase(i){
+  if(!EX.boss||!EX.boss.running) return;
+  EX.boss.phaseIdx=i; EX.boss.busy=false;
+  const def=BOSS_PHASES[i];
+  showPhaseBriefing(def, ()=>{ EX.boss.skills.add(def.skill); def.start(); updatePhaseLbl(); });
+}
+function showPhaseBriefing(def, start){
+  EX.boss.busy=true;
+  modal.className='modal boss-modal';
+  modal.innerHTML='<span class="m-emoji">'+def.emoji+'</span>'
+    +'<div class="kicker" style="color:var(--red-d)">Phase '+(EX.boss.phaseIdx+1)+'/'+EX.boss.phasesTotal+'</div>'
+    +'<h2>'+def.title+'</h2>'
+    +'<div class="howto boss"><p>'+def.how+'</p></div>'
+    +'<div class="btuto" id="btuto"></div>';
+  openOverlay();
+  const launch=()=>{ closeOverlay(); EX.boss.busy=false; start(); };
+  const builder=BOSS_TUTOS[def.tuto];
+  if(builder){ builder(document.getElementById('btuto'), launch); }
+  else { const a=document.createElement('div'); a.className='m-actions';
+    a.innerHTML='<button class="m-btn primary boss" id="phGo">⚔️ C\'est parti !</button>';
+    modal.appendChild(a); document.getElementById('phGo').onclick=launch; }
+}
+/* ---- mini-tutos (à réussir pour lancer la phase, façon Gruk) ---- */
+function btutoWin(host, start){
+  const st=host.querySelector('.btuto-stage'); if(st) st.classList.add('done');
+  const h=host.querySelector('.btuto-hint'); if(h) h.innerHTML='✅ <b>Bravo ! La phase commence…</b>';
+  beep('win'); setTimeout(start, 750);
+}
+function tutoOpen(host, start){
+  host.innerHTML='<div class="btuto-hint">👆 <b>Double-clique</b> le dossier pour l\'ouvrir</div>'
+    +'<div class="btuto-stage"><div class="bt-chip" id="btf"><span class="ic">📁</span>Dossier</div></div>';
+  let done=false; const f=host.querySelector('#btf');
+  f.addEventListener('dblclick',()=>{ if(done)return; done=true; f.querySelector('.ic').textContent='📂'; btutoWin(host,start); });
+  f.addEventListener('click',()=>{ if(!done) toast('Fais un DOUBLE-clic (2 clics rapides) sur le dossier.'); });
+}
+function tutoClean(host, start){
+  const items=[{ic:'🦠',red:true},{ic:'📄',red:false},{ic:'🦠',red:true}];
+  let selIdx=null; let kbListener=null;
+  function cleanup(){ if(kbListener){ document.removeEventListener('keydown',kbListener,true); kbListener=null; } }
+  function win(){ cleanup(); closeCtx(); btutoWin(host,start); }
+  function armKeyboard(){
+    if(kbListener) document.removeEventListener('keydown',kbListener,true);
+    kbListener=(e)=>{ if(e.key==='Delete'){ e.stopImmediatePropagation(); e.preventDefault(); win(); } };
+    document.addEventListener('keydown',kbListener,true);
+  }
+  function render(){
+    host.innerHTML= selIdx===null
+      ? '<div class="btuto-hint">🦠 Clique sur un <b>fichier rouge</b> pour le sélectionner</div>'
+      : '<div class="btuto-hint">✅ Sélection OK ! Appuie sur <kbd>Suppr</kbd> ou <b>clic droit → Supprimer</b></div>';
+    host.innerHTML+='<div class="btuto-stage" id="bst"></div>';
+    const st=host.querySelector('#bst');
+    items.forEach((it,i)=>{
+      const c=document.createElement('div');
+      c.className='bt-chip'+(it.red?' infected':'')+(selIdx===i?' sel':'');
+      c.innerHTML='<span class="ic">'+it.ic+'</span>'+(it.red?'virus':'fichier');
+      c.addEventListener('click',()=>{
+        if(!it.red){ beep('bad'); toast('Ce fichier est sain, ne le supprime pas !'); return; }
+        selIdx=i; armKeyboard(); render();
+      });
+      c.addEventListener('contextmenu',e=>{
+        e.preventDefault(); e.stopPropagation();
+        if(!it.red) return;
+        selIdx=i; render();
+        showCtx(e.clientX, e.clientY, [{ic:'🗑️',txt:'Supprimer',k:'Suppr',danger:true,fn:win}]);
+      });
+      st.appendChild(c);
+    });
+  }
+  render();
+}
+function tutoDrag(host, start){
+  host.innerHTML='<div class="btuto-hint">🖱️ <b>Glisse</b> le clone 👾 dans Quarantaine</div>'
+    +'<div class="btuto-stage" id="bst"><div class="bt-chip" id="btc"><span class="ic">👾</span>clone</div>'
+    +'<div class="bt-drop" id="btz">📁<br>Quarantaine</div></div>';
+  const chip=host.querySelector('#btc'), dz=host.querySelector('#btz'); let done=false;
+  chip.addEventListener('pointerdown',e=>{ e.preventDefault(); if(done)return;
+    const move=ev=>{ chip.style.position='fixed'; chip.style.left=(ev.clientX-30)+'px'; chip.style.top=(ev.clientY-30)+'px'; chip.style.zIndex=9999;
+      const r=dz.getBoundingClientRect(); dz.classList.toggle('over', ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom); };
+    const up=ev=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up);
+      const r=dz.getBoundingClientRect(); const over=ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom;
+      if(over){ done=true; try{chip.remove();}catch(e){} dz.innerHTML='📁<br>✅'; dz.classList.remove('over'); btutoWin(host,start); }
+      else { chip.style.position=''; chip.style.left=''; chip.style.top=''; chip.style.zIndex=''; } };
+    document.addEventListener('pointermove',move); document.addEventListener('pointerup',up);
+  });
+}
+function tutoClonesSearch(host, start){
+  function showSearch(){
+    host.innerHTML='<div class="btuto-hint">🔍 Tape <b>corru</b> dans la barre de recherche</div>'
+      +'<div class="btuto-stage" id="bst" style="flex-direction:column;align-items:stretch;gap:8px;">'
+      +'<div style="display:flex;align-items:center;gap:6px;background:#fff;border:2px solid #c7d4e6;border-radius:9px;padding:5px 10px;">'
+      +'<span style="font-size:.85rem">🔍</span>'
+      +'<input id="bsearch" placeholder="Rechercher…" autocomplete="off" style="border:none;outline:none;font-family:inherit;font-size:.88rem;width:100%;background:transparent;">'
+      +'</div>'
+      +'<div id="bres" style="display:none;background:#f3f8ff;border:2px solid #d9e6fb;border-radius:9px;padding:8px;">'
+      +'<div class="bt-chip infected" id="bclone"><span class="ic">👾</span>CORRUPTUS_copie1.exe</div>'
+      +'</div>'
+      +'</div>';
+    const inp=host.querySelector('#bsearch');
+    inp.addEventListener('input',()=>{
+      const v=inp.value.toLowerCase();
+      const hit=v.length>=4 && 'corruptus'.includes(v);
+      if(hit){ const h=host.querySelector('.btuto-hint'); if(h) h.innerHTML='⌨️ Appuie sur <kbd>Entrée</kbd> pour lancer la recherche'; }
+      else { const h=host.querySelector('.btuto-hint'); if(h) h.innerHTML='🔍 Tape <b>corru</b> dans la barre de recherche'; }
+    });
+    inp.addEventListener('keydown',e=>{
+      if(e.key!=='Enter') return;
+      const v=inp.value.toLowerCase();
+      if(v.length>=4 && 'corruptus'.includes(v)){
+        host.querySelector('#bres').style.display='';
+        setTimeout(()=>{ if(host.isConnected) showDrag(); },400);
+      } else { beep&&beep('bad'); const h=host.querySelector('.btuto-hint'); if(h) h.innerHTML='🔍 Tape d\'abord <b>corru</b> dans la barre'; }
+    });
+  }
+  function showDrag(){
+    host.innerHTML='<div class="btuto-hint">✅ Clone trouvé ! <b>Glisse-le</b> dans Quarantaine 📁</div>'
+      +'<div class="btuto-stage" id="bst">'
+      +'<div class="bt-chip infected" id="btc"><span class="ic">👾</span>CORRUPTUS_copie1</div>'
+      +'<div class="bt-drop" id="btz">📁<br>Quarantaine</div>'
+      +'</div>';
+    const chip=host.querySelector('#btc'), dz=host.querySelector('#btz'); let done=false;
+    chip.addEventListener('pointerdown',e=>{ e.preventDefault(); if(done)return;
+      const move=ev=>{ chip.style.position='fixed'; chip.style.left=(ev.clientX-30)+'px'; chip.style.top=(ev.clientY-30)+'px'; chip.style.zIndex=9999;
+        const r=dz.getBoundingClientRect(); dz.classList.toggle('over', ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom); };
+      const up=ev=>{ document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up);
+        const r=dz.getBoundingClientRect(); const over=ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom;
+        if(over){ done=true; try{chip.remove();}catch(e){} dz.innerHTML='📁<br>✅'; dz.classList.remove('over'); btutoWin(host,start); }
+        else { chip.style.position=''; chip.style.left=''; chip.style.top=''; chip.style.zIndex=''; } };
+      document.addEventListener('pointermove',move); document.addEventListener('pointerup',up);
+    });
+  }
+  showSearch();
+}
+function tutoProps(host, start){
+  let step=0;
+  function renderFile(){
+    host.innerHTML='<div class="btuto-hint">🖱️ <b>Clic droit</b> sur le fichier pour ouvrir le menu</div>'
+      +'<div class="btuto-stage" id="bst" style="position:relative;min-height:110px;justify-content:flex-start;">'
+      +'<div class="bt-chip" id="btf" style="user-select:none;cursor:context-menu"><span class="ic">📷</span>photo.jpg</div>'
+      +'</div>';
+    const f=host.querySelector('#btf');
+    f.addEventListener('contextmenu',e=>{
+      e.preventDefault(); e.stopPropagation(); beep('click');
+      const menu=document.createElement('div');
+      menu.style.cssText='position:absolute;left:80px;top:10px;background:#fff;border:1.5px solid #cdd9e8;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:999;min-width:150px;overflow:hidden;font-size:.85rem;';
+      menu.innerHTML='<div style="padding:5px 12px;color:#9aabbd;font-weight:700;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid #e7eef6">photo.jpg</div>'
+        +'<div style="padding:5px 12px;color:#bbb;font-size:.83rem;font-weight:600">🖊️ Ouvrir</div>'
+        +'<div style="height:1px;background:#e7eef6;margin:2px 0"></div>'
+        +'<div id="propsBtn" style="padding:7px 12px;font-weight:800;cursor:pointer;font-size:.83rem;background:#f0f6ff;color:#2563eb">ℹ️ Propriétés</div>';
+      host.querySelector('#bst').appendChild(menu);
+      const hint=host.querySelector('.btuto-hint'); if(hint) hint.innerHTML='👆 Clique sur <b>Propriétés</b>';
+      menu.querySelector('#propsBtn').onclick=()=>{ beep('click'); menu.remove(); step=1; renderPropsGeneral(); };
+    });
+    f.addEventListener('click',()=>{ if(step===0) toast('Fais un <b>clic droit</b> (bouton droit de la souris) sur le fichier !'); });
+  }
+  function propsShell(activeTab, content){
+    return '<div class="btuto-stage" id="bst" style="padding:0;justify-content:center;">'
+      +'<div style="background:#f3f7fc;border:1.5px solid #cdd9e8;border-radius:10px;overflow:hidden;width:260px;font-size:.8rem;">'
+      +'<div style="background:#1f2a37;color:#fff;padding:7px 12px;font-weight:800;display:flex;align-items:center;gap:7px;">ℹ️ photo.jpg – Propriétés</div>'
+      +'<div style="display:flex;border-bottom:2px solid #cdd9e8;">'
+      +'<div style="padding:7px 14px;font-weight:'+(activeTab==='gen'?'800':'600')+';color:'+(activeTab==='gen'?'#2563eb':'#5a6b7b')+';border-bottom:3px solid '+(activeTab==='gen'?'#2563eb':'transparent')+';cursor:'+(activeTab==='gen'?'default':'pointer')+'" id="tabGen">Général</div>'
+      +'<div style="padding:7px 14px;font-weight:'+(activeTab==='det'?'800':'600')+';color:'+(activeTab==='det'?'#2563eb':'#5a6b7b')+';border-bottom:3px solid '+(activeTab==='det'?'#2563eb':'transparent')+';cursor:'+(activeTab==='det'?'default':'pointer')+'" id="tabDet">Détails</div>'
+      +'</div>'
+      +content
+      +'</div></div>';
+  }
+  function renderPropsGeneral(){
+    host.innerHTML='<div class="btuto-hint">📂 Propriétés ouvertes — clique sur l\'onglet <b>Détails</b></div>'
+      +propsShell('gen','<div style="padding:16px;text-align:center;color:#5a6b7b;font-weight:700;">📷<br><br>photo.jpg<br><span style="font-size:.75rem">Image JPEG · 2,3 Mo</span></div>');
+    host.querySelector('#tabDet').onclick=()=>{ beep('click'); step=2; renderPropsDetails(); };
+  }
+  function renderPropsDetails(){
+    host.innerHTML='<div class="btuto-hint" id="bh">✅ Onglet Détails — regarde l\'<b>Auteur</b> !</div>'
+      +propsShell('det','<div style="padding:0 0 6px;">'
+        +'<div style="padding:6px 12px;display:flex;justify-content:space-between;border-bottom:1px solid #e7eef6;"><span style="color:#5a6b7b;font-weight:700">Nom</span><span style="font-weight:800">photo.jpg</span></div>'
+        +'<div style="padding:6px 12px;display:flex;justify-content:space-between;border-bottom:1px solid #e7eef6;"><span style="color:#5a6b7b;font-weight:700">Type</span><span style="font-weight:800">Image JPEG</span></div>'
+        +'<div id="authorRow" style="padding:6px 12px;display:flex;justify-content:space-between;border-bottom:1px solid #e7eef6;transition:background .4s,border-color .4s;"><span style="color:#5a6b7b;font-weight:700">Auteur</span><span style="font-weight:800;color:var(--red-d)" id="authorVal">CORRUPTUS</span></div>'
+        +'<div style="padding:6px 12px;display:flex;justify-content:space-between;"><span style="color:#5a6b7b;font-weight:700">Date</span><span style="font-weight:800">01/01/2024</span></div>'
+        +'</div>');
+    setTimeout(()=>{
+      const row=host.querySelector('#authorRow'); if(row){ row.style.background='#fef08a'; row.style.outline='2px solid #eab308'; }
+      const bh=host.querySelector('#bh'); if(bh) bh.innerHTML='⚠️ Auteur : <b style="color:var(--red-d)">CORRUPTUS</b> — tu sais comment repérer ses fichiers !';
+    }, 600);
+    setTimeout(()=>{ btutoWin(host,start); }, 3200);
+  }
+  renderFile();
+}
+function tutoTrace(host, start){
+  host.innerHTML='<div class="btuto-hint">🦠 Ouvre le dossier qui a une <b>trace</b> (pas le leurre)</div>'
+    +'<div class="btuto-stage" id="bst"></div>';
+  const st=host.querySelector('#bst');
+  shuffleArr([{trace:true},{trace:false}]).forEach(o=>{ const c=document.createElement('div'); c.className='bt-chip';
+    c.innerHTML='<span class="ic">📁</span>'+(o.trace?'🦠 dossier':'dossier');
+    c.onclick=()=>{ if(o.trace) btutoWin(host,start); else { beep('bad'); toast('Non, c\'est un leurre ! Cherche la trace 🦠.'); } };
+    st.appendChild(c); });
+}
+const BOSS_TUTOS={open:tutoOpen, clean:tutoClean, drag:tutoDrag, clones:tutoClonesSearch, props:tutoProps, trace:tutoTrace};
+function bossPhaseCleared(){
+  const i=EX.boss.phaseIdx;
+  EX.boss.busy=true;
+  EX.boss.cleared=i+1;
+  bossStopSpawn(); hideBossTrack();
+  updateContamUI(); updatePips();
+  beep('win'); confetti();
+  const pips=document.querySelectorAll('#bossPips i'); if(pips[EX.boss.phasesTotal-EX.boss.cleared]) {}
+  toast('💚 Phase nettoyée ! CORRUPTUS recule…');
+  if(i>=EX.boss.phasesTotal-1){ setTimeout(bossWin, 900); return; }
+  setTimeout(()=>{ if(EX.boss&&EX.boss.running) goPhase(i+1); }, 1150);
+}
+
+/* =========================================================
+   PHASE 1 — LA TRAQUE (navigation + lecture de chemin)
+   ========================================================= */
+function phaseTraque(){
+  bossReseed(bossSeed());
+  const ph={key:'traque', title:'La Traque', round:0, rounds:4, cleared:false, target:null};
+  EX.boss.phase=ph;
+  bossPickTraqueTarget(ph);
+  EX.boss.busy=true;
+  showAVFoundPopup(ph, ()=>{ EX.boss.busy=false; });
+  ph.tick=function(){
+    if(ph.cleared||EX.boss.busy) return;
+    if(ph.target && EX.windows.some(w=>!w.min && w.cur===ph.target)){
+      ph.round++;
+      if(ph.round>=ph.rounds){ ph.cleared=true; bossPhaseCleared(); }
+      else {
+        beep('good');
+        const av=document.getElementById('corrAvatar'); if(av){ av.classList.remove('sabotage'); void av.offsetWidth; av.classList.add('sabotage'); }
+        EX.boss.busy=true;
+        showAVEscapePopup(()=>{
+          bossPickTraqueTarget(ph);
+          showAVFoundPopup(ph, ()=>{ EX.boss.busy=false; });
+        });
+      }
+    }
+  };
+}
+function bossPickTraqueTarget(ph){
+  walk(EX.desktopRoot,n=>{ if(n.isTrace && n.parent){ n.parent.kids=n.parent.kids.filter(x=>x!==n); } });
+  const deep=[]; walk(EX.desktopRoot,n=>{ if(n.type==='folder'&&!n.locked&&pathOf(n).length>=3) deep.push(n); });
+  let tgt=deep[Math.floor(Math.random()*deep.length)];
+  if(ph.target){ const others=deep.filter(d=>d!==ph.target); if(others.length) tgt=others[Math.floor(Math.random()*others.length)]; }
+  ph.target=tgt;
+  // Trace files uniquement dans le dernier round (le dossier paraît vide avant)
+  if(ph.round>=ph.rounds-1){
+    ['åç§€','///fï¢h3r'].forEach((nm,i)=>{ const f=buildNode(file(nm, i?'jpg':'docx',{infected:true,isTrace:true,icon:'🦠'}), tgt); f.seeded=false; tgt.kids.push(f); });
+  }
+  renderAll();
+  showBossTrackAV(pathOf(tgt).slice(1).map(p=>p.name).join(' › '));
+}
+/* popup antivirus jaune : "fichiers suspects trouvés dans [adresse]" */
+function showAVFoundPopup(ph, cb){
+  const pathStr=pathOf(ph.target).slice(1).map(p=>p.name).join(' › ');
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">🛡️</span>'
+    +'<div class="kicker" style="color:#b45309">Antivirus</div>'
+    +'<h2 style="color:#92400e">Des fichiers suspects ont été trouvés&nbsp;!</h2>'
+    +'<div class="howto" style="background:#fffbeb;border-color:#fde68a;text-align:center;padding:14px 18px;">'
+    +'<p style="margin:0 0 5px;font-size:.82rem;color:#78350f;font-weight:700;letter-spacing:.03em;text-transform:uppercase;">📍 Emplacement détecté</p>'
+    +'<p style="margin:0;font-size:1.12rem;font-weight:800;color:#1e3a5f;line-height:1.4;">🖥️&nbsp;'+pathStr+'</p>'
+    +'</div>'
+    +'<div class="m-actions"><button class="m-btn primary" style="background:#eab308;border-color:#ca9a00;color:#1c1917" id="avFoundGo">J\'y vais !</button></div>';
+  openOverlay();
+  document.getElementById('avFoundGo').onclick=()=>{ closeOverlay(); cb&&cb(); };
+}
+/* popup antivirus jaune : "Corruptus.exe s'est échappé" */
+function showAVEscapePopup(cb){
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">⚠️</span>'
+    +'<div class="kicker" style="color:#b45309">Antivirus</div>'
+    +'<h2 style="color:#92400e">Corruptus.exe s\'est échappé !</h2>'
+    +'<p style="text-align:center">Corruptus.exe s\'est enfui avant ton arrivée.<br>L\'antivirus cherche une nouvelle piste…</p>'
+    +'<div class="m-actions"><button class="m-btn primary" style="background:#eab308;border-color:#ca9a00;color:#1c1917" id="avEscapeGo">🔍 Scanner les fichiers</button></div>';
+  openOverlay();
+  document.getElementById('avEscapeGo').onclick=()=>{ closeOverlay(); cb&&cb(); };
+}
+/* track jaune grande adresse pour la phase traque */
+function showBossTrackAV(pathStr){
+  hideBossTrack();
+  const s=document.getElementById('screen'); if(!s) return;
+  const t=document.createElement('div'); t.className='boss-track av-track'; t.id='bossTrack';
+  t.innerHTML='<span class="av-label">Cherche Corruptus dans…</span>'
+    +'<b class="av-path">🖥️&nbsp;'+pathStr+'</b>';
+  s.appendChild(t);
+}
+
+/* =========================================================
+   PHASE 2 — DÉSINFECTION (sélection multiple + lasso)
+   ========================================================= */
+function phaseDesinfection(){
+  const inf=(nm,ext)=>file(nm,ext,{infected:true,icon:'🦠'});
+  bossReseed({ desktop:[
+    file('photo-vacances','jpg',{icon:'📷'}),
+    file('virus-info','txt',{trap:true}),
+    inf('d0nn33s','tmp'), inf('£xz¢','dat'),
+    folder('Photos',[ file('chat','jpg',{icon:'🐱'}), inf('æ#bug','jpg'), file('antivirus','exe',{trap:true,icon:'🛡️'}), inf('§§§','png') ]),
+    folder('Téléchargements',[ file('jeu','exe',{icon:'🎮'}), inf('w0rm','exe'), file('danger','txt',{trap:true}), inf('cr4sh','log') ]),
+    folder('Nid',[ file('NID','exe',{infected:true,isNid:true,icon:'👾'}) ])
+  ], open:'Nid' });
+  const ph={key:'desinfection', title:'La Désinfection', cleared:false};
+  EX.boss.phase=ph;
+  const nidFolder=findFolderByName(EX.desktopRoot,'Nid');
+  bossStartSpawn(nidFolder);
+  // Nids supplémentaires : Corruptus en crée d'autres au fil du temps
+  const extraNids=EX.boss.diffKey==='easy'?1:(EX.boss.diffKey==='hard'?3:2);
+  for(let i=1;i<=extraNids;i++){
+    const t=setTimeout(()=>{ if(EX.boss&&EX.boss.running&&EX.boss.phase&&!EX.boss.phase.cleared) bossSpawnNewNid(); }, 14000*i);
+    (EX.boss.timers=EX.boss.timers||[]).push(t);
+  }
+  ph.tick=function(){ if(ph.cleared) return; if(bossInfectedAll().length===0){ ph.cleared=true; bossStopSpawn(); bossPhaseCleared(); } };
+  showBossTrackWarn('🦠 Supprime tous les fichiers <b>rouges</b> et les <b>👾 NIDS</b> — au <b>lasso</b> si ça déborde !');
+}
+function _spawnTick(){
+  if(!EX.boss||!EX.boss.running||bossPaused()||EX.boss.busy) return;
+  EX.boss.nidFolders=(EX.boss.nidFolders||[]).filter(f=>inTree(EX.desktopRoot,f)&&(f.kids||[]).some(k=>k.isNid));
+  if(EX.boss.nidFolders.length===0){ bossStopSpawn(); return; }
+  const host=EX.boss.nidFolders[Math.floor(Math.random()*EX.boss.nidFolders.length)];
+  if((host.kids||[]).length < EX.boss.diff.cap){
+    const c=buildNode(file('copie','tmp',{infected:true,icon:'🦠'}), host); c.seeded=false; host.kids.push(c); renderAll();
+  } else { addContam(3); updateContamUI(); pulseScreen(); }
+}
+function bossStartSpawn(folderNode){
+  bossStopSpawn(); if(!folderNode) return;
+  EX.boss.nidFolders=[folderNode];
+  EX.boss.spawnIv=setInterval(_spawnTick, EX.boss.diff.spawnMs);
+}
+function bossAddNidFolder(folderNode){
+  if(!EX.boss||!folderNode) return;
+  if(!EX.boss.nidFolders) EX.boss.nidFolders=[];
+  EX.boss.nidFolders.push(folderNode);
+  if(!EX.boss.spawnIv) EX.boss.spawnIv=setInterval(_spawnTick, EX.boss.diff.spawnMs);
+}
+function bossStopSpawn(){ if(EX.boss&&EX.boss.spawnIv){ clearInterval(EX.boss.spawnIv); EX.boss.spawnIv=null; } }
+/* crée un nouveau nid dans un dossier aléatoire + popup antivirus jaune */
+function bossSpawnNewNid(){
+  if(!EX.boss||!EX.boss.running||EX.boss.over) return;
+  if(!EX.boss.phase||EX.boss.phase.cleared) return;
+  const allFolders=[]; walk(EX.desktopRoot,n=>{ if(n.type==='folder') allFolders.push(n); });
+  const used=EX.boss.nidFolders||[];
+  const candidates=allFolders.filter(f=>!used.includes(f)&&(f.kids||[]).length<EX.boss.diff.cap);
+  if(!candidates.length) return;
+  const host=candidates[Math.floor(Math.random()*candidates.length)];
+  const nidFile=buildNode(file('NID','exe',{infected:true,isNid:true,icon:'👾'}), host); nidFile.seeded=false; host.kids.push(nidFile);
+  renderAll();
+  bossAddNidFolder(host);
+  const pathStr=pathOf(host).slice(1).map(p=>p.name).join(' › ');
+  showAVNidPopup(pathStr);
+}
+/* popup antivirus jaune : "Corruptus.exe a créé un nid dans…" */
+function showAVNidPopup(pathStr){
+  EX.boss.busy=true;
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">🛡️</span>'
+    +'<div class="kicker" style="color:#b45309">Antivirus</div>'
+    +'<h2 style="color:#92400e">Corruptus.exe a créé un nid&nbsp;!</h2>'
+    +'<div class="howto" style="background:#fffbeb;border-color:#fde68a;text-align:center;padding:14px 18px;">'
+    +'<p style="margin:0 0 5px;font-size:.82rem;color:#78350f;font-weight:700;letter-spacing:.03em;text-transform:uppercase;">📍 Nid détecté dans</p>'
+    +'<p style="margin:0;font-size:1.12rem;font-weight:800;color:#1e3a5f;line-height:1.4;">🖥️&nbsp;'+pathStr+'</p>'
+    +'<p style="margin:6px 0 0;font-size:.9rem;color:#92400e;font-weight:700;">Il faut vite le supprimer !</p>'
+    +'</div>'
+    +'<div class="m-actions"><button class="m-btn primary" style="background:#eab308;border-color:#ca9a00;color:#1c1917" id="avNidGo">J\'y vais !</button></div>';
+  openOverlay();
+  document.getElementById('avNidGo').onclick=()=>{ closeOverlay(); EX.boss.busy=false; };
+}
+
+/* =========================================================
+   PHASE 3 — LES CLONES (recherche + déplacer + supprimer)
+   ========================================================= */
+function showBossTrackWarn(html){
+  hideBossTrack();
+  const s=document.getElementById('screen'); if(!s) return;
+  const t=document.createElement('div'); t.className='boss-track av-track'; t.id='bossTrack';
+  t.innerHTML='<span class="av-label">☣️ Antivirus</span><div class="av-path">'+html+'</div>';
+  s.appendChild(t);
+}
+function phaseClones(){
+  const seed=bossSeed();
+  seed.desktop.unshift(folder('Quarantaine',[]));
+  seed.open='Documents';
+  bossReseed(seed);
+  const totalWaves=EX.boss.diffKey==='easy'?2:3;
+  const perWave=EX.boss.diffKey==='easy'?2:(EX.boss.diffKey==='hard'?3:2);
+  let cloneIdx=0;
+  const ph={key:'clones', title:'Les Clones', wave:1, totalWaves:totalWaves, spawning:false, cleared:false};
+  EX.boss.phase=ph;
+  function spawnWave(waveNum){
+    ph.spawning=true;
+    const docs=findFolderByName(EX.desktopRoot,'Documents');
+    const spots=[]; walk(docs,n=>{ if(n.type==='folder'&&n!==docs) spots.push(n); }); shuffleArr(spots);
+    for(let i=0;i<perWave;i++){
+      const host=spots[i%spots.length];
+      cloneIdx++;
+      const c=buildNode(file('CORRUPTUS_copie'+cloneIdx,'exe',{infected:true,isClone:true,icon:'👾'}), host); c.seeded=false; host.kids.push(c);
+    }
+    renderAll();
+    ph.spawning=false;
+    if(waveNum>1){
+      EX.boss.busy=true;
+      modal.className='modal warn';
+      modal.innerHTML='<span class="m-emoji">🛡️</span>'
+        +'<div class="kicker" style="color:#b45309">Antivirus</div>'
+        +'<h2 style="color:#92400e">Nouvelle vague de clones !</h2>'
+        +'<p style="text-align:center">CORRUPTUS a créé <b>'+perWave+' nouveaux clones</b> !<br>Retrouve-les avec la <b>recherche 🔍</b>.</p>'
+        +'<div class="m-actions"><button class="m-btn primary" style="background:#eab308;border-color:#ca9a00;color:#1c1917" id="avWaveGo">🔍 Chercher !</button></div>';
+      openOverlay();
+      document.getElementById('avWaveGo').onclick=()=>{ closeOverlay(); EX.boss.busy=false; };
+    }
+  }
+  spawnWave(1);
+  ph.tick=function(){
+    if(ph.cleared||ph.spawning||EX.boss.busy) return;
+    const q=bossQuarantaine();
+    const clones=bossFindFlag('isClone');
+    if(clones.length>0 && clones.every(c=>c.parent===q)){
+      if(ph.wave>=totalWaves){ ph.cleared=true; bossPhaseCleared(); }
+      else { ph.wave++; spawnWave(ph.wave); }
+    }
+  };
+  showBossTrackWarn('🔍 Recherche <b>CORRUPTUS_copie…</b> → glisse en <b>Quarantaine</b> → Suppr');
+}
+
+/* =========================================================
+   PHASE 4 — LE CAMOUFLAGE (propriétés / extensions)
+   ========================================================= */
+function phaseCamouflage(){
+  const mal=(nm,ext,icon)=>file(nm,ext,{corrAuthor:true,author:'CORRUPTUS',icon:icon});
+  const leg=(nm,ext,icon,auth)=>file(nm,ext,{legit:true,author:auth,icon:icon});
+  bossReseed({ desktop:[ folder('Mes fichiers',[
+    leg('photo_vacances','jpg','📷','Maman'),
+    mal('photo_vacances','jpg','📷'),
+    leg('devoir_maths','docx','📝','Moi'),
+    mal('devoir_maths','docx','📝'),
+    leg('chanson','mp3','🎵','Studio'),
+    mal('chanson','mp3','🎵'),
+    mal('image','jpg','⚙️'),
+    leg('rapport','pdf','📕','Papa')
+  ]) ], open:'Mes fichiers' });
+  const ph={key:'camouflage', title:'Le Camouflage', cleared:false};
+  EX.boss.phase=ph;
+  ph.tick=function(){ if(ph.cleared) return; if(bossFindFlag('corrAuthor').length===0){ ph.cleared=true; bossPhaseCleared(); } };
+  showBossTrack('🕵️ Clic droit → <b>Propriétés → Détails</b> : supprime les fichiers dont l\'<b>auteur est CORRUPTUS</b> (et l\'imposteur dont l\'icône ⚙️ ne colle pas à .jpg). Garde les vrais !');
+}
+
+/* =========================================================
+   PHASE 5 — LA DERNIÈRE CACHE (arbo profonde + Corbeille)
+   ========================================================= */
+function phaseCacheSeed(){
+  const names=['Données','Sauvegarde','Archive','Backup','Cache','Système','Local','Config','Réseau','Noyau'];
+  const decoy=['Photos','Musique','Devoirs','Jeux','Films','Lettres','Recettes','Vacances','Albums','Dessins'];
+  let node=folder('𝕩͟_n0_3ntr33_𝕩͟',[ file('CORRUPTUS','exe',{infected:true,isCore:true,icon:'👾'}) ],{corrLocked:true});
+  const D=9;
+  for(let i=D;i>=1;i--){
+    const real=folder(names[i%names.length],[ file('trace','tmp',{infected:true,isTrace:true,icon:'🦠'}), node ]);
+    const dec=folder(decoy[i%decoy.length],[ file('rien','txt',{icon:'📭'}) ]);
+    node=folder('Dossier '+i, Math.random()<0.5?[real,dec]:[dec,real]);
+  }
+  return { desktop:[ node ], open:node.name };
+}
+function phaseCache(){
+  bossReseed(phaseCacheSeed());
+  const core=bossFindFlag('isCore')[0];
+  const ph={key:'cache', title:'La Dernière Cache', core:core, cleared:false};
+  EX.boss.phase=ph;
+  ph.tick=function(){ if(ph.cleared) return;
+    if(core && !inTree(EX.desktopRoot,core) && EX.evt.binEmptied){ ph.cleared=true; bossPhaseCleared(); } };
+  showBossTrack('🕳️ Plonge dans les dossiers en suivant les <b>traces 🦠</b>. Le dossier final est verrouillé : supprime le <b>fichier CORRUPTUS</b> puis <b>vide la Corbeille</b> !');
+}
+
+/* ---- registre des phases ---- */
+const BOSS_PHASES=[
+  {key:'traque', emoji:'🧭', title:'La Traque', skill:'Navigation & lecture de chemin', start:phaseTraque, tuto:'open',
+    how:'🛡️ L\'antivirus détecte CORRUPTUS dans un dossier. <b>Navigue</b> jusqu\'à l\'adresse affichée en haut et ouvre le bon dossier pour le rattraper !'},
+  {key:'desinfection', emoji:'🦠', title:'La Désinfection', skill:'Sélection multiple & lasso', start:phaseDesinfection, tuto:'clean',
+    how:'🦠 Supprime tous les fichiers <b>rouges</b> et détruis le <b>Nid 👾</b>.'},
+  {key:'clones', emoji:'🧬', title:'Les Clones', skill:'Recherche & déplacement', start:phaseClones, tuto:'clones',
+    how:'🔍 Trouve les clones, mets-les en <b>Quarantaine</b>, supprime-les.'},
+  {key:'camouflage', emoji:'🎭', title:'Le Camouflage', skill:'Propriétés & extensions', start:phaseCamouflage, tuto:'props',
+    how:'🎭 Supprime les fichiers dont l\'<b>auteur est CORRUPTUS</b>.'},
+  {key:'cache', emoji:'🕳️', title:'La Dernière Cache', skill:'Arborescence profonde & Corbeille', start:phaseCache, tuto:'trace',
+    how:'🕳️ Descends en suivant les <b>traces 🦠</b>, supprime CORRUPTUS, vide la Corbeille.'}
+];
+
+/* ---- surcharge des suppressions pendant le combat ---- */
+const _doDeleteOrig=doDelete;
+doDelete=function(nodes){
+  if(!(EX.boss && EX.boss.running)){ return _doDeleteOrig(nodes); }
+  const ph=EX.boss.phase;
+  // blocages thématiques
+  if(ph && ph.key==='clones'){
+    if(nodes.some(n=>n.isClone)){ beep('bad'); toast('🔒 Les clones ne peuvent qu\'être <b>déplacés en Quarantaine</b> — pas supprimés !'); return; }
+  }
+  if(ph && ph.key==='cache'){
+    if(nodes.some(n=>n.corrLocked)){ beep('bad'); toast('🔒 CORRUPTUS a verrouillé ce dossier ! Supprime plutôt le <b>fichier</b> qu\'il contient.'); return; }
+  }
+  // une CIBLE valide = fichier de CORRUPTUS (infecté / clone / déguisé / cœur).
+  // Supprimer autre chose (un fichier ou dossier sain) = grosse erreur, très punie.
+  const isTarget=n=>n.infected||n.isClone||n.corrAuthor||n.isCore;
+  const mistakes=nodes.filter(n=>!isTarget(n)).length;
+  const cleaned=nodes.filter(isTarget).length;
+  const hitNid=nodes.some(n=>n.isNid);
+  const coreDeleted=ph && ph.key==='cache' && nodes.some(n=>n.isCore);
+  _doDeleteOrig(nodes);
+  if(coreDeleted){
+    EX.boss.busy=true;
+    modal.className='modal warn';
+    modal.innerHTML='<span class="m-emoji">🛡️</span>'
+      +'<div class="kicker" style="color:#b45309">Antivirus</div>'
+      +'<h2 style="color:#92400e">CORRUPTUS.EXE supprimé ! 🎉</h2>'
+      +'<p style="text-align:center">Bien joué !<br><b>Vide la Corbeille</b> pour t\'en débarrasser à jamais !</p>'
+      +'<div class="m-actions"><button class="m-btn primary" style="background:#eab308;border-color:#ca9a00;color:#1c1917" id="avCoreGo">🗑️ Vider la Corbeille !</button></div>';
+    openOverlay();
+    document.getElementById('avCoreGo').onclick=()=>{ closeOverlay(); EX.boss.busy=false; };
+  }
+  if(cleaned){ beep('good'); }
+  if(hitNid){
+    const remaining=(EX.boss.nidFolders||[]).filter(f=>inTree(EX.desktopRoot,f)&&(f.kids||[]).some(k=>k.isNid)).length;
+    toast(remaining>0?'💥 Nid détruit ! CORRUPTUS en a encore — reste vigilant ☣️.':'💥 Dernier nid détruit ! La multiplication s\'arrête.');
+  }
+  if(mistakes){ EX.boss.errors+=mistakes; addContam(EX.boss.diff.mistake*mistakes); beep('crash'); pulseScreen();
+    bossBigError('❌ Fichier sain supprimé !', 'Tu as supprimé un fichier qui n\'était <b>PAS</b> un virus ! La contamination grimpe <b>en flèche</b> ☣️.<br>Ne supprime <b>QUE</b> les fichiers de CORRUPTUS. Réfléchis avant de supprimer !'); }
+  updateContamUI();
+  if(EX.boss.contam>=100 && !EX.boss.over) bossGameOver();
+};
+
+/* ---- défaite : écran bleu de la mort ---- */
+function bossGameOver(){
+  if(!EX.boss || EX.boss.over) return;
+  EX.boss.over=true; EX.boss.running=false; cancelAnimationFrame(EX.boss.raf); bossStopSpawn(); bossClearTimers(); hideBossTrack();
+  beep('crash');
+  const screen=document.getElementById('screen');
+  if(screen){
+    screen.classList.add('shake');
+    let bsod=document.getElementById('bsod');
+    if(!bsod){ bsod=document.createElement('div'); bsod.className='bsod'; bsod.id='bsod'; screen.appendChild(bsod); }
+    bsod.innerHTML='<div class="face">:(</div><h2>Votre ordinateur a rencontré un problème</h2>'
+      +'<p>CORRUPTUS a contaminé trop de fichiers. Le système n\'a pas résisté…</p>'
+      +'<p class="pct">Contamination : 100 %</p>'
+      +'<p class="reboot">CORRUPTUS a pris le contrôle. Système détruit.</p>'
+      +'<div class="bsod-help"><p><b>Conseils :</b> Agis vite, nettoie les fichiers rouges sans tarder et surveille la jauge ☣️. Le bouton <b>💡 Astuce</b> t\'aide à chaque phase. Tu peux aussi choisir un mode plus <b>Facile</b>. 💪</p></div>'
+      +'<button class="bsod-retry" id="bsodRetryBtn">↺ Réessayer le combat</button>';
+    setTimeout(()=>{
+      bsod.classList.add('show');
+      setTimeout(()=>{ const btn=document.getElementById('bsodRetryBtn'); if(btn) btn.onclick=()=>{ bsod.classList.remove('show'); openBossBriefing(); }; }, 100);
+    }, 400);
+  }
+}
+
+/* ---- victoire : système restauré + rapport terminal ---- */
 function bossWin(){
-  EX.boss.running=false; cancelAnimationFrame(EX.boss.raf);
+  if(!EX.boss || EX.boss.won) return;
+  EX.boss.won=true; EX.boss.running=false; cancelAnimationFrame(EX.boss.raf); bossStopSpawn(); bossClearTimers(); hideBossTrack();
   beep('win'); confetti(); confetti();
   progressIdx=STEPS.length; saveProgress();
+  EX.boss.contam=0; const f=document.getElementById('contamFill'); if(f){ f.style.background='#22c55e'; f.style.width='0%'; }
+  EX.boss.cleared=EX.boss.phasesTotal; updatePips();
+  const t=Math.round((Date.now()-EX.boss.startTime)/1000);
+  const mm=String(Math.floor(t/60)).padStart(2,'0'), ss=String(t%60).padStart(2,'0');
+  const diffBonus=EX.boss.diffKey==='hard'?350:(EX.boss.diffKey==='medium'?150:0);
+  const score=Math.max(100, Math.round(1000 + diffBonus - EX.boss.errors*50 - t*1.5));
+  const skills=Array.from(EX.boss.skills);
   setTimeout(()=>{
     modal.className='modal good';
-    modal.innerHTML='<span class="m-emoji">🛡️</span><h2>Virus éliminé ! 🎉</h2>'
-      +'<p>Tu as traqué le <b>cœur du virus</b>, nettoyé tous les fichiers infectés et <b>sauvé l\'ordinateur</b> du crash ! Tu es un véritable <b>antivirus humain</b>. 🦸</p>'
-      +'<div class="m-actions"><button class="m-btn primary green" id="bossNext">Continuer →</button></div>';
+    modal.innerHTML='<span class="m-emoji">🛡️</span><div class="kicker" style="color:var(--green-d)">Système restauré</div>'
+      +'<h2>CORRUPTUS éliminé ! 🎉</h2>'
+      +'<div class="term-report" id="winTerm"></div>'
+      +'<div class="m-actions"><button class="m-btn primary green" id="bossNext" style="display:none">Continuer →</button></div>';
     openOverlay();
-    document.getElementById('bossNext').onclick=()=>{ closeOverlay(); levelComplete(); };
-  }, 700);
+    const lines=[
+      {cls:'tr-head',text:'C:\\> rapport_de_mission'},
+      {cls:'good',text:'✓ CORRUPTUS.EXE ......... ÉLIMINÉ'},
+      {cls:'good',text:'✓ Système .............. RESTAURÉ'},
+      {cls:'dim',text:'— Compétences mobilisées —'}
+    ];
+    skills.forEach(s=>lines.push({cls:'',text:'  • '+s}));
+    lines.push({cls:'dim',text:'— Statistiques —'});
+    lines.push({cls:'',text:'  Temps total ...... '+mm+':'+ss});
+    lines.push({cls:'',text:'  Erreurs .......... '+EX.boss.errors});
+    lines.push({cls:'',text:'  Difficulté ....... '+EX.boss.diff.label});
+    lines.push({cls:'score',text:'  ★ SCORE FINAL : '+score+' pts'});
+    typeTerminal(document.getElementById('winTerm'), lines, ()=>{ const g=document.getElementById('bossNext'); if(g){ g.style.display=''; g.onclick=()=>{ closeOverlay(); levelComplete(); }; } });
+  }, 800);
 }
 
 /* ---------------------------------------------------------
@@ -2917,7 +3826,14 @@ function confetti(){
 }
 
 /* boutons topbar/banner */
-function restartMission(){ commitRename(); cancelRenameTimer(); clearSpots(); if(currentStep && currentStep.mode==='boss'){ startBoss(); } else { startStep(playIdx); } }
+function restartMission(){ commitRename(); cancelRenameTimer(); clearSpots();
+  if(currentStep && currentStep.mode==='boss'){
+    if(EX.boss&&EX.boss.raf) cancelAnimationFrame(EX.boss.raf);
+    bossStopSpawn(); bossClearTimers(); if(EX.boss) EX.boss.running=false;
+    const b=document.getElementById('bsod'); if(b) b.classList.remove('show');
+    openBossBriefing();
+  } else { startStep(playIdx); }
+}
 document.getElementById('levelBtn').onclick=openLevelSelector;
 document.getElementById('resetBtn').onclick=restartMission;
 document.getElementById('restartBtn').onclick=restartMission;
@@ -2994,16 +3910,29 @@ function highlightForStep(){
   // 4. menu Démarrer / barre des tâches
   if(/démarrer|⊞/i.test(d))          spotEl(document.getElementById('tbStart'));
   if(/barre des tâches/i.test(d))    spotEl(document.querySelector('.tb-apps'));
-  // 5. boss : bouton scanner
-  if(s.mode==='boss'){ spotEl(document.getElementById('scanBtn')); document.querySelectorAll('.fitem.infected, .dt-icon.infected').forEach(spotEl); }
+  // 5. boss : trace + fichiers infectés / clones / déguisés
+  if(s.mode==='boss'){
+    spotEl(document.getElementById('bossTrack'));
+    document.querySelectorAll('.fitem.infected, .dt-icon.infected').forEach(spotEl);
+    const ph=EX.boss&&EX.boss.phase;
+    if(ph&&ph.key==='clones'){ document.querySelectorAll('.win-search').forEach(spotEl); }
+  }
   if(_spots.length) _spotT=setTimeout(clearSpots, 6000);
 }
 function onHint(){
   if(overlay.classList.contains('open')) return;
   const s=currentStep; if(!s) return;
   const ao=activeObj();
+  const ph=EX.boss&&EX.boss.phase;
+  const BOSS_HINTS={
+    traque:'🛡️ Lis l\'<b>adresse</b> affichée en haut (en jaune) et <b>navigue</b> jusqu\'au bon dossier (double-clic ou volet de gauche). Si CORRUPTUS s\'est échappé, clique sur <b>Scanner les fichiers</b> pour trouver sa nouvelle cachette.',
+    desinfection:'🦠 Supprime tous les fichiers <b>rouges</b>. Sélectionne-en plusieurs avec <b>Ctrl+clic</b> ou entoure-les au <b>lasso</b>, puis <b>Suppr</b>. Détruis les <b>Nids 👾</b> pour stopper la multiplication — CORRUPTUS peut en créer de nouveaux, l\'antivirus t\'avertit. Ne touche pas aux fichiers sains !',
+    clones:'🔍 Tape <b>corru</b> dans la barre de <b>recherche 🔍</b> (en haut à droite), appuie sur Entrée. Les clones apparaissent — glisse chaque clone dans le dossier <b>Quarantaine</b>, puis supprime-les. Attends la vague suivante !',
+    camouflage:'ℹ️ Clic droit → <b>Propriétés → Détails</b> : supprime les fichiers dont l\'<b>auteur est CORRUPTUS</b> et l\'imposteur dont l\'icône ne colle pas. Garde les fichiers normaux.',
+    cache:'🕳️ Ouvre les dossiers qui contiennent une <b>trace 🦠</b> (les autres sont des leurres — bouton ◀ pour revenir). Au fond, supprime le <b>fichier CORRUPTUS</b> puis <b>vide la Corbeille</b>.'
+  };
   const hintTxt = s.mode==='boss'
-    ? 'Clique sur <b>🛰️ Scanner</b> pour localiser le <b>cœur du virus 🦠</b>, fonce le <b>supprimer</b>, puis nettoie les fichiers <b>rouges</b> qui clignotent.'
+    ? (BOSS_HINTS[ph&&ph.key] || 'Surveille la jauge de contamination ☣️ et élimine CORRUPTUS phase par phase.')
     : ((ao && ao.goal && ao.goal.hint) ? ao.goal.hint : stripTags((ao&&ao.t)||s.desc||''));
   modal.className='modal test-modal';
   modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker" style="color:var(--amber-d)">Astuce</div>'
