@@ -181,7 +181,11 @@
     text-align:center;color:#9aabbd;font-weight:800;font-size:.95rem;pointer-events:none;}
   /* ----- volet gauche (arbre de navigation, façon Windows) ----- */
   .win-content{flex:1;display:flex;min-height:0;}
-  .win-nav{width:152px;flex:none;overflow:auto;background:#f7fafd;border-right:1px solid var(--win-line);padding:6px 3px;}
+  .win-nav{width:152px;flex:none;overflow:auto;background:#f7fafd;border-right:none;padding:6px 3px;}
+  .win-splitter{width:6px;flex:none;cursor:col-resize;background:transparent;position:relative;border-right:1px solid var(--win-line);}
+  .win-splitter::after{content:'';position:absolute;top:0;bottom:0;left:1px;width:3px;border-radius:2px;}
+  .win-splitter:hover::after,.win-splitter.dragging::after{background:#5aa0e6;}
+  .win-splitter.dragging{background:rgba(90,160,230,.12);}
   .win-nav .nav-row{display:flex;align-items:center;border-radius:7px;margin:1px 2px;}
   .win-nav .nav-row.active{background:var(--sel);box-shadow:inset 0 0 0 2px var(--sel-line);}
   .win-nav .nav-row.drop-ok{background:#d7ebff;box-shadow:inset 0 0 0 2px #5aa0e6;}
@@ -522,9 +526,16 @@
   .bt-btn.trash:hover{background:#fdecec;}
   .bt-author{font-weight:800;color:var(--muted);font-size:.92rem;}
 
+  /* filigrane Corruptus */
+  @keyframes corrWatermark{0%{opacity:0;transform:translate(-50%,-50%) scale(.7);}20%{opacity:.42;transform:translate(-50%,-50%) scale(1.05);}80%{opacity:.42;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(.9);}}
+  .corr-watermark{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:170;pointer-events:none;
+    font-size:clamp(8rem,28vw,22rem);line-height:1;animation:corrWatermark 2.4s ease forwards;
+    filter:drop-shadow(0 0 40px rgba(168,85,247,.6)) drop-shadow(0 0 80px rgba(220,38,38,.5));
+    user-select:none;}
+
   @media (prefers-reduced-motion: reduce){
     .bh-avatar,.bh-avatar.sabotage,.boss-track,.fake-err.glitch,.term-report .tr-cur,.win.boss-shut,
-    .cmd-discbar.crit,.cmd-input.shake,.bt-chip.infected .ic{animation:none!important;}
+    .cmd-discbar.crit,.cmd-input.shake,.bt-chip.infected .ic,.corr-watermark{animation:none!important;}
   }
 
   /* ---------- Overlay / modale ---------- */
@@ -878,6 +889,7 @@ function startClock(){
 
 function renderDesktop(){
   const desk=document.getElementById('desktop'); if(!desk) return;
+  const activeLasso=desk.querySelector('.lasso-rect');
   desk.innerHTML='';
   const items=(EX.desktopRoot.kids||[]).filter(k=>!k.panelOnly).concat([EX.binNode]);
   items.forEach(node=>{
@@ -890,6 +902,7 @@ function renderDesktop(){
     el.addEventListener('contextmenu', e=>onItemContext(e, node, 'desktop'));
     desk.appendChild(el);
   });
+  if(activeLasso) desk.appendChild(activeLasso);
 }
 
 function renderTaskbar(){
@@ -931,7 +944,7 @@ function openWindow(node, opts){
     id:'w'+(++EX.winSeq), cur:node, hist:[node], hidx:0,
     x:10+k*28, y:minY+k*18, wdt:500, hgt:300,
     sortBy:null, search:'', searchResults:null, min:false,
-    navOpen:null, navScroll:0
+    navOpen:null, navScroll:0, navWidth:152
   };
   EX.windows.push(w);
   const el=document.createElement('div'); el.className='win'; el.dataset.id=w.id;
@@ -950,7 +963,7 @@ function openWindow(node, opts){
     +  '<div class="crumbs"></div>'
     +  '<div class="win-search"><span class="si">🔍</span><input type="text" placeholder="Rechercher"></div>'
     + '</div>'
-    + '<div class="win-content"><div class="win-nav"></div><div class="win-body"></div></div>'
+    + '<div class="win-content"><div class="win-nav"></div><div class="win-splitter" title="Glisser pour redimensionner"></div><div class="win-body"></div></div>'
     + '<div class="win-status"></div>'
     + '<div class="rz rz-n" data-d="n"></div><div class="rz rz-s" data-d="s"></div>'
     + '<div class="rz rz-e" data-d="e"></div><div class="rz rz-w" data-d="w"></div>'
@@ -976,6 +989,8 @@ function openWindow(node, opts){
   inp.addEventListener('input', ()=>{ w.search=inp.value; if(!w.search){ w.searchResults=null; } });
   inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ runSearch(w, inp.value); } e.stopPropagation(); });
   el.querySelectorAll('.rz').forEach(h=>h.addEventListener('mousedown', e=>startWinResize(e, w, h.dataset.d)));
+  el.querySelector('.win-nav').style.width=w.navWidth+'px';
+  el.querySelector('.win-splitter').addEventListener('mousedown', e=>startNavResize(e, w));
   focusWin(w);
   if(currentStep && currentStep.lockWin){ w.max=true; el.classList.add('max'); updateMaxBtn(w); }
   renderWinBody(w);
@@ -1044,10 +1059,11 @@ function renderWinBody(w){
   renderNavPane(w);
   // corps
   const body=w.el.querySelector('.win-body');
+  const activeLasso=body.querySelector('.lasso-rect');
   body.innerHTML='';
   body.classList.toggle('dragover', false);
   if(w.searchResults){
-    renderSearchResults(w, body); return;
+    renderSearchResults(w, body); if(activeLasso) body.appendChild(activeLasso); return;
   }
   // les dossiers « volet uniquement » ne s'affichent pas dans la liste principale
   // pendant la phase clones, les copies CORRUPTUS sont invisibles en navigation normale (search seulement)
@@ -1076,6 +1092,7 @@ function renderWinBody(w){
     el.addEventListener('contextmenu', e=>onItemContext(e, node, w.id));
     body.appendChild(el);
   });
+  if(activeLasso) body.appendChild(activeLasso);
   // barre d'état
   const st=w.el.querySelector('.win-status');
   const selCount=(EX.selBox===w.id)?EX.sel.size:0;
@@ -1201,8 +1218,37 @@ function onWinResizeMove(e){
   if(ny<0){ nh+=ny; ny=0; }
   w.wdt=nw; w.hgt=nh; w.x=nx; w.y=ny;
   w.el.style.width=nw+'px'; w.el.style.height=nh+'px'; w.el.style.left=nx+'px'; w.el.style.top=ny+'px';
+  // évite que le volet gauche devienne plus large que la fenêtre elle-même
+  const maxNav=Math.max(80, nw-220);
+  if((w.navWidth||152)>maxNav){ w.navWidth=maxNav; const nav=w.el.querySelector('.win-nav'); if(nav) nav.style.width=maxNav+'px'; }
 }
 function onWinResizeUp(){ winRz=null; document.body.style.cursor=''; window.removeEventListener('mousemove', onWinResizeMove); window.removeEventListener('mouseup', onWinResizeUp); }
+
+/* ----- redimensionnement du volet gauche (arbre de dossiers) ----- */
+let navRz=null;
+function startNavResize(e, w){
+  e.stopPropagation(); e.preventDefault(); focusWin(w);
+  const splitter=w.el.querySelector('.win-splitter');
+  navRz={w, sx:e.clientX, sw:w.navWidth||152, splitter};
+  splitter.classList.add('dragging');
+  document.body.style.cursor='col-resize';
+  window.addEventListener('mousemove', onNavResizeMove);
+  window.addEventListener('mouseup', onNavResizeUp);
+}
+function onNavResizeMove(e){
+  if(!navRz) return; const {w}=navRz;
+  const dx=e.clientX-navRz.sx;
+  const MINW=80, MAXW=Math.max(MINW, (w.wdt||500)-220);
+  let nw=Math.max(MINW, Math.min(MAXW, navRz.sw+dx));
+  w.navWidth=nw;
+  const nav=w.el.querySelector('.win-nav'); if(nav) nav.style.width=nw+'px';
+}
+function onNavResizeUp(){
+  if(navRz && navRz.splitter) navRz.splitter.classList.remove('dragging');
+  navRz=null; document.body.style.cursor='';
+  window.removeEventListener('mousemove', onNavResizeMove);
+  window.removeEventListener('mouseup', onNavResizeUp);
+}
 
 /* ---------------------------------------------------------
    4. SÉLECTION + GLISSER-DÉPOSER (pointer-based)
@@ -2939,6 +2985,35 @@ function bossInfectedAll(){ const a=[]; walk(EX.desktopRoot,n=>{ if(n.infected) 
 function bossQuarantaine(){ return findFolderByName(EX.desktopRoot,'Quarantaine'); }
 function bossPaused(){ return overlay.classList.contains('open'); }
 function pulseScreen(){ const s=document.getElementById('screen'); if(s){ s.classList.add('shake'); setTimeout(()=>s.classList.remove('shake'),420); } }
+/* filigrane géant de Corruptus qui apparaît par moments */
+let corrLaughAudio=null;
+function corrWatermarkFlash(){
+  const s=document.getElementById('screen'); if(!s) return;
+  if(s.querySelector('.corr-watermark')) return; // déjà actif
+  const el=document.createElement('div'); el.className='corr-watermark'; el.textContent='👾';
+  s.appendChild(el);
+  setTimeout(()=>{ try{el.remove();}catch(e){} }, 2400);
+  if(soundOn){
+    if(!corrLaughAudio){ corrLaughAudio=new Audio('sounds/corruptus/corruptus_laugh.mp3'); corrLaughAudio.volume=0.35; }
+    try{ corrLaughAudio.currentTime=0; const p=corrLaughAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+  }
+}
+function startCorrWatermarkLoop(){
+  if(EX.boss&&EX.boss._watermarkIv) return;
+  function scheduleNext(){
+    if(!EX.boss||!EX.boss.running){ stopCorrWatermarkLoop(); return; }
+    const delay=12000+Math.random()*18000; // toutes les 12-30 secondes
+    EX.boss._watermarkIv=setTimeout(()=>{
+      if(EX.boss&&EX.boss.running&&!bossPaused()) corrWatermarkFlash();
+      EX.boss._watermarkIv=null;
+      scheduleNext();
+    }, delay);
+  }
+  scheduleNext();
+}
+function stopCorrWatermarkLoop(){
+  if(EX.boss&&EX.boss._watermarkIv){ clearTimeout(EX.boss._watermarkIv); EX.boss._watermarkIv=null; }
+}
 function contam(){ return EX.boss?EX.boss.contam:0; }
 function addContam(n){ if(!EX.boss) return; EX.boss.contam=Math.max(0,Math.min(100,EX.boss.contam+n)); }
 
@@ -3014,9 +3089,11 @@ function startBoss(diffKey){
     phaseIdx:0, phase:null, raf:0, last:0, saboT:0, startTime:Date.now(), errors:0, skills:new Set(),
     spawnIv:null, over:false, won:false, saboLock:false, cooldowns:{}, timers:[] };
   if(!bossMusic){ bossMusic=new Audio('musics/musique_corruptus.mp3'); bossMusic.loop=true; bossMusic.volume=0.45; }
+  try{ bossMusic.pause(); bossMusic.currentTime=0; }catch(e){}
   beep('alarm');
   updateContamUI(); updatePips(); updatePhaseLbl();
   EX.boss.raf=requestAnimationFrame(bossTick);
+  startCorrWatermarkLoop();
   bossAlert(()=>{ resumeBossMusic(); goPhase(0); });
 }
 
@@ -3195,7 +3272,7 @@ function bossErrorStorm(){
 }
 
 /* ---- lutte dans le terminal contre la déconnexion ---- */
-const CMD_LIST=['scanner','nettoyer','bloquer','defendre','reconnecter','firewall'];
+const CMD_LIST=['scan','clean','block','defend','reconnect','firewall'];
 function bossDisconnectStruggle(){
   const screen=document.getElementById('screen'); if(!screen) return;
   EX.boss.saboLock=true; EX.boss.busy=true;
@@ -3222,6 +3299,10 @@ function bossDisconnectStruggle(){
   const norm=s=>(s||'').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
   function refresh(){ nameEl.textContent=queue[idx].toUpperCase(); progEl.textContent='Commandes réussies : '+idx+' / '+N+' ✅'; }
   function paint(){ fillEl.style.width=Math.min(100,prog)+'%'; lblEl.textContent=Math.round(Math.min(100,prog))+' %'; barEl.classList.toggle('crit',prog>=70); }
+  // Bloque tous les clics sur l'overlay pour maintenir le focus sur l'input
+  ov.addEventListener('pointerdown', e=>{ e.stopPropagation(); e.preventDefault(); try{inp.focus();}catch(ex){} }, true);
+  ov.addEventListener('mousedown', e=>{ e.stopPropagation(); e.preventDefault(); try{inp.focus();}catch(ex){} }, true);
+  inp.addEventListener('blur', ()=>{ setTimeout(()=>{ try{inp.focus();}catch(ex){} }, 30); });
   refresh(); paint(); setTimeout(()=>{ try{inp.focus();}catch(e){} },60);
   function finish(win){
     clearInterval(iv); try{ov.remove();}catch(e){}
@@ -3654,17 +3735,28 @@ function phaseDesinfection(){
     folder('Téléchargements',[ file('jeu','exe',{icon:'🎮'}), inf('w0rm','exe'), file('danger','txt',{trap:true}), inf('cr4sh','log') ]),
     folder('Nid',[ file('NID','exe',{infected:true,isNid:true,icon:'👾'}) ])
   ], open:'Nid' });
-  const ph={key:'desinfection', title:'La Désinfection', cleared:false};
+  const extraNids=EX.boss.diffKey==='easy'?1:(EX.boss.diffKey==='hard'?3:2);
+  const ph={key:'desinfection', title:'La Désinfection', cleared:false, nidsTotal:1+extraNids, nidsSpawned:1};
   EX.boss.phase=ph;
   const nidFolder=findFolderByName(EX.desktopRoot,'Nid');
   bossStartSpawn(nidFolder);
   // Nids supplémentaires : Corruptus en crée d'autres au fil du temps
-  const extraNids=EX.boss.diffKey==='easy'?1:(EX.boss.diffKey==='hard'?3:2);
+  // Ils DOIVENT tous apparaître avant que la phase puisse se terminer
   for(let i=1;i<=extraNids;i++){
-    const t=setTimeout(()=>{ if(EX.boss&&EX.boss.running&&EX.boss.phase&&!EX.boss.phase.cleared) bossSpawnNewNid(); }, 14000*i);
+    const t=setTimeout(()=>{
+      if(!EX.boss||!EX.boss.running||!EX.boss.phase||EX.boss.phase.key!=='desinfection') return;
+      bossSpawnNewNid();
+      EX.boss.phase.nidsSpawned=(EX.boss.phase.nidsSpawned||1)+1;
+    }, 14000*i);
     (EX.boss.timers=EX.boss.timers||[]).push(t);
   }
-  ph.tick=function(){ if(ph.cleared) return; updateNidTrack(); if(bossInfectedAll().length===0){ ph.cleared=true; bossStopSpawn(); bossPhaseCleared(); } };
+  ph.tick=function(){
+    if(ph.cleared) return;
+    updateNidTrack();
+    // Ne pas valider la phase tant que tous les nids programmés n'ont pas spawné
+    if(ph.nidsSpawned < ph.nidsTotal) return;
+    if(bossInfectedAll().length===0){ ph.cleared=true; bossStopSpawn(); bossPhaseCleared(); }
+  };
   showBossTrackWarn('🦠 Supprime tous les fichiers <b>rouges</b> et les <b>👾 NIDS</b> — au <b>lasso</b> si ça déborde !');
 }
 function _spawnTick(){
@@ -3904,7 +3996,7 @@ doDelete=function(nodes){
 function bossGameOver(){
   if(!EX.boss || EX.boss.over) return;
   EX.boss.over=true; EX.boss.running=false; cancelAnimationFrame(EX.boss.raf); bossStopSpawn(); bossClearTimers(); hideBossTrack();
-  pauseBossMusic();
+  stopCorrWatermarkLoop(); pauseBossMusic();
   beep('crash');
   const screen=document.getElementById('screen');
   if(screen){
@@ -3928,7 +4020,7 @@ function bossGameOver(){
 function bossWin(){
   if(!EX.boss || EX.boss.won) return;
   EX.boss.won=true; EX.boss.running=false; cancelAnimationFrame(EX.boss.raf); bossStopSpawn(); bossClearTimers(); hideBossTrack();
-  pauseBossMusic();
+  stopCorrWatermarkLoop(); pauseBossMusic();
   beep('win'); confetti(); confetti();
   progressIdx=STEPS.length; saveProgress();
   EX.boss.contam=0; const f=document.getElementById('contamFill'); if(f){ f.style.background='#22c55e'; f.style.width='0%'; }
