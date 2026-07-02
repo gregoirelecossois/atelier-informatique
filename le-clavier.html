@@ -295,7 +295,7 @@
   .boss-sweat{position:absolute;top:-4px;right:-12px;font-size:1.5rem;animation:sweatBob 1s infinite;}
   @keyframes sweatBob{0%,100%{transform:translateY(0);opacity:.95;}50%{transform:translateY(6px);opacity:.4;}}
 
-  .hero{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:2.9rem;line-height:1;z-index:4;
+  .hero{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:2.9rem;line-height:1;z-index:4;transition:left .18s ease;
     filter:drop-shadow(0 4px 9px rgba(0,0,0,.55));}
   .hero.hit{animation:heroHit .4s;}
   @keyframes heroHit{0%,100%{transform:translateX(-50%);}
@@ -349,6 +349,157 @@
   .atk-word .typed{color:#16a34a;}
   .atk-word.hit .card{animation:tgtHit .25s ease forwards;}
 
+  /* ---------- Invasion spatiale (Niveaux 3 & 4) ---------- */
+  .field.invaders{
+    background:
+      radial-gradient(1.5px 1.5px at 12% 22%,#fff 100%,transparent 100%),
+      radial-gradient(1.5px 1.5px at 78% 8%,#fff 100%,transparent 100%),
+      radial-gradient(1px 1px at 45% 38%,#cde3ff 100%,transparent 100%),
+      radial-gradient(1.5px 1.5px at 88% 62%,#fff 100%,transparent 100%),
+      radial-gradient(1px 1px at 25% 70%,#cde3ff 100%,transparent 100%),
+      radial-gradient(1.5px 1.5px at 62% 85%,#fff 100%,transparent 100%),
+      radial-gradient(1px 1px at 6% 55%,#fff 100%,transparent 100%),
+      radial-gradient(1.5px 1.5px at 95% 30%,#cde3ff 100%,transparent 100%),
+      linear-gradient(#0b1330,#171049 55%,#1c0f3d);
+    background-repeat:repeat; background-size:220px 220px;
+    animation:starDrift 14s linear infinite;
+  }
+  @keyframes starDrift{from{background-position:0 0;}to{background-position:0 220px;}}
+  .ship{position:absolute;bottom:8px;left:50%;transform:translateX(-50%) rotate(-45deg);font-size:2.7rem;line-height:1;z-index:5;
+    filter:drop-shadow(0 4px 10px rgba(0,0,0,.55));}
+  .ship.hit{animation:shipHit .4s;}
+  @keyframes shipHit{0%,100%{transform:translateX(-50%) rotate(-45deg);}
+    25%{transform:translateX(calc(-50% - 9px)) rotate(-54deg);filter:brightness(.6) sepia(1) saturate(5) hue-rotate(-30deg);}
+    75%{transform:translateX(calc(-50% + 9px)) rotate(-36deg);}}
+  .ship.boost1{filter:drop-shadow(0 4px 10px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(56,189,248,.65));}
+  .ship.boost2{filter:drop-shadow(0 4px 10px rgba(0,0,0,.55)) drop-shadow(0 0 16px rgba(56,189,248,.95)) drop-shadow(0 0 26px rgba(167,139,250,.7));}
+  .invader{position:absolute;top:0;left:0;display:flex;flex-direction:column;align-items:center;will-change:transform;z-index:6;}
+  .invader .ufo{font-size:1.6rem;line-height:1;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4));position:relative;}
+  .invader .cap{margin-top:-4px;min-width:42px;height:42px;display:flex;align-items:center;justify-content:center;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.35rem;color:#e6f0ff;
+    background:linear-gradient(#132057,#0c1638);border:2px solid #38bdf8;border-radius:11px;
+    box-shadow:0 0 12px 2px rgba(56,189,248,.55);}
+  .invader.pop .cap{animation:dropPop .25s ease forwards;}
+  .invader.miss .cap{animation:dropMiss .3s ease forwards;border-color:var(--red);}
+  .invader.big{z-index:8;}
+  .invader.big .ufo{font-size:3rem;}
+  .invader.big .ufo::before{content:'👑';position:absolute;top:-16px;right:-10px;font-size:1.3rem;
+    animation:crownBob 1.1s ease-in-out infinite;}
+  @keyframes crownBob{0%,100%{transform:translateY(0) rotate(-6deg);}50%{transform:translateY(-3px) rotate(6deg);}}
+  .invader.big .cap-ring{position:absolute;inset:-10px;border-radius:50%;
+    box-shadow:0 0 0 3px rgba(239,68,68,.6),0 0 22px 6px rgba(239,68,68,.55);
+    animation:bigRing 1.3s ease-in-out infinite;pointer-events:none;}
+  @keyframes bigRing{0%,100%{transform:scale(1);opacity:.75;}50%{transform:scale(1.12);opacity:1;}}
+  .mb-seq{display:flex;gap:6px;margin-top:8px;}
+  .mbc{min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.02rem;color:#e6f0ff;
+    background:#132057;border:2px solid #4c5a86;}
+  .mbc.done{background:#12331f;border-color:var(--green);color:#86efac;opacity:.75;}
+  .mbc.current{border-color:#facc15;box-shadow:0 0 12px 3px rgba(250,204,21,.7);animation:mbcPulse 1s ease-in-out infinite;}
+  @keyframes mbcPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+  .laser{position:absolute;left:0;top:0;height:4px;border-radius:3px;transform-origin:0 50%;z-index:7;
+    background:linear-gradient(90deg,rgba(56,189,248,0),#7dd3fc 40%,#e0f2fe);
+    box-shadow:0 0 10px 2px rgba(125,211,252,.85);pointer-events:none;animation:laserFire .16s ease-out forwards;}
+  @keyframes laserFire{0%{opacity:1;}100%{opacity:0;}}
+
+  /* ---------- Terminal de hacking (Niveau 5 : missions & défi) ---------- */
+  .field.hackfield{display:flex;gap:16px;align-items:center;padding:16px;position:relative;
+    background:linear-gradient(#050b1a,#081226 60%,#0a0f22);}
+  .hackfield .scanlines{position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:repeating-linear-gradient(0deg,rgba(103,232,249,.045) 0 2px,transparent 2px 4px);}
+  .hterm{position:relative;z-index:2;flex:1;min-width:0;display:flex;flex-direction:column;gap:9px;
+    background:rgba(2,14,26,.88);border:2px solid #155e75;border-radius:14px;padding:14px 16px;
+    box-shadow:0 0 26px rgba(34,211,238,.22), inset 0 0 44px rgba(34,211,238,.05);
+    font-family:Consolas,"Cascadia Mono",monospace;}
+  .hterm.glitch{animation:glitchShift .16s steps(2) 2;}
+  .ht-head{font-size:.72rem;font-weight:700;letter-spacing:.12em;color:#67e8f9;opacity:.85;}
+  .ht-blink{animation:htBlink 1s steps(1) infinite;}
+  @keyframes htBlink{50%{opacity:0;}}
+  .ht-log{font-size:.8rem;color:#5eead4;min-height:1.3em;opacity:.9;}
+  .ht-log > div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ht-code{display:flex;flex-wrap:wrap;gap:8px;min-height:50px;align-items:center;}
+  .hc{min-width:42px;height:46px;display:flex;align-items:center;justify-content:center;border-radius:10px;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.4rem;color:#a5f3fc;
+    background:rgba(8,47,73,.75);border:2px solid #155e75;}
+  .hc.alien{color:#c4b5fd;border-color:#4c1d95;text-shadow:0 0 9px rgba(167,139,250,.9);}
+  .hc.cur{border-color:#facc15;color:#fde68a;box-shadow:0 0 13px rgba(250,204,21,.65);animation:mbcPulse 1s ease-in-out infinite;}
+  .hc.done{border-color:var(--green);color:#86efac;background:rgba(20,83,45,.45);}
+  .hc.bad{animation:hcBad .3s;}
+  @keyframes hcBad{0%,100%{transform:none;}30%{transform:translateX(-5px);border-color:var(--red);color:#fca5a5;}70%{transform:translateX(5px);}}
+  .ht-trace{display:flex;align-items:center;gap:10px;}
+  .ht-trace-label{font-size:.72rem;font-weight:800;color:#fca5a5;letter-spacing:.1em;white-space:nowrap;animation:htBlink 1.2s steps(1) infinite;}
+  .ht-trace-bar{flex:1;height:12px;border-radius:7px;background:rgba(127,29,29,.35);border:1px solid #7f1d1d;overflow:hidden;}
+  .ht-trace-bar > i{display:block;height:100%;width:0;border-radius:7px;
+    background:repeating-linear-gradient(45deg,#ef4444 0 10px,#b91c1c 10px 20px);box-shadow:0 0 10px rgba(239,68,68,.7);}
+  .ht-status{font-size:.92rem;font-weight:800;min-height:1.4em;color:#a5f3fc;}
+  .ht-status.ok{color:#86efac;text-shadow:0 0 8px rgba(34,197,94,.55);}
+  .ht-status.warn{color:#fca5a5;text-shadow:0 0 8px rgba(239,68,68,.55);}
+  .ht-radar{position:relative;z-index:2;width:168px;height:168px;flex:0 0 auto;border-radius:50%;
+    border:2px solid #155e75;background:radial-gradient(circle,#052433 0%,#031320 72%);
+    box-shadow:0 0 20px rgba(34,211,238,.3);overflow:hidden;}
+  .rad-sweep{position:absolute;inset:0;border-radius:50%;
+    background:conic-gradient(rgba(45,212,191,.45), transparent 65deg, transparent);animation:radSweep 3.2s linear infinite;}
+  @keyframes radSweep{to{transform:rotate(360deg);}}
+  .rad-ring{position:absolute;border-radius:50%;border:1px solid rgba(45,212,191,.28);}
+  .rad-ring.r1{inset:20%;} .rad-ring.r2{inset:40%;}
+  .rad-zone{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;
+    width:82%;height:82%;border:2px dashed rgba(248,113,113,.85);background:rgba(248,113,113,.1);
+    transition:width .5s ease,height .5s ease;}
+  .rad-zone.found{border-color:var(--green);background:rgba(34,197,94,.15);animation:mbcPulse 1s ease-in-out infinite;}
+  .rad-ship{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0);font-size:1.7rem;line-height:1;transition:transform .4s;}
+  .rad-ship.on{transform:translate(-50%,-50%) scale(1);}
+  @media (max-width:640px){ .ht-radar{display:none;} }
+
+  /* ---------- Boss « cyber » (Niveau 5) : reskin vaisseau vs vaisseau-mère ---------- */
+  .field.bossfield.cyber{background:
+      radial-gradient(1.5px 1.5px at 15% 20%,#fff 100%,transparent 100%),
+      radial-gradient(1.5px 1.5px at 80% 12%,#bfe6ff 100%,transparent 100%),
+      radial-gradient(1px 1px at 40% 66%,#fff 100%,transparent 100%),
+      radial-gradient(1.5px 1.5px at 92% 74%,#bfe6ff 100%,transparent 100%),
+      linear-gradient(rgba(9,20,48,.86),rgba(6,14,38,.92)),
+      repeating-linear-gradient(0deg,transparent 0 26px,rgba(56,189,248,.09) 26px 27px),
+      repeating-linear-gradient(90deg,transparent 0 26px,rgba(56,189,248,.09) 26px 27px),
+      radial-gradient(120% 80% at 50% 0%,#123 0%,#0a1130 60%,#070c22 100%);
+    background-size:auto,auto,auto,auto,auto,100% 100%,100% 100%,auto;}
+  .bossfield.cyber .boss-sprite{filter:drop-shadow(0 0 14px rgba(56,189,248,.7)) drop-shadow(0 8px 16px rgba(0,0,0,.6));}
+  .hero.rocket{transform:translateX(-50%) rotate(-45deg);}
+  .hero.rocket.hit{animation:rocketHit .4s;}
+  @keyframes rocketHit{0%,100%{transform:translateX(-50%) rotate(-45deg);}
+    25%{transform:translateX(calc(-50% - 9px)) rotate(-54deg);filter:brightness(.6) sepia(1) saturate(5) hue-rotate(-30deg);}
+    75%{transform:translateX(calc(-50% + 9px)) rotate(-36deg);}}
+  /* bouclier de sécurité */
+  .boss-shield{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:800;font-size:.9rem;letter-spacing:1px;}
+  .boss-shield .sh-on{color:#7dd3fc;text-shadow:0 0 8px rgba(56,189,248,.7);}
+  .boss-shield .sh-off{color:#fca5a5;opacity:.85;}
+  /* alerte rouge / glitch quand le boss contre-attaque */
+  .glitch-layer{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:0;
+    background:repeating-linear-gradient(0deg,rgba(239,68,68,.14) 0 2px,transparent 2px 4px);}
+  .bossfield.alert .glitch-layer{opacity:1;animation:glitchFlick .18s steps(2) 6;}
+  .bossfield.alert{box-shadow:inset 0 0 0 3px rgba(239,68,68,.55),inset 0 0 60px rgba(239,68,68,.35);}
+  .bossfield.alert .boss-sprite{animation:bossPulse 2.4s ease-in-out infinite,glitchShift .16s steps(2) 6;}
+  @keyframes glitchFlick{0%{opacity:.25;}50%{opacity:.85;}100%{opacity:.4;}}
+  @keyframes glitchShift{0%{transform:translate(0,0);}25%{transform:translate(-3px,1px);}50%{transform:translate(3px,-1px);}75%{transform:translate(-2px,0);}100%{transform:translate(0,0);}}
+  /* sélecteur de difficulté du boss (repris de la-souris) */
+  .boss-modes{display:flex;flex-direction:column;gap:9px;margin:6px 0 2px;}
+  .boss-mode-btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+    background:#fff;border:2px solid #e7d3a8;border-radius:14px;padding:11px 14px;transition:transform .08s,border-color .12s,box-shadow .12s;}
+  .boss-mode-btn:hover{border-color:#f59e0b;box-shadow:0 6px 16px -6px rgba(245,158,11,.5);transform:translateY(-1px);}
+  .boss-mode-btn.sel{border-color:var(--blue);box-shadow:0 0 0 3px #bcd2ff;}
+  .boss-mode-btn .bm-ic{font-size:1.9rem;line-height:1;flex:0 0 auto;}
+  .boss-mode-btn .bm-txt{display:flex;flex-direction:column;}
+  .boss-mode-btn .bm-name{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.08rem;color:#3a2a12;}
+  .boss-mode-btn .bm-sub{font-size:.82rem;font-weight:700;color:#8a7a5c;}
+  .boss-mode-btn .bm-tag{margin-left:auto;font-size:.72rem;font-weight:800;color:#0b0b0b;background:#ffe08a;border-radius:999px;padding:3px 10px;white-space:nowrap;}
+  .boss-mode-btn.is-hard .bm-tag{background:#fca5a5;}
+  .boss-mode-btn.is-easy{border-color:#bbf7d0;}
+  .boss-mode-btn.is-easy .bm-tag{background:#86efac;}
+  .boss-mode-btn.is-medium .bm-tag{background:#bfdbfe;}
+  .boss-mode-btn.is-extreme{border-color:#7f1d1d;background:linear-gradient(#1f1014,#2c141b);}
+  .boss-mode-btn.is-extreme .bm-name{color:#fee2e2;}
+  .boss-mode-btn.is-extreme .bm-sub{color:#fca5a5;}
+  .boss-mode-btn.is-extreme .bm-tag{background:#7f1d1d;color:#ffe4e6;}
+  .boss-mode-btn.is-extreme:hover{border-color:#ef4444;box-shadow:0 6px 16px -6px rgba(239,68,68,.6);}
+
   @media (max-width:560px){
     .newtools{grid-template-columns:1fr;}
     .btn{flex:1;justify-content:center;}
@@ -361,6 +512,12 @@
     .boss-sprite,.boss-sprite.hurt,.boss-sprite.exhausted,.boss-sweat,.spell .orb,.spell.pop .orb,
     .atk-target .cap,.atk-target.hit .cap,.attack-title,.attack-flash,.hero.hit,.dmg-float,
     .spell.word .rune,.spell.pop .rune,.atk-word .card,.atk-word.hit .card{animation:none!important;}
+    .field.invaders{animation:none;}
+    .ship.hit,.invader.pop .cap,.invader.miss .cap,.invader.big .ufo::before,.invader.big .cap-ring,
+    .mbc.current,.laser{animation:none!important;}
+    .field.invaders,.field.bossfield.cyber{animation:none;}
+    .hero.rocket.hit,.bossfield.alert .glitch-layer,.bossfield.alert .boss-sprite{animation:none!important;}
+    .rad-sweep,.ht-blink,.ht-trace-label,.hc.cur,.hc.bad,.hterm.glitch,.rad-zone.found{animation:none!important;}
   }
 </style>
 <style>
@@ -414,6 +571,7 @@
   <div class="actions">
     <button class="btn btn-hint" id="hintBtn">💡 Astuce</button>
     <button class="btn btn-restart" id="restartBtn">↺ Recommencer</button>
+    <button class="btn btn-restart" id="diffBtn" style="display:none">⚙️ Difficulté</button>
   </div>
 
   <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
@@ -588,10 +746,10 @@ const LEVELS=[
        pool:('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz').split(''),target:46,lives:6,speed:84,spawnMs:1150}
     ]},
 
-  { n:3, title:'Le parachute — les accents', subtitle:'le parachute · les accents', game:'parachute',
-    intro:{ emoji:'🔤',
-      lead:'Beaucoup de lettres ont un <b>accent</b> : é è à ç. Regarde le clavier ci-dessous !',
-      teach:'Les touches <b>bleues</b> ( é è à ç ù ) marchent toutes seules : une seule touche.<br>Pour le <b>chapeau</b> ( ê ), appuie sur la touche '+kbd('^')+' puis sur la lettre.',
+  { n:3, title:'L\'invasion spatiale — les accents', subtitle:'l\'invasion spatiale · les accents', game:'invaders',
+    intro:{ emoji:'👽',
+      lead:'Une flotte d\'aliens fonce vers ton <b>vaisseau</b> ! Chaque alien porte une lettre avec un <b>accent</b> : é è à ç. Tape la bonne touche pour tirer un laser et le détruire avant qu\'il n\'arrive.',
+      teach:'Les touches <b>bleues</b> ( é è à ç ù ) marchent toutes seules : une seule touche.<br>Pour le <b>chapeau</b> ( ê ), appuie sur la touche '+kbd('^')+' puis sur la lettre.<br>De temps en temps, un <b>mini-vaisseau géant</b> approche avec plusieurs lettres à taper dans l\'ordre : ne te trompe pas, sinon il te touchera !',
       kb:{accents:true},
       tools:[{g:'é',n:'Touches directes'},{g:'^',n:'La touche chapeau'}] },
     rounds:[
@@ -612,35 +770,49 @@ const LEVELS=[
        pool:['é','è','à','ç','ù','ê','â','ô','ë','ï','ü'],target:30,lives:7,speed:58,spawnMs:1550,showTips:true}
     ]},
 
-  { n:4, title:'Le parachute — les chiffres', subtitle:'le parachute · les chiffres', game:'parachute',
-    intro:{ emoji:'🔢',
-      lead:'Des <b>chiffres</b> tombent du ciel !',
-      teach:'Sur la rangée du haut, garde '+kbd('Maj ⇧')+' enfoncé et appuie sur la touche du chiffre. Si ton clavier a un <b>pavé numérique</b> à droite, tu peux aussi taper les chiffres directement dessus.',
+  { n:4, title:'L\'invasion spatiale — les chiffres', subtitle:'l\'invasion spatiale · les chiffres', game:'invaders',
+    intro:{ emoji:'🛸',
+      lead:'Une nouvelle vague d\'aliens arrive, portant des <b>chiffres</b> sur leur combinaison !',
+      teach:'Sur la rangée du haut, garde '+kbd('Maj ⇧')+' enfoncé et appuie sur la touche du chiffre. Si ton clavier a un <b>pavé numérique</b> à droite, tu peux aussi taper les chiffres directement dessus.<br>De temps en temps, un <b>mini-vaisseau géant</b> approche avec plusieurs chiffres à taper dans l\'ordre : ne te trompe pas, sinon il te touchera !',
       kb:{maj:true,digits:true},
       tools:[{g:'123',n:'La rangée des chiffres'},{g:'🔢',n:'Le pavé numérique'}] },
     rounds:[
       {kind:'mission',label:'Mission 1',emoji:'🔢',title:'Tous les chiffres d\'un coup',
-       desc:'Tous les chiffres de '+kbd('0')+' à '+kbd('9')+' tombent mélangés. Montre que tu les retrouves tous !',
+       desc:'Tous les chiffres de '+kbd('0')+' à '+kbd('9')+' foncent vers toi, mélangés. Montre que tu les retrouves tous !',
        pool:'0123456789'.split(''),target:24,lives:6,speed:60,spawnMs:1600},
-      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Chiffres en rafale',
-       desc:'Tous les chiffres tombent vite et en rafale. Reste concentré !',
-       pool:'0123456789'.split(''),target:30,lives:5,speed:90,spawnMs:1080}
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Lettres et chiffres en rafale',
+       desc:'Cette fois, des <b>lettres</b> (majuscules et minuscules, sans accent) se mélangent aux chiffres, et ça fonce vite ! Reste concentré.',
+       pool:('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789').split(''),target:30,lives:5,speed:90,spawnMs:1080}
     ]},
 
-  { n:5, title:'Le parachute — les symboles', subtitle:'le parachute · les symboles', game:'parachute',
-    intro:{ emoji:'✨',
-      lead:'Les symboles sont des touches « secrètes ». Le clavier ci-dessous te montre lesquelles toucher.',
-      teach:'Touches <b>bleues</b> : appuie directement.<br>Avec '+kbd('Maj ⇧')+' ou '+kbd('AltGr')+' (en orange) : garde la touche enfoncée en même temps que l\'autre.',
+  { n:5, title:'Piratage alien — les symboles', subtitle:'piratage alien · les symboles', game:'hackterm',
+    intro:{ emoji:'🛰️',
+      lead:'Le <b>Vaisseau-Mère</b> alien se cache quelque part dans la galaxie… Pour le <b>localiser</b>, infiltre son réseau : tape les <b>codes secrets</b> qui s\'affichent sur le terminal alien. Ces codes sont faits de <b>symboles</b> — exactement ceux qui rendent un mot de passe super solide !',
+      teach:'Le code s\'affiche à l\'écran : tape chaque caractère <b>dans l\'ordre</b>. Le caractère à taper est <b>encadré en jaune</b>.<br>Touches <b>bleues</b> : appuie directement. Avec '+kbd('Maj ⇧')+' ou '+kbd('AltGr')+' (en orange) : garde la touche enfoncée en même temps que l\'autre.<br>Tu te trompes ? Rien de grave : réessaie ! Et clique sur 💡 si tu cherches une touche.',
       kb:{maj:true, altgr:true, keys:new Set([';',',','!',':','(',')','=','"','à','e'])},
-      tools:[{g:'⇧',n:'Maj + touche'},{g:'AltGr',n:'AltGr + touche'}] },
+      tools:[{g:'⌨️',n:'Codes en symboles'},{g:'🛰️',n:'Triangulation du signal'}] },
     rounds:[
-      {kind:'mission',label:'Mission 1',emoji:'❓',title:'La ponctuation',desc:'Les signes '+kbd('.')+' '+kbd(',')+' '+kbd('?')+' '+kbd('!')+' '+kbd(';')+' '+kbd(':')+'. Clique sur 💡 si tu cherches une touche.',pool:['.',',','?','!',';',':'],target:16,lives:7,speed:46,spawnMs:2050,showTips:true},
-      {kind:'mission',label:'Mission 2',emoji:'🔣',title:'Parenthèses et signes',desc:'Les touches directes '+kbd('(')+' '+kbd(')')+' '+kbd('=')+', le tiret '+kbd('-')+' et les guillemets '+kbd('"')+'.',pool:['(',')','=','"','-'],target:15,lives:7,speed:48,spawnMs:2100,showTips:true},
-      {kind:'mission',label:'Mission 3',emoji:'＠',title:'Les symboles spéciaux',desc:'Les symboles '+kbd('@')+' '+kbd('#')+' '+kbd('€')+' '+kbd('+')+' avec '+kbd('AltGr')+' ou '+kbd('Maj ⇧')+'.',pool:['@','#','€','+'],target:12,lives:7,speed:48,spawnMs:2150,showTips:true},
-      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Tous les symboles',desc:'Ponctuation, parenthèses et symboles spéciaux tombent ensemble. Sers-toi de 💡 quand tu hésites !',pool:['.',',','?','!',';',':','(',')','=','"','-','@','#','€','+'],target:30,lives:7,speed:60,spawnMs:1450,showTips:true},
-      {kind:'jalon',mode:'boss',label:'Combat de Boss',emoji:'🐉',title:'le Dragon des Touches',
-       desc:'Tu as réveillé le <b>Dragon des Touches</b> et il t\'attaque ! <b>Tape la bonne touche</b> pour esquiver puis pour l\'attaquer. Ne te trompe pas de touche et attention aux <b>majuscules</b> !',
-       penalizeWrong:true, lives:10, bossHits:15, spellsPerWave:10, speed:74, spawnMs:1100, maxConcurrent:4}
+      {kind:'mission',label:'Mission 1',emoji:'📡',title:'Intercepter le canal — la ponctuation',
+       desc:'Infiltre le canal alien en tapant des codes faits de '+kbd('.')+' '+kbd(',')+' '+kbd('?')+' '+kbd('!')+' '+kbd(';')+' '+kbd(':')+'. Prends ton temps, personne ne t\'a repéré. Clique sur 💡 si tu cherches une touche.',
+       pool:['.',',','?','!',';',':'],codes:[3,3,4,4,5],showTips:true},
+      {kind:'mission',label:'Mission 2',emoji:'🔓',title:'Percer le blindage — parenthèses et signes',
+       desc:'Des codes un peu plus longs, avec les touches directes '+kbd('(')+' '+kbd(')')+' '+kbd('=')+', le tiret '+kbd('-')+' et les guillemets '+kbd('"')+'.',
+       pool:['(',')','=','"','-'],codes:[4,4,5,5,6],showTips:true},
+      {kind:'mission',label:'Mission 3',emoji:'🔑',title:'Forcer la serrure — les symboles spéciaux',
+       desc:'Les caractères de mot de passe fort : '+kbd('@')+' '+kbd('#')+' '+kbd('€')+' '+kbd('+')+' avec '+kbd('AltGr')+' ou '+kbd('Maj ⇧')+'.',
+       pool:['@','#','€','+'],codes:[4,5,5,6,6],showTips:true},
+      {kind:'jalon',label:'Défi',emoji:'🚨',title:'Localiser le Vaisseau-Mère !',
+       desc:'Tu es repéré ! Le Vaisseau-Mère tente de te <b>déconnecter</b> : finis chaque code avant que la barre rouge de <b>traçage</b> soit pleine. Tu as <b>3 connexions</b> 📡 — tiens bon et localise-le !',
+       pool:['.',',','?','!',';',':','(',')','=','"','-','@','#','€','+'],codes:[5,6,6,7,8],energies:3,traceBase:4200,tracePerChar:1300,showTips:true},
+      {kind:'jalon',mode:'boss',label:'Combat de Boss',emoji:'🛸',title:'le Vaisseau-Mère',
+       desc:'Tu l\'as localisé… mais il envoie son <b>essaim</b> ! Déplace ton vaisseau avec '+kbd('F')+' et '+kbd('J')+', <b>aligne-toi</b> sous un alien puis tape <b>sa lettre</b> pour tirer au laser. Essaim détruit ? Le Vaisseau-Mère devient <b>vulnérable</b> : mitraille-le avec les <b>symboles et chiffres</b> — mais son bouclier se recharge à chaque nouvel essaim !',
+       diff:true, swarm:true,
+       theme:{ cyber:true, name:'le Vaisseau-Mère', emoji:'🛸', hero:'🚀',
+               castTitle:'🛸 L\'ESSAIM ATTAQUE ! 🛸', castSub:'Aligne-toi avec F et J, puis tape la lettre de l\'alien !',
+               attackTitle:'💥 VAISSEAU-MÈRE VULNÉRABLE ! 💥', attackSub:'Mitraille-le : symboles et chiffres !',
+               failMsg:'L\'essaim du Vaisseau-Mère t\'a vaincu ! 🛸' },
+       enh:{ shield:true, accel:true, glitch:true },
+       lives:10, spellsPerWave:10, speed:46, spawnMs:1500, maxConcurrent:3, attackMs:9000}
     ]},
 
   { n:6, title:'Frappe libre', subtitle:'frappe libre', game:'dactylo',
@@ -860,6 +1032,415 @@ function failP(){
   onFail('Trop de parachutes ont touché le sol !', 'Astuce : '+tip+' Vise la lettre la plus basse en premier.');
 }
 
+/* ---- Invasion spatiale (Niveaux 3 & 4) ---- */
+const I={};
+const INV_SPEED_MULT=0.6;     // aliens plus lents que les parachutes
+const INV_MAX_CONCURRENT=9;   // beaucoup plus d'aliens visibles à la fois
+const MB_INTERVAL=6;          // un mini-boss toutes les N destructions
+function alienEmojiFor(ch, lvlN){
+  if(lvlN===3){
+    if(CIRC_LETTER[ch]) return '🛸';
+    if(TREMA_LETTER[ch]) return '👾';
+    return '👽';
+  }
+  const set=['👾','🛸','👽'];
+  return set[Math.floor(Math.random()*set.length)];
+}
+function startInvaders(step){
+  stopGame(); gamePaused=false;
+  stage.innerHTML=
+    '<div class="hud">'
+    + '<span class="lives" id="hudLives"></span>'
+    + '<span class="count" id="hudCount"></span>'
+    + '<div class="meter"><i id="hudMeter"></i></div>'
+    + (step.showTips? '<button type="button" class="tip-pill" id="hudTip">💡 Astuce</button>' : '')
+    + '</div>'
+    + '<div class="field invaders" id="field"><div class="ship" id="invShip">🚀</div></div>';
+  const field=document.getElementById('field');
+  Object.assign(I,{
+    step, field, ship:document.getElementById('invShip'),
+    items:[], cleared:0, lives:step.lives, target:step.target,
+    speed:step.speed*INV_SPEED_MULT, spawnMs:step.spawnMs, pool:step.pool, running:true,
+    last:0, nextSpawn:0, groundY:0, raf:0,
+    phase:'normal', combo:0, killsSinceBoss:0, miniBoss:null
+  });
+  I.groundY=field.clientHeight-78;
+  updateInvHud();
+  if(step.showTips){
+    const tb=document.getElementById('hudTip');
+    if(tb) tb.onclick=()=>{ const it=mostUrgentInvader(); openGameTip(it?it.ch:I.pool[0]); };
+  }
+  activeGame={ onKey:onKeyI, stop:stopI,
+    pause(){ if(I.running){ I.running=false; cancelAnimationFrame(I.raf); } },
+    resume(){ if(!I.running){ I.running=true; I.last=0; I.raf=requestAnimationFrame(loopI); } } };
+  I.raf=requestAnimationFrame(loopI);
+}
+function updateInvHud(){
+  let h=''; for(let i=0;i<I.step.lives;i++) h+= (i<I.lives?'❤️':'<span class="lost">🖤</span>');
+  document.getElementById('hudLives').innerHTML=h;
+  document.getElementById('hudCount').textContent=I.cleared+' / '+I.target+' détruits';
+  document.getElementById('hudMeter').style.width=Math.min(100,I.cleared/I.target*100)+'%';
+  const ratio=I.cleared/I.target;
+  I.ship.classList.toggle('boost1', ratio>=0.33 && ratio<0.67);
+  I.ship.classList.toggle('boost2', ratio>=0.67);
+}
+function mostUrgentInvader(){
+  if(I.phase==='miniboss' && I.miniBoss) return {ch:I.miniBoss.seq[I.miniBoss.idx]};
+  let low=null; for(const it of I.items){ if(!low||it.y>low.y) low=it; } return low;
+}
+// le rapprochement horizontal s'arrête à mi-chemin : sinon tous les aliens
+// finiraient collés au même point juste au-dessus du vaisseau
+function invaderXPct(x0,y){
+  const t=Math.min(1, y/I.groundY);
+  return x0+(50-x0)*Math.min(t,0.5);
+}
+function positionInvader(it){
+  it.el.style.left=invaderXPct(it.x0,it.y)+'%';
+  it.el.style.transform='translate(-50%,'+it.y+'px)';
+}
+function spawnI(){
+  if(I.items.length>=INV_MAX_CONCURRENT) return;
+  const ch=I.pool[Math.floor(Math.random()*I.pool.length)];
+  const emoji=alienEmojiFor(ch, currentLevel);
+  const el=document.createElement('div');
+  el.className='invader';
+  el.innerHTML='<span class="ufo">'+emoji+'</span><span class="cap">'+ch+'</span>';
+  I.field.appendChild(el);
+  const it={el,ch,x0:4+Math.random()*92,y:0};
+  positionInvader(it);
+  I.items.push(it);
+}
+function loopI(ts){
+  if(!I.running) return;
+  if(!I.last) I.last=ts;
+  const dt=Math.min(.05,(ts-I.last)/1000); I.last=ts;
+  if(I.phase==='normal'){
+    if(ts>=I.nextSpawn){ spawnI(); I.nextSpawn=ts+I.spawnMs; }
+    for(const it of I.items.slice()){
+      it.y+=I.speed*dt;
+      positionInvader(it);
+      if(it.y>=I.groundY) missI(it);
+    }
+  } else if(I.phase==='miniboss' && I.miniBoss){
+    const mb=I.miniBoss;
+    mb.y+=mb.speed*dt;
+    positionMiniBoss(mb);
+    if(mb.y>=I.groundY) miniBossReachesShip();
+  }
+  I.raf=requestAnimationFrame(loopI);
+}
+function removeInvader(it){ const i=I.items.indexOf(it); if(i>=0) I.items.splice(i,1); }
+// trait de laser générique entre deux points d'un terrain (invaders ET boss essaim)
+function drawLaser(field,x1,y1,x2,y2){
+  const dist=Math.hypot(x2-x1,y2-y1);
+  const ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
+  const el=document.createElement('div');
+  el.className='laser';
+  el.style.left=x1+'px'; el.style.top=y1+'px';
+  el.style.width=dist+'px';
+  el.style.transform='rotate('+ang+'deg)';
+  field.appendChild(el);
+  setTimeout(()=>el.remove(),160);
+}
+function laserTo(xPx,yPx){ drawLaser(I.field, I.field.clientWidth/2, I.field.clientHeight-30, xPx, yPx); }
+function maybeShowCombo(xPx,yPx){
+  if(I.combo>0 && I.combo%5===0){
+    const d=document.createElement('div'); d.className='dmg-float'; d.textContent='Combo x'+I.combo+' !';
+    d.style.left=xPx+'px'; d.style.top=(yPx-20)+'px';
+    I.field.appendChild(d); setTimeout(()=>d.remove(),800);
+  }
+}
+function fireLaser(it){
+  const xPx=I.field.clientWidth*invaderXPct(it.x0,it.y)/100, yPx=it.y+21;
+  laserTo(xPx,yPx);
+  removeInvader(it); it.el.classList.add('pop'); const el=it.el; setTimeout(()=>el.remove(),250);
+  setTimeout(()=>burstAt(xPx,yPx,I.field),90);
+  I.cleared++; I.combo++; beep('good'); updateInvHud();
+  maybeShowCombo(xPx,yPx);
+  if(I.cleared>=I.target){ winI(); return; }
+  I.killsSinceBoss++;
+  if(I.killsSinceBoss>=MB_INTERVAL && (I.target-I.cleared)>=2){
+    I.killsSinceBoss=0;
+    triggerMiniBoss();
+  }
+}
+function missI(it){
+  removeInvader(it);
+  it.el.classList.add('miss'); const el=it.el; setTimeout(()=>el.remove(),300);
+  I.lives--; I.combo=0; beep('bad');
+  I.field.classList.add('shake'); setTimeout(()=>I.field.classList.remove('shake'),250);
+  I.ship.classList.add('hit'); setTimeout(()=>I.ship.classList.remove('hit'),400);
+  updateInvHud();
+  if(I.lives<=0) failI();
+}
+function onKeyI(e){
+  if(e.key.length!==1) return;
+  e.preventDefault();
+  if(I.phase==='miniboss') return onMiniBossKey(e.key);
+  let best=null;
+  for(const it of I.items){ if(it.ch===e.key){ if(!best||it.y>best.y) best=it; } }
+  if(best) fireLaser(best); else beep('key');
+}
+function stopI(){ I.running=false; cancelAnimationFrame(I.raf); }
+function winI(){ stopI(); beep('win'); onWin(); }
+function failI(){
+  stopI();
+  const tip = I.step.showTips
+    ? 'Regarde bien l\'astuce de chaque alien : elle te dit quelles touches presser.'
+    : tipFor(I.pool[0]);
+  onFail('Trop d\'aliens ont atteint ton vaisseau !', 'Astuce : '+tip+' Vise l\'alien le plus proche en premier.');
+}
+/* -- mini-boss : surgit ponctuellement au milieu d'une mission normale -- */
+function positionMiniBoss(mb){
+  mb.el.style.left=invaderXPct(mb.x0,mb.y)+'%';
+  mb.el.style.transform='translate(-50%,'+mb.y+'px)';
+}
+function triggerMiniBoss(){
+  I.phase='miniboss';
+  I.items.forEach(it=>it.el.remove()); I.items=[];
+  const ban=document.createElement('div'); ban.className='attack-banner';
+  ban.innerHTML='<div class="attack-title">⚠️ ALERTE ! ⚠️</div><div class="attack-sub">Un vaisseau géant approche — tape ses lettres dans l\'ordre !</div>';
+  I.field.appendChild(ban);
+  beep('ding');
+  setTimeout(()=>{
+    ban.remove();
+    if(!I.running || I.phase!=='miniboss') return;
+    spawnMiniBoss();
+  },1300);
+}
+function spawnMiniBoss(){
+  const len=3+Math.floor(Math.random()*2);
+  const seq=[]; for(let i=0;i<len;i++) seq.push(I.pool[Math.floor(Math.random()*I.pool.length)]);
+  const emoji=alienEmojiFor(seq[0], currentLevel);
+  const el=document.createElement('div'); el.className='invader big';
+  el.innerHTML='<span class="ufo">'+emoji+'<span class="cap-ring"></span></span>'
+    + '<div class="mb-seq">'+seq.map((c,i)=>'<span class="mbc'+(i===0?' current':'')+'">'+c+'</span>').join('')+'</div>';
+  I.field.appendChild(el);
+  I.miniBoss={el,seq,idx:0,x0:30+Math.random()*40,y:0,speed:I.speed*0.32};
+  positionMiniBoss(I.miniBoss);
+}
+function onMiniBossKey(key){
+  const mb=I.miniBoss; if(!mb) return;
+  if(key===mb.seq[mb.idx]){
+    const chips=mb.el.querySelectorAll('.mbc');
+    if(chips[mb.idx]){ chips[mb.idx].classList.remove('current'); chips[mb.idx].classList.add('done'); }
+    mb.idx++; beep('good');
+    if(chips[mb.idx]) chips[mb.idx].classList.add('current');
+    if(mb.idx>=mb.seq.length) miniBossDefeated();
+  } else {
+    beep('bad'); I.lives--; I.combo=0;
+    I.field.classList.add('shake'); setTimeout(()=>I.field.classList.remove('shake'),250);
+    I.ship.classList.add('hit'); setTimeout(()=>I.ship.classList.remove('hit'),400);
+    updateInvHud();
+    if(I.lives<=0) failI();
+  }
+}
+function miniBossDefeated(){
+  const mb=I.miniBoss; if(!mb) return;
+  const xPx=I.field.clientWidth*invaderXPct(mb.x0,mb.y)/100, yPx=mb.y+30;
+  laserTo(xPx,yPx);
+  burstAt(xPx,yPx,I.field); setTimeout(()=>burstAt(xPx,yPx,I.field),140);
+  mb.el.remove(); I.miniBoss=null;
+  I.cleared+=mb.seq.length; beep('win'); updateInvHud();
+  if(I.cleared>=I.target){ winI(); return; }
+  setTimeout(()=>{ if(I.running){ I.phase='normal'; I.nextSpawn=performance.now()+900; } },900);
+}
+function miniBossReachesShip(){
+  const mb=I.miniBoss;
+  if(mb){ mb.el.remove(); I.miniBoss=null; }
+  I.field.classList.add('shake');
+  stopI();
+  onFail('Le mini-vaisseau géant a atteint le tien !', 'Astuce : tape vite chaque lettre de sa séquence dès qu\'elle apparaît, dans l\'ordre. Une seule erreur ne te coûte qu\'une vie, alors garde ton calme la prochaine fois !');
+}
+
+/* ---- Terminal de hacking (Niveau 5 : infiltrer le réseau alien) ----
+   Fenêtre de connexion alien : des codes en symboles à recopier dans l'ordre.
+   Missions : sans stress, erreurs comptées (score de précision en fin de mission).
+   Défi : barre de TRAÇAGE par code + 3 connexions 📡 ; traçage plein = connexion perdue. */
+const H={};
+let hackSid=0;
+const ALIEN_GLYPHS='⏃⏚☊⎅⟒⎎☌⊑⟟⋉⌰⍜⌿⍾⎋'.split('');
+function genCode(pool,len){
+  const out=[]; let last=null;
+  while(out.length<len){ const c=pool[Math.floor(Math.random()*pool.length)]; if(c!==last){ out.push(c); last=c; } }
+  return out;
+}
+// setTimeout « annulable » : le callback ne part que si la session de jeu n'a pas changé
+function htWait(ms,sid,cb){ setTimeout(()=>{ if(H.sid===sid) cb(); }, ms); }
+// effet machine à écrire (texte qui se tape tout seul)
+function typeInto(el,text,sid,cb,speed){
+  el.textContent='';
+  let i=0;
+  const t=setInterval(()=>{
+    if(H.sid!==sid){ clearInterval(t); return; }
+    el.textContent+=text[i++]||'';
+    if(i>=text.length){ clearInterval(t); cb&&cb(); }
+  }, speed||16);
+}
+function startHackterm(step){
+  stopGame(); gamePaused=false;
+  const sid=++hackSid;
+  const chal=!!step.energies;
+  Object.assign(H,{
+    sid, step, chal, codes:step.codes.slice(), codeIdx:0, code:[], pos:0,
+    hits:0, errors:0, energies:step.energies||0, ready:false, running:true,
+    raf:0, traceDur:0, traceElapsed:0, lastTs:0
+  });
+  stage.innerHTML=
+    '<div class="hud">'
+    + (chal?'<span class="lives" id="htLinks"></span>':'')
+    + '<span class="count" id="htCount"></span>'
+    + '<div class="meter"><i id="htMeter"></i></div>'
+    + '<button type="button" class="tip-pill" id="hudTip">💡 Astuce</button>'
+    + '</div>'
+    + '<div class="field hackfield" id="hackField">'
+    +   '<div class="scanlines"></div>'
+    +   '<div class="hterm" id="hterm">'
+    +     '<div class="ht-head">● ● ●&nbsp;&nbsp;TERMINAL ALIEN — CANAL SÉCURISÉ <span class="ht-blink">▊</span></div>'
+    +     '<div class="ht-log" id="htLog"></div>'
+    +     '<div class="ht-code" id="htCode"></div>'
+    +     (chal?'<div class="ht-trace"><span class="ht-trace-label">⚠ TRAÇAGE</span><span class="ht-trace-bar"><i id="htTrace"></i></span></div>':'')
+    +     '<div class="ht-status" id="htStatus"></div>'
+    +   '</div>'
+    +   '<div class="ht-radar"><div class="rad-sweep"></div><div class="rad-ring r1"></div><div class="rad-ring r2"></div><div class="rad-zone" id="radZone"></div><div class="rad-ship" id="radShip">🛸</div></div>'
+    + '</div>';
+  document.getElementById('hudTip').onclick=()=>{ openGameTip(H.code[H.pos]||H.step.pool[0]); };
+  updateHtHud(); updateRadar();
+  activeGame={ onKey:onKeyH, stop:stopH,
+    pause(){ H.running=false; if(H.raf){ cancelAnimationFrame(H.raf); H.raf=0; } },
+    resume(){ H.running=true; if(H.chal&&H.ready){ H.lastTs=0; H.raf=requestAnimationFrame(traceLoop); } } };
+  const st=document.getElementById('htStatus'); st.className='ht-status';
+  typeInto(st,'> connexion au réseau alien…',sid,()=>{ htWait(450,sid,newHackCode); });
+}
+function updateHtHud(){
+  const c=document.getElementById('htCount');
+  if(c) c.textContent='Code '+Math.min(H.codeIdx+1,H.codes.length)+' / '+H.codes.length;
+  const m=document.getElementById('htMeter');
+  if(m) m.style.width=(H.codeIdx/H.codes.length*100)+'%';
+  const lk=document.getElementById('htLinks');
+  if(lk){ let h=''; for(let i=0;i<(H.step.energies||0);i++) h+=(i<H.energies?'📡':'<span class="lost">📡</span>'); lk.innerHTML=h; }
+}
+function updateRadar(){
+  const z=document.getElementById('radZone'); if(!z) return;
+  // la zone d'incertitude rétrécit à chaque code réussi : on « triangule » le signal
+  const r=82-(82-16)*(H.codeIdx/H.codes.length);
+  z.style.width=r+'%'; z.style.height=r+'%';
+}
+function newHackCode(){
+  const sid=H.sid;
+  const len=H.codes[H.codeIdx];
+  H.code=genCode(H.step.pool,len); H.pos=0; H.ready=false;
+  const st=document.getElementById('htStatus'); st.className='ht-status'; st.textContent='';
+  const log=document.getElementById('htLog');
+  const line=document.createElement('div');
+  log.appendChild(line);
+  while(log.children.length>2) log.removeChild(log.firstChild);
+  typeInto(line,'> code d\'accès '+(H.codeIdx+1)+'/'+H.codes.length+' intercepté — décodage…',sid,()=>{
+    // le code apparaît d'abord en glyphes aliens, puis se « décode » caractère par caractère
+    const box=document.getElementById('htCode');
+    box.innerHTML=H.code.map(()=>'<span class="hc alien">'+ALIEN_GLYPHS[Math.floor(Math.random()*ALIEN_GLYPHS.length)]+'</span>').join('');
+    H.code.forEach((ch,i)=>{
+      htWait(280+i*140,sid,()=>{
+        const c=box.children[i]; if(!c) return;
+        c.classList.remove('alien'); c.textContent=ch;
+        if(i===H.code.length-1){
+          box.children[0].classList.add('cur');
+          H.ready=true;
+          if(H.chal) startTrace();
+        }
+      });
+    });
+  },12);
+}
+function startTrace(){
+  H.traceDur=(H.step.traceBase||4200)+(H.step.tracePerChar||1300)*H.code.length;
+  H.traceElapsed=0; H.lastTs=0;
+  const f=document.getElementById('htTrace'); if(f) f.style.width='0%';
+  if(H.raf) cancelAnimationFrame(H.raf);
+  H.raf=requestAnimationFrame(traceLoop);
+}
+// dt borné (comme loopP/loopI/loopB) : pas de saut de barre si l'onglet passe en arrière-plan
+function traceLoop(ts){
+  if(!H.running||!H.ready){ H.raf=0; return; }
+  if(!H.lastTs) H.lastTs=ts;
+  H.traceElapsed+=Math.min(50, ts-H.lastTs); H.lastTs=ts;
+  const fr=Math.min(1, H.traceElapsed/H.traceDur);
+  const f=document.getElementById('htTrace'); if(f) f.style.width=(fr*100)+'%';
+  if(fr>=1){ H.raf=0; traceCaught(); return; }
+  H.raf=requestAnimationFrame(traceLoop);
+}
+function traceCaught(){
+  const sid=H.sid;
+  H.ready=false; H.energies--; beep('bad');
+  glitchTerm(true);
+  updateHtHud();
+  if(H.energies<=0){
+    stopH();
+    onFail('Le Vaisseau-Mère t\'a déconnecté ! 📡',
+      'Astuce : tape le code sans t\'arrêter, dans l\'ordre, avant que la barre rouge de traçage soit pleine. Clique sur 💡 au début d\'un code si tu cherches une touche. Courage, tu y es presque !');
+    return;
+  }
+  const st=document.getElementById('htStatus'); st.className='ht-status warn';
+  typeInto(st,'⚠ CONNEXION COUPÉE — ouverture d\'un nouveau canal…',sid,()=>{ htWait(700,sid,newHackCode); });
+}
+function glitchTerm(big){
+  const t=document.getElementById('hterm'); if(!t) return;
+  t.classList.remove('glitch'); void t.offsetWidth; t.classList.add('glitch');
+  if(big){ const f=document.getElementById('hackField'); if(f){ f.classList.add('shake'); setTimeout(()=>f.classList.remove('shake'),300); } }
+}
+function onKeyH(e){
+  if(e.key.length!==1) return;
+  e.preventDefault();
+  if(!H.ready) return;
+  const box=document.getElementById('htCode'); if(!box) return;
+  if(e.key===H.code[H.pos]){
+    H.hits++;
+    const c=box.children[H.pos];
+    if(c){ c.classList.remove('cur','bad'); c.classList.add('done'); }
+    H.pos++;
+    beep('key');
+    if(H.pos>=H.code.length) return hackCodeDone();
+    if(box.children[H.pos]) box.children[H.pos].classList.add('cur');
+  } else {
+    H.errors++;
+    beep('bad'); glitchTerm(false);
+    const c=box.children[H.pos];
+    if(c){ c.classList.remove('bad'); void c.offsetWidth; c.classList.add('bad'); }
+  }
+}
+function hackCodeDone(){
+  const sid=H.sid;
+  H.ready=false;
+  if(H.raf){ cancelAnimationFrame(H.raf); H.raf=0; }
+  const f=document.getElementById('htTrace'); if(f) f.style.width='0%';
+  H.codeIdx++;
+  beep('good'); updateHtHud(); updateRadar();
+  const st=document.getElementById('htStatus'); st.className='ht-status ok';
+  if(H.codeIdx>=H.codes.length) return hackFinish();
+  typeInto(st,'✔ ACCÈS AUTORISÉ — signal affiné…',sid,()=>{ htWait(650,sid,newHackCode); });
+}
+function hackFinish(){
+  const sid=H.sid;
+  const tot=H.hits+H.errors;
+  const prec=tot?Math.round(H.hits/tot*100):100;
+  const precTxt=H.errors===0?'Précision : 100 % — aucune erreur, bravo !':'Précision : '+prec+' % ('+H.errors+' erreur'+(H.errors>1?'s':'')+')';
+  const st=document.getElementById('htStatus'); st.className='ht-status ok';
+  beep('win');
+  if(H.chal){
+    const ship=document.getElementById('radShip'), zone=document.getElementById('radZone');
+    if(ship) ship.classList.add('on');
+    if(zone) zone.classList.add('found');
+    typeInto(st,'🎯 VAISSEAU-MÈRE LOCALISÉ ! '+precTxt,sid,()=>{ htWait(1500,sid,()=>{ stopH(); onWin(); }); });
+  } else {
+    typeInto(st,'✔ SÉCURITÉ PERCÉE ! '+precTxt,sid,()=>{ htWait(1400,sid,()=>{ stopH(); onWin(); }); });
+  }
+}
+function stopH(){
+  H.sid=++hackSid;   // invalide les timers/typewriters en attente
+  H.running=false; H.ready=false;
+  if(H.raf){ cancelAnimationFrame(H.raf); H.raf=0; }
+}
+
 /* ---- Dactylo (avec poursuite optionnelle) ---- */
 const D={};
 function startDactylo(step){
@@ -961,6 +1542,36 @@ const ATTACK_MS=7000;
 const B={};
 let bossAudio=null;
 
+/* ---- Modes de difficulté du boss (utilisés uniquement si step.diff) ----
+   « Difficile » = référence (×1). Les autres allègent (ou durcissent) plusieurs paramètres.
+   speedMul : vitesse de descente des sorts (↓ = facile)
+   spawnMul : délai entre sorts (↑ = moins de sorts = facile)
+   waveMul  : nb de sorts par vague (↓ = facile)
+   concDelta: sorts simultanés en plus/moins
+   livesBonus: cœurs en plus/moins
+   hits     : nb de coups pour vaincre le boss
+   shieldHits: coups pour briser le bouclier (se recharge à chaque essaim)
+   accel    : facteur d'accélération de l'essaim à chaque nouvelle vague */
+const KB_BOSS_MODES={
+  easy:   {key:'easy',   label:'Facile',   emoji:'🛡️', sub:'Pour bien débuter', tag:'Bien plus facile',
+           speedMul:0.72, spawnMul:1.6,  waveMul:0.6, concDelta:-1, livesBonus:3,  hits:4,  shieldHits:1, accel:1.05},
+  medium: {key:'medium', label:'Moyen',    emoji:'💾', sub:'Un bon équilibre',  tag:'Recommandé',
+           speedMul:0.85, spawnMul:1.28, waveMul:0.8, concDelta:0,  livesBonus:1,  hits:6,  shieldHits:2, accel:1.09},
+  hard:   {key:'hard',   label:'Difficile',emoji:'🔥', sub:'Le vrai défi',      tag:'Mode complet',
+           speedMul:1.0,  spawnMul:1.0,  waveMul:1.0, concDelta:0,  livesBonus:0,  hits:8,  shieldHits:3, accel:1.13},
+  extreme:{key:'extreme',label:'Extrême', emoji:'💀', sub:'Pour les pros',     tag:'Au-delà du défi',
+           speedMul:1.2,  spawnMul:0.8,  waveMul:1.25,concDelta:1,  livesBonus:-2, hits:10, shieldHits:4, accel:1.18}
+};
+let kbBossMode = (function(){ try{ const m=localStorage.getItem('kb_bossmode'); return KB_BOSS_MODES[m]?m:'medium'; }catch(e){ return 'medium'; } })();
+function kbBd(){ return KB_BOSS_MODES[kbBossMode]||KB_BOSS_MODES.hard; }
+// chaîne thématique du boss (repli sur le thème « Dragon » historique du niveau 7)
+function bTheme(){ return B.step&&B.step.theme ? B.step.theme : {}; }
+function bt(key, fallback){ const t=bTheme(); return (t&&t[key]!=null)?t[key]:fallback; }
+// mode « essaim » (boss niveau 5) : couloirs de descente + lettres sans f/j (réservées au pilotage)
+const SWARM_LANES=6;
+const SWARM_LETTERS='abcdeghiklmnopqrstuvwxyz'.split('');
+function laneX(l){ return (l+0.5)/SWARM_LANES*100; }
+
 function startBossMusic(){
   try{
     if(!bossAudio){ bossAudio=new Audio('musics/musique_boss.mp3'); bossAudio.loop=true; bossAudio.volume=.5; }
@@ -973,35 +1584,53 @@ function stopBossMusic(){ if(bossAudio){ try{bossAudio.pause(); bossAudio.curren
 
 function startBoss(step){
   stopGame(); gamePaused=false;
+  const theme=step.theme||{}, enh=step.enh||{};
+  const md=step.diff?kbBd():{speedMul:1,spawnMul:1,waveMul:1,concDelta:0,livesBonus:0,hits:0,shieldHits:0,accel:1};
+  const name=theme.name||'le Dragon des Touches', bemoji=theme.emoji||'🐉', hero=theme.hero||'🧙';
+  const heroCls=(hero==='🚀')?' rocket':'';
+  // vies : base + bonus de difficulté (min 3)
+  const baseLives=step.lives||6;
+  const lives=Math.max(3, baseLives+(md.livesBonus||0));
+  // nb de coups pour gagner : selon la difficulté choisie (boss à modes), sinon bossHits
+  const hp=(step.diff ? md.hits : step.bossHits)||15;
+  const baseSpeed=(step.speed||74)*(md.speedMul||1);
   stage.innerHTML=
     '<div class="hud">'
     + '<span class="lives" id="bossLives"></span>'
     + '<span class="count" id="bossPhase"></span>'
     + '<div class="meter"><i id="bossMeter"></i></div>'
     + '</div>'
-    + '<div class="field bossfield" id="bossField">'
+    + '<div class="field bossfield'+(theme.cyber?' cyber':'')+'" id="bossField">'
+    +   (enh.glitch?'<div class="glitch-layer" id="bossGlitch"></div>':'')
     +   '<div class="boss-top">'
-    +     '<div class="boss-name">🐉 le Dragon des Touches</div>'
+    +     '<div class="boss-name">'+bemoji+' '+name+'</div>'
+    +     (enh.shield?'<div class="boss-shield" id="bossShield"></div>':'')
     +     '<div class="boss-hpbar"><i id="bossHp"></i></div>'
-    +     '<div style="position:relative"><div class="boss-sprite" id="bossSprite">🐉</div></div>'
+    +     '<div style="position:relative"><div class="boss-sprite" id="bossSprite">'+bemoji+'</div></div>'
     +   '</div>'
-    +   '<div class="hero" id="bossHero">🧙</div>'
+    +   '<div class="hero'+heroCls+'" id="bossHero">'+hero+'</div>'
     + '</div>';
   const field=document.getElementById('bossField');
   Object.assign(B,{
-    step, field,
+    step, field, theme, enh,
     sprite:document.getElementById('bossSprite'),
     hero:document.getElementById('bossHero'),
     spells:[], attackTargets:[],
     wordMode:!!step.wordMode, defenseWords:step.defenseWords||[], attackWords:step.attackWords||[], attackWord:null,
-    lives:step.lives||6, maxLives:step.lives||6, penalizeWrong:!!step.penalizeWrong,
-    hp:step.bossHits||15, maxHp:step.bossHits||15,
-    phase:'cast', spawned:0, spellsPerWave:step.spellsPerWave||10,
-    speed:step.speed||74, spawnMs:step.spawnMs||1100, maxConcurrent:step.maxConcurrent||4,
+    swarm:!!step.swarm, lane:Math.floor(SWARM_LANES/2),
+    atkPool: step.swarm ? BOSS_COMPLEX.concat('0123456789'.split('')) : BOSS_COMPLEX,
+    lives, maxLives:lives, penalizeWrong:!!step.penalizeWrong,
+    hp, maxHp:hp,
+    shield:enh.shield?(md.shieldHits||0):0, maxShield:enh.shield?(md.shieldHits||0):0,
+    accel:enh.accel?(md.accel||1):1, waveCount:0,
+    phase:'cast', spawned:0, spellsPerWave:Math.max(3, Math.round((step.spellsPerWave||10)*(md.waveMul||1))),
+    speed:baseSpeed, baseSpeed, spawnMs:(step.spawnMs||1100)*(md.spawnMul||1),
+    maxConcurrent:Math.max(1,(step.maxConcurrent||4)+(md.concDelta||0)),
     attackMs:step.attackMs||ATTACK_MS,
     running:true, last:0, nextSpawn:0, groundY:0, attackEndTs:0, raf:0, immune:false
   });
   B.groundY=field.clientHeight-64;
+  if(B.swarm) B.hero.style.left=laneX(B.lane)+'%';
   updateBossHud();
   startBossMusic();
   activeGame={ onKey:onKeyB, stop:stopB,
@@ -1015,13 +1644,33 @@ function updateBossHud(){
   const ph=document.getElementById('bossPhase');
   if(ph){
     if(B.wordMode) ph.textContent = B.phase==='attack' ? '⚔️ Tape les mots d\'attaque !' : '⚡ Tape les mots d\'esquive !';
+    else if(B.swarm) ph.textContent = B.phase==='attack' ? '💥 Mitraille le Vaisseau-Mère !' : '🕹️ Aligne-toi (F/J) et tire !';
     else ph.textContent = B.phase==='attack' ? '⚔️ Frappe le boss !' : '⚡ Esquive les sorts !';
   }
   const mt=document.getElementById('bossMeter'); if(mt){ mt.style.width=Math.max(0,B.lives/B.maxLives*100)+'%'; mt.style.background=(B.lives<=2?'var(--red)':'var(--green)'); }
   const hp=document.getElementById('bossHp'); if(hp) hp.style.width=Math.max(0,B.hp/B.maxHp*100)+'%';
+  // bouclier de sécurité restant
+  const sh=document.getElementById('bossShield');
+  if(sh){
+    if(B.shield>0){ let s='🛡️'; for(let i=0;i<B.maxShield;i++) s+= i<B.shield?'▮':'▯'; sh.innerHTML='<span class="sh-on">'+s+'</span>'; }
+    else sh.innerHTML='<span class="sh-off">🛡️ percé</span>';
+  }
 }
 function spawnSpell(){
   if(B.spells.length>=B.maxConcurrent) return;
+  if(B.swarm){
+    // essaim : un alien-lettre descend tout droit dans un couloir
+    const lane=Math.floor(Math.random()*SWARM_LANES);
+    let ch=SWARM_LETTERS[Math.floor(Math.random()*SWARM_LETTERS.length)];
+    if(Math.random()<0.5) ch=ch.toUpperCase();
+    const el=document.createElement('div'); el.className='invader';
+    el.innerHTML='<span class="ufo">'+(Math.random()<0.5?'👾':'👽')+'</span><span class="cap">'+escapeHtml(ch)+'</span>';
+    const x=laneX(lane);
+    el.style.left=x+'%'; el.style.transform='translate(-50%,140px)';
+    B.field.appendChild(el);
+    B.spells.push({el,ch,lane,x,y:140});
+    return;
+  }
   if(B.wordMode){
     const w=B.defenseWords[Math.floor(Math.random()*B.defenseWords.length)];
     const el=document.createElement('div'); el.className='spell word';
@@ -1089,12 +1738,32 @@ function onKeyB(e){
     if(hit) damageBoss(hit); else beep('key');
     return;
   }
+  if(B.swarm){
+    // pilotage : F = gauche, J = droite ; tir : la lettre de l'alien ALIGNÉ avec le vaisseau
+    const lk=e.key.toLowerCase();
+    if(lk==='f'||lk==='j'){ moveSwarmShip(lk==='f'?-1:1); return; }
+    let best=null;
+    for(const s of B.spells){ if(s.lane===B.lane && s.ch===e.key){ if(!best||s.y>best.y) best=s; } }
+    if(best){ swarmLaser(best); destroySpell(best); }
+    else beep('key');   // pas aligné ou mauvaise touche : rien ne se passe
+    return;
+  }
   if(B.wordMode) return typeDefenseWord(e.key);
   let best=null;
   for(const s of B.spells){ if(s.ch===e.key){ if(!best||s.y>best.y) best=s; } }
   if(best) destroySpell(best);
   else if(B.penalizeWrong) bossWrongKey();
   else beep('key');
+}
+function moveSwarmShip(dir){
+  const nl=Math.max(0, Math.min(SWARM_LANES-1, B.lane+dir));
+  if(nl===B.lane) return;
+  B.lane=nl; B.hero.style.left=laneX(nl)+'%';
+  beep('key');
+}
+function swarmLaser(s){
+  const xPx=B.field.clientWidth*s.x/100;
+  drawLaser(B.field, xPx, B.field.clientHeight-40, xPx, s.y+30);
 }
 // Touche pressée qui ne fait éclater aucune boule violette → perte d'une vie
 function bossWrongKey(){
@@ -1125,13 +1794,17 @@ function typeAttackWord(key){
 function openAttack(){
   B.phase='attack'; B.attackEndTs=0; B.immune=true;
   B.spells.forEach(s=>s.el.remove()); B.spells=[];
+  // essaim : le vaisseau revient automatiquement au centre, pilotage coupé pendant l'assaut
+  if(B.swarm){ B.lane=Math.floor(SWARM_LANES/2); B.hero.style.left=laneX(B.lane)+'%'; }
   B.sprite.classList.add('exhausted');
   const sw=document.createElement('div'); sw.className='boss-sweat'; sw.id='bossSweat'; sw.textContent='💦';
   B.sprite.parentElement.appendChild(sw);
   updateBossHud();
   const flash=document.createElement('div'); flash.className='attack-flash'; B.field.appendChild(flash); setTimeout(()=>flash.remove(),500);
   const ban=document.createElement('div'); ban.className='attack-banner';
-  ban.innerHTML='<div class="attack-title">⚔️ ATTAQUE MAINTENANT ! ⚔️</div><div class="attack-sub">Le dragon est épuisé — frappe les symboles !</div>';
+  const atkTitle=bt('attackTitle','⚔️ ATTAQUE MAINTENANT ! ⚔️');
+  const atkSub=bt('attackSub','Le dragon est épuisé — frappe les symboles !');
+  ban.innerHTML='<div class="attack-title">'+atkTitle+'</div><div class="attack-sub">'+atkSub+'</div>';
   B.field.appendChild(ban);
   beep('win');
   setTimeout(()=>{
@@ -1144,8 +1817,9 @@ function openAttack(){
   },1300);
 }
 function spawnOneTarget(){
+  const pool=B.atkPool||BOSS_COMPLEX;
   let ch, tries=0;
-  do{ ch=BOSS_COMPLEX[Math.floor(Math.random()*BOSS_COMPLEX.length)]; tries++; }
+  do{ ch=pool[Math.floor(Math.random()*pool.length)]; tries++; }
   while(tries<8 && B.attackTargets.some(t=>t.ch===ch));
   const el=document.createElement('div'); el.className='atk-target';
   el.innerHTML='<div class="cap">'+escapeHtml(ch)+'</div>';
@@ -1156,7 +1830,18 @@ function spawnOneTarget(){
 }
 // dégât commun au boss (mode lettres ET mode mots) ; renvoie true si le boss est vaincu
 function bossTakeHit(xPx,yPx){
-  burstAt(xPx,yPx,B.field); floatDamage(xPx,yPx);
+  burstAt(xPx,yPx,B.field);
+  // bouclier de sécurité : les premiers coups le brisent au lieu d'endommager le boss
+  if(B.shield>0){
+    B.shield--; beep('key');
+    floatDamage(xPx,yPx,'🛡️');
+    B.sprite.classList.remove('exhausted'); void B.sprite.offsetWidth; B.sprite.classList.add('hurt');
+    setTimeout(()=>{ if(B.phase==='attack'){ B.sprite.classList.remove('hurt'); B.sprite.classList.add('exhausted'); } },450);
+    updateBossHud();
+    if(B.shield===0){ flashBanner('🛡️ Bouclier percé !', 'Maintenant, pirate-le !'); }
+    return false;
+  }
+  floatDamage(xPx,yPx);
   B.hp--; if(B.hp<0) B.hp=0;
   beep('good');
   B.sprite.classList.remove('exhausted'); void B.sprite.offsetWidth; B.sprite.classList.add('hurt');
@@ -1195,9 +1880,15 @@ function hitBossWord(a){
   if(bossTakeHit(xPx,yPx)) return;
   if(B.attackEndTs && performance.now()<B.attackEndTs) spawnAttackWord();
 }
-function floatDamage(x,y){
-  const d=document.createElement('div'); d.className='dmg-float'; d.textContent='-1';
+function floatDamage(x,y,txt){
+  const d=document.createElement('div'); d.className='dmg-float'; d.textContent=txt||'-1';
   d.style.left=x+'px'; d.style.top=y+'px'; B.field.appendChild(d); setTimeout(()=>d.remove(),800);
+}
+// petite bannière fugace (ex. « Bouclier percé ! ») réutilisant le style d'annonce du combat
+function flashBanner(title, sub){
+  const ban=document.createElement('div'); ban.className='attack-banner';
+  ban.innerHTML='<div class="attack-title">'+title+'</div>'+(sub?'<div class="attack-sub">'+sub+'</div>':'');
+  B.field.appendChild(ban); setTimeout(()=>ban.remove(),1100);
 }
 function closeAttack(){
   B.phase='cast'; B.attackEndTs=0; B.immune=true;
@@ -1205,10 +1896,19 @@ function closeAttack(){
   if(B.attackWord){ B.attackWord.el.remove(); B.attackWord=null; }
   const sw=document.getElementById('bossSweat'); if(sw) sw.remove();
   B.sprite.classList.remove('exhausted');
+  // le bouclier de sécurité se recharge à chaque nouvel essaim
+  if(B.enh&&B.enh.shield&&B.maxShield){ B.shield=B.maxShield; }
+  // l'essaim accélère à chaque nouvelle vague
+  B.waveCount++;
+  if(B.accel>1){ B.speed=Math.min(B.baseSpeed*2.2, B.speed*B.accel); }
   B.spawned=0; B.nextSpawn=performance.now()+1300;   // petit répit pour lire le message
   updateBossHud();
+  // alerte rouge / glitch quand le boss contre-attaque
+  if(B.enh&&B.enh.glitch){ B.field.classList.add('alert'); setTimeout(()=>B.field.classList.remove('alert'),1300); }
   const ban=document.createElement('div'); ban.className='attack-banner';
-  ban.innerHTML='<div class="attack-title">⚡ LE DRAGON CONTRE-ATTAQUE ! ⚡</div><div class="attack-sub">Esquive ses sorts !</div>';
+  const cTitle=bt('castTitle','⚡ LE DRAGON CONTRE-ATTAQUE ! ⚡');
+  const cSub=bt('castSub','Esquive ses sorts !');
+  ban.innerHTML='<div class="attack-title">'+cTitle+'</div><div class="attack-sub">'+cSub+'</div>';
   B.field.appendChild(ban);
   beep('ding');
   setTimeout(()=>{ ban.remove(); B.immune=false; },1300);
@@ -1229,8 +1929,10 @@ function bossFail(){
   B.running=false; cancelAnimationFrame(B.raf); stopBossMusic();
   const tip = B.wordMode
     ? 'Astuce : pendant l\'esquive, tape vite le mot qui descend lettre par lettre — commence dès qu\'il apparaît. Pendant l\'attaque, tape le mot d\'arme affiché devant le dragon. Attention aux majuscules et aux fautes : chaque erreur coûte une vie !'
-    : 'Astuce : pendant les sorts, lis bien la touche dans la boule violette et tape-la vite. Attention aux majuscules ! Garde tes doigts posés sur le clavier. Tu vas y arriver !';
-  onFail('Le dragon t\'a vaincu cette fois ! 🐉', tip);
+    : B.swarm
+      ? 'Astuce : déplace-toi avec F et J pour te placer juste sous un alien, puis tape sa lettre — attention aux majuscules ! Quand le Vaisseau-Mère est vulnérable, mitraille les symboles et les chiffres. Trop dur ? Baisse la difficulté avec ⚙️ Difficulté. Tu vas y arriver !'
+      : 'Astuce : pendant les sorts, lis bien la touche dans la boule violette et tape-la vite. Attention aux majuscules ! Garde tes doigts posés sur le clavier. Tu vas y arriver !';
+  onFail(bt('failMsg','Le dragon t\'a vaincu cette fois ! 🐉'), tip);
 }
 function stopB(){ B.running=false; cancelAnimationFrame(B.raf); stopBossMusic(); }
 
@@ -1275,30 +1977,74 @@ function updateBanner(){
   document.getElementById('bEmoji').textContent=currentStep.emoji;
   document.getElementById('bTitle').textContent=(reviewing()?'Révision · ':'')+currentStep.label+' : '+currentStep.title;
   document.getElementById('bSub').innerHTML='<span class="b-goal-label">Objectif :</span> '+stripTags(currentStep.desc);
+  // le bouton « Difficulté » n'a de sens que pour un boss à modes
+  const db=document.getElementById('diffBtn'); if(db) db.style.display=(currentStep.mode==='boss'&&currentStep.diff)?'':'none';
 }
 function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
 
 function openBossBriefing(s){
   // Combat déjà en cours : « Revoir la consigne » ne fait que mettre en pause (pas de redémarrage)
   const resuming = !!activeGame;
+  const th=s.theme||{}, emoji=th.emoji||'🐉', enh=s.enh||{};
+  const goalTxt=s.diff
+    ? (KB_BOSS_MODES.easy.hits+' à '+KB_BOSS_MODES.extreme.hits+' coups pour gagner, selon la difficulté')
+    : ((s.bossHits||15)+' coups pour gagner');
+  const bullets = s.swarm
+    ? '<li><span class="ni-glyph">🕹️</span> '+kbd('F')+' / '+kbd('J')+' : déplace ton vaisseau</li>'
+      + '<li><span class="ni-glyph">🎯</span> Aligne-toi sous un alien, tape sa lettre</li>'
+      + '<li><span class="ni-glyph">💥</span> Vulnérable : tape symboles et chiffres</li>'
+      + (enh.shield?'<li><span class="ni-glyph">🛡️</span> Son bouclier se recharge à chaque essaim</li>':'')
+    : '<li><span class="ni-glyph">🛡️</span> '+(s.wordMode?'Esquive : tape le mot':'Défense : tape la touche affichée')+'</li>'
+      + '<li><span class="ni-glyph">💥</span> '+(s.wordMode?'Attaque : tape le mot d\'arme':'Attaque : frappe les symboles')+'</li>'
+      + (enh.shield?'<li><span class="ni-glyph">🛡️</span> Brise son bouclier avant de le pirater</li>':'');
   modal.className='modal test-modal';
   modal.innerHTML=
-    '<span class="m-emoji">🐉</span>'
+    '<span class="m-emoji">'+emoji+'</span>'
     + '<div class="kicker" style="color:var(--red-d)">'+(reviewing()?'Entraînement':'Combat de Boss')+'</div>'
     + '<h2>'+s.title+'</h2>'
     + '<div class="howto test"><p class="h-head">⚔️ Le combat :</p><p>'+s.desc+'</p></div>'
     + '<ul class="newtools">'
-    +   '<li><span class="ni-glyph">⚡</span> '+(s.wordMode?'Esquive : tape le mot':'Esquive : tape la touche du sort')+'</li>'
-    +   '<li><span class="ni-glyph">⚔️</span> '+(s.wordMode?'Attaque : tape le mot d\'arme':'Attaque : frappe les symboles')+'</li>'
-    +   '<li><span class="ni-glyph">❤️</span> '+(s.lives||6)+' vies à protéger</li>'
+    +   bullets
+    +   '<li><span class="ni-glyph">❤️</span> Des vies à protéger</li>'
     +   (s.penalizeWrong?'<li><span class="ni-glyph">⚠️</span> Une mauvaise touche te coûte une vie !</li>':'')
-    +   '<li><span class="ni-glyph">🐉</span> '+(s.bossHits||15)+' coups pour gagner</li>'
+    +   '<li><span class="ni-glyph">'+emoji+'</span> '+goalTxt+'</li>'
     + '</ul>'
-    + '<div class="m-actions"><button class="m-btn primary test" id="goBtn">'+(resuming?'⚔️ Reprendre le combat ▶':'⚔️ Au combat ! 🚀')+'</button></div>';
+    + ((s.diff && !resuming)?('<p style="font-weight:800;color:var(--red-d);margin:6px 0 0">Choisis ta difficulté :</p>'+bossModeChooserHTML()):'')
+    + ((s.diff && !resuming)?'':'<div class="m-actions"><button class="m-btn primary test" id="goBtn">'+(resuming?'⚔️ Reprendre le combat ▶':'⚔️ Au combat ! 🚀')+'</button></div>');
   openOverlay();
+  if(s.diff && !resuming){ bindBossModeChoice(); return; }
   document.getElementById('goBtn').onclick=resuming
     ? (()=>{ closeOverlay(); resumeActive(); })
     : (()=>{ closeOverlay(); audioCtx(); launchGame(); });
+}
+// Boutons de choix de la difficulté du boss (partagés briefing / bouton ⚙️ Difficulté)
+function bossModeChooserHTML(){
+  return '<div class="boss-modes">'
+    + ['easy','medium','hard','extreme'].map(k=>{ const m=KB_BOSS_MODES[k];
+        return '<button class="boss-mode-btn is-'+k+(k===kbBossMode?' sel':'')+'" data-mode="'+k+'">'
+          + '<span class="bm-ic">'+m.emoji+'</span>'
+          + '<span class="bm-txt"><span class="bm-name">'+m.label+'</span><span class="bm-sub">'+m.sub+'</span></span>'
+          + '<span class="bm-tag">'+m.tag+'</span></button>'; }).join('')
+    + '</div>';
+}
+function bindBossModeChoice(){
+  modal.querySelectorAll('.boss-mode-btn').forEach(b=>{
+    b.onclick=()=>{ kbBossMode=b.getAttribute('data-mode'); try{localStorage.setItem('kb_bossmode',kbBossMode);}catch(e){}
+      closeOverlay(); audioCtx(); launchGame(); };
+  });
+}
+// Relance le boss en re-choisissant la difficulté (bouton « ⚙️ Difficulté »)
+function openBossDifficulty(){
+  const s=currentStep, th=(s&&s.theme)||{};
+  modal.className='modal test-modal';
+  modal.innerHTML=
+    '<span class="m-emoji">'+(th.emoji||'🐉')+'</span>'
+    + '<div class="kicker" style="color:var(--red-d)">Combat de Boss</div>'
+    + '<h2>Choisis ta difficulté</h2>'
+    + '<p>Relance le combat contre <b>'+(th.name||'le boss')+'</b> en choisissant un nouveau mode :</p>'
+    + bossModeChooserHTML();
+  openOverlay();
+  bindBossModeChoice();
 }
 function openRoundPopup(){
   const s=currentStep, jalon=s.kind==='jalon';
@@ -1306,7 +2052,7 @@ function openRoundPopup(){
   const lvl=LEVELS[currentLevel-1];
   // Briefing image-first : pour les missions à astuces, on montre les touches sur le clavier
   let kbimg='';
-  if(lvl.game==='parachute' && s.showTips && s.pool){
+  if((lvl.game==='parachute' || lvl.game==='invaders' || lvl.game==='hackterm') && s.showTips && s.pool){
     const c=comboHint(s.pool);
     kbimg=buildKeyboard({keys:c.keys, maj:c.maj, altgr:c.altgr});
   }
@@ -1323,6 +2069,8 @@ function openRoundPopup(){
 }
 function launchGame(){
   if(currentStep.mode==='boss') return startBoss(currentStep);
+  if(LEVELS[currentLevel-1].game==='hackterm') return startHackterm(currentStep);
+  if(LEVELS[currentLevel-1].game==='invaders') return startInvaders(currentStep);
   if(LEVELS[currentLevel-1].game==='parachute') startParachute(currentStep);
   else startDactylo(currentStep);
 }
@@ -1438,7 +2186,7 @@ function courseFinish(){
   confetti(); confetti();
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
-    +'<p>Incroyable ! Tu as fini les <b>7 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les accents, les chiffres, les symboles, la frappe libre et la chasse à la lave. Tu tapes comme un pro ! 👏</p>'
+    +'<p>Incroyable ! Tu as fini les <b>7 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les accents, les chiffres, le piratage alien, la frappe libre et la chasse à la lave. Tu tapes comme un pro ! 👏</p>'
     +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   openOverlay();
@@ -1545,6 +2293,7 @@ document.getElementById('resetBtn').onclick=()=>{
 /* ---- boutons action ---- */
 document.getElementById('seeMission').onclick=openRoundPopup;
 document.getElementById('restartBtn').onclick=()=>{ if(currentStep){ audioCtx(); launchGame(); } };
+document.getElementById('diffBtn').onclick=()=>{ if(currentStep && currentStep.mode==='boss' && currentStep.diff){ pauseActive(); audioCtx(); openBossDifficulty(); } };
 document.getElementById('hintBtn').onclick=()=>{
   const lvl=LEVELS[currentLevel-1];
   // Parachute avec astuces : montre directement la touche de la lettre la plus basse (image + pause)
@@ -1553,12 +2302,25 @@ document.getElementById('hintBtn').onclick=()=>{
     openGameTip(it?it.ch:pool[0]);
     return;
   }
+  if(lvl.game==='invaders' && currentStep && currentStep.showTips){
+    const it=mostUrgentInvader(); const pool=currentStep.pool||[];
+    openGameTip(it?it.ch:pool[0]);
+    return;
+  }
+  // Terminal de hacking : montre la touche du caractère en cours dans le code
+  if(lvl.game==='hackterm' && currentStep && currentStep.mode!=='boss'){
+    const pool=currentStep.pool||['?'];
+    openGameTip((H.code&&H.code[H.pos])||pool[0]);
+    return;
+  }
   // Boss : astuce spécifique au combat
   if(currentStep && currentStep.mode==='boss'){
     pauseActive();
     const tip = currentStep.wordMode
       ? 'Pendant l\'<b>esquive</b>, tape vite le mot qui descend, lettre par lettre — commence dès qu\'il apparaît. Pendant l\'<b>attaque</b>, tape le mot d\'arme affiché devant le dragon. Attention aux <b>majuscules</b> et aux fautes : chaque erreur coûte une vie !'
-      : 'Pendant l\'<b>esquive</b>, lis bien la touche dans la boule violette et tape-la vite. Fais attention aux <b>majuscules</b> ! Pendant l\'<b>attaque</b>, frappe les symboles affichés devant le dragon. Chaque mauvaise touche coûte une vie !';
+      : currentStep.swarm
+        ? 'Déplace ton vaisseau avec '+kbd('F')+' et '+kbd('J')+'. <b>Aligne-toi</b> juste sous un alien, puis tape <b>sa lettre</b> (attention aux majuscules !) pour tirer au laser. Mal aligné ou mauvaise touche : le tir ne part pas. Quand le Vaisseau-Mère est <b>vulnérable</b>, tape les <b>symboles et chiffres</b> affichés — son bouclier 🛡️ se recharge à chaque essaim. Trop dur ? Baisse la difficulté avec ⚙️.'
+        : 'Pendant l\'<b>esquive</b>, lis bien la touche dans la boule violette et tape-la vite. Fais attention aux <b>majuscules</b> ! Pendant l\'<b>attaque</b>, frappe les symboles affichés devant le dragon. Chaque mauvaise touche coûte une vie !';
     modal.className='modal';
     modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker">Astuce — Combat de Boss</div>'
       +'<p class="tip-cap">'+tip+'</p>'
