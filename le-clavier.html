@@ -295,8 +295,10 @@
   .boss-sweat{position:absolute;top:-4px;right:-12px;font-size:1.5rem;animation:sweatBob 1s infinite;}
   @keyframes sweatBob{0%,100%{transform:translateY(0);opacity:.95;}50%{transform:translateY(6px);opacity:.4;}}
 
-  .hero{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:2.9rem;line-height:1;z-index:4;transition:left .18s ease;
-    filter:drop-shadow(0 4px 9px rgba(0,0,0,.55));}
+  .hero{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:2.9rem;line-height:1;z-index:4;
+    transition:left .18s ease,bottom .35s ease;filter:drop-shadow(0 4px 9px rgba(0,0,0,.55));}
+  /* phase de vulnérabilité (boss essaim) : le vaisseau avance vers le Vaisseau-Mère */
+  .hero.vuln{bottom:110px;}
   .hero.hit{animation:heroHit .4s;}
   @keyframes heroHit{0%,100%{transform:translateX(-50%);}
     25%{transform:translateX(calc(-50% - 9px)) rotate(-9deg);filter:brightness(.6) sepia(1) saturate(5) hue-rotate(-30deg);}
@@ -323,6 +325,24 @@
     text-shadow:0 2px 7px rgba(0,0,0,.7);pointer-events:none;animation:dmgUp .8s ease forwards;}
   @keyframes dmgUp{0%{transform:translate(-50%,0) scale(.6);opacity:0;}20%{opacity:1;transform:translate(-50%,-8px) scale(1.2);}
     100%{transform:translate(-50%,-48px) scale(1);opacity:0;}}
+
+  /* ---- impact sur le bouclier d'énergie du boss (coup absorbé, pas de dégât réel) ---- */
+  .shield-ring{position:absolute;width:70px;height:70px;border-radius:50%;pointer-events:none;z-index:22;
+    border:3px solid rgba(125,211,252,.95);box-shadow:0 0 18px 6px rgba(56,189,248,.65),inset 0 0 14px 2px rgba(224,242,254,.6);
+    animation:shieldRingPop .45s ease-out forwards;}
+  @keyframes shieldRingPop{0%{transform:translate(-50%,-50%) scale(.3);opacity:1;}100%{transform:translate(-50%,-50%) scale(1.7);opacity:0;}}
+  .shield-spark{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:22;
+    background:#e0f2fe;box-shadow:0 0 8px 2px rgba(125,211,252,.95);animation:shieldSparkFly .4s ease-out forwards;}
+  @keyframes shieldSparkFly{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0;}}
+
+  /* ---- dégât réel infligé au boss (bouclier percé) ---- */
+  .dmg-flash{position:absolute;inset:0;z-index:21;pointer-events:none;
+    background:radial-gradient(circle at 50% 32%,rgba(239,68,68,.45),rgba(239,68,68,0) 60%);
+    animation:dmgFlashFade .3s ease forwards;}
+  @keyframes dmgFlashFade{0%{opacity:1;}100%{opacity:0;}}
+  .dmg-crack{position:absolute;width:10px;height:10px;border-radius:50%;pointer-events:none;z-index:23;
+    background:#fb923c;box-shadow:0 0 10px 3px rgba(251,146,60,.9);animation:dmgCrackFly .45s ease-out forwards;}
+  @keyframes dmgCrackFly{to{transform:translate(var(--dx),var(--dy)) scale(.1);opacity:0;}}
 
   .attack-banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     z-index:30;background:radial-gradient(circle,rgba(239,68,68,.28),rgba(20,8,30,.5));pointer-events:none;padding:16px;text-align:center;}
@@ -499,6 +519,44 @@
   .boss-mode-btn.is-extreme .bm-sub{color:#fca5a5;}
   .boss-mode-btn.is-extreme .bm-tag{background:#7f1d1d;color:#ffe4e6;}
   .boss-mode-btn.is-extreme:hover{border-color:#ef4444;box-shadow:0 6px 16px -6px rgba(239,68,68,.6);}
+
+  /* ---------- Plein écran de l'arène du boss (repris de La Souris — Gruk) ----------
+     On garde la taille LOGIQUE du terrain (physique/difficulté inchangées) et on agrandit
+     visuellement via un scaler. Le wrapper est l'élément plein écran. */
+  .boss-fs-wrap, .boss-scaler{display:block;}
+  .boss-fs-wrap:fullscreen{display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#000;}
+  .boss-fs-wrap:-webkit-full-screen{display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#000;}
+  .boss-fs-wrap:fullscreen .boss-scaler{transform:scale(var(--bfs-scale,1));transform-origin:center center;}
+  .boss-fs-wrap:-webkit-full-screen .boss-scaler{transform:scale(var(--bfs-scale,1));transform-origin:center center;}
+  .boss-fs-btn{flex:0 0 auto;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;
+    border:2px solid rgba(120,120,140,.4);background:rgba(0,0,0,.06);color:#334155;border-radius:9px;
+    font-size:1.15rem;line-height:1;cursor:pointer;padding:0;margin-left:auto;}
+  .boss-fs-btn:hover{border-color:var(--blue);background:rgba(0,0,0,.12);}
+
+  /* ---------- Tutoriel du boss « essaim » (Niveau 5) ---------- */
+  .tuto-hint{position:absolute;top:54px;left:8px;right:8px;z-index:28;display:flex;flex-direction:column;
+    align-items:center;gap:6px;pointer-events:none;text-align:center;}
+  .tuto-hint .th-txt{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:clamp(.92rem,2.5vw,1.2rem);
+    color:#e0f2fe;background:rgba(10,20,45,.74);border:2px solid rgba(125,211,252,.55);border-radius:12px;
+    padding:8px 14px;box-shadow:0 4px 16px rgba(0,0,0,.4);max-width:640px;}
+  .tuto-hint .th-txt b{color:#fde047;}
+  .tuto-hint .th-prog{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:800;font-size:1rem;color:#fde047;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);}
+  .tuto-card{position:absolute;inset:0;z-index:34;display:flex;align-items:center;justify-content:center;padding:18px;
+    text-align:center;background:radial-gradient(circle,rgba(12,20,48,.82),rgba(6,10,26,.93));}
+  .tuto-card .tc-inner{max-width:520px;background:linear-gradient(#111a3a,#0b1230);border:2px solid rgba(125,211,252,.5);
+    border-radius:20px;padding:22px 22px 20px;box-shadow:0 18px 50px rgba(0,0,0,.6);animation:tgtIn .3s ease both;}
+  .tuto-card .tc-emoji{font-size:3rem;line-height:1;margin-bottom:6px;}
+  .tuto-card .tc-title{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.5rem;color:#7dd3fc;margin-bottom:8px;}
+  .tuto-card .tc-text{color:#dbeafe;font-weight:600;font-size:1.02rem;line-height:1.5;margin-bottom:16px;}
+  .tuto-card .tc-text b{color:#fde047;}
+  .tuto-card .tc-actions{display:flex;flex-direction:column;gap:10px;align-items:center;}
+  .tuto-card .tc-btn{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.15rem;cursor:pointer;
+    border:none;border-radius:14px;padding:12px 26px;color:#06233a;background:linear-gradient(#7dd3fc,#38bdf8);
+    box-shadow:0 8px 20px -6px rgba(56,189,248,.7);}
+  .tuto-card .tc-btn:hover{filter:brightness(1.07);}
+  .tuto-card .tc-skip{background:none;border:none;color:#93c5fd;font-weight:700;cursor:pointer;font-size:.92rem;
+    text-decoration:underline;padding:4px;}
 
   @media (max-width:560px){
     .newtools{grid-template-columns:1fr;}
@@ -812,7 +870,7 @@ const LEVELS=[
                attackTitle:'💥 VAISSEAU-MÈRE VULNÉRABLE ! 💥', attackSub:'Mitraille-le : symboles et chiffres !',
                failMsg:'L\'essaim du Vaisseau-Mère t\'a vaincu ! 🛸' },
        enh:{ shield:true, accel:true, glitch:true },
-       lives:10, spellsPerWave:10, speed:46, spawnMs:1500, maxConcurrent:3, attackMs:9000}
+       lives:4, spellsPerWave:19, speed:22, spawnMs:1400, maxConcurrent:5, attackMs:9000}
     ]},
 
   { n:6, title:'Frappe libre', subtitle:'frappe libre', game:'dactylo',
@@ -895,15 +953,60 @@ function beep(kind){
   else if(kind==='ding'){ tone(880,.12,'sine',.12); tone(1320,.16,'sine',.1,.08); }
   else if(kind==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.12,i*.09)); }
 }
+// son réel de tir laser (boss essaim, Niveau 5) : remplace le bip synthétique de base
+function playLaserShot(){
+  if(!soundOn) return;
+  try{ const a=new Audio('sounds/alien/laser_shot.mp3'); a.volume=.55; const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+}
+
+/* ---- Sons du terminal de piratage alien (Niveau 5, hors combat de boss) ---- */
+let hackAmbientAudio=null;
+function startHackAmbient(){
+  try{
+    if(!hackAmbientAudio){ hackAmbientAudio=new Audio('musics/digital_console.mp3'); hackAmbientAudio.loop=true; hackAmbientAudio.volume=.32; }
+    if(soundOn){ hackAmbientAudio.currentTime=0; const p=hackAmbientAudio.play(); if(p&&p.catch) p.catch(()=>{}); }
+  }catch(e){}
+}
+function pauseHackAmbient(){ if(hackAmbientAudio){ try{hackAmbientAudio.pause();}catch(e){} } }
+function resumeHackAmbient(){ if(hackAmbientAudio && soundOn && H.running){ try{ const p=hackAmbientAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
+function stopHackAmbient(){ if(hackAmbientAudio){ try{hackAmbientAudio.pause(); hackAmbientAudio.currentTime=0;}catch(e){} } }
+// code envoyé avec succès
+function playHackBeep(){
+  if(!soundOn) return;
+  try{ const a=new Audio('sounds/alien/beep.mp3'); a.volume=.6; const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+}
+// une nouvelle série de caractères (code) apparaît à l'écran
+function playHackDigital(){
+  if(!soundOn) return;
+  try{ const a=new Audio('sounds/alien/digital_sound.mp3'); a.volume=.5; const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+}
+// chaque caractère correctement tapé
+function playHackTyping(){
+  if(!soundOn) return;
+  try{ const a=new Audio('sounds/alien/typing_keyboard.mp3'); a.volume=.45; const p=a.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+}
+// erreur (mauvaise touche ou traçage complet) : jamais deux fois en même temps pour ne pas saturer
+let hackWarningAudio=null, hackWarningPlaying=false;
+function playHackWarning(){
+  if(!soundOn || hackWarningPlaying) return;
+  try{
+    if(!hackWarningAudio) hackWarningAudio=new Audio('sounds/alien/warning_beep.mp3');
+    hackWarningAudio.currentTime=0;
+    hackWarningPlaying=true;
+    hackWarningAudio.onended=()=>{ hackWarningPlaying=false; };
+    const p=hackWarningAudio.play(); if(p&&p.catch) p.catch(()=>{ hackWarningPlaying=false; });
+  }catch(e){ hackWarningPlaying=false; }
+}
+
 function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
-document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('kb_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); resumeBossMusic(); } else { pauseBossMusic(); } };
+document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('kb_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); resumeBossMusic(); resumeHackAmbient(); } else { pauseBossMusic(); pauseHackAmbient(); } };
 
 /* =========================================================
    5. MOTEUR DE JEU — abstraction
    ========================================================= */
 let activeGame=null;   // {onKey(e), stop(), pause?(), resume?()}
 let gamePaused=false;  // vrai quand une astuce est ouverte : le jeu est gelé
-function stopGame(){ if(activeGame){ try{activeGame.stop();}catch(e){} activeGame=null; } gamePaused=false; if(typeof stopBossMusic==='function') stopBossMusic(); }
+function stopGame(){ if(activeGame){ try{activeGame.stop();}catch(e){} activeGame=null; } gamePaused=false; if(typeof stopBossMusic==='function') stopBossMusic(); if(typeof stopHackAmbient==='function') stopHackAmbient(); }
 function pauseActive(){ if(activeGame && activeGame.pause){ try{activeGame.pause();}catch(e){} } gamePaused=true; }
 function resumeActive(){ if(gamePaused && activeGame && activeGame.resume){ try{activeGame.resume();}catch(e){} } gamePaused=false; }
 
@@ -991,6 +1094,30 @@ function burstAt(xPx, yPx, field){
     sp.style.setProperty('--dx',(Math.cos(angle)*dist)+'px');
     sp.style.setProperty('--dy',(Math.sin(angle)*dist)+'px');
     sp.style.background=COLORS[i%COLORS.length];
+    sp.style.animationDelay=(Math.random()*0.06)+'s';
+    burst.appendChild(sp);
+  }
+  field.appendChild(burst);
+  setTimeout(()=>burst.remove(),500);
+}
+// explosion bleue (même teinte que le laser) : utilisée pour les aliens de l'essaim du boss
+function blueBurstAt(xPx, yPx, field){
+  field=field||P.field;
+  const COLORS=['#7dd3fc','#38bdf8','#0ea5e9','#e0f2fe'];
+  const N=12;
+  const burst=document.createElement('div');
+  burst.className='drop-burst';
+  burst.style.left=xPx+'px';
+  burst.style.top=yPx+'px';
+  for(let i=0;i<N;i++){
+    const angle=(i/N)*2*Math.PI;
+    const dist=38+Math.random()*32;
+    const sp=document.createElement('div');
+    sp.className='spark';
+    sp.style.setProperty('--dx',(Math.cos(angle)*dist)+'px');
+    sp.style.setProperty('--dy',(Math.sin(angle)*dist)+'px');
+    sp.style.background=COLORS[i%COLORS.length];
+    sp.style.boxShadow='0 0 8px 2px rgba(56,189,248,.75)';
     sp.style.animationDelay=(Math.random()*0.06)+'s';
     burst.appendChild(sp);
   }
@@ -1306,9 +1433,11 @@ function startHackterm(step){
     + '</div>';
   document.getElementById('hudTip').onclick=()=>{ openGameTip(H.code[H.pos]||H.step.pool[0]); };
   updateHtHud(); updateRadar();
+  hackWarningPlaying=false;
+  startHackAmbient();
   activeGame={ onKey:onKeyH, stop:stopH,
-    pause(){ H.running=false; if(H.raf){ cancelAnimationFrame(H.raf); H.raf=0; } },
-    resume(){ H.running=true; if(H.chal&&H.ready){ H.lastTs=0; H.raf=requestAnimationFrame(traceLoop); } } };
+    pause(){ H.running=false; if(H.raf){ cancelAnimationFrame(H.raf); H.raf=0; } pauseHackAmbient(); },
+    resume(){ H.running=true; if(H.chal&&H.ready){ H.lastTs=0; H.raf=requestAnimationFrame(traceLoop); } resumeHackAmbient(); } };
   const st=document.getElementById('htStatus'); st.className='ht-status';
   typeInto(st,'> connexion au réseau alien…',sid,()=>{ htWait(450,sid,newHackCode); });
 }
@@ -1339,6 +1468,7 @@ function newHackCode(){
     // le code apparaît d'abord en glyphes aliens, puis se « décode » caractère par caractère
     const box=document.getElementById('htCode');
     box.innerHTML=H.code.map(()=>'<span class="hc alien">'+ALIEN_GLYPHS[Math.floor(Math.random()*ALIEN_GLYPHS.length)]+'</span>').join('');
+    playHackDigital();   // une nouvelle série de caractères apparaît
     H.code.forEach((ch,i)=>{
       htWait(280+i*140,sid,()=>{
         const c=box.children[i]; if(!c) return;
@@ -1371,7 +1501,7 @@ function traceLoop(ts){
 }
 function traceCaught(){
   const sid=H.sid;
-  H.ready=false; H.energies--; beep('bad');
+  H.ready=false; H.energies--; playHackWarning();
   glitchTerm(true);
   updateHtHud();
   if(H.energies<=0){
@@ -1398,12 +1528,12 @@ function onKeyH(e){
     const c=box.children[H.pos];
     if(c){ c.classList.remove('cur','bad'); c.classList.add('done'); }
     H.pos++;
-    beep('key');
+    playHackTyping();
     if(H.pos>=H.code.length) return hackCodeDone();
     if(box.children[H.pos]) box.children[H.pos].classList.add('cur');
   } else {
     H.errors++;
-    beep('bad'); glitchTerm(false);
+    playHackWarning(); glitchTerm(false);
     const c=box.children[H.pos];
     if(c){ c.classList.remove('bad'); void c.offsetWidth; c.classList.add('bad'); }
   }
@@ -1414,7 +1544,7 @@ function hackCodeDone(){
   if(H.raf){ cancelAnimationFrame(H.raf); H.raf=0; }
   const f=document.getElementById('htTrace'); if(f) f.style.width='0%';
   H.codeIdx++;
-  beep('good'); updateHtHud(); updateRadar();
+  playHackBeep(); updateHtHud(); updateRadar();
   const st=document.getElementById('htStatus'); st.className='ht-status ok';
   if(H.codeIdx>=H.codes.length) return hackFinish();
   typeInto(st,'✔ ACCÈS AUTORISÉ — signal affiné…',sid,()=>{ htWait(650,sid,newHackCode); });
@@ -1439,6 +1569,7 @@ function stopH(){
   H.sid=++hackSid;   // invalide les timers/typewriters en attente
   H.running=false; H.ready=false;
   if(H.raf){ cancelAnimationFrame(H.raf); H.raf=0; }
+  stopHackAmbient();
 }
 
 /* ---- Dactylo (avec poursuite optionnelle) ---- */
@@ -1571,6 +1702,8 @@ function bt(key, fallback){ const t=bTheme(); return (t&&t[key]!=null)?t[key]:fa
 const SWARM_LANES=6;
 const SWARM_LETTERS='abcdeghiklmnopqrstuvwxyz'.split('');
 function laneX(l){ return (l+0.5)/SWARM_LANES*100; }
+// tutoriel de pilotage : montré une seule fois par session (pas sur les reprises/réessais)
+let kbSwarmTutoSeen=false;
 
 function startBossMusic(){
   try{
@@ -1595,10 +1728,12 @@ function startBoss(step){
   const hp=(step.diff ? md.hits : step.bossHits)||15;
   const baseSpeed=(step.speed||74)*(md.speedMul||1);
   stage.innerHTML=
-    '<div class="hud">'
+    '<div class="boss-fs-wrap" id="bossFsWrap"><div class="boss-scaler" id="bossScaler">'
+    + '<div class="hud">'
     + '<span class="lives" id="bossLives"></span>'
     + '<span class="count" id="bossPhase"></span>'
     + '<div class="meter"><i id="bossMeter"></i></div>'
+    + '<button class="boss-fs-btn" id="bossFsBtn" title="Plein écran" aria-label="Plein écran">⛶</button>'
     + '</div>'
     + '<div class="field bossfield'+(theme.cyber?' cyber':'')+'" id="bossField">'
     +   (enh.glitch?'<div class="glitch-layer" id="bossGlitch"></div>':'')
@@ -1609,7 +1744,8 @@ function startBoss(step){
     +     '<div style="position:relative"><div class="boss-sprite" id="bossSprite">'+bemoji+'</div></div>'
     +   '</div>'
     +   '<div class="hero'+heroCls+'" id="bossHero">'+hero+'</div>'
-    + '</div>';
+    + '</div>'
+    + '</div></div>';
   const field=document.getElementById('bossField');
   Object.assign(B,{
     step, field, theme, enh,
@@ -1631,12 +1767,57 @@ function startBoss(step){
   });
   B.groundY=field.clientHeight-64;
   if(B.swarm) B.hero.style.left=laneX(B.lane)+'%';
+  // tutoriel du boss essaim : montré une seule fois par session (pas sur les reprises/réessais)
+  if(B.swarm && !kbSwarmTutoSeen){ B.phase='tuto'; B.immune=true; }
   updateBossHud();
   startBossMusic();
+  setupBossFullscreen();
   activeGame={ onKey:onKeyB, stop:stopB,
     pause(){ if(B.running){ B.running=false; cancelAnimationFrame(B.raf); } pauseBossMusic(); },
     resume(){ if(!B.running){ B.running=true; B.last=0; B.raf=requestAnimationFrame(loopB); } resumeBossMusic(); } };
+  if(B.phase==='tuto') startSwarmTutorial();
   B.raf=requestAnimationFrame(loopB);
+}
+/* ---- Plein écran de l'arène du boss (agrandissement visuel, difficulté inchangée) ---- */
+function fsElement(){ return document.fullscreenElement||document.webkitFullscreenElement||null; }
+function setupBossFullscreen(){
+  const btn=document.getElementById('bossFsBtn'); if(!btn) return;
+  const wrap=document.getElementById('bossFsWrap'); B.fsWrap=wrap;
+  B.fsSync=function(){ const on=fsElement()===wrap; btn.textContent=on?'🗗':'⛶';
+    btn.title=on?'Quitter le plein écran':'Plein écran';
+    if(on) layoutBossFullscreen(); else clearBossFullscreen(); };
+  btn.onclick=function(){
+    try{
+      if(fsElement()){ const ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex){ const p=ex.call(document); if(p&&p.catch) p.catch(function(){}); } }
+      else { const f=B.field; B._fsW=f?f.clientWidth:0; B._fsH=f?f.clientHeight:0;
+        const rq=wrap&&(wrap.requestFullscreen||wrap.webkitRequestFullscreen); if(rq){ const p=rq.call(wrap); if(p&&p.catch) p.catch(function(){}); } }
+    }catch(e){}
+  };
+  B.fsResize=function(){ if(fsElement()===wrap) layoutBossFullscreen(); };
+  document.addEventListener('fullscreenchange',B.fsSync);
+  document.addEventListener('webkitfullscreenchange',B.fsSync);
+  window.addEventListener('resize',B.fsResize);
+  B.fsSync();
+}
+function layoutBossFullscreen(){
+  const f=B.field, sc=document.getElementById('bossScaler'); if(!f||!sc) return;
+  if(!B._fsW){ B._fsW=f.clientWidth; B._fsH=f.clientHeight; }
+  f.style.width=B._fsW+'px'; f.style.height=B._fsH+'px';        // verrouille la taille logique
+  const W=sc.offsetWidth||B._fsW, H=sc.offsetHeight||B._fsH;     // englobe le HUD au-dessus du terrain
+  const S=Math.max(0.2, Math.min(window.innerWidth/W, window.innerHeight/H));
+  sc.style.setProperty('--bfs-scale', S);                        // agrandissement purement visuel
+}
+function clearBossFullscreen(){
+  const f=B.field, sc=document.getElementById('bossScaler');
+  if(f){ f.style.width=''; f.style.height=''; }
+  if(sc) sc.style.removeProperty('--bfs-scale');
+  B._fsW=0; B._fsH=0;
+}
+function teardownBossFullscreen(){
+  if(B.fsSync){ document.removeEventListener('fullscreenchange',B.fsSync); document.removeEventListener('webkitfullscreenchange',B.fsSync); B.fsSync=null; }
+  if(B.fsResize){ window.removeEventListener('resize',B.fsResize); B.fsResize=null; }
+  clearBossFullscreen();
+  if(fsElement()){ const ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex) try{ const p=ex.call(document); if(p&&p.catch) p.catch(function(){}); }catch(e){} }
 }
 function updateBossHud(){
   let h=''; for(let i=0;i<B.maxLives;i++) h+=(i<B.lives?'❤️':'<span class="lost">🖤</span>');
@@ -1699,6 +1880,7 @@ function loopB(ts){
   if(!B.running) return;
   if(!B.last) B.last=ts;
   const dt=Math.min(.05,(ts-B.last)/1000); B.last=ts;
+  if(B.phase==='tuto'){ tutoTick(dt,ts); B.raf=requestAnimationFrame(loopB); return; }
   if(B.phase==='cast'){
     if(B.spawned<B.spellsPerWave){
       if(ts>=B.nextSpawn){ spawnSpell(); B.spawned++; B.nextSpawn=ts+B.spawnMs; }
@@ -1725,11 +1907,12 @@ function spellHitsHero(s){
 }
 function destroySpell(s){
   const xPx=B.field.clientWidth*s.x/100, yPx=s.y+24;
-  burstAt(xPx,yPx,B.field);
+  if(B.swarm) blueBurstAt(xPx,yPx,B.field); else burstAt(xPx,yPx,B.field);
   removeSpell(s); const el=s.el; el.classList.add('pop'); setTimeout(()=>el.remove(),250);
-  beep('good');
+  if(!B.swarm) beep('good');   // en mode essaim, le son de tir laser remplace ce bip
 }
 function onKeyB(e){
+  if(B.phase==='tuto') return onKeyTuto(e);
   if(e.key.length!==1) return; e.preventDefault();
   if(B.phase==='attack'){
     if(B.wordMode) return typeAttackWord(e.key);
@@ -1764,6 +1947,192 @@ function moveSwarmShip(dir){
 function swarmLaser(s){
   const xPx=B.field.clientWidth*s.x/100;
   drawLaser(B.field, xPx, B.field.clientHeight-40, xPx, s.y+30);
+  playLaserShot();
+}
+
+/* =========================================================
+   Tutoriel de pilotage (boss « essaim », Niveau 5)
+   Un entraînement guidé AVANT le combat : déplacer le vaisseau (F/J),
+   tirer sur 2 aliens, puis découvrir la phase 2 (mitraillage du boss).
+   Aucune vie perdue pendant le tuto (B.immune = true).
+   ========================================================= */
+const TUTO_ALIEN_SPEED=16;   // descente très lente des aliens d'entraînement
+function startSwarmTutorial(){
+  B.phase='tuto'; B.immune=true;
+  B.tuto={ stage:0, fdone:false, jdone:false, shots:0, atkTargets:[], atkDone:0 };
+  B.spells.forEach(s=>s.el.remove()); B.spells=[];
+  showTutoCard0();
+}
+function tutoField(){ return B.field; }
+function removeTutoUI(){
+  const c=document.getElementById('tutoCard'); if(c) c.remove();
+  const h=document.getElementById('tutoHint'); if(h) h.remove();
+}
+function showTutoCard(html){
+  removeTutoUI();
+  const card=document.createElement('div'); card.className='tuto-card'; card.id='tutoCard';
+  card.innerHTML='<div class="tc-inner">'+html+'</div>';
+  tutoField().appendChild(card);
+  return card;
+}
+function setTutoHint(txt, prog){
+  let h=document.getElementById('tutoHint');
+  if(!h){ h=document.createElement('div'); h.className='tuto-hint'; h.id='tutoHint';
+    h.innerHTML='<span class="th-txt"></span><span class="th-prog"></span>';
+    tutoField().appendChild(h); }
+  h.querySelector('.th-txt').innerHTML=txt;
+  h.querySelector('.th-prog').innerHTML=prog||'';
+}
+// ---- Étape 0 : accueil ----
+function showTutoCard0(){
+  const card=showTutoCard(
+    '<div class="tc-emoji">🚀</div>'
+    + '<div class="tc-title">Entraînement de pilotage</div>'
+    + '<div class="tc-text">Bienvenue, pilote&nbsp;! Avant d\'affronter le <b>Vaisseau-Mère</b>, apprenons à piloter ton vaisseau. Ça prend 30&nbsp;secondes&nbsp;!</div>'
+    + '<div class="tc-actions">'
+    +   '<button class="tc-btn" id="tutoStart">Commencer l\'entraînement 🕹️</button>'
+    +   '<button class="tc-skip" id="tutoSkip">Passer le tutoriel →</button>'
+    + '</div>');
+  card.querySelector('#tutoStart').onclick=()=>{ audioCtx(); beep('key'); tutoStartMove(); };
+  card.querySelector('#tutoSkip').onclick=()=>{ audioCtx(); beginRealCombat(); };
+}
+// ---- Étape 1 : déplacement F / J ----
+function tutoStartMove(){
+  B.tuto.stage=1; removeTutoUI();
+  paintTutoMoveHint();
+}
+function paintTutoMoveHint(){
+  const t=B.tuto;
+  setTutoHint('🕹️ Appuie sur <b>F</b> pour aller à <b>gauche</b> et sur <b>J</b> pour aller à <b>droite</b>.',
+    'F '+(t.fdone?'✅':'⬜')+'&nbsp;&nbsp;J '+(t.jdone?'✅':'⬜'));
+}
+// ---- Étape 2 : tir sur 2 aliens ----
+function tutoStartShoot(){
+  B.tuto.stage=2; B.tuto.shots=0;
+  paintTutoShootHint();
+  tutoSpawnAlien();
+}
+function paintTutoShootHint(){
+  setTutoHint('🎯 Place-toi <b>sous l\'alien</b> avec F/J, puis tape <b>sa lettre</b> pour tirer&nbsp;!',
+    'Aliens détruits : '+B.tuto.shots+' / 2');
+}
+function tutoSpawnAlien(){
+  // un alien lent, dans un couloir différent de celui du vaisseau pour forcer un déplacement
+  let lane=Math.floor(Math.random()*SWARM_LANES);
+  if(lane===B.lane) lane=(lane+2)%SWARM_LANES;
+  let ch=SWARM_LETTERS[Math.floor(Math.random()*SWARM_LETTERS.length)];
+  if(Math.random()<0.5) ch=ch.toUpperCase();
+  const el=document.createElement('div'); el.className='invader';
+  el.innerHTML='<span class="ufo">'+(Math.random()<0.5?'👾':'👽')+'</span><span class="cap">'+escapeHtml(ch)+'</span>';
+  const x=laneX(lane);
+  el.style.left=x+'%'; el.style.transform='translate(-50%,140px)';
+  tutoField().appendChild(el);
+  B.spells.push({el,ch,lane,x,y:140});
+}
+// ---- Étape 3 : phase 2 (boss vulnérable) ----
+function tutoStartPhase2(){
+  const t=B.tuto; t.stage=3; t.atkDone=0;
+  B.spells.forEach(s=>s.el.remove()); B.spells=[];
+  B.lane=Math.floor(SWARM_LANES/2); B.hero.style.left='50%'; B.hero.classList.add('vuln');
+  B.sprite.classList.add('exhausted');
+  if(B.shield>0){ B.shield=0; updateBossHud(); }
+  flashBanner('🛡️ Bouclier baissé !', 'Le Vaisseau-Mère est vulnérable !');
+  setTutoHint('💥 Essaim détruit&nbsp;? Le Vaisseau-Mère devient <b>vulnérable</b>&nbsp;! Tape les <b>symboles et chiffres</b> pour le mitrailler.',
+    'Tirs réussis : 0 / 2');
+  setTimeout(()=>{ if(B.phase==='tuto' && t.stage===3){ tutoSpawnAtk(); tutoSpawnAtk(); } }, 900);
+}
+function tutoSpawnAtk(){
+  const t=B.tuto, pool=B.atkPool||BOSS_COMPLEX;
+  let ch, tries=0;
+  do{ ch=pool[Math.floor(Math.random()*pool.length)]; tries++; }
+  while(tries<8 && t.atkTargets.some(x=>x.ch===ch));
+  const el=document.createElement('div'); el.className='atk-target';
+  el.innerHTML='<div class="cap">'+escapeHtml(ch)+'</div>';
+  const x=22+Math.random()*56, y=34+Math.random()*24;
+  el.style.left=x+'%'; el.style.top=y+'%'; el.style.transform='translate(-50%,-50%)';
+  tutoField().appendChild(el);
+  t.atkTargets.push({el,ch,x,y});
+}
+// ---- Étape 4 : prêt pour le vrai combat ----
+function tutoFinishCard(){
+  B.tuto.stage=4;
+  B.spells.forEach(s=>s.el.remove()); B.spells=[];
+  B.sprite.classList.remove('exhausted');
+  removeTutoUI();
+  const card=showTutoCard(
+    '<div class="tc-emoji">🛸</div>'
+    + '<div class="tc-title">Prêt pour le combat&nbsp;!</div>'
+    + '<div class="tc-text">Bravo&nbsp;! Tu sais <b>piloter</b> et <b>tirer</b>. Maintenant, le vrai combat contre le <b>Vaisseau-Mère</b> commence. Bonne chance, pilote&nbsp;! 🚀</div>'
+    + '<div class="tc-actions"><button class="tc-btn" id="tutoGo">Lancer le combat ! 🛸</button></div>');
+  card.querySelector('#tutoGo').onclick=()=>{ audioCtx(); beep('win'); beginRealCombat(); };
+}
+// ---- Bascule vers le vrai combat ----
+function beginRealCombat(){
+  kbSwarmTutoSeen=true;
+  removeTutoUI();
+  B.spells.forEach(s=>s.el.remove()); B.spells=[];
+  if(B.tuto){ B.tuto.atkTargets.forEach(t=>t.el.remove()); }
+  B.tuto=null;
+  B.sprite.classList.remove('exhausted','hurt');
+  // recharge le bouclier de sécurité pour le premier essaim, comme en début de combat
+  if(B.enh&&B.enh.shield&&B.maxShield){ B.shield=B.maxShield; }
+  B.lane=Math.floor(SWARM_LANES/2); B.hero.classList.remove('vuln'); B.hero.style.left=laneX(B.lane)+'%';
+  B.phase='cast'; B.spawned=0; B.nextSpawn=performance.now()+700; B.immune=false;
+  updateBossHud();
+}
+// descente lente des aliens d'entraînement (aucun dégât : on les fait juste réapparaître)
+function tutoTick(dt){
+  if(!B.tuto || B.tuto.stage!==2) return;
+  for(const s of B.spells){
+    s.y+=TUTO_ALIEN_SPEED*dt;
+    if(s.y>=B.groundY){ s.y=140; }   // pas de pénalité pendant le tuto
+    s.el.style.transform='translate(-50%,'+s.y+'px)';
+  }
+}
+// clavier pendant le tutoriel
+function onKeyTuto(e){
+  if(e.key.length!==1) return; e.preventDefault();
+  const t=B.tuto; if(!t) return;
+  const lk=e.key.toLowerCase();
+  if(t.stage===1){
+    if(lk==='f'){ moveSwarmShip(-1); t.fdone=true; }
+    else if(lk==='j'){ moveSwarmShip(1); t.jdone=true; }
+    else { beep('key'); return; }
+    paintTutoMoveHint();
+    if(t.fdone && t.jdone){ beep('good'); setTimeout(()=>{ if(B.phase==='tuto' && t.stage===1) tutoStartShoot(); }, 550); }
+    return;
+  }
+  if(t.stage===2){
+    if(lk==='f'){ moveSwarmShip(-1); return; }
+    if(lk==='j'){ moveSwarmShip(1); return; }
+    let best=null;
+    for(const s of B.spells){ if(s.lane===B.lane && s.ch===e.key){ if(!best||s.y>best.y) best=s; } }
+    if(best){
+      swarmLaser(best); destroySpell(best); t.shots++;
+      paintTutoShootHint();
+      if(t.shots>=2){ setTimeout(()=>{ if(B.phase==='tuto' && t.stage===2) tutoStartPhase2(); }, 500); }
+      else { setTimeout(()=>{ if(B.phase==='tuto' && t.stage===2) tutoSpawnAlien(); }, 450); }
+    } else beep('key');
+    return;
+  }
+  if(t.stage===3){
+    let hit=null;
+    for(const tg of t.atkTargets){ if(tg.ch===e.key){ hit=tg; break; } }
+    if(!hit){ beep('key'); return; }
+    const i=t.atkTargets.indexOf(hit); if(i>=0) t.atkTargets.splice(i,1);
+    hit.el.classList.add('hit'); setTimeout(()=>hit.el.remove(),250);
+    const xPx=B.field.clientWidth*hit.x/100, yPx=B.field.clientHeight*hit.y/100;
+    swarmAttackLaser(xPx,yPx); dmgHitFx(xPx,yPx); floatDamage(xPx,yPx);
+    B.sprite.classList.remove('exhausted'); void B.sprite.offsetWidth; B.sprite.classList.add('hurt');
+    setTimeout(()=>{ if(B.phase==='tuto'){ B.sprite.classList.remove('hurt'); B.sprite.classList.add('exhausted'); } },450);
+    t.atkDone++;
+    setTutoHint('💥 Essaim détruit&nbsp;? Le Vaisseau-Mère devient <b>vulnérable</b>&nbsp;! Tape les <b>symboles et chiffres</b> pour le mitrailler.',
+      'Tirs réussis : '+t.atkDone+' / 2');
+    if(t.atkDone>=2){ setTimeout(()=>{ if(B.phase==='tuto' && t.stage===3) tutoFinishCard(); }, 500); }
+    return;
+  }
+  // étapes 0 / 4 : on attend un clic sur le bouton
+  beep('key');
 }
 // Touche pressée qui ne fait éclater aucune boule violette → perte d'une vie
 function bossWrongKey(){
@@ -1794,8 +2163,8 @@ function typeAttackWord(key){
 function openAttack(){
   B.phase='attack'; B.attackEndTs=0; B.immune=true;
   B.spells.forEach(s=>s.el.remove()); B.spells=[];
-  // essaim : le vaisseau revient automatiquement au centre, pilotage coupé pendant l'assaut
-  if(B.swarm){ B.lane=Math.floor(SWARM_LANES/2); B.hero.style.left=laneX(B.lane)+'%'; }
+  // essaim : le vaisseau se centre VRAIMENT (hors couloirs) et avance vers le boss, pilotage coupé
+  if(B.swarm){ B.lane=Math.floor(SWARM_LANES/2); B.hero.style.left='50%'; B.hero.classList.add('vuln'); }
   B.sprite.classList.add('exhausted');
   const sw=document.createElement('div'); sw.className='boss-sweat'; sw.id='bossSweat'; sw.textContent='💦';
   B.sprite.parentElement.appendChild(sw);
@@ -1828,12 +2197,50 @@ function spawnOneTarget(){
   B.field.appendChild(el);
   B.attackTargets.push({el,ch,x,y});
 }
+// impact absorbé par le bouclier d'énergie : anneau qui se disperse, pas de dégât réel
+function shieldHitFx(xPx,yPx){
+  const ring=document.createElement('div'); ring.className='shield-ring';
+  ring.style.left=xPx+'px'; ring.style.top=yPx+'px';
+  B.field.appendChild(ring); setTimeout(()=>ring.remove(),480);
+  const N=8;
+  for(let i=0;i<N;i++){
+    const ang=(i/N)*2*Math.PI, dist=24+Math.random()*18;
+    const sp=document.createElement('div'); sp.className='shield-spark';
+    sp.style.left=xPx+'px'; sp.style.top=yPx+'px';
+    sp.style.setProperty('--dx',(Math.cos(ang)*dist)+'px');
+    sp.style.setProperty('--dy',(Math.sin(ang)*dist)+'px');
+    B.field.appendChild(sp); setTimeout(()=>sp.remove(),420);
+  }
+}
+// dégât réel infligé au boss (bouclier déjà percé) : éclats + flash rouge + secousse
+function dmgHitFx(xPx,yPx){
+  burstAt(xPx,yPx,B.field);
+  const flash=document.createElement('div'); flash.className='dmg-flash';
+  B.field.appendChild(flash); setTimeout(()=>flash.remove(),300);
+  const N=7;
+  for(let i=0;i<N;i++){
+    const ang=(i/N)*2*Math.PI, dist=30+Math.random()*22;
+    const sp=document.createElement('div'); sp.className='dmg-crack';
+    sp.style.left=xPx+'px'; sp.style.top=yPx+'px';
+    sp.style.setProperty('--dx',(Math.cos(ang)*dist)+'px');
+    sp.style.setProperty('--dy',(Math.sin(ang)*dist)+'px');
+    B.field.appendChild(sp); setTimeout(()=>sp.remove(),450);
+  }
+  B.field.classList.add('shake'); setTimeout(()=>B.field.classList.remove('shake'),250);
+}
+// laser du vaisseau (recentré et avancé) vers le point touché sur le vaisseau-mère
+const HERO_VULN_LIFT=110;   // doit correspondre à .hero.vuln{bottom:110px} en CSS
+function swarmAttackLaser(xPx,yPx){
+  const heroX=B.field.clientWidth/2, heroY=B.field.clientHeight-40-HERO_VULN_LIFT;
+  drawLaser(B.field, heroX, heroY, xPx, yPx);
+  playLaserShot();
+}
 // dégât commun au boss (mode lettres ET mode mots) ; renvoie true si le boss est vaincu
 function bossTakeHit(xPx,yPx){
-  burstAt(xPx,yPx,B.field);
   // bouclier de sécurité : les premiers coups le brisent au lieu d'endommager le boss
   if(B.shield>0){
-    B.shield--; beep('key');
+    B.shield--; if(!B.swarm) beep('key');   // en mode essaim, le son de tir laser remplace ce bip
+    shieldHitFx(xPx,yPx);
     floatDamage(xPx,yPx,'🛡️');
     B.sprite.classList.remove('exhausted'); void B.sprite.offsetWidth; B.sprite.classList.add('hurt');
     setTimeout(()=>{ if(B.phase==='attack'){ B.sprite.classList.remove('hurt'); B.sprite.classList.add('exhausted'); } },450);
@@ -1841,9 +2248,10 @@ function bossTakeHit(xPx,yPx){
     if(B.shield===0){ flashBanner('🛡️ Bouclier percé !', 'Maintenant, pirate-le !'); }
     return false;
   }
+  dmgHitFx(xPx,yPx);
   floatDamage(xPx,yPx);
   B.hp--; if(B.hp<0) B.hp=0;
-  beep('good');
+  if(!B.swarm) beep('good');   // en mode essaim, le son de tir laser remplace ce bip
   B.sprite.classList.remove('exhausted'); void B.sprite.offsetWidth; B.sprite.classList.add('hurt');
   setTimeout(()=>{ if(B.phase==='attack'){ B.sprite.classList.remove('hurt'); B.sprite.classList.add('exhausted'); } },450);
   updateBossHud();
@@ -1854,6 +2262,7 @@ function damageBoss(t){
   const i=B.attackTargets.indexOf(t); if(i>=0) B.attackTargets.splice(i,1);
   const el=t.el; el.classList.add('hit'); setTimeout(()=>el.remove(),250);
   const xPx=B.field.clientWidth*t.x/100, yPx=B.field.clientHeight*t.y/100;
+  if(B.swarm) swarmAttackLaser(xPx,yPx);
   if(bossTakeHit(xPx,yPx)) return;
   if(B.attackEndTs && performance.now()<B.attackEndTs) spawnOneTarget();
 }
@@ -1896,6 +2305,8 @@ function closeAttack(){
   if(B.attackWord){ B.attackWord.el.remove(); B.attackWord=null; }
   const sw=document.getElementById('bossSweat'); if(sw) sw.remove();
   B.sprite.classList.remove('exhausted');
+  // fin de la vulnérabilité : le vaisseau est replacé sur les couloirs
+  if(B.swarm){ B.hero.classList.remove('vuln'); B.hero.style.left=laneX(B.lane)+'%'; }
   // le bouclier de sécurité se recharge à chaque nouvel essaim
   if(B.enh&&B.enh.shield&&B.maxShield){ B.shield=B.maxShield; }
   // l'essaim accélère à chaque nouvelle vague
@@ -1914,7 +2325,7 @@ function closeAttack(){
   setTimeout(()=>{ ban.remove(); B.immune=false; },1300);
 }
 function bossDefeated(){
-  B.running=false; cancelAnimationFrame(B.raf);
+  B.running=false; cancelAnimationFrame(B.raf); teardownBossFullscreen();
   B.attackTargets.forEach(t=>t.el.remove()); B.attackTargets=[];
   if(B.attackWord){ B.attackWord.el.remove(); B.attackWord=null; }
   B.spells.forEach(s=>s.el.remove()); B.spells=[];
@@ -1926,7 +2337,7 @@ function bossDefeated(){
   setTimeout(()=>onWin(),1300);
 }
 function bossFail(){
-  B.running=false; cancelAnimationFrame(B.raf); stopBossMusic();
+  B.running=false; cancelAnimationFrame(B.raf); stopBossMusic(); teardownBossFullscreen();
   const tip = B.wordMode
     ? 'Astuce : pendant l\'esquive, tape vite le mot qui descend lettre par lettre — commence dès qu\'il apparaît. Pendant l\'attaque, tape le mot d\'arme affiché devant le dragon. Attention aux majuscules et aux fautes : chaque erreur coûte une vie !'
     : B.swarm
@@ -1934,7 +2345,7 @@ function bossFail(){
       : 'Astuce : pendant les sorts, lis bien la touche dans la boule violette et tape-la vite. Attention aux majuscules ! Garde tes doigts posés sur le clavier. Tu vas y arriver !';
   onFail(bt('failMsg','Le dragon t\'a vaincu cette fois ! 🐉'), tip);
 }
-function stopB(){ B.running=false; cancelAnimationFrame(B.raf); stopBossMusic(); }
+function stopB(){ B.running=false; cancelAnimationFrame(B.raf); stopBossMusic(); teardownBossFullscreen(); }
 
 /* =========================================================
    6. DÉROULÉ (flow)
