@@ -394,6 +394,111 @@
   .confetti i{position:absolute;top:-12px;width:10px;height:14px;border-radius:2px;animation:fall linear forwards;}
   @keyframes fall{to{transform:translateY(105vh) rotate(640deg);}}
 
+  /* ---------- Publicités dans les pages ---------- */
+  .ad-banner{position:relative;border:2px solid #f59e0b;border-radius:12px;padding:16px 14px;margin:14px 0;
+    background:linear-gradient(100deg,#fff7db,#ffe8f0);cursor:pointer;font-weight:800;text-align:center;}
+  .ad-banner:hover{filter:brightness(1.04);}
+  .ad-banner .ad-big{font-size:1.06rem;color:#b91c1c;display:block;margin-bottom:4px;}
+  .ad-banner .ad-sub{font-size:.8rem;color:#92400e;}
+  .ad-tag{position:absolute;top:6px;right:8px;background:#e5e7eb;color:#475569;font-size:.6rem;font-weight:800;
+    border-radius:5px;padding:2px 6px;letter-spacing:.05em;text-transform:uppercase;}
+  .ad-blink{animation:adBlink 1s steps(2) infinite;}
+  @keyframes adBlink{50%{filter:hue-rotate(40deg) brightness(1.15);}}
+  /* annonces dans les résultats de recherche */
+  .sr-item.sr-ad{background:#fffbeb;border:2px solid #fde68a;border-radius:12px;padding:10px 12px;}
+  .sr-adtag{display:inline-block;background:#fde68a;color:#92400e;font-weight:800;font-size:.66rem;
+    border-radius:4px;padding:2px 7px;margin-bottom:3px;letter-spacing:.04em;}
+
+  /* ---------- Pop-ups ---------- */
+  .popup-layer{position:absolute;inset:0;pointer-events:none;z-index:45;overflow:hidden;}
+  .popup{position:absolute;pointer-events:auto;width:272px;background:#fff;border:1px solid #cbd5e1;
+    border-radius:10px;box-shadow:0 18px 50px rgba(2,6,23,.5);overflow:hidden;animation:popIn .22s ease;}
+  @keyframes popIn{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .popup .pp-bar{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 12px;
+    background:linear-gradient(90deg,#7c3aed,#db2777);color:#fff;font-weight:800;font-size:.76rem;}
+  .popup .pp-bar.sys{background:linear-gradient(90deg,#334155,#64748b);}
+  .popup .pp-bar.scam{background:linear-gradient(90deg,#ea580c,#dc2626);}
+  .popup .pp-title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .popup .pp-x{flex:none;width:18px;height:18px;border:none;border-radius:4px;background:rgba(255,255,255,.22);
+    color:#fff;font-size:.62rem;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;}
+  .popup .pp-x:hover{background:rgba(255,255,255,.45);}
+  .popup .pp-body{padding:13px 14px;font-size:.85rem;font-weight:700;text-align:center;color:#1f2937;}
+  .pp-btn{display:inline-block;margin:6px 3px 2px;border:none;border-radius:9px;padding:9px 15px;
+    font-weight:800;cursor:pointer;font-size:.82rem;font-family:inherit;}
+  .pp-btn.big{background:linear-gradient(90deg,#f59e0b,#ef4444);color:#fff;font-size:.92rem;animation:ppPulse 1.1s infinite;}
+  .pp-btn.ok{background:var(--blue);color:#fff;}
+  .pp-btn.ghost{background:#eef1f6;color:var(--ink);}
+  .pp-btn.danger{background:var(--red);color:#fff;}
+  @keyframes ppPulse{50%{transform:scale(1.05);}}
+
+  /* ---------- HUD de boss (bandeau rouge en haut du navigateur) ---------- */
+  .boss-hud{display:flex;align-items:center;gap:10px;padding:7px 12px;flex:none;
+    background:linear-gradient(90deg,#7f1d1d,#b91c1c);color:#fff;font-size:.8rem;font-weight:800;}
+  .boss-hud .bh-ic{font-size:1.1rem;}
+  .boss-hud .bh-bar{flex:1;height:11px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;min-width:80px;}
+  .boss-hud .bh-bar i{display:block;height:100%;background:#fde047;border-radius:99px;transition:width .5s ease;}
+  .boss-hud .bh-stat{white-space:nowrap;}
+
+  /* ---------- Téléchargements ---------- */
+  #btnDl{position:relative;}
+  .dl-badge{position:absolute;top:2px;right:2px;min-width:14px;height:14px;border-radius:99px;background:var(--blue);
+    color:#fff;font-size:.58rem;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 3px;}
+  .dl-badge:empty{display:none;}
+  .sb-prog{height:6px;border-radius:99px;background:#e2e8f0;overflow:hidden;margin-top:4px;}
+  .sb-prog i{display:block;height:100%;background:var(--blue);}
+  .si-open{flex:none;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:.68rem;
+    font-weight:800;padding:3px 7px;cursor:pointer;color:var(--blue-d);font-family:inherit;}
+  .si-open:hover{border-color:var(--blue);}
+  .si-danger{color:var(--red-d);font-weight:800;font-size:.66rem;}
+  .dl-link{font-weight:800;}
+
+  /* ---------- Formulaires des pages ---------- */
+  .wp-form{background:#f8fafc;border:2px solid var(--line);border-radius:14px;padding:16px 18px;max-width:430px;margin:14px auto;text-align:left;}
+  .wp-label{font-weight:800;font-size:.84rem;margin:10px 0 4px;display:block;color:#33424f;}
+  .wp-input{border:2px solid var(--line);border-radius:9px;padding:9px 12px;font-family:inherit;font-weight:700;width:100%;font-size:.9rem;outline:none;background:#fff;}
+  .wp-input:focus{border-color:#7aa7ec;}
+  .wp-err{color:var(--red-d);font-weight:800;font-size:.82rem;margin-top:8px;}
+  .pw-bars{display:flex;gap:4px;margin:8px 0 4px;}
+  .pw-bars i{flex:1;height:9px;border-radius:99px;background:#e5e7eb;transition:background .2s;}
+  .pw-bars i.f1{background:#ef4444;} .pw-bars i.f2{background:#f97316;}
+  .pw-bars i.f3{background:#eab308;} .pw-bars i.f4{background:#22c55e;} .pw-bars i.f5{background:#0ea5e9;}
+  .pw-verdict{font-weight:800;font-size:.9rem;}
+  .pw-missing{margin:6px 0 0;padding-left:18px;font-size:.8rem;color:#b45309;font-weight:700;}
+
+  /* ---------- Messagerie Pixmail ---------- */
+  .mail-item{display:flex;align-items:center;gap:10px;border:2px solid var(--line);border-radius:12px;
+    padding:11px 14px;margin:8px 0;cursor:pointer;font-weight:700;background:#fff;}
+  .mail-item:hover{border-color:var(--site);}
+  .mail-from{width:150px;flex:none;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mail-sub{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#3a4a59;}
+  .mail-badge{flex:none;background:#fee2e2;color:#b91c1c;font-size:.66rem;font-weight:800;border-radius:5px;padding:2px 7px;}
+  .mail-view{border:2px solid var(--line);border-radius:14px;padding:16px 18px;background:#fff;margin:12px 0;}
+  .mail-head{border-bottom:2px solid var(--line-2);padding-bottom:8px;margin-bottom:12px;font-size:.86rem;font-weight:700;color:#5a6b7b;}
+
+  /* ---------- Scoopz (boss final) ---------- */
+  .scoop{border:2px solid var(--line);border-left:7px solid #ef4444;border-radius:13px;padding:13px 16px;margin:10px 0;background:#fff;}
+  .scoop.done{border-left-color:var(--green);background:#f6fdf8;}
+  .scoop .sc-t{font-weight:800;font-size:1rem;}
+  .scoop .sc-m{color:#8d9cab;font-weight:700;font-size:.76rem;margin:4px 0 8px;}
+  .verdict-box{background:#fff8ec;border:2px solid #fbe3b6;border-radius:13px;padding:14px;margin:14px 0;text-align:center;}
+  .verdict-box .vb-t{font-weight:800;margin-bottom:8px;}
+
+  /* ---------- Info cadenas ---------- */
+  .addr-lock{cursor:pointer;border-radius:5px;padding:1px 3px;}
+  .addr-lock:hover{background:#e7eaf1;}
+  .lock-pop{position:absolute;top:4px;left:56px;z-index:70;background:#fff;border:1px solid var(--br-line);
+    border-radius:12px;box-shadow:0 14px 36px rgba(20,30,50,.25);padding:12px 15px;max-width:300px;
+    font-size:.82rem;font-weight:700;line-height:1.45;}
+  .lock-pop.ok{border-left:5px solid var(--green);}
+  .lock-pop.warn-lp{border-left:5px solid var(--red);}
+
+  .banner.boss{border-left-color:var(--red);}
+  .banner.boss .b-goal-label{color:var(--red-d);}
+  .modal .howto.boss{background:#fdeeee;border-color:#f6c9c9;}
+  .modal .howto.boss .h-head{color:var(--red-d);}
+  .m-btn.primary.boss{background:var(--red);border-color:var(--red);color:#fff;}
+  .m-btn.primary.boss:hover{background:var(--red-d);}
+
   @media (max-width:560px){
     .topbar h1{font-size:1rem;}
     .tab{min-width:88px;}
@@ -499,8 +604,17 @@ const B={
   bookmarks:[], history:[],
   panel:null, menuOpen:false,
   homepage:'goupil.start',
+  popups:[], downloads:[],
+  boss:null, storm:null,
   evt:{}
 };
+
+/* minuteries de mission (boss, tempêtes de pop-ups, téléchargements…)
+   — toutes annulées à chaque startStep() */
+let _timers=[];
+function after(ms,fn){ const t=setTimeout(fn,ms); _timers.push(t); return t; }
+function every(ms,fn){ const t=setInterval(fn,ms); _timers.push(t); return t; }
+function clearTimers(){ _timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); _timers=[]; }
 
 function getUnlocked(){ let u=parseInt(store.get('nv_unlocked')||'1',10); if(isNaN(u)||u<1)u=1; return Math.min(u,LEVELS.length); }
 function getSavedStep(n){ let s=parseInt(store.get('nv_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
@@ -524,6 +638,7 @@ function beep(kind){
   else if(kind==='bad'){ tone(150,.16,'square',.12); }
   else if(kind==='delete'){ tone(300,.08,'sawtooth',.08); tone(180,.12,'sawtooth',.07,.05); }
   else if(kind==='ding'){ tone(880,.12,'sine',.12); tone(1320,.16,'sine',.1,.08); }
+  else if(kind==='alarm'){ tone(360,.18,'square',.10); tone(300,.18,'square',.10,.18); }
   else if(kind==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.12,i*.09)); }
 }
 function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
@@ -535,6 +650,7 @@ document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('n
 function buildScreen(){
   stage.innerHTML=
     '<div class="screen"><div class="browser" id="browser">'
+    + '<div class="boss-hud" id="bossHud" hidden></div>'
     + '<div class="tabstrip" id="tabstrip"></div>'
     + '<div class="toolbar">'
     +   '<button class="tool-btn" id="btnBack" title="Page précédente">◀</button>'
@@ -547,6 +663,7 @@ function buildScreen(){
     +     '<button class="addr-go" id="btnGo" title="Aller à cette adresse">➜</button>'
     +     '<button class="star-btn" id="btnStar" title="Ajouter cette page aux favoris">☆</button>'
     +   '</div>'
+    +   '<button class="tool-btn" id="btnDl" title="Voir les téléchargements" hidden>⬇️<span class="dl-badge" id="dlBadge"></span></button>'
     +   '<button class="tool-btn" id="btnMenu" title="Ouvrir le menu">☰</button>'
     + '</div>'
     + '<div class="loadbar" id="loadbar"><i></i></div>'
@@ -554,8 +671,10 @@ function buildScreen(){
     + '<div class="main" id="brMain">'
     +   '<div class="sidebar" id="sidebar" hidden></div>'
     +   '<div class="viewport" id="viewport"></div>'
+    +   '<div class="popup-layer" id="popupLayer"></div>'
     +   '<div class="statusbar" id="statusbar"></div>'
     +   '<div class="menu-pop" id="menuPop" hidden></div>'
+    +   '<div class="lock-pop" id="lockPop" hidden></div>'
     + '</div>'
     + '</div></div>';
 
@@ -567,6 +686,10 @@ function buildScreen(){
   document.getElementById('btnMenu').onclick=(e)=>{ e.stopPropagation(); toggleMenu(); };
   document.getElementById('btnMenu').addEventListener('mousedown', e=>e.stopPropagation());
   document.getElementById('btnGo').addEventListener('mousedown', e=>{ e.preventDefault(); submitAddress(); });
+  document.getElementById('btnDl').onclick=()=>openPanel('downloads');
+  document.getElementById('addrLock').onclick=(e)=>{ e.stopPropagation(); toggleLockPop(); };
+  document.getElementById('addrLock').addEventListener('mousedown', e=>e.stopPropagation());
+  document.getElementById('lockPop').addEventListener('mousedown', e=>e.stopPropagation());
 
   const inp=document.getElementById('addrInput');
   inp.addEventListener('focus', ()=>{ B.evt.addrFocused=true; setTimeout(()=>inp.select(),0); checkMission(); });
@@ -585,9 +708,12 @@ function buildScreen(){
       doSearch(e.target.value, 'page');
     }
   });
+  vp.addEventListener('input', e=>{
+    if(e.target && e.target.hasAttribute && e.target.hasAttribute('data-pw')) onPwInput(e.target);
+  });
 
   document.getElementById('menuPop').addEventListener('mousedown', e=>e.stopPropagation());
-  document.getElementById('browser').addEventListener('mousedown', ()=>{ closeMenu(); });
+  document.getElementById('browser').addEventListener('mousedown', ()=>{ closeMenu(); closeLockPop(); });
 }
 
 /* ----- onglets ----- */
@@ -664,6 +790,7 @@ function commitLoad(t){
   const bar=document.getElementById('loadbar');
   if(bar){ bar.classList.remove('on'); bar.classList.add('fin'); setTimeout(()=>bar.classList.remove('fin'), 420); }
   renderBrowser();
+  if(page.onOpen) page.onOpen();
   checkMission();
 }
 function goBack(){
@@ -756,7 +883,7 @@ function renderMenu(){
     '<button class="menu-item" data-act="newtab"><span class="mi-ic">🆕</span>Nouvel onglet</button>'
     +'<button class="menu-item" data-act="history"><span class="mi-ic">🕘</span>Historique</button>'
     +'<button class="menu-item" data-act="bookmarks"><span class="mi-ic">⭐</span>Favoris</button>'
-    +'<button class="menu-item off" data-act="dl"><span class="mi-ic">⬇️</span>Téléchargements<span class="mi-soon">bientôt</span></button>'
+    +'<button class="menu-item" data-act="dl"><span class="mi-ic">⬇️</span>Téléchargements</button>'
     +'<button class="menu-item" data-act="home"><span class="mi-ic">🏠</span>Page d\'accueil</button>';
   m.querySelectorAll('.menu-item').forEach(b=>b.onclick=(e)=>{
     e.stopPropagation();
@@ -766,13 +893,14 @@ function renderMenu(){
     else if(act==='history') openPanel('history');
     else if(act==='bookmarks') openPanel('bookmarks');
     else if(act==='home') goHome();
-    else if(act==='dl'){ toast('⬇️ Les téléchargements arrivent dans un prochain niveau !'); }
+    else if(act==='dl') openPanel('downloads');
   });
 }
 function openPanel(kind){
   B.panel=kind;
   if(kind==='history'){ B.evt.openedHistoryPanel=true; }
   if(kind==='bookmarks'){ B.evt.openedBmPanel=true; }
+  if(kind==='downloads'){ B.evt.openedDlPanel=true; }
   beep('open');
   renderBrowser(); checkMission();
 }
@@ -807,8 +935,30 @@ function syncAddrBar(){
   const lock=document.getElementById('addrLock');
   if(url===B.homepage){ lock.textContent='🦊'; lock.title='Page d\'accueil de Goupil'; }
   else if(page.real===false){ lock.textContent='⚠️'; lock.title='Page introuvable'; }
-  else { lock.textContent='🔒'; lock.title='Connexion sécurisée'; }
+  else if(page.secure===false){ lock.textContent='⚠️'; lock.title='Connexion NON sécurisée (http) — clique pour en savoir plus'; }
+  else { lock.textContent='🔒'; lock.title='Connexion sécurisée (https) — clique pour en savoir plus'; }
 }
+/* info-bulle du cadenas (sécurité de la connexion) */
+function toggleLockPop(){
+  const lp=document.getElementById('lockPop'); if(!lp) return;
+  if(!lp.hidden){ lp.hidden=true; return; }
+  const url=curUrl(); const page=getPage(url);
+  if(url===B.homepage){
+    lp.className='lock-pop ok';
+    lp.innerHTML='🦊 Tu es sur la <b>page d\'accueil de Goupil</b> — rien n\'est envoyé sur internet ici.';
+  } else if(page.secure===false){
+    B.evt.lockCheckedInsecure=true;
+    lp.className='lock-pop warn-lp';
+    lp.innerHTML='⚠️ <b>Connexion NON sécurisée (http)</b><br>Ce que tu envoies sur ce site peut être lu par n\'importe qui. N\'y tape <b>jamais</b> de mot de passe ni d\'informations personnelles !';
+  } else {
+    B.evt.lockChecked=true;
+    lp.className='lock-pop ok';
+    lp.innerHTML='🔒 <b>Connexion sécurisée (https)</b><br>Les données échangées avec ce site sont chiffrées. Attention : ça ne veut pas dire que le site est <b>honnête</b> — lis toujours son adresse !';
+  }
+  lp.hidden=false;
+  checkMission();
+}
+function closeLockPop(){ const lp=document.getElementById('lockPop'); if(lp) lp.hidden=true; }
 function syncToolbar(){
   const t=currentTab();
   const bb=document.getElementById('btnBack'), bf=document.getElementById('btnFwd');
@@ -842,6 +992,7 @@ function renderSidebar(){
   const sb=document.getElementById('sidebar'); if(!sb) return;
   if(!B.panel){ sb.hidden=true; return; }
   sb.hidden=false;
+  if(B.panel==='downloads'){ renderDlPanel(sb); return; }
   const isH=B.panel==='history';
   let html='<div class="sb-head"><span>'+(isH?'🕘 Historique':'⭐ Favoris')+'</span>'
     +'<button class="sb-close" title="Fermer le panneau">✕</button></div><div class="sb-list">';
@@ -891,6 +1042,7 @@ function renderViewport(){
 }
 function renderBrowser(){
   renderTabs(); syncToolbar(); renderBmBar(); renderSidebar(); renderViewport(); renderMenu();
+  renderPopups(); renderDlBtn(); closeLockPop();
 }
 
 /* ----- interactions dans les pages ----- */
@@ -901,7 +1053,25 @@ function onViewportClick(e){
     const url=go.getAttribute('data-go');
     const opts={via:(go.hasAttribute('data-serp')?'serp':'link')};
     if(go.hasAttribute('data-logo')) opts.logo=true;
+    if(go.hasAttribute('data-ad')){ (B.evt.clickedAd=B.evt.clickedAd||new Set()).add(url); }
     navigate(url, opts);
+    return;
+  }
+  const dl=e.target.closest('[data-dl]');
+  if(dl){
+    e.preventDefault();
+    startDownload(dl.getAttribute('data-dl'), {
+      size:dl.getAttribute('data-dlsize')||undefined,
+      danger:dl.hasAttribute('data-danger'),
+      preview:dl.getAttribute('data-dlprev')||undefined
+    });
+    return;
+  }
+  const act=e.target.closest('[data-act]');
+  if(act){
+    e.preventDefault();
+    const name=act.getAttribute('data-act');
+    if(PAGE_ACTIONS[name]) PAGE_ACTIONS[name](act);
   }
 }
 function onViewportOver(e){
@@ -909,7 +1079,10 @@ function onViewportOver(e){
   const sb=document.getElementById('statusbar');
   if(go && sb){
     B.evt.linkHovered=true;
-    sb.textContent='https://'+go.getAttribute('data-go');
+    const url=go.getAttribute('data-go');
+    (B.evt.hoveredUrls=B.evt.hoveredUrls||new Set()).add(url);
+    if(go.hasAttribute('data-ad')) B.evt.adHovered=true;
+    sb.textContent=(getPage(url).secure===false?'http://':'https://')+url;
     sb.classList.add('show');
     checkMission();
   }
@@ -919,11 +1092,220 @@ function onViewportOut(e){
   if(go){ const sb=document.getElementById('statusbar'); if(sb) sb.classList.remove('show'); }
 }
 
+/* ---------------------------------------------------------
+   3 bis. TÉLÉCHARGEMENTS, POP-UPS, MOTS DE PASSE
+   --------------------------------------------------------- */
+/* ----- téléchargements ----- */
+function dlIcon(ext){ return {pdf:'📕',doc:'📝',jpg:'🖼️',png:'🖼️',zip:'🗜️',exe:'⚙️',bat:'⚙️',mp3:'🎵',mp4:'🎬'}[ext]||'📄'; }
+function startDownload(name, opts){
+  opts=opts||{};
+  const ext=(name.split('.').pop()||'').toLowerCase();
+  const d={id:'d'+(++B.seq), name:name, ext:ext, size:opts.size||'1,2 Mo', danger:!!opts.danger,
+    safeFile:!!opts.safe, preview:opts.preview, state:'progress', progress:0};
+  B.downloads.unshift(d);
+  beep('click'); toast('⬇️ Téléchargement de « '+name+' »…');
+  (function tick(){
+    after(300, ()=>{
+      d.progress+=22+Math.random()*20;
+      if(d.progress>=100){
+        d.progress=100;
+        if(d.danger){ d.state='warn'; beep('alarm'); spawnPopup(dangerPopup(d)); }
+        else{
+          d.state='done'; beep('ding');
+          (B.evt.downloaded=B.evt.downloaded||new Set()).add(d.name);
+          toast('✅ « '+d.name+' » téléchargé');
+        }
+        renderBrowser(); checkMission();
+      } else { renderDlBtn(); renderSidebar(); tick(); }
+    });
+  })();
+  renderBrowser();
+}
+function removeDownload(id){
+  const i=B.downloads.findIndex(x=>x.id===id); if(i<0) return;
+  const d=B.downloads[i];
+  if(d.safeFile && currentStep && currentStep.guardSafeDl){ dlGuardFail(d); return; }
+  B.downloads.splice(i,1);
+  (B.evt.dlDeleted=B.evt.dlDeleted||new Set()).add(d.name);
+  beep('delete'); toast('🗑️ « '+d.name+' » supprimé');
+  renderBrowser(); checkMission();
+}
+function openDownloadFile(d){
+  (B.evt.openedDownload=B.evt.openedDownload||new Set()).add(d.name);
+  const bodies={pdf:'Aperçu du document PDF', doc:'Aperçu du document', jpg:'Aperçu de l\'image', png:'Aperçu de l\'image'};
+  spawnPopup({kind:'viewer', bar:'sys', title:dlIcon(d.ext)+' '+d.name, x:18, y:12,
+    body:(d.preview||bodies[d.ext]||'Aperçu du fichier')+'<br><span style="color:#8d9cab;font-size:.75rem">'+d.size+'</span>',
+    buttons:[{label:'Fermer', cls:'ghost', act:'close'}]});
+  beep('open'); checkMission();
+}
+function renderDlBtn(){
+  const btn=document.getElementById('btnDl'); if(!btn) return;
+  btn.hidden=B.downloads.length===0;
+  const n=B.downloads.filter(d=>d.state==='progress').length;
+  const badge=document.getElementById('dlBadge'); if(badge) badge.textContent=n?String(n):'';
+}
+function renderDlPanel(sb){
+  let html='<div class="sb-head"><span>⬇️ Téléchargements</span>'
+    +'<button class="sb-close" title="Fermer le panneau">✕</button></div><div class="sb-list">';
+  if(!B.downloads.length) html+='<div class="sb-empty">Aucun téléchargement.<br>Les fichiers que tu télécharges apparaîtront ici.</div>';
+  B.downloads.forEach(d=>{
+    html+='<div class="sb-item"><span class="si-ic">'+dlIcon(d.ext)+'</span>'
+      +'<span class="si-tx"><span class="si-t">'+d.name+'</span>';
+    if(d.state==='progress') html+='<span class="sb-prog"><i style="width:'+Math.round(d.progress)+'%"></i></span>';
+    else if(d.state==='warn') html+='<span class="si-danger">⚠️ fichier bloqué — dangereux ?</span>';
+    else html+='<span class="si-u">'+d.size+(d.danger?' · ⚠️ fichier suspect':'')+'</span>';
+    html+='</span>';
+    if(d.state==='done' && !d.danger) html+='<button class="si-open" data-open="'+d.id+'">Ouvrir</button>';
+    if(d.state!=='progress') html+='<button class="si-del" data-deldl="'+d.id+'" title="Supprimer ce fichier">🗑️</button>';
+    html+='</div>';
+  });
+  html+='</div>';
+  sb.innerHTML=html;
+  sb.querySelector('.sb-close').onclick=closePanel;
+  sb.querySelectorAll('[data-open]').forEach(el=>el.onclick=()=>{
+    const d=B.downloads.find(x=>x.id===el.getAttribute('data-open'));
+    if(d) openDownloadFile(d);
+  });
+  sb.querySelectorAll('[data-deldl]').forEach(el=>el.onclick=()=>removeDownload(el.getAttribute('data-deldl')));
+}
+
+/* ----- pop-ups ----- */
+function spawnPopup(def){
+  const p=Object.assign({id:'p'+(++B.seq)}, def);
+  if(p.x==null) p.x=4+Math.random()*54;
+  if(p.y==null) p.y=6+Math.random()*46;
+  B.popups.push(p);
+  beep('open'); renderPopups();
+  return p;
+}
+function closePopup(id, how){
+  const i=B.popups.findIndex(p=>p.id===id); if(i<0) return;
+  const p=B.popups[i]; B.popups.splice(i,1);
+  B.evt.popupsClosed=(B.evt.popupsClosed||0)+1;
+  if(p.kind==='prize') B.evt.closedPrize=true;
+  if(p.kind==='notif' && how==='block') B.evt.blockedNotif=true;
+  beep('delete'); renderPopups();
+  if(p.onClose) p.onClose(how);
+  checkMission();
+}
+function popupTrap(p){
+  B.evt.trapsClicked=(B.evt.trapsClicked||0)+1;
+  beep('bad');
+  toast(p.trapMsg||'⚠️ Piège ! La seule bonne façon de fermer un pop-up, c\'est sa croix ✕.');
+  if(p.onTrap) p.onTrap(p); else spawnPopup(popupPrize());
+  checkMission();
+}
+function renderPopups(){
+  const layer=document.getElementById('popupLayer'); if(!layer) return;
+  layer.innerHTML='';
+  B.popups.forEach(p=>{
+    const el=document.createElement('div');
+    el.className='popup';
+    el.style.left=p.x+'%'; el.style.top=p.y+'%';
+    let btns='';
+    (p.buttons||[]).forEach((b,bi)=>{ btns+='<button class="pp-btn '+(b.cls||'ghost')+'" data-pb="'+bi+'">'+b.label+'</button>'; });
+    el.innerHTML='<div class="pp-bar '+(p.bar||'')+'"><span class="pp-title">'+p.title+'</span>'
+      +'<button class="pp-x" title="Fermer">✕</button></div>'
+      +'<div class="pp-body">'+p.body+(btns?'<div>'+btns+'</div>':'')+'</div>';
+    el.querySelector('.pp-x').onclick=()=>closePopup(p.id,'x');
+    el.querySelectorAll('[data-pb]').forEach(bt=>bt.onclick=()=>{
+      const b=p.buttons[+bt.getAttribute('data-pb')]; if(!b) return;
+      if(typeof b.act==='function') b.act(p);
+      else if(b.act==='trap') popupTrap(p);
+      else if(b.act==='block') closePopup(p.id,'block');
+      else closePopup(p.id,'btn');
+    });
+    layer.appendChild(el);
+  });
+}
+/* modèles de pop-ups */
+function popupPrize(){ return {kind:'prize', bar:'scam', title:'🎉 GAGNANT DU JOUR',
+  body:'Bravo ! Tu es le visiteur n° <b>1 000 000</b>.<br>Un smartphone <b>GRATUIT</b> t\'attend !',
+  buttons:[{label:'🎁 RÉCLAMER MON CADEAU', cls:'big', act:'trap'}],
+  trapMsg:'⚠️ Piège ! Personne ne gagne de smartphone en cliquant. Ferme le pop-up avec sa croix ✕.'}; }
+function popupVirus(){ return {kind:'virus', bar:'sys', title:'⚠️ Alerte système',
+  body:'<b style="color:#b91c1c">3 VIRUS DÉTECTÉS !</b><br>Ton appareil est en danger immédiat.',
+  buttons:[{label:'🧹 NETTOYER MAINTENANT', cls:'big', act:'trap'}],
+  trapMsg:'⚠️ Fausse alerte ! Un vrai antivirus ne hurle pas dans un pop-up de site web.'}; }
+function popupPromo(){ return {kind:'promo', bar:'scam', title:'🔥 MÉGA PROMO',
+  body:'-90 % sur les skins de tes jeux préférés !<br>Offre valable <b>2 minutes</b> seulement !',
+  buttons:[{label:'⚡ J\'EN PROFITE', cls:'big', act:'trap'}],
+  trapMsg:'⚠️ Le compte à rebours sert à te faire cliquer sans réfléchir !'}; }
+function popupVbucks(){ return {kind:'vbucks', bar:'scam', title:'💎 CADEAU ENTRE JOUEURS',
+  body:'10 000 crédits de jeu <b>offerts</b> !<br>Réponds à une question pour les recevoir.',
+  buttons:[{label:'💎 JE RÉPONDS', cls:'big', act:'trap'}],
+  trapMsg:'⚠️ Les « crédits gratuits », ça n\'existe pas. C\'est LE piège classique !'}; }
+function popupNotif(site){ return {kind:'notif', bar:'sys', title:'🔔 '+site,
+  body:'Ce site souhaite t\'envoyer des <b>notifications</b>.',
+  buttons:[{label:'Autoriser', cls:'ghost', act:'trap'},{label:'Bloquer', cls:'ok', act:'block'}],
+  trapMsg:'⚠️ En autorisant, tu recevrais des pubs en continu ! Choisis « Bloquer ».'}; }
+function popupSms(code){ return {kind:'sms', bar:'sys', title:'📱 Nouveau message', x:44, y:10,
+  body:'<b>Pixmail</b> — ton code de récupération :<br><span style="font-size:1.4rem;letter-spacing:.25em"><b>'+code+'</b></span>',
+  buttons:[{label:'OK', cls:'ok', act:'close'}]}; }
+function dangerPopup(d){ return {kind:'dlwarn', bar:'sys', title:'⚠️ Fichier potentiellement dangereux', x:26, y:16,
+  body:'« <b>'+d.name+'</b> » est un fichier <b>.'+d.ext+'</b> : il peut installer n\'importe quoi sur ton ordinateur. Que veux-tu faire ?',
+  buttons:[
+    {label:'🗑️ Supprimer', cls:'danger', act:function(p){ closePopup(p.id,'btn'); removeDownload(d.id); }},
+    {label:'Conserver', cls:'ghost', act:function(p){
+      d.state='done';
+      (B.evt.dlKept=B.evt.dlKept||new Set()).add(d.name);
+      closePopup(p.id,'btn');
+      toast('⚠️ Fichier conservé… à tes risques et périls !');
+      renderBrowser(); checkMission();
+    }}
+  ]}; }
+
+/* ----- robustesse des mots de passe ----- */
+const PW_COMMON=['123456','12345678','azerty','qwerty','motdepasse','password','111111','abc123','soleil','chocolat','doudou','loulou','000000','marseille','bonjour'];
+function pwScore(pw, user){
+  pw=pw||'';
+  const missing=[];
+  if(pw.length<12) missing.push('au moins <b>12 caractères</b> ('+pw.length+'/12)');
+  if(!/[a-z]/.test(pw) || !/[A-Z]/.test(pw)) missing.push('des <b>majuscules ET des minuscules</b>');
+  if(!/[0-9]/.test(pw)) missing.push('au moins <b>un chiffre</b>');
+  if(!/[^a-zA-Z0-9]/.test(pw)) missing.push('au moins <b>un symbole</b> (! # % € …)');
+  const low=normText(pw).replace(/\s/g,'');
+  if(PW_COMMON.some(c=>low.includes(c))) missing.push('pas de suite ultra-connue (azerty, 123456…)');
+  if(user && low.includes(normText(user).split(/[.\s]/)[0])) missing.push('pas ton prénom ni ton nom dedans');
+  let score=Math.max(0, 4-missing.length);
+  if(pw.length===0) score=0;
+  if(score===4 && pw.length>=16) score=5;
+  const labels=['Très fragile 🔴','Très fragile 🔴','Fragile 🟠','Moyen 🟡','Fort 🟢','Ultra 💪'];
+  return {score:score, label:labels[score], missing:missing};
+}
+function onPwInput(inp){
+  const ctx=inp.getAttribute('data-pw');
+  const r=pwScore(inp.value, inp.getAttribute('data-user')||'');
+  const widget=inp.closest('.wp-form')||inp.parentElement;
+  const meter=widget.querySelector('.pw-meter');
+  if(meter){
+    let bars='<div class="pw-bars">';
+    for(let i=1;i<=5;i++) bars+='<i class="'+(i<=r.score?('f'+r.score):'')+'"></i>';
+    bars+='</div>';
+    const miss=(inp.value && r.missing.length)?'<ul class="pw-missing">'+r.missing.map(m=>'<li>'+m+'</li>').join('')+'</ul>':'';
+    meter.innerHTML=bars+'<div class="pw-verdict">'+(inp.value?r.label:'')+'</div>'+miss;
+  }
+  if(ctx==='tester'){
+    if(normText(inp.value)==='azerty123') B.evt.testedAzerty=true;
+    if(r.score>=4) B.evt.testedStrong=true;
+    if(r.score>=5) B.evt.testedUltra=true;
+  }
+  B._pwCur=r;
+  checkMission();
+}
+
 /* ----- graine de mission : remise à zéro du navigateur ----- */
 function seedBrowser(seed){
   seed=seed||{};
   B.tabs=[]; B.seq=0; B.active=0;
   B.panel=null; B.menuOpen=false;
+  B.popups=[]; B.boss=null; B.storm=null;
+  B.downloads=(seed.downloads||[]).map(f=>({
+    id:'d'+(++B.seq), name:f.name, ext:(f.name.split('.').pop()||'').toLowerCase(),
+    size:f.size||'1,0 Mo', danger:!!f.danger, safeFile:!!f.safe, preview:f.preview,
+    state:'done', progress:100
+  }));
+  const hud=document.getElementById('bossHud'); if(hud){ hud.hidden=true; hud.innerHTML=''; }
   B.bookmarks=(seed.bookmarks||[]).map(u=>{
     const p=getPage(u); return {url:u, title:p.bm||p.title, icon:p.icon||'🌐'};
   });
@@ -950,7 +1332,7 @@ const SITES={
   zanimo:{ base:'www.zanimo.fr', name:'Zanimo', icon:'🐾', color:'#0e9f6e', soft:'#e6f7ef',
     nav:[['Accueil','www.zanimo.fr'],['Les animaux','www.zanimo.fr/animaux'],['Le jeu des liens','www.zanimo.fr/jeu-des-liens']] },
   ecole:{ base:'www.college-curie.fr', name:'Collège Marie-Curie', icon:'🏫', color:'#7c3aed', soft:'#f1eafd',
-    nav:[['Accueil','www.college-curie.fr'],['La cantine','www.college-curie.fr/cantine'],['Les sorties','www.college-curie.fr/sorties']] },
+    nav:[['Accueil','www.college-curie.fr'],['La cantine','www.college-curie.fr/cantine'],['Les sorties','www.college-curie.fr/sorties'],['Documents','www.college-curie.fr/documents']] },
   meteo:{ base:'www.meteo-mini.fr', name:'Météo Mini', icon:'⛅', color:'#0284c7', soft:'#e3f3fc',
     nav:[['Accueil','www.meteo-mini.fr']] },
   monuments:{ base:'www.paris-monuments.fr', name:'Paris Monuments', icon:'🗼', color:'#b45309', soft:'#fdf1e0',
@@ -963,7 +1345,28 @@ const SITES={
   panshop:{ base:'www.pandacadeaux.fr', name:'Panda Cadeaux', icon:'🛍️', color:'#e11d48', soft:'#fde8ec', nav:[] },
   eifshop:{ base:'www.boutique-eiffel.fr', name:'Boutique Eiffel', icon:'🛒', color:'#9333ea', soft:'#f3e8fd', nav:[] },
   pizza:{ base:'www.pizzeria-la-tour.fr', name:'Pizzeria La Tour', icon:'🍕', color:'#dc2626', soft:'#fdeaea', nav:[] },
-  choco:{ base:'www.choco-market.fr', name:'Choco Market', icon:'🍫', color:'#92400e', soft:'#f7ecdf', nav:[] }
+  choco:{ base:'www.choco-market.fr', name:'Choco Market', icon:'🍫', color:'#92400e', soft:'#f7ecdf', nav:[] },
+  /* --- niveaux 5 à 9 --- */
+  jeuxmax:{ base:'www.jeuxmax.fr', name:'JeuxMax', icon:'🕹️', color:'#7c3aed', soft:'#f1eafd',
+    nav:[['Accueil','www.jeuxmax.fr']] },
+  megapub:{ base:'www.mega-pub.fr', name:'Méga Pub', icon:'📢', color:'#ea580c', soft:'#fff1e5', nav:[] },
+  superjeux:{ base:'www.super-jeux-cadeaux.com', name:'Super Jeux Cadeaux', icon:'🎁', color:'#e11d48', soft:'#fde8ec', nav:[] },
+  blogtom:{ base:'www.blog-de-tom.fr', name:'Le blog de Tom', icon:'🛹', color:'#0891b2', soft:'#e3f6fb', nav:[] },
+  zanimfake:{ base:'www.zanim0.fr', name:'Zanimo', icon:'🐾', color:'#0e9f6e', soft:'#e6f7ef', nav:[] },
+  pixmail:{ base:'www.pixmail.fr', name:'Pixmail', icon:'📧', color:'#2563eb', soft:'#e8f0fe',
+    nav:[['Boîte de réception','www.pixmail.fr'],['Se connecter','www.pixmail.fr/connexion'],['S\'inscrire','www.pixmail.fr/inscription']] },
+  pixfake:{ base:'www.pixmail-secure-verif.com', name:'Pixmail', icon:'📧', color:'#2563eb', soft:'#e8f0fe', nav:[] },
+  blockcraft:{ base:'www.blockcraft.fr', name:'Blockcraft', icon:'🧱', color:'#16a34a', soft:'#e8f8ee', nav:[] },
+  blockfake1:{ base:'www.blockcraft-gratuit.com', name:'Blockcraft GRATUIT', icon:'🧱', color:'#dc2626', soft:'#fdeaea', nav:[] },
+  blockfake2:{ base:'www.b1ockcraft.fr', name:'Blockcraft', icon:'🧱', color:'#16a34a', soft:'#e8f8ee', nav:[] },
+  astuces:{ base:'www.astuces-exposes.fr', name:'Astuces Exposés', icon:'📚', color:'#0d9488', soft:'#e2f7f4', nav:[] },
+  turbo:{ base:'www.logiciels-turbo.com', name:'Logiciels Turbo', icon:'🚀', color:'#ea580c', soft:'#fff1e5', nav:[] },
+  testmdp:{ base:'www.teste-ton-mdp.fr', name:'Teste ton mot de passe', icon:'🔑', color:'#4f46e5', soft:'#ecebfc',
+    nav:[['Le testeur','www.teste-ton-mdp.fr'],['Le duel','www.teste-ton-mdp.fr/duel']] },
+  scoopz:{ base:'www.scoopz.fr', name:'Scoopz', icon:'😱', color:'#e11d48', soft:'#fde8ec',
+    nav:[['Le fil des scoops','www.scoopz.fr']] },
+  mairie:{ base:'www.mairie-trouville.fr', name:'Mairie de Trouville-les-Pixels', icon:'🏛️', color:'#155e75', soft:'#e3f3f8', nav:[] },
+  cadeaux1000:{ base:'www.cadeaux-1000euros.com', name:'1000 € Offerts', icon:'💶', color:'#b91c1c', soft:'#fdeaea', nav:[] }
 };
 function sitePg(siteKey, curUrl_, body){
   const s=SITES[siteKey];
@@ -1037,7 +1440,17 @@ const INDEX=[
   {url:'www.recettes-de-lilou.fr', t:'Les recettes de Lilou', s:'Le blog de cuisine de Lilou, 13 ans : des recettes simples et rapides, parfaites pour un goûter entre copains.', kw:'recette cuisine blog lilou ado gouter'},
   {url:'www.musee-espace.fr', t:'Musée de l\'Espace — fusées et planètes', s:'Viens toucher une vraie météorite et découvrir les fusées ! Un musée pour toute la famille.', kw:'musee espace fusee planete etoiles visite sortie meteorite'},
   {url:'www.musee-espace.fr/horaires', t:'Horaires & tarifs — Musée de l\'Espace', s:'Jours et heures d\'ouverture du musée, tarifs enfants et familles.', kw:'musee espace horaires ouverture tarif prix ferme heure jours'},
-  {url:'www.chasse-au-tresor.fr', t:'La Chasse au Trésor — le jeu d\'aventure en ligne', s:'Résous les énigmes, choisis les bonnes portes et trouve le trésor caché !', kw:'chasse tresor jeu aventure enigme jouer'}
+  {url:'www.chasse-au-tresor.fr', t:'La Chasse au Trésor — le jeu d\'aventure en ligne', s:'Résous les énigmes, choisis les bonnes portes et trouve le trésor caché !', kw:'chasse tresor jeu aventure enigme jouer'},
+  {url:'www.jeuxmax.fr', t:'JeuxMax — jeux gratuits en ligne', s:'Des centaines de jeux gratuits à jouer directement dans ton navigateur : labyrinthe, course, arcade…', kw:'jeux gratuits gratuit en ligne jouer navigateur arcade labyrinthe'},
+  {url:'www.blog-de-tom.fr', t:'Le blog de Tom — skate et jeux vidéo', s:'Le blog d\'un collégien passionné : spots de skate, tests de jeux et vie au collège.', kw:'blog tom skate jeux college'},
+  {url:'www.mairie-trouville.fr', t:'Mairie de Trouville-les-Pixels — site officiel', s:'Avis officiels de la ville : travaux, coupures d\'eau, horaires de la mairie et événements.', kw:'mairie trouville pixels ville officiel eau coupure travaux chateau avis'},
+  {url:'www.teste-ton-mdp.fr', t:'Teste ton mot de passe — outil gratuit', s:'Vérifie la force d\'un mot de passe et apprends à en créer un vraiment solide.', kw:'mot de passe tester force securite robuste fort'},
+  {url:'www.blockcraft.fr', t:'Blockcraft — site officiel du jeu', s:'Le site officiel de Blockcraft : actualités, versions et téléchargement sécurisé.', kw:'blockcraft jeu construction officiel telecharger site'},
+  {url:'www.astuces-exposes.fr', t:'Astuces Exposés — modèles gratuits pour le collège', s:'Modèles de documents et conseils pour réussir tes exposés au collège.', kw:'expose modele astuces college document telecharger'},
+  {url:'www.scoopz.fr', t:'Scoopz — l\'actu la plus CHOC du web', s:'Les scoops les plus incroyables du web !!! (fiabilité non garantie…)', kw:'scoopz actu choc buzz scoop rumeur'},
+  /* résultats sponsorisés (annonces) */
+  {ad:true, url:'www.super-jeux-cadeaux.com', t:'1000 JEUX GRATUITS — gagne un smartphone !', s:'Clique vite : jeux gratuits et CADEAUX pour les 100 premiers visiteurs. Offre limitée !!!', kw:'jeux gratuits gratuit jouer gagner cadeau smartphone'},
+  {ad:true, url:'www.logiciels-turbo.com', t:'Ton ordinateur est LENT ? Turbo-Boost GRATUIT', s:'Rends ton PC 10× plus rapide en 30 secondes. Téléchargement gratuit aujourd\'hui seulement !', kw:'ordinateur lent accelerer rapide turbo logiciel gratuit telecharger'}
 ];
 const STOPWORDS=new Set(['le','la','les','un','une','des','de','du','d','l','et','ou','est','sont','il','elle','on','ce','cette','ces','se','sa','son','ses','quel','quelle','quels','quelles','combien','comment','pourquoi','quand','qui','que','quoi','sur','dans','pour','avec','sans','au','aux','a','y','en','par','plus','tres','faut','fait','je','tu','veux','sait','savoir']);
 function searchResults(q){
@@ -1054,7 +1467,11 @@ function searchResults(q){
     return {e:e, sc:sc};
   }).filter(r=>r.sc>0);
   scored.sort((a,b)=>b.sc-a.sc);
-  return {words:words, list:scored.slice(0,6).map(r=>r.e)};
+  return {
+    words:words,
+    ads:scored.filter(r=>r.e.ad && r.sc>=6).slice(0,1).map(r=>r.e),
+    list:scored.filter(r=>!r.e.ad).slice(0,6).map(r=>r.e)
+  };
 }
 function serpPage(url){
   let q='';
@@ -1065,13 +1482,21 @@ function serpPage(url){
     html:function(){
       const r=searchResults(q);
       let items='';
-      if(!r.list.length){
+      if(!r.list.length && !r.ads.length){
         items='<div class="serp-none">😶 Aucun résultat pour « '+q+' ».<br>Essaie avec d\'autres mots-clés !</div>';
       } else {
         items='<p class="serp-count">Environ '+(r.list.length*1234)+' résultats (0,0'+(2+r.list.length)+' secondes)</p>';
+        r.ads.forEach(e=>{
+          items+='<div class="sr-item sr-ad">'
+            +'<span class="sr-adtag">Annonce</span>'
+            +'<div class="sr-url">'+(getPage(e.url).secure===false?'⚠️ http://':'🌐 https://')+e.url+'</div>'
+            +'<a class="sr-title" data-go="'+e.url+'" data-serp="1" data-ad="1">'+e.t+'</a>'
+            +'<p class="sr-snip">'+e.s+'</p>'
+            +'</div>';
+        });
         r.list.forEach(e=>{
           items+='<div class="sr-item">'
-            +'<div class="sr-url">🌐 https://'+e.url+'</div>'
+            +'<div class="sr-url">'+(getPage(e.url).secure===false?'⚠️ http://':'🌐 https://')+e.url+'</div>'
             +'<a class="sr-title" data-go="'+e.url+'" data-serp="1">'+e.t+'</a>'
             +'<p class="sr-snip">'+e.s+'</p>'
             +'</div>';
@@ -1259,6 +1684,7 @@ WEB['www.recettes-de-lilou.fr/gateau-choco']=pg('lilou','Gâteau au chocolat fac
 WEB['www.musee-espace.fr']=pg('musee','Musée de l\'Espace — fusées et planètes', function(){
   return '<div class="wp-hero"><span class="h-ic">🚀</span><div class="h-tx">'
     +'<h1>Bienvenue au Musée de l\'Espace</h1><p>Fusées géantes, combinaisons d\'astronautes et vraie météorite à toucher !</p></div></div>'
+    +'<div class="wp-fact">📰 <b>Communiqué officiel :</b> contrairement à une rumeur qui circule, le musée ne ferme PAS ses portes. Au contraire : une <b>nouvelle salle Mars</b> ouvrira en 2027 !</div>'
     +'<div class="wp-cards">'
     +'<div class="wp-card"><span class="c-ic">🪐</span><span class="c-t">Salle des planètes</span><div class="c-s">Voyage dans le système solaire</div></div>'
     +'<div class="wp-card"><span class="c-ic">👩‍🚀</span><span class="c-t">Vie d\'astronaute</span><div class="c-s">Comment dort-on dans l\'espace ?</div></div>'
@@ -1364,6 +1790,437 @@ WEB['www.choco-market.fr']=pg('choco','Choco Market — vente de chocolat', func
     +'<div class="wp-fact">💡 Ici on <b>achète</b> du chocolat, on ne trouve pas de <b>recette</b> ! Reviens aux résultats et cherche un site de cuisine.</div>';
 });
 
+/* ===========================================================
+   PAGES DES NIVEAUX 5 À 9
+   =========================================================== */
+/* encart publicitaire (badge « Annonce ») */
+function adBanner(url, big, sub, blink){
+  return '<div class="ad-banner'+(blink?' ad-blink':'')+'" data-go="'+url+'" data-ad="1">'
+    +'<span class="ad-tag">Annonce</span><span class="ad-big">'+big+'</span><span class="ad-sub">'+sub+'</span></div>';
+}
+
+/* ----- JeuxMax (pubs & pop-ups) ----- */
+WEB['www.jeuxmax.fr']=pg('jeuxmax','JeuxMax — jeux gratuits en ligne', function(){
+  return '<div class="wp-hero"><span class="h-ic">🕹️</span><div class="h-tx">'
+    +'<h1>JeuxMax</h1><p>Des centaines de jeux gratuits, directement dans ton navigateur. (Site financé par la publicité… tu vas vite le remarquer !)</p></div></div>'
+    +adBanner('www.super-jeux-cadeaux.com','📱 GAGNE UN SMARTPHONE EN 1 CLIC !!!','Offre réservée aux 100 premiers visiteurs — dépêche-toi !',true)
+    +'<h2>🎮 Les jeux du moment</h2>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card" data-go="www.jeuxmax.fr/labyrinthe-3d"><span class="c-ic">🌀</span><span class="c-t">Labyrinthe 3D</span><div class="c-s">Sortiras-tu du dédale ?</div></div>'
+    +'<div class="wp-card" data-go="www.jeuxmax.fr/astro-runner"><span class="c-ic">🚀</span><span class="c-t">Astro Runner</span><div class="c-s">Cours entre les astéroïdes</div></div>'
+    +'<div class="wp-card"><span class="c-ic">⚽</span><span class="c-t">Foot Legends</span><div class="c-s">Bientôt disponible</div></div>'
+    +'</div>'
+    +adBanner('www.mega-pub.fr','🔥 TON ORDINATEUR EST LENT ?','Ce truc INCROYABLE le rend 10× plus rapide…',false);
+});
+WEB['www.jeuxmax.fr/labyrinthe-3d']=pg('jeuxmax','Labyrinthe 3D — JeuxMax', function(){
+  return '<h1>🌀 Labyrinthe 3D</h1>'
+    +'<div class="wp-img">🌀🧱</div>'
+    +'<p class="wp-center">Bien joué : tu es arrivé jusqu\'au jeu <b>sans te faire piéger</b> par les publicités !</p>'
+    +'<p class="wp-center"><button class="wp-btnlink" data-act="play">▶ '+(B.evt.playedGame?'Rejouer':'Jouer')+'</button></p>'
+    +adBanner('www.super-jeux-cadeaux.com','🎁 1000 JEUX GRATUITS + CADEAUX','Clique ici pour tout débloquer !',false);
+});
+WEB['www.jeuxmax.fr/astro-runner']=pg('jeuxmax','Astro Runner — JeuxMax', function(){
+  return '<h1>🚀 Astro Runner</h1>'
+    +'<div class="wp-img">🚀☄️</div>'
+    +'<p class="wp-center">Esquive les astéroïdes et bats ton record !</p>'
+    +'<p class="wp-center"><button class="wp-btnlink" data-act="play">▶ '+(B.evt.playedGame?'Rejouer':'Jouer')+'</button></p>';
+}, {onOpen:function(){
+  if(B.evt._astroPopped) return;
+  B.evt._astroPopped=true;
+  const pz=popupPrize();
+  pz.onClose=function(){ after(700, ()=>{ if(!B.evt.blockedNotif) spawnPopup(popupNotif('jeuxmax.fr')); }); };
+  after(500, ()=>spawnPopup(pz));
+}});
+WEB['www.mega-pub.fr']=pg('megapub','Méga Pub — TU AS GAGNÉ ?!', function(){
+  return '<div class="wp-center"><h1>🎉 FÉLICITATIONS !!!</h1>'
+    +'<div class="wp-img">📱💰🎁</div>'
+    +'<p><b>Tu as « gagné » un smartphone…</b> enfin, c\'est ce que la pub voulait te faire croire !</p>'
+    +'<div class="wp-fact">💡 Tu viens de cliquer sur une <b>publicité piège</b>. Personne ne gagne rien ici : ces pages veulent récupérer ton adresse e-mail ou te faire acheter. Repère le badge <b>« Annonce »</b> et <b>reviens en arrière</b> avec ◀.</div></div>';
+}, {secure:false});
+WEB['www.super-jeux-cadeaux.com']=pg('superjeux','Super Jeux Cadeaux', function(){
+  return '<div class="wp-center"><h1>🎁 1000 JEUX GRATUITS !!!</h1>'
+    +'<div class="wp-img">🎰🎁</div>'
+    +'<p>« Entre ton e-mail et ton numéro de téléphone pour recevoir tes cadeaux » … <b>STOP !</b></p>'
+    +'<div class="wp-fact">💡 Site piège classique : promesses énormes, urgence (« les 100 premiers ! ») et collecte de tes données. C\'était un résultat <b>sponsorisé</b> ou une pub. Reviens en arrière avec ◀ et choisis un site fiable.</div></div>';
+}, {secure:false});
+
+/* ----- Sécurité : http, sites sosies, phishing ----- */
+WEB['www.blog-de-tom.fr']=pg('blogtom','Le blog de Tom — skate & jeux', function(){
+  return '<h1>🛹 Le blog de Tom</h1>'
+    +'<p>Salut, moi c\'est Tom, en 4<sup>e</sup> B ! Je poste ici mes spots de skate et mes tests de jeux.</p>'
+    +'<div class="wp-fact">🛹 Nouveau : j\'ai enfin réussi mon premier ollie, vidéo bientôt !</div>'
+    +'<div class="wp-fact">🎮 Test de la semaine : Blockcraft, 9/10 — le mode créatif est génial.</div>'
+    +'<p style="color:#8d9cab;font-size:.85rem;">NB : mon blog est en <b>http</b> (pas de cadenas) — pas grave pour <i>lire</i> des articles, mais je ne te demanderai jamais de mot de passe ici !</p>';
+}, {secure:false});
+WEB['www.zanim0.fr']=pg('zanimfake','Zanimo — l\'encyclopédie des animaux', function(){
+  return '<div class="wp-hero"><span class="h-ic">🐾</span><div class="h-tx">'
+    +'<h1>Bienvenue sur Zanimo !</h1><p>L\'encyclopédie des animaux, faite pour les curieux.</p></div></div>'
+    +'<div class="wp-fact" style="border-left-color:#e11d48">🎁 <b>OFFRE EXCEPTIONELLE :</b> abonement Premium GRATUIT à vie pour les 50 prochains inscrits !</div>'
+    +'<div class="wp-form"><span class="wp-label">Ton adresse e-mail</span><input class="wp-input" placeholder="prenom.nom@pixmail.fr">'
+    +'<span class="wp-label">Ton mot de passe Pixmail</span><input class="wp-input" placeholder="Ton mot de passe">'
+    +'<p style="margin-top:12px"><button class="wp-btnlink" data-act="phish" data-arg="zanim0">🎁 Je profite de l\'offre</button></p></div>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card"><span class="c-ic">🐼</span><span class="c-t">Le panda</span><div class="c-s">(page en maintenance)</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🐬</span><span class="c-t">Le dauphin</span><div class="c-s">(page en maintenance)</div></div>'
+    +'</div>';
+});
+WEB['www.pixmail.fr']=pg('pixmail','Pixmail — Boîte de réception', function(){
+  return '<h1>📧 Boîte de réception <span style="font-size:.7em;color:#8d9cab">— sam.martin@pixmail.fr</span></h1>'
+    +'<div class="mail-item" data-go="www.pixmail.fr/message-urgent"><span class="mail-from">Pixmail Sécurité</span><span class="mail-sub">⚠️ URGENT : ton compte sera supprimé demain !</span><span class="mail-badge">URGENT</span></div>'
+    +'<div class="mail-item" data-go="www.pixmail.fr/message-college"><span class="mail-from">Collège Marie-Curie</span><span class="mail-sub">Sortie au Musée de l\'Espace — informations</span></div>'
+    +'<div class="mail-item" data-go="www.pixmail.fr/message-de-sam"><span class="mail-from">Sam</span><span class="mail-sub">C\'est quoi le vrai site de Blockcraft ?</span></div>'
+    +'<div class="mail-item" data-go="www.pixmail.fr/message-zanimo"><span class="mail-from">Zanimo</span><span class="mail-sub">Newsletter — le retour du colibri 🐦</span></div>';
+});
+WEB['www.pixmail.fr/message-urgent']=pg('pixmail','⚠️ URGENT : ton compte sera supprimé — Pixmail', function(){
+  if(B.evt.reportedPhishing){
+    return '<h1>📧 Message signalé</h1>'
+      +'<div class="wp-fact" style="border-left-color:var(--green)">✅ <b>Merci !</b> Ce message a été signalé comme hameçonnage (phishing) et déplacé dans les indésirables. Grâce à toi, Pixmail protégera d\'autres utilisateurs.</div>'
+      +'<p><a class="lk" data-go="www.pixmail.fr">← Retour à la boîte de réception</a></p>';
+  }
+  return '<h1>📧 Lecture du message</h1>'
+    +'<div class="mail-view">'
+    +'<div class="mail-head">De : <b>securite@pixmail-secure-verif.com</b> · À : sam.martin@pixmail.fr</div>'
+    +'<p><b>⚠️ ALERTE DE SÉCURITÉE URGENT !!!</b></p>'
+    +'<p>Cher utilisateur, une activité suspecte a était détectée. Ton compte sera <b>SUPPRIMÉ DÉFINITIVEMENT sous 24 h</b> si tu ne vérifie pas ton identité immédiatement.</p>'
+    +'<p class="wp-center"><button class="wp-btnlink" style="--site:#dc2626" data-go="www.pixmail-secure-verif.com">🔓 VÉRIFIER MON COMPTE MAINTENANT</button></p>'
+    +'</div>'
+    +'<p class="wp-center"><button class="wp-btnlink" style="--site:#5a6b7b" data-act="report-phish">🚩 Signaler comme phishing</button>'
+    +'<a class="lk" data-go="www.pixmail.fr" style="margin-left:12px">← Retour</a></p>';
+});
+WEB['www.pixmail.fr/message-college']=pg('pixmail','Sortie au Musée de l\'Espace — Pixmail', function(){
+  return '<h1>📧 Lecture du message</h1>'
+    +'<div class="mail-view">'
+    +'<div class="mail-head">De : <b>secretariat@college-curie.fr</b> · À : sam.martin@pixmail.fr</div>'
+    +'<p>Bonjour,</p><p>La sortie de la 5<sup>e</sup> B au <b>Musée de l\'Espace</b> aura bien lieu le 12 mai. Rendez-vous à 8 h 15 devant le collège, prévoir un pique-nique.</p>'
+    +'<p>Toutes les infos sont sur <a class="lk" data-go="www.college-curie.fr/sorties">la page des sorties</a>.</p>'
+    +'<p>Le secrétariat</p></div>'
+    +'<p><a class="lk" data-go="www.pixmail.fr">← Retour à la boîte de réception</a></p>';
+});
+WEB['www.pixmail.fr/message-zanimo']=pg('pixmail','Newsletter Zanimo — Pixmail', function(){
+  return '<h1>📧 Lecture du message</h1>'
+    +'<div class="mail-view">'
+    +'<div class="mail-head">De : <b>newsletter@zanimo.fr</b> · À : sam.martin@pixmail.fr</div>'
+    +'<p>🐦 Le <b>colibri</b> arrive sur Zanimo le mois prochain : le seul oiseau capable de voler en marche arrière !</p>'
+    +'<p><a class="lk" data-go="www.zanimo.fr">Découvrir Zanimo</a></p></div>'
+    +'<p><a class="lk" data-go="www.pixmail.fr">← Retour à la boîte de réception</a></p>';
+});
+WEB['www.pixmail.fr/message-de-sam']=pg('pixmail','Message de Sam — Pixmail', function(){
+  return '<h1>📧 Lecture du message</h1>'
+    +'<div class="mail-view">'
+    +'<div class="mail-head">De : <b>sam.dubois@pixmail.fr</b> · À : sam.martin@pixmail.fr</div>'
+    +'<p>Salut ! Je veux installer <b>Blockcraft</b> mais on m\'a envoyé 3 liens différents… 😅 C\'est lequel le vrai site officiel ? <b>Survole-les</b> pour vérifier avant de cliquer !</p>'
+    +'<p class="wp-center">'
+    +'<button class="wp-btnlink" style="--site:#16a34a" data-go="www.blockcraft-gratuit.com">🧱 Blockcraft — site du jeu</button><br>'
+    +'<button class="wp-btnlink" style="--site:#16a34a" data-go="www.blockcraft.fr">🧱 Blockcraft — site du jeu</button><br>'
+    +'<button class="wp-btnlink" style="--site:#16a34a" data-go="www.b1ockcraft.fr">🧱 Blockcraft — site du jeu</button>'
+    +'</p></div>'
+    +'<p><a class="lk" data-go="www.pixmail.fr">← Retour à la boîte de réception</a></p>';
+});
+WEB['www.pixmail-secure-verif.com']=pg('pixfake','Pixmail — Vérification de compte', function(){
+  return '<div class="wp-center"><h1>🔓 Vérification de ton compte</h1></div>'
+    +'<div class="wp-fact" style="border-left-color:#e11d48">⏳ Il te reste <b>23 h 59</b> avant la suppression de ton compte !</div>'
+    +'<div class="wp-form"><span class="wp-label">Adresse Pixmail</span><input class="wp-input" placeholder="prenom.nom@pixmail.fr">'
+    +'<span class="wp-label">Mot de passe</span><input class="wp-input" placeholder="Ton mot de passe">'
+    +'<p style="margin-top:12px"><button class="wp-btnlink" style="--site:#dc2626" data-act="phish" data-arg="pixfake">Vérifier mon compte</button></p></div>'
+    +'<p class="wp-center" style="color:#8d9cab;font-size:.82rem">Regarde bien l\'<b>adresse</b> de cette page… et son symbole dans la barre d\'adresse. Le vrai Pixmail, c\'est <b>www.pixmail.fr</b> !</p>';
+}, {secure:false});
+WEB['www.blockcraft.fr']=pg('blockcraft','Blockcraft — site officiel', function(){
+  return '<div class="wp-hero"><span class="h-ic">🧱</span><div class="h-tx">'
+    +'<h1>Blockcraft</h1><p><b>Site officiel</b> du jeu de construction préféré des collégiens.</p></div></div>'
+    +'<div class="wp-fact" style="border-left-color:var(--green)">✅ Bien joué : tu as reconnu la <b>vraie</b> adresse ! La seule adresse officielle est <b>www.blockcraft.fr</b>.</div>'
+    +'<div class="wp-fact">⚠️ Méfie-toi des copies : « blockcraft-gratuit.com », « b1ockcraft.fr » (avec un 1 !)… Elles imitent le site pour piéger les joueurs.</div>';
+});
+WEB['www.blockcraft-gratuit.com']=pg('blockfake1','Blockcraft GRATUIT !!!', function(){
+  return '<div class="wp-center"><h1>❌ Mauvais choix…</h1>'
+    +'<div class="wp-img">🎣</div>'
+    +'<p>« blockcraft<b>-gratuit.com</b> » n\'est PAS le site officiel : les pirates ajoutent souvent des mots comme <b>gratuit</b>, <b>cadeau</b> ou <b>promo</b> à un nom connu.</p>'
+    +'<p><b>Reviens en arrière</b> avec ◀ et trouve la vraie adresse.</p></div>';
+}, {secure:false});
+WEB['www.b1ockcraft.fr']=pg('blockfake2','Blockcraft — site officiel', function(){
+  return '<div class="wp-center"><h1>❌ Regarde mieux…</h1>'
+    +'<div class="wp-img">🕵️</div>'
+    +'<p>« b<b>1</b>ockcraft.fr » — le <b>l</b> a été remplacé par un <b>1</b> ! Ces adresses « sosies » sont presque invisibles si on lit trop vite.</p>'
+    +'<p><b>Reviens en arrière</b> avec ◀ et trouve la vraie adresse.</p></div>';
+}, {secure:false});
+
+/* ----- Téléchargements ----- */
+WEB['www.college-curie.fr/documents']=pg('ecole','Documents à télécharger — Collège Marie-Curie', function(){
+  return '<h1>📂 Documents à télécharger</h1>'
+    +'<p>Clique sur un document pour le télécharger sur ton ordinateur.</p>'
+    +'<ul>'
+    +'<li>📕 <a class="lk dl-link" data-dl="fiche-revisions-maths.pdf" data-dlsize="1,1 Mo" data-dlprev="Fiche de révisions — Maths 5e : fractions, priorités de calcul, symétrie.">fiche-revisions-maths.pdf</a> (1,1 Mo)</li>'
+    +'<li>📕 <a class="lk dl-link" data-dl="planning-cantine.pdf" data-dlsize="480 Ko" data-dlprev="Planning des menus de la cantine — trimestre 3.">planning-cantine.pdf</a> (480 Ko)</li>'
+    +'<li>📕 <a class="lk dl-link" data-dl="reglement-interieur.pdf" data-dlsize="960 Ko" data-dlprev="Règlement intérieur du collège Marie-Curie.">reglement-interieur.pdf</a> (960 Ko)</li>'
+    +'</ul>'
+    +'<div class="wp-fact">💡 Les fichiers téléchargés se rangent dans le panneau <b>⬇️ Téléchargements</b> du navigateur.</div>';
+});
+WEB['www.astuces-exposes.fr']=pg('astuces','Astuces Exposés — modèles gratuits', function(){
+  return '<h1>📚 Astuces Exposés</h1>'
+    +'<p>Le modèle de document parfait pour tes exposés (page de garde, sommaire, sources).</p>'
+    +adBanner('www.super-jeux-cadeaux.com','⬇️ TÉLÉCHARGER MAINTENANT ⬇️','Téléchargement RAPIDE et GRATUIT — clique ici !',true)
+    +adBanner('www.mega-pub.fr','⬇️⬇️ TÉLÉCHARGEMENT DIRECT ⬇️⬇️','100 % gratuit, sans inscription !',false)
+    +'<h2>Le vrai lien, discret :</h2>'
+    +'<p>Télécharger le fichier : <a class="lk dl-link" data-dl="modele-expose.doc" data-dlsize="245 Ko" data-dlprev="Modèle d\'exposé — page de garde, sommaire et bibliographie à compléter.">modele-expose.doc</a> (245 Ko)</p>'
+    +'<div class="wp-fact">💡 Sur les sites de téléchargement, les <b>gros boutons colorés</b> sont presque toujours des publicités. Le vrai lien est souvent <b>petit et discret</b> : survole pour vérifier !</div>';
+});
+WEB['www.logiciels-turbo.com']=pg('turbo','Turbo-Boost — accélère ton PC !', function(){
+  return '<div class="wp-center"><h1>🚀 TON PC EST LENT ?</h1>'
+    +'<div class="wp-img">🐌➡️🚀</div>'
+    +'<p><b>Turbo-Boost</b> rend n\'importe quel ordinateur <b>10× PLUS RAPIDE</b> en 30 secondes. GRATUIT aujourd\'hui seulement !</p>'
+    +'<p>⭐⭐⭐⭐⭐ « Incroyable ! » — un utilisateur anonyme</p>'
+    +'<p><button class="wp-btnlink" style="--site:#ea580c" data-dl="turbo-boost.exe" data-dlsize="8,7 Mo" data-danger>⬇️ Télécharger Turbo-Boost (.exe)</button></p>'
+    +'<p style="color:#8d9cab;font-size:.8rem">Site sans mentions légales · connexion non sécurisée · promesses magiques : ça fait beaucoup, non ?</p></div>';
+}, {secure:false});
+
+/* ----- Mots de passe ----- */
+WEB['www.teste-ton-mdp.fr']=pg('testmdp','Teste ton mot de passe', function(){
+  return '<h1>🔑 Teste la force d\'un mot de passe</h1>'
+    +'<p>Outil du club informatique du collège. Tape un mot de passe pour voir sa force — rien n\'est envoyé ni enregistré (et n\'y tape jamais ton <b>vrai</b> mot de passe : règle d\'or !).</p>'
+    +'<div class="wp-form"><span class="wp-label">Mot de passe à tester</span>'
+    +'<input class="wp-input" data-pw="tester" placeholder="Tape ici…" autocomplete="off" spellcheck="false">'
+    +'<div class="pw-meter"></div></div>'
+    +'<div class="wp-fact">💪 La recette d\'un bon mot de passe : <b>12 caractères minimum</b>, majuscules + minuscules, chiffres, symboles… et ni ton prénom, ni « azerty » ! Astuce : assemble <b>3 mots</b> avec des symboles, comme <i>Fusee!Panda#2026</i>.</div>';
+});
+WEB['www.teste-ton-mdp.fr/duel']=pg('testmdp','Le duel des mots de passe', function(){
+  if(B.evt.pickedStrongest){
+    return '<h1>🏆 Le duel des mots de passe</h1>'
+      +'<div class="wp-fact" style="border-left-color:var(--green)">✅ Exact : <b>T!gre#Vert_2026</b> gagne le duel — long, varié, sans mot du dictionnaire seul ni date de naissance.</div>'
+      +'<p>Les autres ? <b>azerty2026</b> : suite de clavier connue. <b>Sam2013</b> : prénom + année, trop court. <b>jetaime</b> : dans le top 20 des mots de passe les plus piratés !</p>';
+  }
+  return '<h1>🏆 Le duel des mots de passe</h1>'
+    +'<p>Quatre candidats, un seul champion. Lequel est le plus <b>robuste</b> ?</p>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card" data-act="pw-duel" data-arg="0"><span class="c-ic">⌨️</span><span class="c-t">azerty2026</span></div>'
+    +'<div class="wp-card" data-act="pw-duel" data-arg="1"><span class="c-ic">👤</span><span class="c-t">Sam2013</span></div>'
+    +'<div class="wp-card" data-act="pw-duel" data-arg="2"><span class="c-ic">💘</span><span class="c-t">jetaime</span></div>'
+    +'<div class="wp-card" data-act="pw-duel" data-arg="3"><span class="c-ic">🐯</span><span class="c-t">T!gre#Vert_2026</span></div>'
+    +'</div>';
+});
+WEB['www.pixmail.fr/inscription']=pg('pixmail','Créer un compte — Pixmail', function(){
+  if(B.evt.pmAccount){
+    return '<div class="wp-center"><h1>✅ Compte créé !</h1>'
+      +'<div class="wp-img">📧🎉</div>'
+      +'<p>Bienvenue sur Pixmail, <b>sam.martin</b> ! Ton mot de passe est <b>fort</b> : garde-le secret, et n\'utilise <b>jamais le même</b> sur un autre site.</p></div>';
+  }
+  return '<h1>📧 Crée ton compte Pixmail</h1>'
+    +'<div class="wp-form">'
+    +'<span class="wp-label">Nom d\'utilisateur</span><input class="wp-input" value="sam.martin" disabled>'
+    +'<span class="wp-label">Choisis ton mot de passe</span>'
+    +'<input class="wp-input" data-pw="signup" data-user="sam.martin" placeholder="12 caractères minimum…" autocomplete="off" spellcheck="false">'
+    +'<div class="pw-meter"></div>'
+    +'<div class="wp-err" id="pmErr"></div>'
+    +'<p style="margin-top:12px"><button class="wp-btnlink" data-act="pm-signup">Créer mon compte</button></p>'
+    +'</div>'
+    +'<p class="wp-center" style="color:#8d9cab;font-size:.82rem">Le mot de passe s\'affiche en clair ici pour l\'exercice — en vrai, il serait masqué par des •••</p>';
+});
+WEB['www.pixmail.fr/connexion']=pg('pixmail','Connexion — Pixmail', function(){
+  return '<h1>📧 Connexion à Pixmail</h1>'
+    +'<div class="wp-form">'
+    +'<span class="wp-label">Nom d\'utilisateur</span><input class="wp-input" value="sam.martin" disabled>'
+    +'<span class="wp-label">Mot de passe</span><input class="wp-input" type="password" placeholder="••••••••••••">'
+    +'<div class="wp-err" id="pmLoginErr"></div>'
+    +'<p style="margin-top:12px"><button class="wp-btnlink" data-act="pm-login">Se connecter</button></p>'
+    +'<p style="margin:8px 0 0"><a class="lk" data-go="www.pixmail.fr/recuperation">Mot de passe oublié ?</a></p>'
+    +'</div>';
+});
+WEB['www.pixmail.fr/recuperation']=pg('pixmail','Récupération de compte — Pixmail', function(){
+  if(B.evt.resetDone){
+    return '<div class="wp-center"><h1>✅ Mot de passe changé !</h1>'
+      +'<div class="wp-img">🔑✨</div>'
+      +'<p>Ton nouveau mot de passe est enregistré. C\'est exactement comme ça qu\'on récupère un compte : <b>par la procédure officielle du site</b>, jamais par un lien reçu dans un message bizarre !</p></div>';
+  }
+  if(B.evt.codeEntered){
+    return '<h1>🔑 Étape 3/3 — nouveau mot de passe</h1>'
+      +'<div class="wp-form">'
+      +'<span class="wp-label">Choisis un nouveau mot de passe (fort !)</span>'
+      +'<input class="wp-input" data-pw="reset" data-user="sam.martin" placeholder="12 caractères minimum…" autocomplete="off" spellcheck="false">'
+      +'<div class="pw-meter"></div>'
+      +'<div class="wp-err" id="pmResetErr"></div>'
+      +'<p style="margin-top:12px"><button class="wp-btnlink" data-act="pm-reset">Enregistrer</button></p>'
+      +'</div>';
+  }
+  if(B.evt.pmCodeSent){
+    return '<h1>🔑 Étape 2/3 — le code de vérification</h1>'
+      +'<p>Un code à 4 chiffres vient d\'être envoyé sur le téléphone de tes parents (regarde le <b>pop-up SMS</b> 📱 !). Ce code prouve que c\'est bien toi.</p>'
+      +'<div class="wp-form">'
+      +'<span class="wp-label">Code reçu par SMS</span><input class="wp-input" data-code placeholder="····" maxlength="4">'
+      +'<div class="wp-err" id="pmCodeErr"></div>'
+      +'<p style="margin-top:12px"><button class="wp-btnlink" data-act="pm-checkcode">Vérifier le code</button></p>'
+      +'</div>';
+  }
+  return '<h1>🔑 Étape 1/3 — mot de passe oublié</h1>'
+    +'<p>Pas de panique : ça arrive à tout le monde ! Les sites sérieux ont une <b>procédure officielle</b> de récupération, souvent avec un code envoyé par SMS ou e-mail.</p>'
+    +'<div class="wp-form"><span class="wp-label">Compte concerné</span><input class="wp-input" value="sam.martin" disabled>'
+    +'<p style="margin-top:12px"><button class="wp-btnlink" data-act="pm-sendcode">📱 M\'envoyer un code de récupération</button></p></div>';
+});
+
+/* ----- Boss final : Scoopz & INFOX ----- */
+const CLAIMS=[
+  {id:'musee', truth:false, t:'FERMETURE DÉFINITIVE du Musée de l\'Espace ?!',
+    body:'Selon « un ami du cousin du gardien », le célèbre Musée de l\'Espace fermerait ses portes POUR TOUJOURS dès cet été. Les fusées seraient vendues à la casse !!!',
+    hint:'le site officiel du Musée de l\'Espace', shares:'12 843',
+    explain:'Le site officiel du musée annonce au contraire une <b>nouvelle salle Mars en 2027</b>. Il reste ouvert du mardi au dimanche.'},
+  {id:'panda', truth:false, t:'INCROYABLE : des pandas de 300 kilos découverts !',
+    body:'Des « scientifiques anonymes » auraient observé des pandas géants de plus de 300 kilos. Du jamais vu ! Aucune photo disponible, mais on nous assure que c\'est vrai.',
+    hint:'la fiche du panda sur Zanimo', shares:'8 217',
+    explain:'D\'après l\'encyclopédie Zanimo, un panda géant pèse <b>jusqu\'à 100 kilos</b> — trois fois moins que la rumeur.'},
+  {id:'eiffel', truth:true, t:'La tour Eiffel a GRANDI : 330 mètres !',
+    body:'On raconte que la tour Eiffel mesurerait maintenant 330 mètres de haut. Info ou intox ? Beaucoup n\'y croient pas…',
+    hint:'la page de la tour Eiffel sur Paris Monuments', shares:'5 034',
+    explain:'C\'est <b>VRAI</b> : avec ses antennes, la tour mesure bien <b>330 mètres</b>. Une info surprenante n\'est pas forcément fausse — c\'est la vérification qui compte !'},
+  {id:'eau', truth:false, t:'Plus d\'eau à Trouville-les-Pixels pendant TOUT l\'été !',
+    body:'Panique en ville : l\'eau du robinet serait coupée du 1er juillet au 31 août. Stockez des bouteilles !!! (source : un groupe de discussion)',
+    hint:'le site de la mairie de Trouville-les-Pixels', shares:'21 456',
+    explain:'La mairie annonce une coupure d\'<b>une seule nuit</b> (le 12 juillet, de 23 h à 5 h) pour l\'entretien du château d\'eau.'},
+  {id:'euros', truth:false, t:'1 000 € OFFERTS à chaque collégien inscrit !',
+    body:'Un site distribuerait 1 000 € à tous les collégiens qui s\'inscrivent avant vendredi : www.cadeaux-1000euros.com. Il paraît que ça marche vraiment !',
+    hint:'va inspecter ce fameux site : son cadenas, ses demandes bizarres…', shares:'32 108',
+    explain:'Le site est en <b>http</b> (non sécurisé), sans mentions légales, et demande… les <b>coordonnées bancaires des parents</b>. Arnaque classique : personne ne donne 1 000 € gratuitement.'}
+];
+function claimState(id){ return !!(B.boss && B.boss.solved[id]); }
+WEB['www.scoopz.fr']=pg('scoopz','Scoopz — l\'actu la plus CHOC du web', function(){
+  let cards='';
+  CLAIMS.forEach(c=>{
+    const done=claimState(c.id);
+    cards+='<div class="scoop'+(done?' done':'')+'">'
+      +'<div class="sc-t">'+(done?'✅ ':'')+c.t+'</div>'
+      +'<div class="sc-m">😱 '+c.shares+' partages · auteur : anonyme · source : « on me l\'a dit »</div>'
+      +(done
+        ? '<div style="font-weight:700;font-size:.88rem;color:var(--green-d)">Vérifié par la rédaction (toi !) — '+(c.truth?'info confirmée':'rumeur démentie')+'.</div>'
+        : '<button class="wp-btnlink" style="--site:#e11d48" data-go="www.scoopz.fr/'+c.id+'">🔍 Lire et vérifier</button>')
+      +'</div>';
+  });
+  return '<div class="wp-hero" style="--site-soft:#fde8ec"><span class="h-ic">😱</span><div class="h-tx">'
+    +'<h1>Scoopz</h1><p>« L\'actu la plus CHOC du web !!! » — aucun journaliste n\'a été blessé (ni employé) dans la fabrication de ce site.</p></div></div>'
+    +cards;
+});
+CLAIMS.forEach(c=>{
+  WEB['www.scoopz.fr/'+c.id]=pg('scoopz', c.t+' — Scoopz', function(){
+    const done=claimState(c.id);
+    let verdict;
+    if(done){
+      verdict='<div class="wp-fact" style="border-left-color:var(--green)">✅ <b>Bien vu, rédacteur !</b> '+c.explain+'</div>'
+        +'<p class="wp-center"><a class="lk" data-go="www.scoopz.fr">← Retour au fil des scoops</a></p>';
+    } else {
+      verdict='<div class="verdict-box"><div class="vb-t">🗞️ Ton verdict de rédacteur en chef :</div>'
+        +'<button class="wp-btnlink" style="--site:#16a34a" data-act="verdict" data-arg="'+c.id+':vrai">✅ C\'est VRAI, je confirme</button>'
+        +'<button class="wp-btnlink" style="--site:#dc2626" data-act="verdict" data-arg="'+c.id+':faux">❌ C\'est FAUX, je démens</button>'
+        +'<p style="font-size:.8rem;color:#8d9cab;margin:8px 0 0">Ne devine pas : va <b>vérifier sur un site fiable</b> (nouvel onglet conseillé !), puis reviens trancher.</p></div>';
+    }
+    return '<h1>'+c.t+'</h1>'
+      +'<div class="sc-m" style="color:#8d9cab;font-weight:700;font-size:.8rem">Auteur : anonyme · Date : ??? · Source : « quelqu\'un de sûr » · 😱 '+c.shares+' partages</div>'
+      +'<p>'+c.body+'</p>'
+      +verdict;
+  });
+});
+WEB['www.scoopz.fr/chat-martien']=pg('scoopz','Un CHAT VENU DE MARS dans un collège !!! — Scoopz', function(){
+  return '<h1>😱 Un CHAT VENU DE MARS adopté dans un collège voisin !!!</h1>'
+    +'<div class="sc-m" style="color:#8d9cab;font-weight:700;font-size:.8rem">Auteur : anonyme · Date : ??? · Source : une vidéo floue</div>'
+    +'<div class="wp-img">🐱👽</div>'
+    +'<p>C\'est INCROYABLE mais VRAI (enfin, on croit) : un chat aux yeux qui brillent dans le noir aurait été retrouvé dans une capsule près du collège Jean-Moulin. La NASA refuserait de commenter, c\'est bien la PREUVE qu\'on nous cache tout !!!</p>'
+    +'<p>Partage vite avant la censure !!!</p>'
+    +'<div class="wp-fact">🧐 Exercice : combien d\'indices de <b>non-fiabilité</b> repères-tu sur cette page ? (auteur, date, sources, ton de l\'article, appel au partage…)</div>';
+});
+WEB['www.mairie-trouville.fr']=pg('mairie','Mairie de Trouville-les-Pixels — site officiel', function(){
+  return '<div class="wp-hero"><span class="h-ic">🏛️</span><div class="h-tx">'
+    +'<h1>Mairie de Trouville-les-Pixels</h1><p>Site officiel de la ville — informations vérifiées et à jour.</p></div></div>'
+    +'<h2>📣 Avis officiels</h2>'
+    +'<div class="wp-fact">💧 <b>Entretien du château d\'eau</b> : coupure d\'eau la nuit du <b>12 juillet, de 23 h à 5 h</b> uniquement. L\'eau reste disponible tout le reste de l\'été.</div>'
+    +'<div class="wp-fact">⛲ La nouvelle fontaine de la place des Pixels sera inaugurée le 6 juillet.</div>'
+    +'<div class="wp-fact">🏛️ La mairie est ouverte du lundi au vendredi, de 9 h à 17 h.</div>';
+});
+WEB['www.cadeaux-1000euros.com']=pg('cadeaux1000','1 000 € OFFERTS aux collégiens !', function(){
+  return '<div class="wp-center"><h1>💶 1 000 € OFFERT à chaque collégien !!!</h1>'
+    +'<div class="wp-img">💶🤑</div>'
+    +'<p>Offre ULTRA limitée !! Inscrit toi avant vendredi et reçoit 1 000 € directement !</p></div>'
+    +'<div class="wp-form"><span class="wp-label">Ton nom et prénom</span><input class="wp-input" placeholder="Prénom Nom">'
+    +'<span class="wp-label">Numéro de carte bancaire des parents (pour le « versement »)</span><input class="wp-input" placeholder="•••• •••• •••• ••••">'
+    +'<p style="margin-top:12px"><button class="wp-btnlink" style="--site:#b91c1c" data-act="phish" data-arg="cadeaux">💶 RECEVOIR MES 1 000 €</button></p></div>'
+    +'<p class="wp-center" style="color:#8d9cab;font-size:.8rem">http, fautes d\'orthographe, urgence, demande bancaire… tu as compté les signaux d\'alarme ?</p>';
+}, {secure:false});
+
+/* ----- actions déclenchées par les pages ----- */
+const PHISH_MSGS={
+  zanim0:'Tu as donné ton e-mail et ton mot de passe à un <b>faux site</b> ! « zanim0.fr » (avec un zéro) imite Zanimo pour voler des comptes.',
+  pixfake:'Tu as tapé ton mot de passe sur <b>pixmail-secure-verif.com</b>… qui n\'est PAS Pixmail ! Les pirates contrôleraient maintenant ta boîte mail.',
+  cadeaux:'Tu allais envoyer des <b>coordonnées bancaires</b> à des inconnus ! Personne ne distribue 1 000 € : c\'était une arnaque évidente.'
+};
+const PAGE_ACTIONS={
+  'play':function(){
+    B.evt.playedGame=true; beep('good');
+    toast('🚀 Partie lancée ! (version démo de JeuxMax)');
+    checkMission();
+  },
+  'report-phish':function(){
+    B.evt.reportedPhishing=true; beep('ding');
+    toast('🚩 Message signalé comme phishing — bien joué !');
+    renderViewport(); checkMission();
+  },
+  'phish':function(el){
+    phishingFail(PHISH_MSGS[el.getAttribute('data-arg')]);
+  },
+  'pm-login':function(){
+    beep('bad');
+    const err=document.getElementById('pmLoginErr');
+    if(err) err.textContent='Mot de passe incorrect. Clique sur « Mot de passe oublié ? » juste en dessous.';
+  },
+  'pm-signup':function(){
+    const inp=document.querySelector('#viewport [data-pw="signup"]'); if(!inp) return;
+    const r=pwScore(inp.value,'sam.martin');
+    if(r.score>=4){
+      B.evt.createdStrong=true; B.evt.pmAccount=true;
+      beep('ding'); renderViewport(); checkMission();
+    } else {
+      beep('bad');
+      const err=document.getElementById('pmErr');
+      if(err) err.innerHTML='Mot de passe refusé — il manque : '+r.missing.map(m=>m.replace(/<[^>]+>/g,'')).join(', ')+'.';
+    }
+  },
+  'pm-sendcode':function(){
+    B.evt.pmCodeSent=true; beep('open');
+    spawnPopup(popupSms('4729'));
+    renderViewport(); checkMission();
+  },
+  'pm-checkcode':function(){
+    const inp=document.querySelector('#viewport [data-code]'); if(!inp) return;
+    if(inp.value.trim()==='4729'){
+      B.evt.codeEntered=true; beep('good'); renderViewport(); checkMission();
+    } else {
+      beep('bad');
+      const err=document.getElementById('pmCodeErr');
+      if(err) err.textContent='Ce n\'est pas le bon code. Regarde le pop-up SMS 📱 !';
+    }
+  },
+  'pm-reset':function(){
+    const inp=document.querySelector('#viewport [data-pw="reset"]'); if(!inp) return;
+    const r=pwScore(inp.value,'sam.martin');
+    if(r.score>=4){
+      B.evt.resetDone=true; beep('ding'); renderViewport(); checkMission();
+    } else {
+      beep('bad');
+      const err=document.getElementById('pmResetErr');
+      if(err) err.textContent='Trop fragile pour protéger ton compte ! Vise le niveau « Fort 🟢 ».';
+    }
+  },
+  'pw-duel':function(el){
+    const i=+el.getAttribute('data-arg');
+    if(i===3){
+      B.evt.pickedStrongest=true; beep('ding');
+      renderViewport(); checkMission();
+    } else {
+      beep('bad');
+      const why=['« azerty2026 » commence par une suite de clavier archi-connue !',
+        '« Sam2013 » : un prénom + une année de naissance, c\'est ce que les pirates testent en premier.',
+        '« jetaime » est dans le top 20 des mots de passe les plus piratés de France !'];
+      toast('❌ '+why[i]);
+    }
+  },
+  'verdict':function(el){
+    const parts=(el.getAttribute('data-arg')||'').split(':');
+    infoxVerdict(parts[0], parts[1]==='vrai');
+  }
+};
+
 /* ----- pages spéciales ----- */
 function errorPage(url){
   return {
@@ -1416,7 +2273,11 @@ const G={
   openedBookmark:(u)=>({spot:'bmbar', hint:'Clique sur le favori dans la <b>barre de favoris</b>, juste sous la barre d\'adresse.', test:c=>c.evt.openedBookmark && c.evt.openedBookmark.has(u)}),
   openedBmPanel:()=>({spot:'menu', hint:'Clique sur le bouton <b>☰</b> (en haut à droite), puis choisis <b>⭐ Favoris</b>.', test:c=>c.evt.openedBmPanel}),
   openedHistory:()=>({spot:'menu', hint:'Clique sur le bouton <b>☰</b> (en haut à droite), puis choisis <b>🕘 Historique</b>.', test:c=>c.evt.openedHistoryPanel}),
-  openedFromHistory:(u)=>({spot:'sidebar', hint:'Dans le panneau Historique, lis la liste et <b>clique</b> sur la bonne page pour la rouvrir.', test:c=>c.evt.openedFromHistory && c.evt.openedFromHistory.has(u)})
+  openedFromHistory:(u)=>({spot:'sidebar', hint:'Dans le panneau Historique, lis la liste et <b>clique</b> sur la bonne page pour la rouvrir.', test:c=>c.evt.openedFromHistory && c.evt.openedFromHistory.has(u)}),
+  /* objectifs génériques (niveaux 5 à 9) */
+  flag:(key,hint,spot)=>({spot:spot||'viewport', hint:hint, test:c=>!!c.evt[key]}),
+  inSet:(key,val,hint,spot)=>({spot:spot||'viewport', hint:hint, test:c=>c.evt[key] && c.evt[key].has(val)}),
+  setAll:(key,vals,hint,spot)=>({spot:spot||'viewport', hint:hint, test:c=>c.evt[key] && vals.every(v=>c.evt[key].has(v))})
 };
 /* objectif « question » : la réponse se donne dans le carnet 📝 sous l'écran */
 function quizObj(t, key, q, accepted, hint){
@@ -1451,10 +2312,12 @@ function renderJalonObjective(enter){
 }
 function jalonAdvance(){
   currentStep._jalonAnim=true;
+  const gen=currentStep._gen;
   const sub=document.getElementById('bSub'); const el=sub&&sub.querySelector('.jalon-obj');
   if(el){ el.classList.add('done'); const ck=el.querySelector('.jo-check'); if(ck) ck.textContent='✓'; }
   setTimeout(()=>{ if(el) el.classList.add('slideup'); }, 520);
   setTimeout(()=>{
+    if(!currentStep || currentStep._gen!==gen) return; /* la mission a été relancée entre-temps */
     currentStep._jalonIdx++;
     currentStep._jalonAnim=false;
     const objs=currentStep.objectives||[];
@@ -1678,16 +2541,325 @@ const LEVELS=[
         {t:'Ajoute-la aux <b>favoris ⭐</b> pour ne plus jamais la perdre', goal:G.bookmarked('www.recettes-de-lilou.fr/gateau-choco')},
         quizObj('Dernière question dans le carnet 📝 !', 'qChoco', 'Combien de grammes de chocolat faut-il pour la recette ?', ['200'], 'Regarde la liste des ingrédients de la recette.')
       ]}
+  ]},
+
+/* ===== NIVEAU 5 — Pubs et pop-ups ===== */
+{ n:5, title:'Pubs et pop-ups', subtitle:'pubs & pop-ups',
+  intro:{ emoji:'📢',
+    lead:'Le web est truffé de <b>publicités</b> et de <b>pop-ups</b> conçus pour attraper tes clics : faux cadeaux, fausses alertes, faux boutons. Apprends à les démasquer pour ne plus jamais tomber dans le panneau.',
+    teach:'Une publicité porte presque toujours un badge <b>« Annonce »</b> ou <b>« Sponsorisé »</b> — écrit en tout petit ! Un <b>pop-up</b> est une fenêtre qui s\'ouvre toute seule par-dessus la page : ferme-le avec sa <b>vraie croix ✕</b> (souvent discrète), jamais avec ses gros boutons colorés qui clignotent. Et si un site demande à t\'envoyer des <b>notifications</b>, choisis <b>Bloquer</b>. Règle d\'or : trop beau pour être vrai = piège.',
+    tools:[{g:'📢',n:'Le badge « Annonce »'},{g:'✕',n:'La vraie croix du pop-up'},{g:'🔕',n:'Bloquer les notifications'},{g:'🎁',n:'Trop beau pour être vrai = piège'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'🕶️',title:'Repère les pubs',
+      intro:'Bienvenue sur <b>JeuxMax</b>, un site de jeux… financé par la pub. Des encarts criards essaient de te détourner : apprends à les repérer <b>avant</b> de cliquer.',
+      seed:{tabs:['www.jeuxmax.fr']},
+      objectives:[
+        {t:'<b>Survole</b> les encarts criards sans cliquer : repère le badge <b>« Annonce »</b>', goal:G.flag('adHovered','Passe ta souris sur les gros encarts colorés <b>sans cliquer</b> : un badge « Annonce » se cache dans le coin, et l\'adresse de destination s\'affiche en bas à gauche.','links')},
+        {t:'Ouvre le jeu <b>Labyrinthe 3D</b> — sans cliquer sur une seule pub !', goal:G.atUrl('www.jeuxmax.fr/labyrinthe-3d')},
+        {t:'Lance le jeu avec le bouton <b>▶ Jouer</b>', goal:G.flag('playedGame','Le bouton ▶ Jouer, au centre de la page, est le seul bouton qui n\'est PAS une pub !','links')},
+        quizObj('Réponds dans le carnet 📝', 'badgePub', 'Quel mot, écrit en petit dans un coin, signale une publicité ?', ['annonce','sponsorise'], 'Tu l\'as vu sur les encarts criards de JeuxMax.')
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'🪟',title:'Ferme les pop-ups',
+      intro:'Le jeu <b>Astro Runner</b> a l\'air génial… mais sa page déclenche des <b>pop-ups</b>. Souviens-toi : la <b>croix ✕</b> pour fermer, <b>Bloquer</b> pour les notifications, et on ne touche JAMAIS aux gros boutons.',
+      seed:{tabs:['www.jeuxmax.fr']},
+      objectives:[
+        {t:'Ouvre le jeu <b>Astro Runner</b> depuis l\'accueil de JeuxMax', goal:G.atUrl('www.jeuxmax.fr/astro-runner')},
+        {t:'Un pop-up « cadeau » surgit : ferme-le avec sa <b>vraie croix ✕</b>', goal:G.flag('closedPrize','La vraie fermeture, c\'est la <b>petite croix ✕</b> dans la barre du pop-up. Le gros bouton clignotant est un piège qui en fait apparaître d\'autres !','popupx')},
+        {t:'Le site veut t\'envoyer des <b>notifications</b> : clique <b>Bloquer</b>', goal:G.flag('blockedNotif','Dans le pop-up de notifications, choisis <b>Bloquer</b> — sinon, pluie de pubs garantie !','popupx')},
+        {t:'Tranquille ! Lance enfin le jeu avec <b>▶ Jouer</b>', goal:G.flag('playedGame','Maintenant que l\'écran est dégagé, clique le bouton ▶ Jouer.','links')}
+      ]},
+    {kind:'mission',label:'Mission 3',emoji:'🎯',title:'L\'annonce dans les résultats',
+      intro:'Les moteurs de recherche aussi affichent des <b>résultats sponsorisés</b>, placés tout en haut. Ils ressemblent aux vrais… à un détail près.',
+      seed:{tabs:['www.cherchetout.fr']},
+      objectives:[
+        {t:'Cherche <b>jeux gratuits</b> sur Cherchetout', goal:G.searched(['jeux','gratuit'])},
+        {t:'Ignore le résultat <b>« Annonce »</b> en haut : ouvre le vrai résultat, <b>JeuxMax</b>', goal:G.openedResult('www.jeuxmax.fr')},
+        quizObj('Réponds dans le carnet 📝', 'posAnnonce', 'Où se placent les résultats sponsorisés dans la page de résultats ?', ['haut','debut','premier','dessus'], 'Compare la position de l\'annonce et celle des vrais résultats.')
+      ]},
+    {kind:'jalon',mode:'storm',label:'Mini-boss',emoji:'🪟',title:'L\'attaque des pop-ups',
+      intro:'JeuxMax devient fou : des pop-ups surgissent en continu ! <b>Ferme-en 15</b> avec leur vraie croix <b>✕</b>. Chaque clic sur un faux bouton en fait apparaître d\'autres… et si <b>9 pop-ups</b> envahissent l\'écran en même temps, c\'est perdu !',
+      seed:{tabs:['www.jeuxmax.fr']},
+      boot:function(){ startPopupStorm(); },
+      objectives:[
+        {t:'Ferme <b>15 pop-ups</b> avec leur croix <b>✕</b> — sans laisser l\'écran se faire envahir !', goal:{spot:'popupx', hint:'Vise uniquement la <b>petite croix ✕</b> en haut à droite de chaque pop-up. Ignore les gros boutons qui clignotent : chacun en fait apparaître un de plus !', test:c=>(c.evt.popupsClosed||0)>=15}}
+      ]}
+  ]},
+
+/* ===== NIVEAU 6 — Sécurité et fiabilité ===== */
+{ n:6, title:'Sécurité et fiabilité', subtitle:'sécurité',
+  intro:{ emoji:'🛡️',
+    lead:'Tous les sites ne sont pas dignes de confiance : certains se déguisent en sites connus pour voler des mots de passe. Ta meilleure arme : <b>lire la barre d\'adresse</b>.',
+    teach:'Le <b>cadenas 🔒</b> signale une connexion <b>https</b> chiffrée (clique-le pour vérifier) ; un <b>⚠️</b> signale du <b>http</b> non sécurisé : jamais de mot de passe là-dessus ! Mais attention : https ne veut pas dire honnête. Lis le <b>nom de domaine</b> lettre par lettre : les pirates créent des sosies (un <b>0</b> à la place d\'un o, un mot ajouté…). Un message qui met la <b>pression</b> (« URGENT ! compte supprimé ! ») ou promet des <b>cadeaux</b>, c\'est du <b>phishing</b> : on ne clique pas, on <b>signale 🚩</b>.',
+    tools:[{g:'🔒',n:'Cadenas = connexion chiffrée (https)'},{g:'⚠️',n:'http = jamais de mot de passe'},{g:'🔍',n:'Lire le domaine lettre par lettre'},{g:'🚩',n:'Signaler le phishing'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'🔒',title:'Le cadenas et le http',
+      intro:'Deux sites, deux connexions. Clique le symbole à gauche de la barre d\'adresse pour découvrir ce qu\'il raconte.',
+      seed:{tabs:['goupil.start']},
+      objectives:[
+        {t:'Va sur <b>www.zanimo.fr</b> puis clique le <b>cadenas 🔒</b> dans la barre d\'adresse', goal:G.flag('lockChecked','Une fois sur www.zanimo.fr, clique le petit <b>cadenas 🔒</b> tout à gauche de la barre d\'adresse.','addr')},
+        {t:'Va sur <b>www.blog-de-tom.fr</b> et clique le symbole <b>⚠️</b>', goal:G.flag('lockCheckedInsecure','Tape www.blog-de-tom.fr : le cadenas devient <b>⚠️</b>. Clique-le pour lire l\'avertissement.','addr')},
+        quizObj('Réponds dans le carnet 📝', 'siteHttp', 'Sur lequel des deux sites ne faut-il JAMAIS taper de mot de passe ?', ['blog-de-tom','blog de tom','tom'], 'C\'est celui marqué ⚠️ : sa connexion http n\'est pas chiffrée.')
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'🕵️',title:'Le site sosie',
+      intro:'Un lien circule : « Zanimo Premium gratuit sur <b>www.zanim0.fr</b> » ! Va enquêter… mais ne remplis <b>surtout pas</b> le formulaire.',
+      seed:{tabs:['goupil.start']},
+      objectives:[
+        {t:'Tape l\'adresse <b>www.zanim0.fr</b> (avec un zéro !) et observe la page', goal:G.typedUrl('www.zanim0.fr')},
+        quizObj('Quelque chose cloche… Réponds dans le carnet 📝', 'fauxDomaine', 'Recopie le nom exact du site imposteur (entre « www. » et « .fr »)', ['zanim0'], 'Lis la barre d\'adresse lettre par lettre : un caractère a changé ! (Et as-tu vu la faute dans « abonement » ?)'),
+        {t:'Fuis l\'imposteur : retourne sur le vrai <b>www.zanimo.fr</b>', goal:G.typedUrl('www.zanimo.fr')}
+      ]},
+    {kind:'mission',label:'Mission 3',emoji:'🎣',title:'Alerte au phishing',
+      intro:'Un message <b>« URGENT »</b> t\'attend dans ta boîte Pixmail : ton compte serait supprimé demain ! Avant de paniquer… enquête comme un pro.',
+      seed:{tabs:['www.pixmail.fr']},
+      objectives:[
+        {t:'Ouvre le message <b>« ⚠️ URGENT : ton compte sera supprimé »</b>', goal:G.atUrl('www.pixmail.fr/message-urgent')},
+        {t:'<b>Survole</b> le gros bouton « VÉRIFIER MON COMPTE » : lis sa vraie destination en bas à gauche', goal:G.inSet('hoveredUrls','www.pixmail-secure-verif.com','Passe la souris sur le gros bouton rouge <b>sans cliquer</b> : l\'adresse en bas à gauche n\'est PAS www.pixmail.fr…','links')},
+        {t:'C\'est une arnaque : clique <b>🚩 Signaler comme phishing</b>', goal:G.flag('reportedPhishing','Le bouton 🚩 est sous le message. Les indices : fautes d\'orthographe, menace urgente, fausse adresse d\'expéditeur.','links')},
+        quizObj('Réponds dans le carnet 📝', 'phishSentiment', 'Quelle émotion ce message veut-il provoquer pour te faire cliquer sans réfléchir ?', ['urgence','peur','panique','stress'], '« SUPPRIMÉ sous 24 h !!! » — ça met dans quel état ?')
+      ]},
+    {kind:'jalon',label:'Défi',emoji:'🧱',title:'Le vrai Blockcraft',
+      intro:'Sam veut installer <b>Blockcraft</b> et a reçu <b>3 liens identiques en apparence</b>. Un seul mène au site officiel — les deux autres sont des sosies. À toi de jouer, inspecteur !',
+      seed:{tabs:['www.pixmail.fr/message-de-sam']},
+      objectives:[
+        {t:'<b>Survole les 3 liens</b> du message et compare leurs adresses en bas à gauche', goal:G.setAll('hoveredUrls',['www.blockcraft.fr','www.blockcraft-gratuit.com','www.b1ockcraft.fr'],'Passe la souris sur chacun des 3 boutons <b>sans cliquer</b> et lis les 3 adresses. Cherche les intrus : mot ajouté, lettre remplacée…','links')},
+        {t:'Clique <b>uniquement</b> le lien du site officiel', goal:G.atUrl('www.blockcraft.fr')},
+        quizObj('Réponds dans le carnet 📝', 'nbPieges', 'Combien de liens étaient des pièges ?', ['2','deux'], '3 liens… 1 seul site officiel.')
+      ]}
+  ]},
+
+/* ===== NIVEAU 7 — Les téléchargements ===== */
+{ n:7, title:'Les téléchargements', subtitle:'téléchargements',
+  intro:{ emoji:'⬇️',
+    lead:'Télécharger, c\'est <b>copier un fichier</b> d\'internet sur ton ordinateur. Très pratique… à condition de savoir <b>quoi</b> télécharger, <b>où</b> le retrouver, et quels fichiers <b>refuser</b>.',
+    teach:'Sur un site fiable, clique le lien du fichier : il atterrit dans le panneau <b>⬇️ Téléchargements</b> du navigateur (bouton en haut à droite, ou menu ☰). Méfie-toi des <b>gros boutons « TÉLÉCHARGER »</b> : ce sont souvent des pubs, le vrai lien est discret ! Et si le fichier se termine en <b>.exe</b> ou <b>.bat</b>, c\'est un <b>programme</b> : venu d\'un site douteux, il peut infecter ton ordinateur → <b>Supprimer</b>.',
+    tools:[{g:'⬇️',n:'Le panneau Téléchargements'},{g:'🔗',n:'Le vrai lien est discret'},{g:'⚙️',n:'.exe / .bat = programme : prudence !'},{g:'🗑️',n:'Au doute : Supprimer'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'📕',title:'Ton premier téléchargement',
+      intro:'Le collège a mis en ligne la <b>fiche de révisions de maths</b>. Télécharge-la et retrouve-la dans le navigateur.',
+      seed:{tabs:['www.college-curie.fr']},
+      objectives:[
+        {t:'Avec le menu du site, ouvre la page <b>Documents</b>', goal:G.atUrl('www.college-curie.fr/documents')},
+        {t:'Télécharge <b>fiche-revisions-maths.pdf</b>', goal:G.inSet('downloaded','fiche-revisions-maths.pdf','Clique le lien du fichier dans la page : la flèche ⬇️ apparaît en haut du navigateur.','links')},
+        {t:'Ouvre le panneau <b>⬇️ Téléchargements</b>', goal:G.flag('openedDlPanel','Clique le bouton <b>⬇️</b> apparu en haut à droite, ou passe par le menu ☰ → Téléchargements.','dlbtn')},
+        {t:'<b>Ouvre</b> la fiche depuis le panneau (bouton « Ouvrir »)', goal:G.inSet('openedDownload','fiche-revisions-maths.pdf','Dans le panneau, clique le bouton <b>Ouvrir</b> à côté du fichier téléchargé.','sidebar')}
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'🪤',title:'Le vrai bouton',
+      intro:'Tu cherches un <b>modèle d\'exposé</b> sur astuces-exposes.fr. Le site affiche d\'énormes boutons « TÉLÉCHARGER »… trop énormes pour être honnêtes.',
+      seed:{tabs:['www.astuces-exposes.fr']},
+      objectives:[
+        {t:'<b>Survole</b> les gros boutons « TÉLÉCHARGER » : où mènent-ils vraiment ?', goal:G.flag('adHovered','Passe la souris sur les gros encarts <b>sans cliquer</b> : l\'adresse en bas à gauche n\'a rien à voir avec ton fichier !','links')},
+        {t:'Télécharge le <b>vrai</b> fichier : le petit lien <b>modele-expose.doc</b>', goal:G.inSet('downloaded','modele-expose.doc','Le vrai lien est <b>discret</b>, dans le texte : « modele-expose.doc (245 Ko) ».','links')},
+        quizObj('Réponds dans le carnet 📝', 'fauxBoutons', 'Les gros boutons « TÉLÉCHARGER MAINTENANT » étaient en réalité des… ?', ['pub','annonce','piege','arnaque'], 'Ils portaient le fameux badge dans le coin…')
+      ]},
+    {kind:'mission',label:'Mission 3',emoji:'⚙️',title:'Le fichier dangereux',
+      intro:'Un site promet de rendre ton PC « 10× plus rapide » avec un fichier <b>.exe</b> gratuit. Spoiler : c\'est louche. Va voir, tente le téléchargement… et fais le bon choix.',
+      seed:{tabs:['goupil.start']},
+      objectives:[
+        {t:'Va sur <b>www.logiciels-turbo.com</b> (remarque le ⚠️ dans la barre d\'adresse…)', goal:G.visited('www.logiciels-turbo.com')},
+        {t:'Clique « Télécharger Turbo-Boost » puis, dans l\'alerte de Goupil, choisis <b>🗑️ Supprimer</b>', goal:G.inSet('dlDeleted','turbo-boost.exe','Lance le téléchargement : Goupil détecte un fichier <b>.exe</b> suspect et t\'alerte. Choisis <b>Supprimer</b> !','viewport')},
+        quizObj('Réponds dans le carnet 📝', 'extDanger', 'Quelle extension signale un programme capable de s\'installer sur ton ordinateur ?', ['exe'], 'Trois lettres — celles du fichier que tu viens de supprimer.')
+      ]},
+    {kind:'jalon',label:'Défi',emoji:'🧹',title:'Le grand ménage',
+      intro:'Ton panneau Téléchargements est un vrai capharnaüm : des fichiers de classe <b>sains</b>… et des <b>intrus dangereux</b> téléchargés par erreur. Supprime les 3 fichiers suspects — et <b>seulement</b> eux !',
+      guardSafeDl:true,
+      seed:{tabs:['goupil.start'], downloads:[
+        {name:'expose-volcans.pdf', size:'1,8 Mo', safe:true, preview:'Exposé SVT — Les volcans, par Sam (5e B).'},
+        {name:'super-cheat-gratuit.exe', size:'4,4 Mo', danger:true},
+        {name:'photo-sortie-musee.jpg', size:'3,1 Mo', safe:true, preview:'Photo de classe devant la fusée du musée 🚀'},
+        {name:'pack-skins-gratuit.exe', size:'12,6 Mo', danger:true},
+        {name:'mise-a-jour-urgente.bat', size:'12 Ko', danger:true}
+      ]},
+      objectives:[
+        {t:'Ouvre le panneau <b>⬇️ Téléchargements</b>', goal:G.flag('openedDlPanel','Bouton ⬇️ en haut à droite, ou menu ☰ → Téléchargements.','dlbtn')},
+        {t:'Supprime les <b>3 fichiers dangereux</b> — et seulement eux !', goal:G.setAll('dlDeleted',['super-cheat-gratuit.exe','pack-skins-gratuit.exe','mise-a-jour-urgente.bat'],'Les <b>.exe</b> et <b>.bat</b> « gratuits » ou « urgents » venus de nulle part : poubelle ! Les .pdf et .jpg de ta classe sont sûrs.','sidebar')},
+        quizObj('Réponds dans le carnet 📝', 'pdfExe', 'Un fichier nommé « devoir-maths.pdf.exe » est-il vraiment un PDF ? (oui/non)', ['non'], 'Seule la DERNIÈRE extension compte : .pdf.exe = programme déguisé !')
+      ]}
+  ]},
+
+/* ===== NIVEAU 8 — Les mots de passe ===== */
+{ n:8, title:'Les mots de passe', subtitle:'mots de passe',
+  intro:{ emoji:'🔑',
+    lead:'Ton mot de passe est la <b>clé</b> de tes comptes. Trop simple, il se devine en quelques secondes ; bien construit, il résiste à tout. Apprends à forger des clés en béton — et à en retrouver une perdue.',
+    teach:'Un bon mot de passe : <b>12 caractères minimum</b>, avec majuscules + minuscules + chiffres + symboles, sans prénom, date de naissance ni suite connue (azerty, 123456…). Technique imparable : assemble <b>3 mots</b> avec des symboles, comme <i>Fusee!Panda#2026</i>. Un mot de passe <b>différent par site</b>, et on ne le donne à <b>personne</b>. Perdu ? Utilise la <b>procédure officielle</b> « Mot de passe oublié » du site — jamais un lien reçu par message.',
+    tools:[{g:'📏',n:'12 caractères minimum'},{g:'🎲',n:'Majuscules, chiffres, symboles'},{g:'🧩',n:'La phrase de passe (3 mots +)'},{g:'🤫',n:'Secret et unique par site'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'⚖️',title:'Robuste ou fragile ?',
+      intro:'Le club informatique a mis en ligne un <b>testeur de mots de passe</b>. Mets-le à l\'épreuve — d\'abord avec un mot de passe nul, puis avec ta création.',
+      seed:{tabs:['www.teste-ton-mdp.fr']},
+      objectives:[
+        {t:'Dans le testeur, tape <b>azerty123</b> et admire le désastre', goal:G.flag('testedAzerty','Clique dans le champ du testeur et tape exactement <b>azerty123</b>.','form')},
+        {t:'Efface, puis invente un mot de passe qui atteint <b>Fort 🟢</b>', goal:G.flag('testedStrong','12 caractères minimum, majuscules + minuscules, chiffres, symboles. Essaie la technique des 3 mots : <i>Fusee!Panda#2026</i>','form')},
+        quizObj('Réponds dans le carnet 📝', 'minChars', 'Combien de caractères minimum pour un bon mot de passe ?', ['12','douze'], 'Le testeur te le rappelle quand il en manque…')
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'📧',title:'Crée ton compte',
+      intro:'Sam veut son adresse Pixmail. Crée son compte avec un mot de passe digne de ce nom — le site refusera les mots de passe fragiles !',
+      seed:{tabs:['www.pixmail.fr']},
+      objectives:[
+        {t:'Sur Pixmail, ouvre la page <b>S\'inscrire</b> (menu du site)', goal:G.atUrl('www.pixmail.fr/inscription')},
+        {t:'Crée le compte avec un mot de passe <b>Fort 🟢</b>', goal:G.flag('createdStrong','Invente un mot de passe Fort (sans « sam » dedans !) puis clique « Créer mon compte ».','form')},
+        quizObj('Réponds dans le carnet 📝', 'memeMdp', 'Faut-il utiliser le même mot de passe sur tous les sites ? (oui/non)', ['non'], 'Si un seul site se fait pirater, tous tes comptes tomberaient d\'un coup…')
+      ]},
+    {kind:'mission',label:'Mission 3',emoji:'🆘',title:'Mot de passe perdu',
+      intro:'Catastrophe : impossible de te connecter à Pixmail ! Pas de panique — les sites sérieux ont une <b>procédure officielle</b> de récupération. Suis-la étape par étape.',
+      seed:{tabs:['www.pixmail.fr/connexion']},
+      objectives:[
+        {t:'Clique <b>« Mot de passe oublié ? »</b>', goal:G.atUrl('www.pixmail.fr/recuperation')},
+        {t:'Demande un code, lis le <b>SMS 📱</b> (pop-up) et entre le code', goal:G.flag('codeEntered','Clique « M\'envoyer un code », lis le code à 4 chiffres dans le pop-up SMS, tape-le puis « Vérifier le code ».','form')},
+        {t:'Choisis un <b>nouveau mot de passe fort</b> et enregistre-le', goal:G.flag('resetDone','Même recette que d\'habitude : 12+ caractères, majuscules, chiffres, symboles → « Enregistrer ».','form')}
+      ]},
+    {kind:'jalon',label:'Défi',emoji:'🏦',title:'Le coffre-fort',
+      intro:'Triple épreuve finale : gagne le <b>duel des mots de passe</b>, forge une clé <b>Ultra 💪</b>, et réponds à LA question qui fâche.',
+      seed:{tabs:['www.teste-ton-mdp.fr/duel']},
+      objectives:[
+        {t:'Dans le <b>duel</b>, clique le mot de passe le plus robuste', goal:G.flag('pickedStrongest','Élimine : suite de clavier, prénom + année de naissance, mot ultra-connu… Il n\'en reste qu\'un !','links')},
+        {t:'Va sur <b>le testeur</b> (menu du site) et forge un mot de passe <b>Ultra 💪</b>', goal:G.flag('testedUltra','Vise <b>16 caractères ou plus</b>, avec majuscules, chiffres et symboles. La phrase de passe est ton amie : <i>Goupil!Mange#2Pommes</i>','form')},
+        quizObj('Dernière question 📝', 'quiMdp', 'À qui peux-tu donner ton mot de passe ?', ['personne','parents'], 'Même pas à ton meilleur ami ! (À la rigueur, tes parents.)')
+      ]}
+  ]},
+
+/* ===== NIVEAU 9 — BOSS : INFOX, le semeur de rumeurs ===== */
+{ n:9, title:'INFOX, le semeur de rumeurs', subtitle:'boss final',
+  intro:{ emoji:'🕵️',
+    lead:'Dernière épreuve ! Sur <b>Scoopz</b>, « l\'actu la plus choc du web », les rumeurs se répandent plus vite que la vérité. Ton arme ultime : l\'<b>esprit critique</b>.',
+    teach:'Avant de croire (ou partager) une info, pose-toi 4 questions : <b>Qui</b> l\'a écrite (auteur identifiable ?) — <b>Quand</b> (une date ?) — <b>D\'où</b> vient-elle (des sources vérifiables ?) — <b>Pourquoi</b> ce titre hurle-t-il en majuscules (informer… ou faire cliquer ?). Puis <b>recoupe</b> : va vérifier sur un <b>site officiel</b> ou reconnu. Et souviens-toi : une info surprenante peut être vraie, une info plausible peut être fausse — seule la <b>vérification</b> tranche.',
+    tools:[{g:'✍️',n:'Qui ? Un auteur identifiable'},{g:'📅',n:'Quand ? Une date claire'},{g:'🔗',n:'D\'où ? Des sources vérifiables'},{g:'🔁',n:'Recouper sur un site fiable'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'🧐',title:'Autopsie d\'un article louche',
+      intro:'Échauffement : dissèque cet article de Scoopz sur un <b>« chat venu de Mars »</b>. Cherche l\'auteur, la date, les sources… si tu les trouves !',
+      seed:{tabs:['www.scoopz.fr/chat-martien']},
+      objectives:[
+        quizObj('Enquête 📝 : qui a écrit cet article ?', 'auteurScoopz', 'Qui est l\'auteur de l\'article ?', ['anonyme','inconnu','personne','on ne sait pas'], 'Regarde la ligne grise sous le titre.'),
+        quizObj('Continue l\'enquête 📝', 'sourceScoopz', 'Quelle est la « source » de l\'article ?', ['video','floue'], 'C\'est écrit sous le titre… et ce n\'est pas très solide comme preuve.'),
+        quizObj('Dernière analyse 📝', 'partageScoopz', '« Partage vite avant la censure !!! » — l\'article veut que tu partages avant de… ?', ['reflechir','verifier','penser','lire'], 'Les fausses nouvelles comptent sur la vitesse. Partager avant de ré-flé-…')
+      ]},
+    {kind:'jalon',mode:'boss',label:'BOSS',emoji:'👾',title:'INFOX, le semeur de rumeurs',
+      intro:'<b>INFOX</b> inonde Scoopz de scoops douteux et le collège panique ! Rédacteur en chef du journal, tu dois <b>vérifier les 5 scoops</b> (✅ vrai ou ❌ faux) avant que la jauge de rumeur n\'atteigne <b>100 %</b>. Va <b>recouper chaque info</b> sur les sites fiables (musée, Zanimo, Paris Monuments, mairie…). Attention : un mauvais verdict fait bondir la rumeur de <b>+15 %</b>, et INFOX t\'enverra des <b>pop-ups</b> pour te ralentir — chaque pop-up ouvert accélère la rumeur !',
+      seed:{tabs:['www.scoopz.fr']},
+      boot:function(){ startInfoxBoss(); },
+      objectives:[
+        {t:'Vérifie les <b>5 scoops</b> de Scoopz avant que la rumeur n\'atteigne <b>100 %</b> !', goal:{spot:'links', hint:'Pour chaque scoop : ouvre l\'article, va <b>vérifier sur le site officiel</b> concerné (adresse directe ou Cherchetout), reviens et donne ton verdict. Ferme vite les pop-ups d\'INFOX avec leur croix ✕ : ouverts, ils accélèrent la rumeur !', test:c=>B.boss && Object.keys(B.boss.solved).length>=CLAIMS.length}}
+      ]}
   ]}
 ];
+
+/* ---------------------------------------------------------
+   6 bis. MINI-BOSS POP-UPS, BOSS INFOX, ÉCHECS SPÉCIAUX
+   --------------------------------------------------------- */
+function bossHudHtml(html){ const h=document.getElementById('bossHud'); if(h){ h.hidden=false; h.innerHTML=html; } }
+function stormPopupDef(){
+  const mk=[popupPrize, popupVirus, popupPromo, popupVbucks, function(){ return popupNotif('jeuxmax.fr'); }];
+  return mk[Math.floor(Math.random()*mk.length)]();
+}
+function stormHud(){
+  const S=B.storm; if(!S) return;
+  const closed=B.evt.popupsClosed||0;
+  bossHudHtml('<span class="bh-ic">🪟</span><b>Attaque de pop-ups !</b>'
+    +'<span class="bh-stat">Fermés : '+Math.min(closed,S.target)+' / '+S.target+'</span>'
+    +'<div class="bh-bar"><i style="width:'+Math.min(100, B.popups.length/S.max*100)+'%"></i></div>'
+    +'<span class="bh-stat">Écran : '+B.popups.length+' / '+S.max+'</span>');
+}
+function startPopupStorm(){
+  B.storm={target:15, max:9};
+  stormHud();
+  every(1250, ()=>{
+    if(_missionDone || !B.storm) return;
+    if(B.popups.length<B.storm.max) spawnPopup(stormPopupDef());
+    stormFailCheck();
+  });
+  every(300, ()=>{ if(!_missionDone && B.storm){ stormHud(); stormFailCheck(); } });
+}
+function stormFailCheck(){
+  if(_missionDone || !B.storm) return;
+  if(B.popups.length>=B.storm.max){
+    _missionDone=true; clearTimers(); beep('alarm');
+    modal.className='modal warn';
+    modal.innerHTML='<span class="m-emoji">🪟</span><h2>L\'écran est envahi !</h2>'
+      +'<p>Les pop-ups ont pris le contrôle… Rappelle-toi : on les ferme <b>uniquement</b> avec leur croix <b>✕</b> — chaque gros bouton coloré en fait apparaître un de plus !</p>'
+      +'<div class="m-actions"><button class="m-btn primary boss" id="failRetry">↺ Retenter le combat</button></div>';
+    openOverlay();
+    document.getElementById('failRetry').onclick=()=>{ closeOverlay(); startStep(playIdx); };
+  }
+}
+function infoxHud(){
+  const S=B.boss; if(!S) return;
+  const solved=Object.keys(S.solved).length;
+  bossHudHtml('<span class="bh-ic">👾</span><b>INFOX</b>'
+    +'<div class="bh-bar"><i style="width:'+Math.min(100,Math.round(S.gauge))+'%"></i></div>'
+    +'<span class="bh-stat">📢 Rumeur : '+Math.round(S.gauge)+' %</span>'
+    +'<span class="bh-stat">🗞️ Vérifiées : '+solved+' / '+CLAIMS.length+'</span>');
+}
+function startInfoxBoss(){
+  B.boss={gauge:15, solved:{}, wrong:0};
+  infoxHud();
+  every(1000, ()=>{
+    const S=B.boss; if(!S || _missionDone) return;
+    S.gauge+=0.5 + B.popups.length*0.5;
+    if(S.gauge>=100){ infoxFail(); return; }
+    infoxHud();
+  });
+  every(22000, ()=>{
+    if(_missionDone || !B.boss) return;
+    if(B.popups.length<3){ spawnPopup(stormPopupDef()); toast('👾 INFOX t\'envoie des pop-ups pour te ralentir — croix ✕, vite !'); }
+  });
+}
+function infoxVerdict(id, saysTrue){
+  const S=B.boss;
+  const c=CLAIMS.find(x=>x.id===id); if(!c) return;
+  if(!S){ toast('🗞️ Reviens vérifier ce scoop pendant le combat contre INFOX !'); return; }
+  if(S.solved[id] || _missionDone) return;
+  if(saysTrue===c.truth){
+    S.solved[id]=true;
+    S.gauge=Math.max(4, S.gauge-9);
+    beep('ding');
+    toast('🗞️ Bien vu, rédacteur ! '+(c.truth?'Info confirmée.':'Rumeur démentie.')+' (−9 % de rumeur)');
+    infoxHud(); renderViewport(); checkMission();
+  } else {
+    S.gauge=Math.min(99, S.gauge+15); S.wrong++;
+    beep('alarm');
+    toast('📢 Mauvais verdict : la rumeur bondit de +15 % ! Indice : va voir '+c.hint+'.');
+    infoxHud();
+  }
+}
+function infoxFail(){
+  if(_missionDone) return;
+  _missionDone=true; clearTimers(); beep('alarm');
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">📢</span><h2>La rumeur a envahi le collège !</h2>'
+    +'<p>INFOX a gagné cette manche… Pour la revanche : <b>fonce vérifier</b> chaque scoop sur le site officiel concerné, donne ton verdict sans te tromper, et <b>ferme vite les pop-ups</b> — ouverts, ils accélèrent la rumeur.</p>'
+    +'<div class="m-actions"><button class="m-btn primary boss" id="failRetry">↺ Reprendre le combat</button></div>';
+  openOverlay();
+  document.getElementById('failRetry').onclick=()=>{ closeOverlay(); startStep(playIdx); };
+}
+/* échecs pédagogiques (on explique, puis on recommence la mission) */
+function phishingFail(msg){
+  beep('alarm');
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">🎣</span><h2>Tu t\'es fait hameçonner !</h2>'
+    +'<p>'+(msg||'Tu viens d\'envoyer des informations personnelles à des inconnus.')+'</p>'
+    +'<p style="font-size:.95rem;color:var(--muted)">Avant de remplir un formulaire : lis l\'<b>adresse</b>, vérifie le <b>cadenas</b>, méfie-toi de l\'<b>urgence</b> et des <b>cadeaux</b>. On recommence !</p>'
+    +'<div class="m-actions"><button class="m-btn primary test" id="failRetry">↺ Recommencer la mission</button></div>';
+  openOverlay();
+  document.getElementById('failRetry').onclick=()=>{ closeOverlay(); startStep(playIdx); };
+}
+function dlGuardFail(d){
+  beep('bad');
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">😅</span><h2>Pas celui-là !</h2>'
+    +'<p>« <b>'+d.name+'</b> » était un fichier <b>sans danger</b> (un .'+d.ext+' de ta classe). Ne supprime que les fichiers <b>suspects</b> : .exe ou .bat inconnus, promesses « gratuites »… On recommence !</p>'
+    +'<div class="m-actions"><button class="m-btn primary test" id="failRetry">↺ Recommencer la mission</button></div>';
+  openOverlay();
+  document.getElementById('failRetry').onclick=()=>{ closeOverlay(); startStep(playIdx); };
+}
 
 /* ---------------------------------------------------------
    7. DÉROULÉ DES MISSIONS
    --------------------------------------------------------- */
 function reviewing(){ return playIdx<progressIdx; }
 function startStep(idx){
-  clearSpots();
+  clearSpots(); clearTimers();
   playIdx=idx; currentStep=STEPS[idx]; _missionDone=false;
+  currentStep._booted=false;
+  currentStep._gen=(currentStep._gen||0)+1;
   currentStep._objDone=(currentStep.objectives||[]).map(()=>false);
   currentStep._jalonIdx=0; currentStep._jalonAnim=false;
   buildScreen();
@@ -1703,7 +2875,7 @@ function updateProgress(){
     d.className='seg'+(mile?' milestone':'');
     if(i<progressIdx) d.classList.add('done');
     if(i===playIdx) d.classList.add('current');
-    if(mile) d.textContent='🏆';
+    if(mile) d.textContent=(st.mode==='boss'?'👾':(st.mode==='storm'?'🪟':'🏆'));
     if(i<=progressIdx){
       d.classList.add('clickable');
       d.title=(i===playIdx?'Mission en cours : ':'Revenir à ')+(st.label||'')+' · '+(st.title||'');
@@ -1716,11 +2888,12 @@ function updateProgress(){
 }
 function updateBanner(){
   const b=document.getElementById('banner');
-  b.className='banner'+(currentStep.kind==='jalon'?' test':'')+(reviewing()?' review':'');
+  const boss=currentStep.mode==='boss'||currentStep.mode==='storm';
+  b.className='banner'+(boss?' boss':(currentStep.kind==='jalon'?' test':''))+(reviewing()?' review':'');
   document.getElementById('bEmoji').textContent=currentStep.emoji;
   document.getElementById('bTitle').textContent=(reviewing()?'Révision · ':'')+(currentStep.label||'')+' : '+(currentStep.title||'');
   renderJalonObjective(false);
-  const lbl=(currentStep.kind==='jalon')?'le défi':'la mission';
+  const lbl=boss?'le combat':((currentStep.kind==='jalon')?'le défi':'la mission');
   document.getElementById('restartBtn').textContent='↺ Recommencer '+lbl;
   document.getElementById('resetBtn').title='Recommencer '+lbl;
 }
@@ -1742,17 +2915,21 @@ function openLevelIntro(n, cont){
 }
 function openRoundPopup(){
   const s=currentStep, jalon=s.kind==='jalon';
+  const boss=s.mode==='boss'||s.mode==='storm';
   const list=(s.objectives||[]).map(o=>'<li><span>'+o.t+'</span></li>').join('');
   modal.className='modal'+(jalon?' test-modal':'');
   modal.innerHTML='<span class="m-emoji">'+s.emoji+'</span>'
-    +'<div class="kicker">'+(reviewing()?'Entraînement':s.label)+'</div><h2>'+s.title+'</h2>'
-    +'<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta mission :')+'</p>'
+    +'<div class="kicker"'+(boss?' style="color:var(--red-d)"':'')+'>'+(reviewing()?'Entraînement':(boss?(s.mode==='storm'?'⚔️ Mini-boss':'⚔️ Boss final'):s.label))+'</div><h2>'+s.title+'</h2>'
+    +'<div class="howto'+(boss?' boss':(jalon?' test':''))+'"><p class="h-head">'+(boss?'⚔️ Le combat :':(jalon?'🏆 Le défi :':'👉 Ta mission :'))+'</p>'
     +(s.intro?'<p>'+s.intro+'</p>':'')
     +(list?'<ul class="tasklist">'+list+'</ul>':'')
     +'</div>'
-    +'<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
+    +'<div class="m-actions"><button class="m-btn primary'+(boss?' boss':(jalon?' test':''))+'" id="goBtn">'+(boss?'À l\'attaque ! ⚔️':'C\'est parti ! 🚀')+'</button></div>';
   openOverlay();
-  document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); };
+  document.getElementById('goBtn').onclick=()=>{
+    closeOverlay(); audioCtx();
+    if(currentStep && currentStep.boot && !currentStep._booted){ currentStep._booted=true; currentStep.boot(); }
+  };
 }
 function onMissionWin(){
   beep('win');
@@ -1798,9 +2975,9 @@ function levelComplete(){
 function courseFinish(){
   confetti(); confetti();
   modal.className='modal good';
-  modal.innerHTML='<span class="m-emoji">🦊🏅</span><h2>Quel explorateur du web !</h2>'
-    +'<p>Tu as terminé les <b>4 premiers niveaux</b> de <b>Naviguer sur internet</b> ! Tu sais piloter ton navigateur, reconnaître les liens, chercher des informations avec de bons mots-clés et retrouver n\'importe quelle page grâce aux favoris et à l\'historique. 👏</p>'
-    +'<p><b>La suite arrive bientôt</b> : les pièges du web 🪤, la sécurité 🔒, les téléchargements ⬇️ et les mots de passe 🔑 !</p>'
+  modal.innerHTML='<span class="m-emoji">🦊🏅</span><h2>Maître du web !</h2>'
+    +'<p>Tu as terminé les <b>9 niveaux</b> de <b>Naviguer sur internet</b> et fait taire <b>INFOX</b> ! 👏</p>'
+    +'<p>Tu sais piloter un navigateur, chercher avec les bons mots-clés, gérer favoris et historique, démasquer pubs et pop-ups, flairer les sites sosies et le phishing, télécharger sans danger, forger des mots de passe en béton… et surtout <b>vérifier avant de croire</b>. Internet n\'a plus de pièges pour toi !</p>'
     +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   openOverlay();
@@ -1883,7 +3060,10 @@ function highlightForStep(){
   else if(spot==='newtab') spotEl(q('#btnNewTab'));
   else if(spot==='quiz')   spotEl(q('#quizDock'));
   else if(spot==='logo')   spotEl(q('#viewport .wp-logo'));
-  else if(spot==='links'){ document.querySelectorAll('#viewport [data-go]').forEach(spotEl); }
+  else if(spot==='dlbtn'){ const b=q('#btnDl'); if(b && !b.hidden) spotEl(b); else spotEl(q('#btnMenu')); }
+  else if(spot==='popupx'){ document.querySelectorAll('.popup .pp-x').forEach(spotEl); }
+  else if(spot==='form'){ document.querySelectorAll('#viewport .wp-form, #viewport .wp-input').forEach(spotEl); }
+  else if(spot==='links'){ document.querySelectorAll('#viewport [data-go], #viewport [data-dl], #viewport [data-act]').forEach(spotEl); }
   else if(spot==='search'){ document.querySelectorAll('#viewport .ct-box, #viewport .start-search').forEach(spotEl); spotEl(q('#addrPill')); }
   else if(spot==='sidebar'){ const sb=q('#sidebar'); if(sb && !sb.hidden) spotEl(sb); else spotEl(q('#btnMenu')); }
   if(_spots.length) _spotT=setTimeout(clearSpots, 6000);
