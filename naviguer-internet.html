@@ -948,9 +948,9 @@ function seedBrowser(seed){
    --------------------------------------------------------- */
 const SITES={
   zanimo:{ base:'www.zanimo.fr', name:'Zanimo', icon:'🐾', color:'#0e9f6e', soft:'#e6f7ef',
-    nav:[['Accueil','www.zanimo.fr'],['Les animaux','www.zanimo.fr/animaux'],['Le coin jeux','www.zanimo.fr/coin-jeux']] },
-  ecole:{ base:'www.ecole-curie.fr', name:'École Marie-Curie', icon:'🏫', color:'#7c3aed', soft:'#f1eafd',
-    nav:[['Accueil','www.ecole-curie.fr'],['La cantine','www.ecole-curie.fr/cantine'],['Les sorties','www.ecole-curie.fr/sorties']] },
+    nav:[['Accueil','www.zanimo.fr'],['Les animaux','www.zanimo.fr/animaux'],['Le jeu des liens','www.zanimo.fr/jeu-des-liens']] },
+  ecole:{ base:'www.college-curie.fr', name:'Collège Marie-Curie', icon:'🏫', color:'#7c3aed', soft:'#f1eafd',
+    nav:[['Accueil','www.college-curie.fr'],['La cantine','www.college-curie.fr/cantine'],['Les sorties','www.college-curie.fr/sorties']] },
   meteo:{ base:'www.meteo-mini.fr', name:'Météo Mini', icon:'⛅', color:'#0284c7', soft:'#e3f3fc',
     nav:[['Accueil','www.meteo-mini.fr']] },
   monuments:{ base:'www.paris-monuments.fr', name:'Paris Monuments', icon:'🗼', color:'#b45309', soft:'#fdf1e0',
@@ -999,7 +999,7 @@ WEB['goupil.start']={
       +'<div class="start-tiles">'
       +'<button class="start-tile" data-go="www.cherchetout.fr"><span class="st-ic">🔍</span><span class="st-t">Cherchetout</span></button>'
       +'<button class="start-tile" data-go="www.zanimo.fr"><span class="st-ic">🐾</span><span class="st-t">Zanimo</span></button>'
-      +'<button class="start-tile" data-go="www.ecole-curie.fr"><span class="st-ic">🏫</span><span class="st-t">Mon école</span></button>'
+      +'<button class="start-tile" data-go="www.college-curie.fr"><span class="st-ic">🏫</span><span class="st-t">Mon collège</span></button>'
       +'<button class="start-tile" data-go="www.meteo-mini.fr"><span class="st-ic">⛅</span><span class="st-t">Météo Mini</span></button>'
       +'</div></div>';
   }
@@ -1011,7 +1011,7 @@ WEB['www.cherchetout.fr']={
   html:function(){
     return '<div class="ct-home">'
       +'<div class="ct-logo"><span class="c1">Cherche</span><span class="c2">t</span><span class="c3">ou</span><span class="c4">t</span> 🔍</div>'
-      +'<p class="ct-tag">Le moteur de recherche des petits explorateurs</p>'
+      +'<p class="ct-tag">Le moteur de recherche des esprits curieux</p>'
       +'<div class="ct-box"><span class="ct-ic">🔍</span><input class="ct-input" placeholder="Que veux-tu chercher ?"><button class="ct-btn">Cherchetout !</button></div>'
       +'<p class="ct-tip">💡 Astuce : tape des <b>mots-clés</b> (les mots importants), pas des phrases entières !</p>'
       +'</div>';
@@ -1030,11 +1030,11 @@ const INDEX=[
   {url:'www.boutique-eiffel.fr', t:'Boutique Eiffel — souvenirs de Paris', s:'Mini tours Eiffel, porte-clés et magnets à petits prix. Idées cadeaux souvenirs !', kw:'tour eiffel boutique souvenir acheter magasin porte-cles prix cadeau'},
   {url:'www.pizzeria-la-tour.fr', t:'Pizzeria La Tour — pizzas au feu de bois', s:'Notre pizzeria familiale vous accueille tous les soirs. Pizza « La Tour » aux 4 fromages !', kw:'tour pizza pizzeria restaurant manger fromage'},
   {url:'www.meteo-mini.fr', t:'Météo Mini — la météo des enfants', s:'Quel temps fait-il aujourd\'hui à Trouville-les-Pixels ? Prévisions simples et rigolotes.', kw:'meteo temps temperature soleil pluie previsions ville'},
-  {url:'www.ecole-curie.fr', t:'École Marie-Curie — site officiel', s:'Le site de l\'école : actualités, menus de la cantine et sorties scolaires.', kw:'ecole marie curie cantine sortie classe eleves'},
-  {url:'www.ecole-curie.fr/cantine', t:'Les menus de la cantine — École Marie-Curie', s:'Découvre les menus de la semaine servis à la cantine de l\'école.', kw:'ecole cantine menu repas manger semaine dessert'},
+  {url:'www.college-curie.fr', t:'Collège Marie-Curie — site officiel', s:'Le site du collège : actualités, menus de la cantine et sorties scolaires.', kw:'college marie curie cantine sortie classe eleves'},
+  {url:'www.college-curie.fr/cantine', t:'Les menus de la cantine — Collège Marie-Curie', s:'Découvre les menus de la semaine servis à la cantine du collège.', kw:'college cantine menu repas manger semaine dessert'},
   {url:'www.recettes-de-lilou.fr/gateau-choco', t:'Gâteau au chocolat facile — Les recettes de Lilou', s:'Ma recette préférée de gâteau au chocolat : la liste des ingrédients et les étapes, pas à pas.', kw:'recette gateau chocolat facile oeufs ingredients cuisine patisserie dessert'},
   {url:'www.choco-market.fr', t:'Choco Market — vente de chocolat en ligne', s:'Tablettes, œufs de Pâques et chocolat chaud : commandez vos chocolats préférés !', kw:'chocolat acheter boutique magasin tablette vente gateau prix'},
-  {url:'www.recettes-de-lilou.fr', t:'Les recettes de Lilou', s:'Le blog de cuisine de Lilou, 10 ans : des recettes simples pour les enfants gourmands.', kw:'recette cuisine blog lilou enfants gourmand'},
+  {url:'www.recettes-de-lilou.fr', t:'Les recettes de Lilou', s:'Le blog de cuisine de Lilou, 13 ans : des recettes simples et rapides, parfaites pour un goûter entre copains.', kw:'recette cuisine blog lilou ado gouter'},
   {url:'www.musee-espace.fr', t:'Musée de l\'Espace — fusées et planètes', s:'Viens toucher une vraie météorite et découvrir les fusées ! Un musée pour toute la famille.', kw:'musee espace fusee planete etoiles visite sortie meteorite'},
   {url:'www.musee-espace.fr/horaires', t:'Horaires & tarifs — Musée de l\'Espace', s:'Jours et heures d\'ouverture du musée, tarifs enfants et familles.', kw:'musee espace horaires ouverture tarif prix ferme heure jours'},
   {url:'www.chasse-au-tresor.fr', t:'La Chasse au Trésor — le jeu d\'aventure en ligne', s:'Résous les énigmes, choisis les bonnes portes et trouve le trésor caché !', kw:'chasse tresor jeu aventure enigme jouer'}
@@ -1098,7 +1098,7 @@ WEB['www.zanimo.fr']=pg('zanimo','Zanimo — l\'encyclopédie des animaux', func
     +'<div class="wp-card" data-go="www.zanimo.fr/chouette"><span class="c-ic">🦉</span><span class="c-t">La chouette</span><div class="c-s">La chasseuse de la nuit</div></div>'
     +'<div class="wp-card" data-go="www.zanimo.fr/kangourou"><span class="c-ic">🦘</span><span class="c-t">Le kangourou</span><div class="c-s">Le champion de saut</div></div>'
     +'</div>'
-    +'<p>Tu peux aussi voir <a class="lk" data-go="www.zanimo.fr/animaux">la liste de tous les animaux</a> ou t\'amuser dans <a class="lk" data-go="www.zanimo.fr/coin-jeux">le coin jeux</a> !</p>';
+    +'<p>Tu peux aussi voir <a class="lk" data-go="www.zanimo.fr/animaux">la liste de tous les animaux</a> ou tester tes réflexes dans <a class="lk" data-go="www.zanimo.fr/jeu-des-liens">le jeu des liens</a> !</p>';
 });
 WEB['www.zanimo.fr/animaux']=pg('zanimo','Les animaux — Zanimo', function(){
   return '<h1>🐾 Tous nos animaux</h1>'
@@ -1148,16 +1148,16 @@ WEB['www.zanimo.fr/kangourou']=pg('zanimo','Le kangourou — Zanimo', function()
     +'<div class="wp-fact">🏅 D\'un seul bond, un kangourou peut sauter jusqu\'à <b>9 mètres</b> de long !</div>'
     +'<p>À lire ensuite : <a class="lk" data-go="www.zanimo.fr/panda">la fiche du panda</a> 🐼.</p>';
 });
-WEB['www.zanimo.fr/coin-jeux']=pg('zanimo','Le coin jeux — Zanimo', function(){
-  return '<h1>🎲 Le coin jeux</h1>'
-    +'<p>Sur une page web, <b>tout n\'est pas cliquable</b> ! Promène ta souris : quand elle survole un vrai lien, elle se transforme en petite main 👆 et l\'adresse de destination s\'affiche <b>en bas à gauche</b>.</p>'
+WEB['www.zanimo.fr/jeu-des-liens']=pg('zanimo','Le jeu des liens — Zanimo', function(){
+  return '<h1>🎯 Le jeu des liens</h1>'
+    +'<p>Sur une page web, <b>tout n\'est pas cliquable</b> ! Promène ta souris : quand elle survole un vrai lien, elle se transforme en main 👆 et l\'adresse de destination s\'affiche <b>en bas à gauche</b>.</p>'
     +'<h2>Sauras-tu trouver les 3 vrais liens de cette page ?</h2>'
-    +'<p>Voici du texte en <b>gras qui n\'est pas un lien</b>, une image qui ne fait rien du tout, et quelque part… <a class="lk" data-go="www.zanimo.fr/coin-jeux/lien-texte">le mot secret</a> qui est un vrai lien !</p>'
+    +'<p>Voici du texte en <b>gras qui n\'est pas un lien</b>, une image qui ne fait rien du tout, et quelque part… <a class="lk" data-go="www.zanimo.fr/jeu-des-liens/lien-texte">le mot caché</a> qui est un vrai lien !</p>'
     +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:stretch;margin:14px 0;">'
-    +'<div style="flex:1;min-width:180px;"><div class="wp-img sm">🎈</div><p class="wp-center" style="font-size:.8rem;">Un simple ballon décoratif (rien ne se passe si tu cliques).</p></div>'
-    +'<div style="flex:1;min-width:180px;"><div class="wp-img sm wp-imglink" data-go="www.zanimo.fr/coin-jeux/lien-image" title="Une image-lien !">🎁</div><p class="wp-center" style="font-size:.8rem;">Ce cadeau a l\'air normal… survole-le pour vérifier !</p></div>'
+    +'<div style="flex:1;min-width:180px;"><div class="wp-img sm">🖼️</div><p class="wp-center" style="font-size:.8rem;">Une simple image décorative (rien ne se passe si tu cliques).</p></div>'
+    +'<div style="flex:1;min-width:180px;"><div class="wp-img sm wp-imglink" data-go="www.zanimo.fr/jeu-des-liens/lien-image" title="Une image-lien !">📷</div><p class="wp-center" style="font-size:.8rem;">Celle-ci a l\'air normale… survole-la pour vérifier !</p></div>'
     +'</div>'
-    +'<p class="wp-center"><button class="wp-btnlink" data-go="www.zanimo.fr/coin-jeux/lien-bouton">🚪 Clique ici !</button></p>'
+    +'<p class="wp-center"><button class="wp-btnlink" data-go="www.zanimo.fr/jeu-des-liens/lien-bouton">🚪 Clique ici !</button></p>'
     +'<p style="color:#8d9cab;font-size:.85rem;">PS : ce texte souligné à la main n\'est <span style="text-decoration:underline;">pas forcément un lien</span> non plus… vérifie avec ta souris !</p>';
 });
 function bravoPage(kind, emoji, txt){
@@ -1165,23 +1165,23 @@ function bravoPage(kind, emoji, txt){
     return '<div class="wp-center"><h1>'+emoji+' Bien vu !</h1>'
       +'<div class="wp-img">'+emoji+'✨</div>'
       +'<p>C\'était bien un <b>'+kind+'</b> ! '+txt+'</p>'
-      +'<p>Maintenant, <b>reviens en arrière</b> avec le bouton <b>◀</b> du navigateur pour continuer la chasse.</p></div>';
+      +'<p>Maintenant, <b>reviens en arrière</b> avec le bouton <b>◀</b> du navigateur pour continuer.</p></div>';
   });
 }
-WEB['www.zanimo.fr/coin-jeux/lien-texte']=bravoPage('lien texte','📜','Les liens texte sont souvent <b>soulignés et colorés</b>.');
-WEB['www.zanimo.fr/coin-jeux/lien-image']=bravoPage('lien image','🎁','Une image peut cacher un lien : la souris devient une main 👆 quand tu la survoles.');
-WEB['www.zanimo.fr/coin-jeux/lien-bouton']=bravoPage('lien bouton','🚪','Les boutons colorés sont presque toujours cliquables.');
+WEB['www.zanimo.fr/jeu-des-liens/lien-texte']=bravoPage('lien texte','📜','Les liens texte sont souvent <b>soulignés et colorés</b>.');
+WEB['www.zanimo.fr/jeu-des-liens/lien-image']=bravoPage('lien image','📷','Une image peut cacher un lien : la souris devient une main 👆 quand tu la survoles.');
+WEB['www.zanimo.fr/jeu-des-liens/lien-bouton']=bravoPage('lien bouton','🚪','Les boutons colorés sont presque toujours cliquables.');
 
-/* ----- École Marie-Curie ----- */
-WEB['www.ecole-curie.fr']=pg('ecole','École Marie-Curie — site officiel', function(){
+/* ----- Collège Marie-Curie ----- */
+WEB['www.college-curie.fr']=pg('ecole','Collège Marie-Curie — site officiel', function(){
   return '<div class="wp-hero"><span class="h-ic">🏫</span><div class="h-tx">'
-    +'<h1>Bienvenue à l\'école Marie-Curie</h1><p>Toutes les informations de l\'école pour les élèves et les parents.</p></div></div>'
+    +'<h1>Bienvenue au collège Marie-Curie</h1><p>Toutes les informations du collège pour les élèves et les parents.</p></div></div>'
     +'<h2>📣 Les actualités</h2>'
-    +'<div class="wp-fact">🎭 La fête de l\'école aura lieu le <b>28 juin</b> — au programme : spectacle, jeux et crêpes !</div>'
-    +'<div class="wp-fact">🚀 La classe de CM1 prépare une <a class="lk" data-go="www.ecole-curie.fr/sorties">sortie au Musée de l\'Espace</a>.</div>'
-    +'<p>Pour connaître les repas de la semaine, consulte la page <a class="lk" data-go="www.ecole-curie.fr/cantine">de la cantine</a>.</p>';
+    +'<div class="wp-fact">🎭 La fête du collège aura lieu le <b>28 juin</b> — au programme : spectacle, tournoi sportif et stands des clubs !</div>'
+    +'<div class="wp-fact">🚀 La classe de 5<sup>e</sup> B prépare une <a class="lk" data-go="www.college-curie.fr/sorties">sortie au Musée de l\'Espace</a>.</div>'
+    +'<p>Pour connaître les repas de la semaine, consulte la page <a class="lk" data-go="www.college-curie.fr/cantine">de la cantine</a>.</p>';
 });
-WEB['www.ecole-curie.fr/cantine']=pg('ecole','Les menus de la cantine — École Marie-Curie', function(){
+WEB['www.college-curie.fr/cantine']=pg('ecole','Les menus de la cantine — Collège Marie-Curie', function(){
   return '<h1>🍽️ Les menus de la semaine</h1>'
     +'<p>Voici ce que le chef Roberto a préparé cette semaine. Bon appétit !</p>'
     +'<table class="wp-table"><tr><th>Jour</th><th>Plat</th><th>Dessert</th></tr>'
@@ -1190,13 +1190,13 @@ WEB['www.ecole-curie.fr/cantine']=pg('ecole','Les menus de la cantine — École
     +'<tr><td><b>Jeudi</b></td><td>Poulet rôti et haricots verts</td><td><b>Compote de pommes</b></td></tr>'
     +'<tr><td><b>Vendredi</b></td><td>Pizza aux légumes</td><td>Gâteau au yaourt</td></tr>'
     +'</table>'
-    +'<p style="font-size:.85rem;color:#8d9cab;">Le mercredi, il n\'y a pas d\'école — donc pas de cantine !</p>';
+    +'<p style="font-size:.85rem;color:#8d9cab;">Le week-end, il n\'y a pas cours — donc pas de cantine !</p>';
 });
-WEB['www.ecole-curie.fr/sorties']=pg('ecole','Les sorties scolaires — École Marie-Curie', function(){
+WEB['www.college-curie.fr/sorties']=pg('ecole','Les sorties scolaires — Collège Marie-Curie', function(){
   return '<h1>🚌 Les sorties scolaires</h1>'
     +'<h2>Prochaine sortie : le Musée de l\'Espace</h2>'
     +'<div class="wp-img">🚀🪐</div>'
-    +'<p>Le <b>12 mai</b>, la classe de CM1 visitera le <a class="lk" data-go="www.musee-espace.fr">Musée de l\'Espace</a>. Les élèves pourront toucher une vraie météorite !</p>'
+    +'<p>Le <b>12 mai</b>, la classe de 5<sup>e</sup> B visitera le <a class="lk" data-go="www.musee-espace.fr">Musée de l\'Espace</a>. Les élèves pourront toucher une vraie météorite !</p>'
     +'<p>Pense à apporter un pique-nique et une casquette. 🧢</p>';
 });
 
@@ -1283,7 +1283,7 @@ WEB['www.musee-espace.fr/horaires']=pg('musee','Horaires & tarifs — Musée de 
 WEB['www.chasse-au-tresor.fr']=pg('tresor','La Chasse au Trésor', function(){
   return '<div class="wp-center"><h1>🗺️ La Chasse au Trésor</h1>'
     +'<div class="wp-img">🏴‍☠️🗝️</div>'
-    +'<p>Bienvenue, moussaillon ! Un trésor est caché au bout de ce site. Pour le trouver, résous chaque énigme et clique sur <b>la bonne porte</b>. Si tu te trompes, reviens en arrière avec <b>◀</b> !</p>'
+    +'<p>Bienvenue, aventurier ! Un trésor est caché au bout de ce site. Pour le trouver, résous chaque énigme et clique sur <b>la bonne porte</b>. Si tu te trompes, reviens en arrière avec <b>◀</b> !</p>'
     +'<h2>Énigme n°1</h2>'
     +'<p>« Je suis noir et blanc et je passe mes journées à croquer du bambou. Qui suis-je ? »</p>'
     +'<p><button class="wp-btnlink" data-go="www.chasse-au-tresor.fr/perdu">🐟 La porte du poisson</button>'
@@ -1313,7 +1313,7 @@ WEB['www.chasse-au-tresor.fr/pont']=pg('tresor','Le pont suspendu — La Chasse 
 WEB['www.chasse-au-tresor.fr/tresor']=pg('tresor','LE TRÉSOR ! — La Chasse au Trésor', function(){
   return '<div class="wp-center"><h1>🏆 TU AS TROUVÉ LE TRÉSOR !</h1>'
     +'<div class="wp-img">💰👑💎</div>'
-    +'<p><b>Félicitations, moussaillon !</b> Tu as résolu toutes les énigmes et navigué comme un vrai pirate du web.</p>'
+    +'<p><b>Félicitations, aventurier !</b> Tu as résolu toutes les énigmes et navigué comme un vrai pro du web.</p>'
     +'<p>🦜 « Bien navigué ! » crie le perroquet.</p></div>';
 });
 WEB['www.chasse-au-tresor.fr/perdu']=pg('tresor','Mauvaise porte… — La Chasse au Trésor', function(){
@@ -1405,12 +1405,12 @@ const G={
   usedHome:()=>({spot:'home', hint:'Clique sur le bouton <b>🏠</b> pour retourner à la page d\'accueil du navigateur.', test:c=>c.evt.usedHome}),
   newTab:()=>({spot:'newtab', hint:'Clique sur le bouton <b>+</b> à droite des onglets, tout en haut.', test:c=>c.evt.newTab}),
   switchedTab:()=>({spot:'tabs', hint:'Clique sur l\'autre <b>onglet</b>, tout en haut de l\'écran.', test:c=>c.evt.tabSwitched}),
-  closedTabUrl:(u)=>({spot:'tabs', hint:'Clique sur la petite croix <b>✕</b> de l\'onglet pour le fermer.', test:c=>c.evt.closedTabs && c.evt.closedTabs.has(u)}),
+  closedTabUrl:(u)=>({spot:'tabs', hint:'Clique sur la croix <b>✕</b> de l\'onglet pour le fermer.', test:c=>c.evt.closedTabs && c.evt.closedTabs.has(u)}),
   tabsCount:(n)=>({spot:'tabs', hint:'Ouvre (ou ferme) des onglets pour en avoir le bon nombre.', test:c=>c.tabs.length===n}),
   linkHovered:()=>({spot:'links', hint:'Déplace ta souris sur la page <b>sans cliquer</b> : quand elle survole un lien, l\'adresse s\'affiche en bas à gauche.', test:c=>c.evt.linkHovered}),
   clickedLogoHome:(u)=>({spot:'logo', hint:'Clique sur le <b>logo</b> du site, tout en haut à gauche de la page : il ramène toujours à l\'accueil.', test:c=>c.evt.clickedLogo && c.url===u}),
   searched:(words)=>({spot:'search', hint:'Tape tes <b>mots-clés</b> dans la barre de recherche ('+words.join(', ')+'), puis appuie sur '+kbd('Entrée')+'.', test:c=>c.evt.searches.some(q=>words.every(w=>q.includes(w)))}),
-  openedResult:(u)=>({spot:'links', hint:'Lis bien la liste des résultats : le <b>titre</b>, l\'<b>adresse verte</b> et le petit texte t\'aident à choisir. Clique le titre du bon résultat.', test:c=>c.evt.results && c.evt.results.has(u)}),
+  openedResult:(u)=>({spot:'links', hint:'Lis bien la liste des résultats : le <b>titre</b>, l\'<b>adresse verte</b> et le texte de description t\'aident à choisir. Clique le titre du bon résultat.', test:c=>c.evt.results && c.evt.results.has(u)}),
   bookmarked:(u)=>({spot:'star', hint:'Va sur la page, puis clique sur l\'<b>étoile ☆</b> au bout de la barre d\'adresse.', test:c=>c.evt.bmAdded && c.evt.bmAdded.has(u)}),
   removedBookmark:(u)=>({spot:'sidebar', hint:'Dans le panneau <b>Favoris</b> (menu ☰), clique le <b>🗑️</b> du favori à supprimer. Tu peux aussi re-cliquer l\'étoile ★ quand tu es sur la page.', test:c=>c.evt.bmRemoved && c.evt.bmRemoved.has(u)}),
   openedBookmark:(u)=>({spot:'bmbar', hint:'Clique sur le favori dans la <b>barre de favoris</b>, juste sous la barre d\'adresse.', test:c=>c.evt.openedBookmark && c.evt.openedBookmark.has(u)}),
@@ -1532,7 +1532,7 @@ const LEVELS=[
         {t:'Dans ce nouvel onglet, va sur <b>www.meteo-mini.fr</b>', goal:G.visited('www.meteo-mini.fr')},
         {t:'La météo change tout le temps : <b>actualise</b> la page avec <b>⟳</b>', goal:G.usedReload()},
         {t:'Reviens sur le <b>premier onglet</b> (clique dessus, tout en haut)', goal:G.switchedTab()},
-        {t:'<b>Ferme</b> l\'onglet météo avec sa petite croix <b>✕</b>', goal:G.closedTabUrl('www.meteo-mini.fr')}
+        {t:'<b>Ferme</b> l\'onglet météo avec sa croix <b>✕</b>', goal:G.closedTabUrl('www.meteo-mini.fr')}
       ]},
     {kind:'jalon',label:'Défi',emoji:'🏆',title:'Permis de naviguer',
       intro:'Montre que tu sais tout faire : onglet, adresse, liens et boutons de navigation. À toi de jouer, pilote !',
@@ -1550,25 +1550,25 @@ const LEVELS=[
 { n:2, title:'Les liens et les sites', subtitle:'liens & sites',
   intro:{ emoji:'🔗',
     lead:'Le web est une toile géante : les pages sont reliées entre elles par des <b>liens</b>. Apprends à les reconnaître et à explorer un site sans jamais te perdre !',
-    teach:'Un <b>lien</b>, ça se clique ! Quand ta souris le survole, elle devient une petite main 👆 et l\'adresse de destination s\'affiche <b>en bas à gauche</b> de l\'écran. Un lien peut être un <b>texte souligné</b>, une <b>image</b> ou un <b>bouton</b>. Les sites ont un <b>menu</b> en haut pour changer de page, et cliquer le <b>logo</b> ramène toujours à l\'accueil. Une adresse se lit comme ça : <b>www.zanimo.fr/panda</b> = la page « panda » du site « zanimo.fr ».',
+    teach:'Un <b>lien</b>, ça se clique ! Quand ta souris le survole, elle devient une main 👆 et l\'adresse de destination s\'affiche <b>en bas à gauche</b> de l\'écran. Un lien peut être un <b>texte souligné</b>, une <b>image</b> ou un <b>bouton</b>. Les sites ont un <b>menu</b> en haut pour changer de page, et cliquer le <b>logo</b> ramène toujours à l\'accueil. Une adresse se lit comme ça : <b>www.zanimo.fr/panda</b> = la page « panda » du site « zanimo.fr ».',
     tools:[{g:'👆',n:'Reconnaître un lien au survol'},{g:'🧾',n:'L\'adresse s\'affiche en bas à gauche'},{g:'📑',n:'Le menu du site'},{g:'🏷️',n:'Le logo ramène à l\'accueil'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'🕵️',title:'La chasse aux liens',
       intro:'Sur une page web, <b>tout n\'est pas cliquable</b> ! Promène ta souris pour démasquer les 3 vrais liens de la page : un <b>texte</b>, une <b>image</b> et un <b>bouton</b>. Après chaque découverte, reviens avec <b>◀</b>.',
-      seed:{tabs:['www.zanimo.fr/coin-jeux']},
+      seed:{tabs:['www.zanimo.fr/jeu-des-liens']},
       objectives:[
         {t:'<b>Survole</b> la page sans cliquer : trouve un vrai lien (regarde en bas à gauche !)', goal:G.linkHovered()},
-        {t:'Clique le <b>lien texte</b> « le mot secret »', goal:G.atUrl('www.zanimo.fr/coin-jeux/lien-texte')},
-        {t:'Reviens avec <b>◀</b>, puis clique l\'<b>image-lien</b> du cadeau 🎁', goal:G.atUrl('www.zanimo.fr/coin-jeux/lien-image')},
-        {t:'Reviens avec <b>◀</b>, puis clique le <b>bouton</b> « Clique ici ! »', goal:G.atUrl('www.zanimo.fr/coin-jeux/lien-bouton')}
+        {t:'Clique le <b>lien texte</b> « le mot caché »', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-texte')},
+        {t:'Reviens avec <b>◀</b>, puis clique l\'<b>image-lien</b> 📷', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-image')},
+        {t:'Reviens avec <b>◀</b>, puis clique le <b>bouton</b> « Clique ici ! »', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-bouton')}
       ]},
-    {kind:'mission',label:'Mission 2',emoji:'🏫',title:'Explore le site de l\'école',
-      intro:'Un site, c\'est plusieurs pages reliées par un <b>menu</b> (en haut). Explore le site de l\'école Marie-Curie pour retrouver le menu de la cantine !',
-      seed:{tabs:['www.ecole-curie.fr']},
+    {kind:'mission',label:'Mission 2',emoji:'🏫',title:'Explore le site du collège',
+      intro:'Un site, c\'est plusieurs pages reliées par un <b>menu</b> (en haut). Explore le site du collège Marie-Curie pour retrouver le menu de la cantine !',
+      seed:{tabs:['www.college-curie.fr']},
       objectives:[
-        {t:'Avec le <b>menu du site</b> (en haut), ouvre la page <b>La cantine</b>', goal:G.atUrl('www.ecole-curie.fr/cantine')},
+        {t:'Avec le <b>menu du site</b> (en haut), ouvre la page <b>La cantine</b>', goal:G.atUrl('www.college-curie.fr/cantine')},
         quizObj('Trouve le <b>dessert de jeudi</b> et note-le dans le carnet 📝 (sous l\'écran)', 'dessertJeudi', 'Quel est le dessert de jeudi à la cantine ?', ['compote'], 'Regarde bien le tableau des menus, ligne « Jeudi ».'),
-        {t:'Clique le <b>logo de l\'école</b> (en haut à gauche de la page) pour revenir à l\'accueil', goal:G.clickedLogoHome('www.ecole-curie.fr')}
+        {t:'Clique le <b>logo du collège</b> (en haut à gauche de la page) pour revenir à l\'accueil', goal:G.clickedLogoHome('www.college-curie.fr')}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'🔤',title:'Lis les adresses',
       intro:'Quand tu connais l\'adresse <b>exacte</b> d\'une page, tu peux y aller directement, sans cliquer nulle part ! <b>www.zanimo.fr/dauphin</b> = la page « dauphin » du site « zanimo.fr ».',
@@ -1592,7 +1592,7 @@ const LEVELS=[
 { n:3, title:'Chercher sur internet', subtitle:'recherche',
   intro:{ emoji:'🔍',
     lead:'Et si on ne connaît pas l\'adresse ? On demande à un <b>moteur de recherche</b> ! Sur <b>Cherchetout</b>, tu vas apprendre à trouver n\'importe quelle information.',
-    teach:'Va sur <b>www.cherchetout.fr</b> et tape des <b>mots-clés</b> : seulement les mots importants de ta question, pas la phrase entière ! Tu obtiens une liste de <b>résultats</b>. Pour chacun, lis le <b>titre</b>, l\'<b>adresse</b> (en vert) et le petit texte de description. Choisis celui qui répond vraiment à ta question — méfie-toi des pièges, comme les <b>boutiques</b> qui veulent juste vendre !',
+    teach:'Va sur <b>www.cherchetout.fr</b> et tape des <b>mots-clés</b> : seulement les mots importants de ta question, pas la phrase entière ! Tu obtiens une liste de <b>résultats</b>. Pour chacun, lis le <b>titre</b>, l\'<b>adresse</b> (en vert) et le texte de description. Choisis celui qui répond vraiment à ta question — méfie-toi des pièges, comme les <b>boutiques</b> qui veulent juste vendre !',
     tools:[{g:'🔍',n:'Le moteur de recherche Cherchetout'},{g:'🔑',n:'Choisir de bons mots-clés'},{g:'📋',n:'Lire la liste des résultats'},{g:'📝',n:'Le carnet de mission, sous l\'écran'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'🔍',title:'Ta première recherche',
@@ -1651,7 +1651,7 @@ const LEVELS=[
       seed:{tabs:['goupil.start'], bookmarks:['www.meteo-mini.fr']},
       objectives:[
         {t:'Va sur <b>www.zanimo.fr</b> et ajoute-le aux favoris <b>⭐</b>', goal:G.bookmarked('www.zanimo.fr')},
-        {t:'Va sur <b>www.ecole-curie.fr</b> et ajoute-le aussi <b>⭐</b>', goal:G.bookmarked('www.ecole-curie.fr')},
+        {t:'Va sur <b>www.college-curie.fr</b> et ajoute-le aussi <b>⭐</b>', goal:G.bookmarked('www.college-curie.fr')},
         {t:'Ouvre le menu <b>☰</b> puis <b>⭐ Favoris</b>', goal:G.openedBmPanel()},
         {t:'<b>Supprime</b> le favori <b>Météo Mini</b> avec son 🗑️', goal:G.removedBookmark('www.meteo-mini.fr')}
       ]},
