@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naviguer sur internet — Atelier informatique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Police d'emojis unifiée sur tous les systèmes (cf. assets/fonts/README.md) */
+  @font-face{
+    font-family:"Fluent Emoji";
+    src:url("assets/fonts/fluent-emoji.woff2") format("woff2");
+    font-display:swap;
+  }
+  :root{
+    --ink:#22303f; --muted:#5a6b7b;
+    --blue:#2563eb; --blue-d:#1d4ed8;
+    --amber:#f59e0b; --amber-d:#b45309;
+    --green:#16a34a; --green-d:#15803d;
+    --red:#ef4444; --red-d:#b91c1c;
+    --paper:#ffffff; --line:#d7e0ea; --line-2:#e7eef6;
+    --shell:#e9eff7;
+    /* navigateur */
+    --br-strip:#dfe3ec; --br-bar:#f9f9fb; --br-line:#dcdfe6; --br-pill:#eff1f6;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none!important;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;color:var(--ink);
+    background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
+  }
+  button{font-family:inherit;cursor:pointer;}
+  .display{font-family:"Fredoka","Fluent Emoji",sans-serif;}
+  kbd{
+    display:inline-flex;align-items:center;justify-content:center;min-width:22px;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:.84em;line-height:1;
+    padding:3px 7px;border-radius:7px;background:#fff;border:2px solid #c7d4e6;
+    border-bottom-width:3px;color:var(--ink);box-shadow:0 1px 0 #e7eef6;margin:0 1px;white-space:nowrap;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{background:#fff;border-bottom:2px solid var(--line);
+    display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap;}
+  .back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--blue-d);
+    font-weight:800;font-size:.98rem;padding:8px 12px;border-radius:10px;}
+  .back:hover{background:#eef4ff;}
+  .topbar h1{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.15rem;margin:0;flex:1;}
+  .topbar h1 .dot{color:var(--blue);}
+  .reset-btn{border:2px solid var(--line);background:#fff;color:var(--muted);font-weight:700;
+    border-radius:10px;padding:7px 11px;font-size:.85rem;}
+  .reset-btn:hover{border-color:var(--blue);color:var(--blue-d);}
+  .reset-btn.danger:hover{border-color:var(--red);color:var(--red-d);}
+
+  /* ---------- Progress ---------- */
+  .progress-wrap{background:#fff;padding:8px 18px 14px;border-bottom:2px solid var(--line);}
+  .track{display:flex;gap:6px;align-items:center;max-width:1000px;margin:0 auto;}
+  .seg{position:relative;flex:1;height:14px;border-radius:8px;background:var(--line-2);}
+  .seg.done{background:var(--green);}
+  .seg.current{background:var(--blue);box-shadow:0 0 0 3px #bcd2ff;}
+  .seg.milestone{height:20px;display:flex;align-items:center;justify-content:center;font-size:1rem;background:#fdebc4;}
+  .seg.milestone.done{background:#facc15;}
+  .seg.milestone.current{background:var(--amber);box-shadow:0 0 0 3px #fde2a8;}
+  .seg.clickable{cursor:pointer;transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;}
+  .seg.clickable:hover{filter:brightness(1.07);transform:translateY(-2px);}
+  .seg.clickable.done:hover{box-shadow:0 0 0 3px #b9eccd;}
+
+  /* ---------- Mission banner ---------- */
+  .banner{max-width:1000px;margin:12px auto 0;width:calc(100% - 36px);
+    background:#fff;border:2px solid var(--line);border-left:7px solid var(--blue);
+    border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .banner.test{border-left-color:var(--amber);}
+  .banner.review{border-left-color:var(--green);}
+  .banner .b-emoji{font-size:1.8rem;line-height:1;}
+  .banner .b-txt{flex:1;min-width:200px;}
+  .banner .b-title{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.08rem;}
+  .banner .b-sub{color:#3a4a59;font-weight:700;font-size:1rem;margin-top:4px;line-height:1.45;}
+  .banner .b-goal-label{font-weight:800;color:var(--blue-d);margin-right:3px;}
+  .banner.test .b-goal-label{color:var(--amber-d);}
+  .banner .b-btn{border:2px solid var(--line);background:#f5f9ff;color:var(--blue-d);font-weight:800;
+    border-radius:10px;padding:8px 13px;font-size:.9rem;white-space:nowrap;}
+  .banner .b-btn:hover{border-color:var(--blue);}
+  /* objectifs affichés un par un (jalon) */
+  .jalon-head{margin:0 0 4px;}
+  .jalon-wrap{overflow:hidden;}
+  .jalon-obj{display:flex;align-items:center;gap:11px;background:#fff;border:2px solid #f6d68a;
+    border-left:6px solid var(--amber);border-radius:12px;padding:10px 14px;font-weight:700;font-size:1rem;
+    color:var(--ink);line-height:1.35;
+    transition:transform .45s cubic-bezier(.2,.7,.3,1), opacity .45s ease, background .3s, border-color .3s;}
+  .jalon-obj .jo-check{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;background:var(--amber);color:#fff;font-weight:800;font-size:1rem;}
+  .jalon-obj .jo-text b{color:var(--amber-d);}
+  .jalon-obj.done{background:#eafaf0;border-color:#86efac;border-left-color:var(--green);color:var(--green-d);}
+  .jalon-obj.done .jo-check{background:var(--green);}
+  .jalon-obj.done .jo-text b{color:var(--green-d);}
+  .jalon-obj.blue{border-color:#bcd2ff;border-left-color:var(--blue);}
+  .jalon-obj.blue .jo-check{background:var(--blue);}
+  .jalon-obj.blue .jo-text b{color:var(--blue-d);}
+  .jalon-obj.blue.done{background:#eafaf0;border-color:#86efac;border-left-color:var(--green);color:var(--green-d);}
+  .jalon-obj.blue.done .jo-check{background:var(--green);}
+  .jalon-obj.blue.done .jo-text b{color:var(--green-d);}
+  .jalon-obj.entering{transform:translateY(120%);opacity:0;}
+  .jalon-obj.slideup{transform:translateY(-160%);opacity:0;}
+  @media(prefers-reduced-motion:reduce){.jalon-obj{transition:opacity .2s ease;}.jalon-obj.entering,.jalon-obj.slideup{transform:none;}}
+
+  /* ---------- Stage (l'écran avec le navigateur) ---------- */
+  .stage-wrap{max-width:1000px;margin:12px auto 0;width:calc(100% - 36px);}
+  .screen{position:relative;height:clamp(460px,68vh,680px);border-radius:16px;overflow:hidden;
+    border:3px solid #cdd9e8;box-shadow:0 18px 40px -24px rgba(34,48,63,.55);
+    background:#f9f9fb;user-select:none;-webkit-user-select:none;}
+  .screen input,.screen textarea{user-select:text;-webkit-user-select:text;}
+
+  /* ---------- Navigateur Goupil (façon Firefox) ---------- */
+  .browser{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--br-bar);}
+  .tabstrip{display:flex;align-items:flex-end;gap:3px;padding:7px 8px 0;background:var(--br-strip);flex:none;}
+  .tab{display:flex;align-items:center;gap:7px;min-width:120px;max-width:200px;height:34px;
+    padding:0 6px 0 11px;border-radius:9px 9px 0 0;background:transparent;color:#3f4a58;
+    font-weight:700;font-size:.8rem;cursor:default;position:relative;}
+  .tab:hover:not(.active){background:#e9edf4;}
+  .tab.active{background:var(--br-bar);box-shadow:0 -3px 8px rgba(20,30,50,.10);}
+  .tab .t-ic{font-size:.95rem;flex:none;}
+  .tab .t-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none;}
+  .tab .t-close{flex:none;width:20px;height:20px;border:none;background:transparent;border-radius:5px;
+    font-size:.75rem;color:#5a6b7b;display:flex;align-items:center;justify-content:center;padding:0;}
+  .tab .t-close:hover{background:#d5dae3;color:var(--ink);}
+  .newtab-btn{flex:none;width:30px;height:30px;margin:0 0 2px 3px;border:none;background:transparent;border-radius:8px;
+    font-size:1.05rem;color:#3f4a58;display:flex;align-items:center;justify-content:center;}
+  .newtab-btn:hover{background:#e9edf4;}
+  .toolbar{display:flex;align-items:center;gap:5px;padding:7px 10px;background:var(--br-bar);flex:none;}
+  .tool-btn{width:34px;height:32px;border:none;background:transparent;border-radius:8px;font-size:1rem;
+    color:#3f4a58;display:flex;align-items:center;justify-content:center;flex:none;}
+  .tool-btn:hover:not(:disabled){background:#e7eaf1;}
+  .tool-btn:disabled{opacity:.3;cursor:default;}
+  .addr-pill{flex:1;display:flex;align-items:center;gap:7px;background:var(--br-pill);
+    border:2px solid transparent;border-radius:10px;padding:4px 6px 4px 10px;min-width:0;}
+  .addr-pill:focus-within{background:#fff;border-color:#7aa7ec;box-shadow:0 0 0 3px rgba(96,165,250,.28);}
+  .addr-lock{font-size:.85rem;flex:none;}
+  .addr-lock.warn{filter:grayscale(0);}
+  #addrInput{flex:1;border:none;background:none;outline:none;font-family:inherit;font-weight:700;
+    font-size:.88rem;color:var(--ink);min-width:0;}
+  #addrInput::placeholder{color:#8d9cab;font-weight:600;}
+  .addr-go{flex:none;width:26px;height:26px;border:none;background:transparent;border-radius:7px;
+    font-size:.9rem;color:#3f4a58;display:none;align-items:center;justify-content:center;padding:0;}
+  .addr-pill:focus-within .addr-go{display:flex;}
+  .addr-go:hover{background:#e7eaf1;}
+  .star-btn{flex:none;width:26px;height:26px;border:none;background:transparent;border-radius:7px;
+    font-size:.95rem;color:#8d9cab;display:flex;align-items:center;justify-content:center;padding:0;}
+  .star-btn:hover{background:#e7eaf1;}
+  .star-btn.on{color:#f59e0b;}
+  .loadbar{height:3px;position:relative;background:var(--br-bar);flex:none;}
+  .loadbar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--blue);border-radius:2px;
+    transition:width .38s ease;opacity:0;}
+  .loadbar.on i{opacity:1;width:72%;}
+  .loadbar.fin i{opacity:0;width:100%;transition:width .12s ease, opacity .3s ease .15s;}
+  .bmbar{display:flex;gap:6px;padding:4px 12px;background:var(--br-bar);border-bottom:1px solid var(--br-line);
+    font-size:.78rem;min-height:30px;align-items:center;overflow:hidden;flex:none;}
+  .bmbar .bm-none{color:#9aa9b8;font-weight:600;font-size:.74rem;}
+  .bm-chip{display:inline-flex;gap:6px;align-items:center;border:none;background:transparent;border-radius:7px;
+    padding:3px 9px;font-weight:700;font-size:.78rem;color:var(--ink);white-space:nowrap;}
+  .bm-chip:hover{background:#e7eaf1;}
+  .main{flex:1;display:flex;min-height:0;position:relative;background:#fff;}
+  .viewport{flex:1;overflow:auto;background:#fff;position:relative;}
+  .statusbar{position:absolute;left:0;bottom:0;background:#fff;border:1px solid var(--br-line);
+    border-left:none;border-bottom:none;border-radius:0 8px 0 0;padding:3px 10px;font-size:.75rem;
+    font-weight:700;color:#3f4a58;display:none;z-index:30;max-width:70%;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;}
+  .statusbar.show{display:block;}
+  /* menu ☰ */
+  .menu-pop{position:absolute;top:2px;right:8px;z-index:60;background:#fff;border:1px solid var(--br-line);
+    border-radius:12px;box-shadow:0 14px 36px rgba(20,30,50,.25);padding:6px;min-width:210px;}
+  .menu-item{display:flex;align-items:center;gap:10px;width:100%;border:none;background:transparent;
+    border-radius:8px;padding:8px 11px;font-weight:700;font-size:.86rem;color:var(--ink);text-align:left;}
+  .menu-item:hover:not(.off){background:#eff1f6;}
+  .menu-item .mi-ic{width:20px;text-align:center;}
+  .menu-item.off{opacity:.45;cursor:default;}
+  .menu-item .mi-soon{margin-left:auto;font-size:.65rem;font-weight:800;background:#fdebc4;color:#8a6d12;
+    border-radius:999px;padding:2px 7px;}
+  /* panneau latéral (historique / favoris) */
+  .sidebar{width:238px;flex:none;border-right:1px solid var(--br-line);background:#fafbfd;
+    display:flex;flex-direction:column;min-height:0;}
+  .sb-head{display:flex;align-items:center;gap:8px;padding:9px 8px 9px 13px;border-bottom:1px solid var(--br-line);
+    font-weight:800;font-size:.86rem;}
+  .sb-head .sb-close{margin-left:auto;width:24px;height:24px;border:none;background:transparent;border-radius:6px;
+    font-size:.8rem;color:#5a6b7b;display:flex;align-items:center;justify-content:center;}
+  .sb-head .sb-close:hover{background:#e7eaf1;}
+  .sb-list{flex:1;overflow:auto;padding:6px;}
+  .sb-item{display:flex;align-items:center;gap:8px;width:100%;border:none;background:transparent;
+    border-radius:8px;padding:7px 8px;text-align:left;font-size:.78rem;color:var(--ink);}
+  .sb-item:hover{background:#eef1f6;}
+  .sb-item .si-ic{flex:none;font-size:1rem;}
+  .sb-item .si-tx{flex:1;min-width:0;}
+  .sb-item .si-t{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-item .si-u{color:#7b8b9b;font-weight:600;font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-item .si-when{flex:none;color:#9aa9b8;font-weight:700;font-size:.68rem;}
+  .sb-item .si-del{flex:none;width:22px;height:22px;border:none;background:transparent;border-radius:6px;
+    font-size:.78rem;display:flex;align-items:center;justify-content:center;padding:0;}
+  .sb-item .si-del:hover{background:#fde3e3;}
+  .sb-empty{color:#9aa9b8;font-weight:700;font-size:.78rem;text-align:center;padding:18px 10px;}
+
+  /* ---------- Pages web simulées ---------- */
+  .webpage{min-height:100%;--site:#2563eb;--site-soft:#eef4ff;cursor:default;padding-bottom:26px;}
+  .wp-head{display:flex;align-items:center;gap:12px;padding:13px 22px;border-bottom:3px solid var(--site);
+    flex-wrap:wrap;background:#fff;}
+  .wp-logo{display:flex;align-items:center;gap:9px;font-family:"Fredoka","Fluent Emoji",sans-serif;
+    font-weight:700;font-size:1.2rem;color:var(--site);cursor:pointer;border-radius:9px;padding:2px 6px;}
+  .wp-logo:hover{background:var(--site-soft);}
+  .wp-logo .lg-ic{font-size:1.5rem;}
+  .wp-nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;}
+  .wp-nav a{font-weight:800;font-size:.86rem;color:var(--ink);text-decoration:none;cursor:pointer;
+    padding:7px 12px;border-radius:9px;}
+  .wp-nav a:hover{background:var(--site-soft);color:var(--site);}
+  .wp-nav a.here{background:var(--site);color:#fff;}
+  .wp-body{padding:20px 26px 10px;max-width:780px;margin:0 auto;}
+  .wp-body h1{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.6rem;margin:4px 0 12px;}
+  .wp-body h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.15rem;margin:18px 0 8px;color:var(--site);}
+  .wp-body p{font-weight:600;font-size:.96rem;line-height:1.55;color:#33424f;margin:0 0 10px;}
+  .wp-body ul{font-weight:600;font-size:.95rem;color:#33424f;line-height:1.6;}
+  a.lk{color:#1d4ed8;text-decoration:underline;cursor:pointer;font-weight:700;}
+  a.lk:hover{color:#7c3aed;}
+  .wp-hero{background:var(--site-soft);border-radius:16px;padding:20px 22px;margin:6px 0 18px;
+    display:flex;align-items:center;gap:18px;}
+  .wp-hero .h-ic{font-size:3rem;line-height:1;}
+  .wp-hero .h-tx{flex:1;}
+  .wp-hero .h-tx h1{margin:0 0 6px;}
+  .wp-hero .h-tx p{margin:0;}
+  .wp-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:12px 0;}
+  .wp-card{border:2px solid var(--line);border-radius:14px;padding:14px 12px;text-align:center;cursor:pointer;
+    background:#fff;transition:transform .15s ease, box-shadow .15s ease, border-color .15s;}
+  .wp-card:hover{transform:translateY(-3px);border-color:var(--site);box-shadow:0 10px 22px -14px rgba(34,48,63,.5);}
+  .wp-card .c-ic{font-size:2.3rem;display:block;margin-bottom:7px;}
+  .wp-card .c-t{font-weight:800;font-size:.92rem;}
+  .wp-card .c-s{font-weight:600;font-size:.76rem;color:var(--muted);margin-top:3px;}
+  .wp-img{display:flex;align-items:center;justify-content:center;font-size:4rem;background:var(--site-soft);
+    border-radius:16px;padding:22px;margin:10px 0;}
+  .wp-img.sm{font-size:2.6rem;padding:12px;}
+  .wp-imglink{cursor:pointer;transition:transform .15s ease;border:2px solid transparent;}
+  .wp-imglink:hover{transform:scale(1.04);border-color:var(--site);}
+  .wp-fact{background:#fff;border:2px solid var(--line);border-left:6px solid var(--site);border-radius:12px;
+    padding:10px 14px;margin:8px 0;font-weight:700;font-size:.94rem;color:#33424f;}
+  .wp-btnlink{display:inline-flex;align-items:center;gap:8px;background:var(--site);color:#fff;border:none;
+    border-radius:11px;padding:11px 18px;font-weight:800;font-size:.95rem;cursor:pointer;margin:6px 4px 6px 0;}
+  .wp-btnlink:hover{filter:brightness(1.12);}
+  .wp-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.9rem;}
+  .wp-table th{background:var(--site);color:#fff;font-weight:800;padding:8px 10px;text-align:left;}
+  .wp-table td{border:1px solid var(--line);padding:7px 10px;font-weight:700;color:#33424f;}
+  .wp-table tr:nth-child(even) td{background:#f7fafd;}
+  .wp-footer{margin-top:26px;padding:14px 26px;border-top:2px solid var(--line-2);color:#8d9cab;
+    font-weight:600;font-size:.76rem;text-align:center;}
+  .wp-center{text-align:center;}
+
+  /* page d'accueil Goupil */
+  .start-page{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:30px 20px;background:linear-gradient(160deg,#fff7ed, #eef4ff 70%);cursor:default;}
+  .start-fox{font-size:4rem;line-height:1;}
+  .start-title{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:2rem;color:#c2410c;margin:8px 0 2px;}
+  .start-sub{font-weight:700;color:var(--muted);margin:0 0 20px;}
+  .start-search{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);
+    border-radius:999px;padding:8px 8px 8px 18px;width:min(440px,90%);box-shadow:0 10px 26px -18px rgba(34,48,63,.6);}
+  .start-search:focus-within{border-color:#7aa7ec;}
+  .start-search input{flex:1;border:none;outline:none;background:none;font-family:inherit;font-weight:700;font-size:.95rem;min-width:0;}
+  .start-search button{border:none;background:var(--blue);color:#fff;border-radius:999px;padding:9px 16px;font-weight:800;font-size:.85rem;}
+  .start-search button:hover{background:var(--blue-d);}
+  .start-tiles{display:flex;gap:14px;margin-top:26px;flex-wrap:wrap;justify-content:center;}
+  .start-tile{width:96px;border:none;background:#fff;border-radius:14px;padding:13px 8px;cursor:pointer;
+    box-shadow:0 8px 20px -14px rgba(34,48,63,.55);border:2px solid transparent;font-family:inherit;}
+  .start-tile:hover{border-color:var(--blue);transform:translateY(-3px);}
+  .start-tile .st-ic{font-size:1.9rem;display:block;margin-bottom:6px;}
+  .start-tile .st-t{font-weight:800;font-size:.72rem;color:var(--ink);}
+
+  /* Cherchetout (moteur de recherche) */
+  .ct-home{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;cursor:default;}
+  .ct-logo{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:2.6rem;margin:6px 0 4px;}
+  .ct-logo .c1{color:#2563eb;} .ct-logo .c2{color:#ef4444;} .ct-logo .c3{color:#f59e0b;} .ct-logo .c4{color:#16a34a;}
+  .ct-tag{font-weight:700;color:var(--muted);margin:0 0 22px;}
+  .ct-box{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);
+    border-radius:999px;padding:8px 8px 8px 16px;width:min(480px,92%);box-shadow:0 10px 26px -18px rgba(34,48,63,.6);}
+  .ct-box:focus-within{border-color:#7aa7ec;box-shadow:0 0 0 3px rgba(96,165,250,.25);}
+  .ct-box .ct-ic{color:#8d9cab;}
+  .ct-box input{flex:1;border:none;outline:none;background:none;font-family:inherit;font-weight:700;font-size:.98rem;min-width:0;}
+  .ct-box button{border:none;background:var(--blue);color:#fff;border-radius:999px;padding:10px 18px;font-weight:800;font-size:.88rem;}
+  .ct-box button:hover{background:var(--blue-d);}
+  .ct-tip{margin-top:18px;font-weight:700;font-size:.85rem;color:var(--muted);background:#fff;
+    border:2px dashed var(--line);border-radius:12px;padding:9px 15px;}
+  /* page de résultats */
+  .serp{padding:0 0 30px;cursor:default;}
+  .serp-top{display:flex;align-items:center;gap:14px;padding:14px 24px;border-bottom:2px solid var(--line-2);flex-wrap:wrap;}
+  .serp-top .ct-logo{font-size:1.25rem;margin:0;cursor:pointer;}
+  .serp-top .ct-box{flex:1;box-shadow:none;padding:5px 5px 5px 14px;min-width:220px;width:auto;}
+  .serp-top .ct-box input{font-size:.9rem;}
+  .serp-top .ct-box button{padding:7px 14px;font-size:.8rem;}
+  .serp-body{max-width:640px;margin:0 auto;padding:16px 24px;}
+  .serp-count{color:#8d9cab;font-weight:700;font-size:.78rem;margin:0 0 14px;}
+  .sr-item{margin:0 0 22px;}
+  .sr-url{font-weight:700;font-size:.78rem;color:#0f7b3c;display:flex;align-items:center;gap:6px;}
+  .sr-title{display:inline-block;font-weight:800;font-size:1.05rem;color:#1d4ed8;text-decoration:none;cursor:pointer;margin:2px 0;}
+  .sr-title:hover{text-decoration:underline;}
+  .sr-snip{margin:0;font-weight:600;font-size:.86rem;color:#4a5a68;line-height:1.5;}
+  .serp-none{text-align:center;font-weight:700;color:var(--muted);padding:30px 10px;}
+
+  /* page d'erreur */
+  .err-page{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:30px;cursor:default;}
+  .err-page .e-ic{font-size:3.4rem;}
+  .err-page h1{font-family:"Fredoka","Fluent Emoji",sans-serif;font-size:1.5rem;margin:10px 0 8px;}
+  .err-page p{font-weight:700;color:var(--muted);max-width:420px;margin:0 0 8px;}
+  .err-page .e-url{font-weight:800;color:var(--red-d);background:#fdeeee;border-radius:8px;padding:4px 10px;display:inline-block;}
+
+  /* ---------- Carnet de mission (questions) ---------- */
+  .quiz-dock{max-width:1000px;margin:10px auto 0;width:calc(100% - 36px);
+    background:#fffbe8;border:2px solid #f2dd9a;border-radius:14px;padding:11px 16px;
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .quiz-dock .qd-ic{font-size:1.5rem;}
+  .quiz-dock .qd-q{flex:1;min-width:220px;font-weight:800;font-size:.95rem;color:#6b5310;}
+  .quiz-dock input{border:2px solid #e3cf82;border-radius:9px;padding:8px 12px;font-family:inherit;
+    font-weight:700;font-size:.92rem;outline:none;width:200px;background:#fff;}
+  .quiz-dock input:focus{border-color:var(--blue);}
+  .quiz-dock .qd-ok{border:none;background:var(--green);color:#fff;border-radius:9px;padding:9px 16px;
+    font-weight:800;font-size:.88rem;}
+  .quiz-dock .qd-ok:hover{background:var(--green-d);}
+  .quiz-dock .qd-fb{font-weight:800;font-size:.84rem;color:var(--red-d);}
+  .quiz-dock.shake{animation:qshake .4s ease;}
+  @keyframes qshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+
+  /* ---------- Boutons sous l'écran ---------- */
+  .stage-actions{max-width:1000px;margin:10px auto 26px;width:calc(100% - 36px);
+    display:flex;gap:10px;justify-content:flex-end;}
+  .sa-btn{border:2px solid var(--line);background:#fff;border-radius:10px;padding:8px 13px;
+    font-weight:800;font-size:.88rem;color:var(--muted);}
+  .sa-btn:hover{border-color:var(--blue);color:var(--blue-d);}
+  .sa-btn.sa-hint{border-color:#f6d68a;background:#fff8ec;color:var(--amber-d);}
+  .sa-btn.sa-hint:hover{border-color:var(--amber);}
+
+  /* ---------- Surbrillance astuce ---------- */
+  .spot{box-shadow:0 0 0 4px #ffd54a, 0 0 20px 6px rgba(255,193,7,.6)!important;
+    border-radius:10px;animation:spotPulse 1s ease-in-out infinite;position:relative;z-index:80;}
+  @keyframes spotPulse{50%{box-shadow:0 0 0 7px #ffd54a, 0 0 26px 10px rgba(255,193,7,.75);}}
+
+  /* ---------- Overlay / modales ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;
+    justify-content:center;z-index:320;padding:18px;}
+  .overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:20px;max-width:540px;width:100%;padding:26px 26px 22px;
+    text-align:center;max-height:88vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.4);
+    animation:modalIn .18s ease;}
+  @keyframes modalIn{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .modal .m-emoji{font-size:3rem;line-height:1;display:block;margin-bottom:6px;}
+  .modal .kicker{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:.74rem;color:var(--blue-d);}
+  .modal h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.5rem;margin:2px 0 8px;}
+  .modal.good h2{color:var(--green-d);}
+  .modal.warn h2{color:var(--red-d);}
+  .modal p{color:#3a4a59;font-weight:600;font-size:1.04rem;line-height:1.5;margin:0 0 8px;}
+  .modal .howto{background:#f3f8ff;border:2px solid #d9e6fb;border-radius:14px;padding:13px 16px;text-align:left;margin:12px 0 4px;}
+  .modal .howto.test{background:#fff8ec;border-color:#fbe3b6;}
+  .modal .howto .h-head{font-weight:800;color:var(--blue-d);margin:0 0 6px;font-size:1rem;}
+  .modal .howto.test .h-head{color:var(--amber-d);}
+  .modal .howto p{font-size:.98rem;color:#3a4a59;margin:0 0 4px;}
+  .modal .tasklist{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:6px;text-align:left;}
+  .modal .tasklist li{display:flex;gap:9px;font-weight:700;font-size:.94rem;color:#3a4a59;line-height:1.4;}
+  .modal .tasklist li::before{content:'▸';color:var(--blue);font-weight:800;}
+  .modal .newtools{list-style:none;padding:0;margin:12px 0 4px;display:flex;flex-direction:column;gap:7px;text-align:left;}
+  .modal .newtools li{display:flex;align-items:center;gap:11px;background:#f6f9fd;border:2px solid var(--line);
+    border-radius:12px;padding:9px 13px;font-weight:700;font-size:.95rem;}
+  .modal .newtools .ni-glyph{font-size:1.35rem;width:34px;height:34px;flex:none;display:flex;align-items:center;
+    justify-content:center;background:#fff;border:2px solid var(--line);border-radius:9px;}
+  .modal .m-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px;}
+  .m-btn{border:2px solid var(--line);background:#fff;color:var(--ink);font-weight:800;border-radius:12px;
+    padding:11px 18px;font-size:1rem;}
+  .m-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .m-btn.primary:hover{background:var(--blue-d);}
+  .m-btn.primary.green{background:var(--green);border-color:var(--green);}
+  .m-btn.primary.green:hover{background:var(--green-d);}
+  .m-btn.primary.test{background:var(--amber);border-color:var(--amber);color:#3d2c06;}
+  .m-btn.ghost{background:#fff;color:var(--muted);}
+  .m-btn.ghost:hover{border-color:var(--blue);color:var(--blue-d);}
+  .lvl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0 4px;}
+  .lvl-card{display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:2px solid var(--line);
+    background:#fff;border-radius:12px;padding:11px 12px;text-align:left;}
+  .lvl-card:hover:not(.locked){border-color:var(--blue);}
+  .lvl-card.current{border-color:var(--blue);background:#eef4ff;}
+  .lvl-card.locked{opacity:.5;}
+  .lvl-card .lc-badge{font-size:1.1rem;}
+  .lvl-card .lc-n{font-weight:800;font-size:.78rem;color:var(--muted);}
+  .lvl-card .lc-t{font-weight:700;font-size:.86rem;}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#1f2a37;color:#fff;
+    font-weight:700;font-size:.92rem;padding:11px 18px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.3);
+    opacity:0;pointer-events:none;transition:.25s;z-index:400;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* confetti */
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:350;overflow:hidden;}
+  .confetti i{position:absolute;top:-12px;width:10px;height:14px;border-radius:2px;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(105vh) rotate(640deg);}}
+
+  @media (max-width:560px){
+    .topbar h1{font-size:1rem;}
+    .tab{min-width:88px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .confetti i,.modal,.spot{animation:none!important;}
+  }
+</style>
+<style>
+  /* ===== Bascule police OpenDyslexic (accessibilité lecture/dyslexie) ===== */
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
+  @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
+  html.dys, html.dys *{font-family:"OpenDyslexic","Fluent Emoji",sans-serif !important;}
+  .dys-toggle{position:fixed;bottom:16px;left:16px;z-index:500;display:inline-flex;align-items:center;gap:9px;
+    border:2px solid #d7e0ea;background:#fff;color:#22303f;border-radius:999px;padding:7px 9px 7px 13px;
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-weight:800;font-size:.82rem;line-height:1;cursor:pointer;
+    box-shadow:0 6px 18px rgba(34,48,63,.20);transition:border-color .2s,background .2s,box-shadow .2s;}
+  .dys-toggle:hover{box-shadow:0 8px 22px rgba(34,48,63,.28);}
+  .dys-toggle:focus-visible{outline:3px solid #2563eb;outline-offset:2px;}
+  .dys-toggle .dys-ic{font-size:1.05rem;}
+  .dys-toggle .dys-label{white-space:nowrap;}
+  .dys-toggle .dys-switch{position:relative;width:38px;height:22px;border-radius:999px;background:#cdd7e3;transition:background .2s;flex:none;}
+  .dys-toggle .dys-knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s;}
+  html.dys .dys-toggle{border-color:#16a34a;background:#f1fbf4;}
+  html.dys .dys-toggle .dys-switch{background:#16a34a;}
+  html.dys .dys-toggle .dys-knob{left:18px;}
+  @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
+</style>
+<script>try{if(localStorage.getItem('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
+</head>
+<body>
+  <div class="topbar">
+    <a class="back" href="index.html">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      Accueil
+    </a>
+    <h1 class="display" id="lvlTitle">Naviguer sur internet <span class="dot">·</span> découverte</h1>
+    <span class="reset-btn" id="stepCount" style="cursor:default">Niveau 1 · Mission 1</span>
+    <button class="reset-btn" id="soundBtn" title="Activer / couper le son">🔊 Son</button>
+    <button class="reset-btn" id="levelBtn" title="Voir les niveaux">🗺️ Niveau 1/4</button>
+    <button class="reset-btn danger" id="resetBtn" title="Recommencer cette mission">↺ Recommencer</button>
+  </div>
+
+  <div class="progress-wrap"><div class="track" id="track"></div></div>
+
+  <div class="banner" id="banner">
+    <span class="b-emoji" id="bEmoji">🌐</span>
+    <div class="b-txt">
+      <div class="b-title" id="bTitle">Mission</div>
+      <div class="b-sub" id="bSub"></div>
+    </div>
+    <button class="b-btn" id="seeMission">📋 Revoir la consigne</button>
+  </div>
+
+  <div class="stage-wrap"><div id="stage"></div></div>
+
+  <div class="quiz-dock" id="quizDock" hidden></div>
+
+  <div class="stage-actions">
+    <button class="sa-btn sa-hint" id="hintBtn">💡 Astuce</button>
+    <button class="sa-btn" id="restartBtn">↺ Recommencer la mission</button>
+  </div>
+
+  <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   NAVIGUER SUR INTERNET — navigateur « Goupil » simulé
+   (façon Firefox) + faux web interne, missions gamifiées.
+   Aucun framework. Tout est piloté par LEVELS[].rounds[].
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   0. OUTILS GÉNÉRAUX
+   --------------------------------------------------------- */
+function kbd(s){ return '<kbd>'+s+'</kbd>'; }
+function normText(s){
+  return String(s).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[’']/g,' ').replace(/[?!.,;:«»"]/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+
+/* ---------------------------------------------------------
+   1. ÉTAT GLOBAL + STOCKAGE
+   --------------------------------------------------------- */
+const store={
+  get(k){ try{return localStorage.getItem(k);}catch(e){return this._m&&this._m[k];} },
+  set(k,v){ try{localStorage.setItem(k,v);}catch(e){ (this._m=this._m||{})[k]=v; } },
+  del(k){ try{localStorage.removeItem(k);}catch(e){ if(this._m) delete this._m[k]; } },
+  _m:{}
+};
+let currentLevel=1, STEPS=[], progressIdx=0, playIdx=0, currentStep=null;
+const stage=document.getElementById('stage');
+const overlay=document.getElementById('overlay');
+const modal=document.getElementById('modal');
+let soundOn=(store.get('nv_sound')||'1')==='1';
+
+/* B = l'état du navigateur simulé */
+const B={
+  tabs:[], active:0, seq:0,
+  bookmarks:[], history:[],
+  panel:null, menuOpen:false,
+  homepage:'goupil.start',
+  evt:{}
+};
+
+function getUnlocked(){ let u=parseInt(store.get('nv_unlocked')||'1',10); if(isNaN(u)||u<1)u=1; return Math.min(u,LEVELS.length); }
+function getSavedStep(n){ let s=parseInt(store.get('nv_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
+function saveProgress(){ store.set('nv_step_l'+currentLevel, String(progressIdx)); }
+
+/* ---------------------------------------------------------
+   2. SON (WebAudio, sans fichier externe)
+   --------------------------------------------------------- */
+let actx=null;
+function audioCtx(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } } return actx; }
+function beep(kind){
+  if(!soundOn) return; const a=audioCtx(); if(!a) return; const now=a.currentTime;
+  function tone(freq,dur,type,vol,delay){
+    const o=a.createOscillator(),g=a.createGain(); o.type=type||'sine'; o.frequency.value=freq;
+    o.connect(g); g.connect(a.destination); const t=now+(delay||0);
+    g.gain.setValueAtTime(vol||.12,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur); o.start(t); o.stop(t+dur);
+  }
+  if(kind==='click'){ tone(420,.03,'square',.05); }
+  else if(kind==='open'){ tone(540,.06,'sine',.09); tone(760,.07,'sine',.07,.04); }
+  else if(kind==='good'){ tone(740,.09,'sine',.12); tone(1180,.09,'sine',.08,.02); }
+  else if(kind==='bad'){ tone(150,.16,'square',.12); }
+  else if(kind==='delete'){ tone(300,.08,'sawtooth',.08); tone(180,.12,'sawtooth',.07,.05); }
+  else if(kind==='ding'){ tone(880,.12,'sine',.12); tone(1320,.16,'sine',.1,.08); }
+  else if(kind==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.12,i*.09)); }
+}
+function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
+document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('nv_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); } };
+
+/* ---------------------------------------------------------
+   3. MOTEUR DU NAVIGATEUR (onglets, adresse, historique…)
+   --------------------------------------------------------- */
+function buildScreen(){
+  stage.innerHTML=
+    '<div class="screen"><div class="browser" id="browser">'
+    + '<div class="tabstrip" id="tabstrip"></div>'
+    + '<div class="toolbar">'
+    +   '<button class="tool-btn" id="btnBack" title="Page précédente">◀</button>'
+    +   '<button class="tool-btn" id="btnFwd" title="Page suivante">▶</button>'
+    +   '<button class="tool-btn" id="btnReload" title="Actualiser la page">⟳</button>'
+    +   '<button class="tool-btn" id="btnHome" title="Page d\'accueil">🏠</button>'
+    +   '<div class="addr-pill" id="addrPill">'
+    +     '<span class="addr-lock" id="addrLock">🔒</span>'
+    +     '<input id="addrInput" placeholder="Rechercher ou saisir une adresse" spellcheck="false" autocomplete="off">'
+    +     '<button class="addr-go" id="btnGo" title="Aller à cette adresse">➜</button>'
+    +     '<button class="star-btn" id="btnStar" title="Ajouter cette page aux favoris">☆</button>'
+    +   '</div>'
+    +   '<button class="tool-btn" id="btnMenu" title="Ouvrir le menu">☰</button>'
+    + '</div>'
+    + '<div class="loadbar" id="loadbar"><i></i></div>'
+    + '<div class="bmbar" id="bmBar"></div>'
+    + '<div class="main" id="brMain">'
+    +   '<div class="sidebar" id="sidebar" hidden></div>'
+    +   '<div class="viewport" id="viewport"></div>'
+    +   '<div class="statusbar" id="statusbar"></div>'
+    +   '<div class="menu-pop" id="menuPop" hidden></div>'
+    + '</div>'
+    + '</div></div>';
+
+  document.getElementById('btnBack').onclick=goBack;
+  document.getElementById('btnFwd').onclick=goForward;
+  document.getElementById('btnReload').onclick=doReload;
+  document.getElementById('btnHome').onclick=goHome;
+  document.getElementById('btnStar').onclick=toggleBookmark;
+  document.getElementById('btnMenu').onclick=(e)=>{ e.stopPropagation(); toggleMenu(); };
+  document.getElementById('btnMenu').addEventListener('mousedown', e=>e.stopPropagation());
+  document.getElementById('btnGo').addEventListener('mousedown', e=>{ e.preventDefault(); submitAddress(); });
+
+  const inp=document.getElementById('addrInput');
+  inp.addEventListener('focus', ()=>{ B.evt.addrFocused=true; setTimeout(()=>inp.select(),0); checkMission(); });
+  inp.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ submitAddress(); }
+    else if(e.key==='Escape'){ inp.blur(); }
+  });
+  inp.addEventListener('blur', ()=>{ setTimeout(syncAddrBar, 80); });
+
+  const vp=document.getElementById('viewport');
+  vp.addEventListener('click', onViewportClick);
+  vp.addEventListener('mouseover', onViewportOver);
+  vp.addEventListener('mouseout', onViewportOut);
+  vp.addEventListener('keydown', e=>{
+    if(e.key==='Enter' && e.target.classList && e.target.classList.contains('ct-input')){
+      doSearch(e.target.value, 'page');
+    }
+  });
+
+  document.getElementById('menuPop').addEventListener('mousedown', e=>e.stopPropagation());
+  document.getElementById('browser').addEventListener('mousedown', ()=>{ closeMenu(); });
+}
+
+/* ----- onglets ----- */
+function newTabObj(url){ return { id:'t'+(++B.seq), hist:[url], hidx:0, loading:false }; }
+function currentTab(){ return B.tabs[B.active]; }
+function curUrl(){ const t=currentTab(); return t ? t.hist[t.hidx] : ''; }
+
+function openNewTab(url, opts){
+  opts=opts||{};
+  B.tabs.push(newTabObj(url||B.homepage));
+  B.active=B.tabs.length-1;
+  if(!opts.silent){ B.evt.newTab=true; beep('open'); }
+  commitLoad(currentTab());
+  if(url===undefined || url===B.homepage){ focusAddr(); }
+}
+function activateTab(i){
+  if(i===B.active || !B.tabs[i]) return;
+  B.active=i; B.evt.tabSwitched=true; beep('click');
+  renderBrowser(); checkMission();
+}
+function closeTab(i){
+  const t=B.tabs[i]; if(!t) return;
+  (B.evt.closedTabs=B.evt.closedTabs||new Set()).add(t.hist[t.hidx]);
+  B.tabs.splice(i,1); beep('delete');
+  if(!B.tabs.length){ B.tabs.push(newTabObj(B.homepage)); B.active=0; }
+  else if(B.active>=B.tabs.length) B.active=B.tabs.length-1;
+  else if(i<B.active) B.active--;
+  renderBrowser(); checkMission();
+}
+
+/* ----- navigation ----- */
+let _navToken=0;
+function resolveUrl(raw){
+  let u=String(raw).trim().toLowerCase();
+  u=u.replace(/^https?:\/\//,'');
+  if(u.startsWith('www.cherchetout.fr/recherche')) return u;
+  u=u.replace(/\/+$/,'');
+  if(!u) return B.homepage;
+  if(WEB[u]) return u;
+  if(WEB['www.'+u]) return 'www.'+u;
+  return u;
+}
+function navigate(url, opts){
+  opts=opts||{};
+  const t=currentTab(); if(!t) return;
+  const u=resolveUrl(url);
+  const via=opts.via;
+  if(via==='link'){ (B.evt.linkClicks=B.evt.linkClicks||new Set()).add(u); }
+  if(via==='addr'){ B.evt.addrNav.push(u); }
+  if(via==='serp'){ (B.evt.results=B.evt.results||new Set()).add(u); }
+  if(via==='bookmark'){ (B.evt.openedBookmark=B.evt.openedBookmark||new Set()).add(u); }
+  if(via==='history'){ (B.evt.openedFromHistory=B.evt.openedFromHistory||new Set()).add(u); }
+  if(opts.logo){ B.evt.clickedLogo=true; }
+  t.hist=t.hist.slice(0, t.hidx+1);
+  t.hist.push(u); t.hidx++;
+  loadTab(t);
+}
+function loadTab(t){
+  t.loading=true;
+  const bar=document.getElementById('loadbar');
+  if(bar){ bar.classList.remove('fin'); bar.classList.add('on'); }
+  renderTabs(); syncToolbar();
+  const tok=++_navToken;
+  beep('click');
+  setTimeout(()=>{ if(tok!==_navToken) return; t.loading=false; commitLoad(t); }, 430);
+}
+function commitLoad(t){
+  const url=t.hist[t.hidx];
+  const page=getPage(url);
+  if(page.real!==false){
+    (B.evt.visits=B.evt.visits||new Set()).add(url);
+    addHistory(url, page);
+  }
+  const bar=document.getElementById('loadbar');
+  if(bar){ bar.classList.remove('on'); bar.classList.add('fin'); setTimeout(()=>bar.classList.remove('fin'), 420); }
+  renderBrowser();
+  checkMission();
+}
+function goBack(){
+  const t=currentTab(); if(!t || t.hidx<=0) return;
+  t.hidx--; B.evt.usedBack=true; beep('click');
+  renderBrowser(); checkMission();
+}
+function goForward(){
+  const t=currentTab(); if(!t || t.hidx>=t.hist.length-1) return;
+  t.hidx++; B.evt.usedFwd=true; beep('click');
+  renderBrowser(); checkMission();
+}
+function doReload(){
+  const t=currentTab(); if(!t) return;
+  B.evt.usedReload=true;
+  loadTab(t);
+}
+function goHome(){
+  B.evt.usedHome=true;
+  navigate(B.homepage, {});
+}
+function focusAddr(){
+  setTimeout(()=>{ const i=document.getElementById('addrInput'); if(i){ i.focus(); i.select(); } }, 60);
+}
+function submitAddress(){
+  const inp=document.getElementById('addrInput'); if(!inp) return;
+  const v=inp.value.trim();
+  if(!v) return;
+  inp.blur();
+  if(/\s/.test(v) || !v.includes('.')){
+    B.evt.addrSearch=true;
+    doSearch(v, 'addr');
+  } else {
+    navigate(v, {via:'addr'});
+  }
+}
+function doSearch(q, from){
+  q=String(q).trim(); if(!q) return;
+  B.evt.searches.push(normText(q));
+  navigate('www.cherchetout.fr/recherche?q='+encodeURIComponent(q), {via:(from==='serp'?'search':from)});
+}
+
+/* ----- historique & favoris ----- */
+function addHistory(url, page){
+  if(url===B.homepage) return;
+  if(B.history.length && B.history[0].url===url) return;
+  B.history.unshift({url:url, title:page.title, icon:page.icon||'🌐', t:Date.now()});
+  if(B.history.length>40) B.history.pop();
+}
+function fmtWhen(h){
+  if(h.label) return h.label;
+  const d=Date.now()-h.t;
+  if(d<60000) return 'À l\'instant';
+  const m=Math.round(d/60000);
+  return 'Il y a '+m+' min';
+}
+function isBookmarked(url){ return B.bookmarks.some(b=>b.url===url); }
+function toggleBookmark(){
+  const url=curUrl(); const page=getPage(url);
+  if(url===B.homepage || page.real===false){ toast('Cette page ne peut pas être mise en favori.'); beep('bad'); return; }
+  const i=B.bookmarks.findIndex(b=>b.url===url);
+  if(i>=0){
+    B.bookmarks.splice(i,1);
+    (B.evt.bmRemoved=B.evt.bmRemoved||new Set()).add(url);
+    beep('delete'); toast('☆ Favori retiré');
+  } else {
+    B.bookmarks.push({url:url, title:page.bm||page.title, icon:page.icon||'🌐'});
+    (B.evt.bmAdded=B.evt.bmAdded||new Set()).add(url);
+    beep('ding'); toast('⭐ Page ajoutée aux favoris !');
+  }
+  renderBrowser(); checkMission();
+}
+function removeBookmark(url){
+  const i=B.bookmarks.findIndex(b=>b.url===url);
+  if(i<0) return;
+  B.bookmarks.splice(i,1);
+  (B.evt.bmRemoved=B.evt.bmRemoved||new Set()).add(url);
+  beep('delete'); toast('☆ Favori retiré');
+  renderBrowser(); checkMission();
+}
+
+/* ----- menu ☰ et panneaux ----- */
+function toggleMenu(){ B.menuOpen=!B.menuOpen; renderMenu(); }
+function closeMenu(){ if(B.menuOpen){ B.menuOpen=false; renderMenu(); } }
+function renderMenu(){
+  const m=document.getElementById('menuPop'); if(!m) return;
+  if(!B.menuOpen){ m.hidden=true; return; }
+  m.hidden=false;
+  m.innerHTML=
+    '<button class="menu-item" data-act="newtab"><span class="mi-ic">🆕</span>Nouvel onglet</button>'
+    +'<button class="menu-item" data-act="history"><span class="mi-ic">🕘</span>Historique</button>'
+    +'<button class="menu-item" data-act="bookmarks"><span class="mi-ic">⭐</span>Favoris</button>'
+    +'<button class="menu-item off" data-act="dl"><span class="mi-ic">⬇️</span>Téléchargements<span class="mi-soon">bientôt</span></button>'
+    +'<button class="menu-item" data-act="home"><span class="mi-ic">🏠</span>Page d\'accueil</button>';
+  m.querySelectorAll('.menu-item').forEach(b=>b.onclick=(e)=>{
+    e.stopPropagation();
+    const act=b.getAttribute('data-act');
+    B.menuOpen=false; renderMenu();
+    if(act==='newtab') openNewTab();
+    else if(act==='history') openPanel('history');
+    else if(act==='bookmarks') openPanel('bookmarks');
+    else if(act==='home') goHome();
+    else if(act==='dl'){ toast('⬇️ Les téléchargements arrivent dans un prochain niveau !'); }
+  });
+}
+function openPanel(kind){
+  B.panel=kind;
+  if(kind==='history'){ B.evt.openedHistoryPanel=true; }
+  if(kind==='bookmarks'){ B.evt.openedBmPanel=true; }
+  beep('open');
+  renderBrowser(); checkMission();
+}
+function closePanel(){ B.panel=null; renderBrowser(); }
+
+/* ----- rendu ----- */
+function renderTabs(){
+  const strip=document.getElementById('tabstrip'); if(!strip) return;
+  strip.innerHTML='';
+  B.tabs.forEach((t,i)=>{
+    const url=t.hist[t.hidx]; const page=getPage(url);
+    const el=document.createElement('div');
+    el.className='tab'+(i===B.active?' active':'');
+    el.title=page.title;
+    el.innerHTML='<span class="t-ic">'+(t.loading?'⏳':(page.icon||'🌐'))+'</span>'
+      +'<span class="t-title">'+(t.loading?'Chargement…':page.title)+'</span>'
+      +'<button class="t-close" title="Fermer l\'onglet">✕</button>';
+    el.addEventListener('mousedown', e=>{ if(!e.target.classList.contains('t-close')) activateTab(i); });
+    el.querySelector('.t-close').onclick=(e)=>{ e.stopPropagation(); closeTab(i); };
+    strip.appendChild(el);
+  });
+  const plus=document.createElement('button');
+  plus.className='newtab-btn'; plus.id='btnNewTab'; plus.title='Ouvrir un nouvel onglet'; plus.textContent='+';
+  plus.onclick=()=>openNewTab();
+  strip.appendChild(plus);
+}
+function syncAddrBar(){
+  const inp=document.getElementById('addrInput'); if(!inp) return;
+  if(document.activeElement===inp) return;
+  const url=curUrl(); const page=getPage(url);
+  inp.value=(url===B.homepage)?'':url;
+  const lock=document.getElementById('addrLock');
+  if(url===B.homepage){ lock.textContent='🦊'; lock.title='Page d\'accueil de Goupil'; }
+  else if(page.real===false){ lock.textContent='⚠️'; lock.title='Page introuvable'; }
+  else { lock.textContent='🔒'; lock.title='Connexion sécurisée'; }
+}
+function syncToolbar(){
+  const t=currentTab();
+  const bb=document.getElementById('btnBack'), bf=document.getElementById('btnFwd');
+  if(bb) bb.disabled=!t || t.hidx<=0;
+  if(bf) bf.disabled=!t || t.hidx>=t.hist.length-1;
+  const star=document.getElementById('btnStar');
+  if(star){
+    const on=isBookmarked(curUrl());
+    star.textContent=on?'★':'☆';
+    star.classList.toggle('on', on);
+    star.title=on?'Retirer cette page des favoris':'Ajouter cette page aux favoris';
+  }
+  syncAddrBar();
+}
+function renderBmBar(){
+  const bar=document.getElementById('bmBar'); if(!bar) return;
+  bar.innerHTML='';
+  if(!B.bookmarks.length){
+    bar.innerHTML='<span class="bm-none">📌 Tes favoris apparaîtront ici — clique sur l\'étoile ☆ pour en ajouter !</span>';
+    return;
+  }
+  B.bookmarks.forEach(b=>{
+    const c=document.createElement('button');
+    c.className='bm-chip'; c.title=b.url;
+    c.innerHTML='<span>'+b.icon+'</span><span>'+b.title+'</span>';
+    c.onclick=()=>navigate(b.url, {via:'bookmark'});
+    bar.appendChild(c);
+  });
+}
+function renderSidebar(){
+  const sb=document.getElementById('sidebar'); if(!sb) return;
+  if(!B.panel){ sb.hidden=true; return; }
+  sb.hidden=false;
+  const isH=B.panel==='history';
+  let html='<div class="sb-head"><span>'+(isH?'🕘 Historique':'⭐ Favoris')+'</span>'
+    +'<button class="sb-close" title="Fermer le panneau">✕</button></div><div class="sb-list">';
+  if(isH){
+    if(!B.history.length) html+='<div class="sb-empty">Ton historique est vide.<br>Visite des pages pour le remplir !</div>';
+    B.history.forEach((h,i)=>{
+      html+='<button class="sb-item" data-h="'+i+'"><span class="si-ic">'+h.icon+'</span>'
+        +'<span class="si-tx"><span class="si-t">'+h.title+'</span><span class="si-u">'+h.url+'</span></span>'
+        +'<span class="si-when">'+fmtWhen(h)+'</span></button>';
+    });
+  } else {
+    if(!B.bookmarks.length) html+='<div class="sb-empty">Aucun favori pour l\'instant.<br>Clique sur l\'étoile ☆ dans la barre d\'adresse !</div>';
+    B.bookmarks.forEach((b,i)=>{
+      html+='<div class="sb-item"><span class="si-ic">'+b.icon+'</span>'
+        +'<span class="si-tx" data-b="'+i+'" style="cursor:pointer"><span class="si-t">'+b.title+'</span><span class="si-u">'+b.url+'</span></span>'
+        +'<button class="si-del" data-del="'+i+'" title="Supprimer ce favori">🗑️</button></div>';
+    });
+  }
+  html+='</div>';
+  sb.innerHTML=html;
+  sb.querySelector('.sb-close').onclick=closePanel;
+  sb.querySelectorAll('[data-h]').forEach(el=>el.onclick=()=>{
+    const h=B.history[+el.getAttribute('data-h')];
+    if(h) navigate(h.url, {via:'history'});
+  });
+  sb.querySelectorAll('[data-b]').forEach(el=>el.onclick=()=>{
+    const b=B.bookmarks[+el.getAttribute('data-b')];
+    if(b) navigate(b.url, {via:'bookmark'});
+  });
+  sb.querySelectorAll('[data-del]').forEach(el=>el.onclick=(e)=>{
+    e.stopPropagation();
+    const b=B.bookmarks[+el.getAttribute('data-del')];
+    if(b) removeBookmark(b.url);
+  });
+}
+function renderViewport(){
+  const vp=document.getElementById('viewport'); if(!vp) return;
+  const url=curUrl();
+  vp.innerHTML=renderPage(url);
+  vp.scrollTop=0;
+  /* champs de recherche internes aux pages */
+  vp.querySelectorAll('.ct-btn').forEach(b=>b.onclick=()=>{
+    const box=b.parentElement.querySelector('.ct-input');
+    if(box) doSearch(box.value, 'page');
+  });
+  /* carnet de mission éventuel (quiz) : rien ici, géré hors écran */
+}
+function renderBrowser(){
+  renderTabs(); syncToolbar(); renderBmBar(); renderSidebar(); renderViewport(); renderMenu();
+}
+
+/* ----- interactions dans les pages ----- */
+function onViewportClick(e){
+  const go=e.target.closest('[data-go]');
+  if(go){
+    e.preventDefault();
+    const url=go.getAttribute('data-go');
+    const opts={via:(go.hasAttribute('data-serp')?'serp':'link')};
+    if(go.hasAttribute('data-logo')) opts.logo=true;
+    navigate(url, opts);
+  }
+}
+function onViewportOver(e){
+  const go=e.target.closest('[data-go]');
+  const sb=document.getElementById('statusbar');
+  if(go && sb){
+    B.evt.linkHovered=true;
+    sb.textContent='https://'+go.getAttribute('data-go');
+    sb.classList.add('show');
+    checkMission();
+  }
+}
+function onViewportOut(e){
+  const go=e.target.closest('[data-go]');
+  if(go){ const sb=document.getElementById('statusbar'); if(sb) sb.classList.remove('show'); }
+}
+
+/* ----- graine de mission : remise à zéro du navigateur ----- */
+function seedBrowser(seed){
+  seed=seed||{};
+  B.tabs=[]; B.seq=0; B.active=0;
+  B.panel=null; B.menuOpen=false;
+  B.bookmarks=(seed.bookmarks||[]).map(u=>{
+    const p=getPage(u); return {url:u, title:p.bm||p.title, icon:p.icon||'🌐'};
+  });
+  B.history=(seed.history||[]).map(h=>{
+    const u=typeof h==='string'?h:h.url; const p=getPage(u);
+    return {url:u, title:p.title, icon:p.icon||'🌐', t:Date.now(), label:(typeof h==='object'&&h.label)||null};
+  });
+  B.evt={ answers:{}, searches:[], addrNav:[] };
+  (seed.tabs && seed.tabs.length ? seed.tabs : [B.homepage]).forEach(u=>{
+    B.tabs.push(newTabObj(resolveUrl(u)));
+  });
+  B.active=Math.min(seed.active||0, B.tabs.length-1);
+  /* les pages déjà « ouvertes » comptent comme visitées */
+  B.evt.visits=new Set();
+  B.tabs.forEach(t=>{ const u=t.hist[t.hidx]; if(u!==B.homepage) B.evt.visits.add(u); });
+  renderBrowser();
+  if(seed.focusAddr) focusAddr();
+}
+
+/* ---------------------------------------------------------
+   4. LE FAUX WEB — sites, pages, moteur de recherche
+   --------------------------------------------------------- */
+const SITES={
+  zanimo:{ base:'www.zanimo.fr', name:'Zanimo', icon:'🐾', color:'#0e9f6e', soft:'#e6f7ef',
+    nav:[['Accueil','www.zanimo.fr'],['Les animaux','www.zanimo.fr/animaux'],['Le coin jeux','www.zanimo.fr/coin-jeux']] },
+  ecole:{ base:'www.ecole-curie.fr', name:'École Marie-Curie', icon:'🏫', color:'#7c3aed', soft:'#f1eafd',
+    nav:[['Accueil','www.ecole-curie.fr'],['La cantine','www.ecole-curie.fr/cantine'],['Les sorties','www.ecole-curie.fr/sorties']] },
+  meteo:{ base:'www.meteo-mini.fr', name:'Météo Mini', icon:'⛅', color:'#0284c7', soft:'#e3f3fc',
+    nav:[['Accueil','www.meteo-mini.fr']] },
+  monuments:{ base:'www.paris-monuments.fr', name:'Paris Monuments', icon:'🗼', color:'#b45309', soft:'#fdf1e0',
+    nav:[['Accueil','www.paris-monuments.fr'],['La tour Eiffel','www.paris-monuments.fr/tour-eiffel']] },
+  lilou:{ base:'www.recettes-de-lilou.fr', name:'Les recettes de Lilou', icon:'🍰', color:'#db2777', soft:'#fce9f2',
+    nav:[['Accueil','www.recettes-de-lilou.fr'],['Gâteau au chocolat','www.recettes-de-lilou.fr/gateau-choco']] },
+  musee:{ base:'www.musee-espace.fr', name:'Musée de l\'Espace', icon:'🚀', color:'#4338ca', soft:'#eceafc',
+    nav:[['Accueil','www.musee-espace.fr'],['Horaires & tarifs','www.musee-espace.fr/horaires']] },
+  tresor:{ base:'www.chasse-au-tresor.fr', name:'La Chasse au Trésor', icon:'🗺️', color:'#a16207', soft:'#fdf3d7', nav:[] },
+  panshop:{ base:'www.pandacadeaux.fr', name:'Panda Cadeaux', icon:'🛍️', color:'#e11d48', soft:'#fde8ec', nav:[] },
+  eifshop:{ base:'www.boutique-eiffel.fr', name:'Boutique Eiffel', icon:'🛒', color:'#9333ea', soft:'#f3e8fd', nav:[] },
+  pizza:{ base:'www.pizzeria-la-tour.fr', name:'Pizzeria La Tour', icon:'🍕', color:'#dc2626', soft:'#fdeaea', nav:[] },
+  choco:{ base:'www.choco-market.fr', name:'Choco Market', icon:'🍫', color:'#92400e', soft:'#f7ecdf', nav:[] }
+};
+function sitePg(siteKey, curUrl_, body){
+  const s=SITES[siteKey];
+  const nav=s.nav.map(n=>'<a data-go="'+n[1]+'" class="'+(n[1]===curUrl_?'here':'')+'">'+n[0]+'</a>').join('');
+  return '<div class="webpage" style="--site:'+s.color+';--site-soft:'+s.soft+'">'
+    + '<div class="wp-head">'
+    +   '<span class="wp-logo" data-go="'+s.base+'" data-logo="1"><span class="lg-ic">'+s.icon+'</span>'+s.name+'</span>'
+    +   (nav?'<nav class="wp-nav">'+nav+'</nav>':'')
+    + '</div>'
+    + '<div class="wp-body">'+body+'</div>'
+    + '<div class="wp-footer">'+s.name+' · un site imaginaire de l\'Atelier informatique · https://'+s.base+'</div>'
+    + '</div>';
+}
+function pg(siteKey, title, bodyFn, opts){
+  const s=SITES[siteKey];
+  return Object.assign({
+    title:title, icon:s.icon, bm:s.name, site:siteKey,
+    html:function(u){ return sitePg(siteKey, u, (typeof bodyFn==='function')?bodyFn():bodyFn); }
+  }, opts||{});
+}
+
+const WEB={};
+
+/* ----- Page d'accueil du navigateur ----- */
+WEB['goupil.start']={
+  title:'Nouvel onglet', icon:'🦊',
+  html:function(){
+    return '<div class="start-page">'
+      +'<span class="start-fox">🦊</span>'
+      +'<h1 class="start-title">Goupil</h1>'
+      +'<p class="start-sub">Ton navigateur pour explorer internet !</p>'
+      +'<div class="start-search"><input class="ct-input" placeholder="Fais une recherche sur Cherchetout…"><button class="ct-btn">🔍 Rechercher</button></div>'
+      +'<div class="start-tiles">'
+      +'<button class="start-tile" data-go="www.cherchetout.fr"><span class="st-ic">🔍</span><span class="st-t">Cherchetout</span></button>'
+      +'<button class="start-tile" data-go="www.zanimo.fr"><span class="st-ic">🐾</span><span class="st-t">Zanimo</span></button>'
+      +'<button class="start-tile" data-go="www.ecole-curie.fr"><span class="st-ic">🏫</span><span class="st-t">Mon école</span></button>'
+      +'<button class="start-tile" data-go="www.meteo-mini.fr"><span class="st-ic">⛅</span><span class="st-t">Météo Mini</span></button>'
+      +'</div></div>';
+  }
+};
+
+/* ----- Cherchetout, le moteur de recherche ----- */
+WEB['www.cherchetout.fr']={
+  title:'Cherchetout', icon:'🔍', bm:'Cherchetout',
+  html:function(){
+    return '<div class="ct-home">'
+      +'<div class="ct-logo"><span class="c1">Cherche</span><span class="c2">t</span><span class="c3">ou</span><span class="c4">t</span> 🔍</div>'
+      +'<p class="ct-tag">Le moteur de recherche des petits explorateurs</p>'
+      +'<div class="ct-box"><span class="ct-ic">🔍</span><input class="ct-input" placeholder="Que veux-tu chercher ?"><button class="ct-btn">Cherchetout !</button></div>'
+      +'<p class="ct-tip">💡 Astuce : tape des <b>mots-clés</b> (les mots importants), pas des phrases entières !</p>'
+      +'</div>';
+  }
+};
+
+/* index du moteur de recherche : mots-clés normalisés (sans accents) */
+const INDEX=[
+  {url:'www.zanimo.fr/panda', t:'Le panda géant — Zanimo', s:'Tout savoir sur le panda géant : il mange du bambou toute la journée et vit dans les montagnes de Chine.', kw:'panda geant animal bambou chine zanimo mange encyclopedie noir blanc ours'},
+  {url:'www.zanimo.fr/dauphin', t:'Le dauphin — Zanimo', s:'Le dauphin est un mammifère marin très joueur qui respire de l\'air, comme nous !', kw:'dauphin animal mer ocean mammifere marin zanimo respiration nage'},
+  {url:'www.zanimo.fr/chouette', t:'La chouette effraie — Zanimo', s:'La chouette effraie chasse la nuit sans faire de bruit. Découvre son menu et ses secrets.', kw:'chouette effraie animal oiseau nuit rapace zanimo mange souris nocturne'},
+  {url:'www.zanimo.fr/kangourou', t:'Le kangourou — Zanimo', s:'Le kangourou vit en Australie et transporte son bébé dans sa poche. Champion de saut !', kw:'kangourou animal australie poche saut zanimo marsupial pays vit'},
+  {url:'www.zanimo.fr', t:'Zanimo — l\'encyclopédie des animaux', s:'Des fiches claires et amusantes sur tes animaux préférés : panda, dauphin, chouette, kangourou…', kw:'animaux encyclopedie zanimo fiches nature'},
+  {url:'www.pandacadeaux.fr', t:'Panda Cadeaux — peluches et déguisements', s:'La boutique 100 % panda ! Peluches géantes, sacs, déguisements. Livraison en 48 h.', kw:'panda peluche cadeau boutique acheter magasin deguisement prix'},
+  {url:'www.paris-monuments.fr/tour-eiffel', t:'La tour Eiffel — Paris Monuments', s:'Histoire, hauteur, visite : tout sur le monument le plus célèbre de Paris, construit par Gustave Eiffel.', kw:'tour eiffel hauteur paris monument gustave metres histoire visite'},
+  {url:'www.boutique-eiffel.fr', t:'Boutique Eiffel — souvenirs de Paris', s:'Mini tours Eiffel, porte-clés et magnets à petits prix. Idées cadeaux souvenirs !', kw:'tour eiffel boutique souvenir acheter magasin porte-cles prix cadeau'},
+  {url:'www.pizzeria-la-tour.fr', t:'Pizzeria La Tour — pizzas au feu de bois', s:'Notre pizzeria familiale vous accueille tous les soirs. Pizza « La Tour » aux 4 fromages !', kw:'tour pizza pizzeria restaurant manger fromage'},
+  {url:'www.meteo-mini.fr', t:'Météo Mini — la météo des enfants', s:'Quel temps fait-il aujourd\'hui à Trouville-les-Pixels ? Prévisions simples et rigolotes.', kw:'meteo temps temperature soleil pluie previsions ville'},
+  {url:'www.ecole-curie.fr', t:'École Marie-Curie — site officiel', s:'Le site de l\'école : actualités, menus de la cantine et sorties scolaires.', kw:'ecole marie curie cantine sortie classe eleves'},
+  {url:'www.ecole-curie.fr/cantine', t:'Les menus de la cantine — École Marie-Curie', s:'Découvre les menus de la semaine servis à la cantine de l\'école.', kw:'ecole cantine menu repas manger semaine dessert'},
+  {url:'www.recettes-de-lilou.fr/gateau-choco', t:'Gâteau au chocolat facile — Les recettes de Lilou', s:'Ma recette préférée de gâteau au chocolat : la liste des ingrédients et les étapes, pas à pas.', kw:'recette gateau chocolat facile oeufs ingredients cuisine patisserie dessert'},
+  {url:'www.choco-market.fr', t:'Choco Market — vente de chocolat en ligne', s:'Tablettes, œufs de Pâques et chocolat chaud : commandez vos chocolats préférés !', kw:'chocolat acheter boutique magasin tablette vente gateau prix'},
+  {url:'www.recettes-de-lilou.fr', t:'Les recettes de Lilou', s:'Le blog de cuisine de Lilou, 10 ans : des recettes simples pour les enfants gourmands.', kw:'recette cuisine blog lilou enfants gourmand'},
+  {url:'www.musee-espace.fr', t:'Musée de l\'Espace — fusées et planètes', s:'Viens toucher une vraie météorite et découvrir les fusées ! Un musée pour toute la famille.', kw:'musee espace fusee planete etoiles visite sortie meteorite'},
+  {url:'www.musee-espace.fr/horaires', t:'Horaires & tarifs — Musée de l\'Espace', s:'Jours et heures d\'ouverture du musée, tarifs enfants et familles.', kw:'musee espace horaires ouverture tarif prix ferme heure jours'},
+  {url:'www.chasse-au-tresor.fr', t:'La Chasse au Trésor — le jeu d\'aventure en ligne', s:'Résous les énigmes, choisis les bonnes portes et trouve le trésor caché !', kw:'chasse tresor jeu aventure enigme jouer'}
+];
+const STOPWORDS=new Set(['le','la','les','un','une','des','de','du','d','l','et','ou','est','sont','il','elle','on','ce','cette','ces','se','sa','son','ses','quel','quelle','quels','quelles','combien','comment','pourquoi','quand','qui','que','quoi','sur','dans','pour','avec','sans','au','aux','a','y','en','par','plus','tres','faut','fait','je','tu','veux','sait','savoir']);
+function searchResults(q){
+  const words=normText(q).split(' ').filter(w=>w.length>1 && !STOPWORDS.has(w));
+  if(!words.length) return {words:[], list:[]};
+  const scored=INDEX.map(e=>{
+    let sc=0;
+    const kw=' '+e.kw+' ', t=normText(e.t), s=normText(e.s);
+    words.forEach(w=>{
+      if(kw.includes(w)) sc+=3;
+      if(t.includes(w)) sc+=2;
+      if(s.includes(w)) sc+=1;
+    });
+    return {e:e, sc:sc};
+  }).filter(r=>r.sc>0);
+  scored.sort((a,b)=>b.sc-a.sc);
+  return {words:words, list:scored.slice(0,6).map(r=>r.e)};
+}
+function serpPage(url){
+  let q='';
+  const m=url.split('q=')[1];
+  if(m!=null){ try{ q=decodeURIComponent(m).replace(/\+/g,' '); }catch(e){ q=m; } }
+  return {
+    title:(q?q+' — Cherchetout':'Cherchetout'), icon:'🔍', serp:true,
+    html:function(){
+      const r=searchResults(q);
+      let items='';
+      if(!r.list.length){
+        items='<div class="serp-none">😶 Aucun résultat pour « '+q+' ».<br>Essaie avec d\'autres mots-clés !</div>';
+      } else {
+        items='<p class="serp-count">Environ '+(r.list.length*1234)+' résultats (0,0'+(2+r.list.length)+' secondes)</p>';
+        r.list.forEach(e=>{
+          items+='<div class="sr-item">'
+            +'<div class="sr-url">🌐 https://'+e.url+'</div>'
+            +'<a class="sr-title" data-go="'+e.url+'" data-serp="1">'+e.t+'</a>'
+            +'<p class="sr-snip">'+e.s+'</p>'
+            +'</div>';
+        });
+      }
+      return '<div class="webpage serp">'
+        +'<div class="serp-top">'
+        +'<div class="ct-logo" data-go="www.cherchetout.fr"><span class="c1">C</span><span class="c2">t</span> 🔍</div>'
+        +'<div class="ct-box"><span class="ct-ic">🔍</span><input class="ct-input" value="'+q.replace(/"/g,'&quot;')+'"><button class="ct-btn">Rechercher</button></div>'
+        +'</div>'
+        +'<div class="serp-body">'+items+'</div>'
+        +'</div>';
+    }
+  };
+}
+
+/* ----- Zanimo, l'encyclopédie des animaux ----- */
+WEB['www.zanimo.fr']=pg('zanimo','Zanimo — l\'encyclopédie des animaux', function(){
+  return '<div class="wp-hero"><span class="h-ic">🐾</span><div class="h-tx">'
+    +'<h1>Bienvenue sur Zanimo !</h1><p>L\'encyclopédie des animaux, faite pour les enfants curieux. Clique sur un animal pour découvrir sa fiche.</p></div></div>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card" data-go="www.zanimo.fr/panda"><span class="c-ic">🐼</span><span class="c-t">Le panda</span><div class="c-s">Le géant qui mange du bambou</div></div>'
+    +'<div class="wp-card" data-go="www.zanimo.fr/dauphin"><span class="c-ic">🐬</span><span class="c-t">Le dauphin</span><div class="c-s">L\'acrobate des océans</div></div>'
+    +'<div class="wp-card" data-go="www.zanimo.fr/chouette"><span class="c-ic">🦉</span><span class="c-t">La chouette</span><div class="c-s">La chasseuse de la nuit</div></div>'
+    +'<div class="wp-card" data-go="www.zanimo.fr/kangourou"><span class="c-ic">🦘</span><span class="c-t">Le kangourou</span><div class="c-s">Le champion de saut</div></div>'
+    +'</div>'
+    +'<p>Tu peux aussi voir <a class="lk" data-go="www.zanimo.fr/animaux">la liste de tous les animaux</a> ou t\'amuser dans <a class="lk" data-go="www.zanimo.fr/coin-jeux">le coin jeux</a> !</p>';
+});
+WEB['www.zanimo.fr/animaux']=pg('zanimo','Les animaux — Zanimo', function(){
+  return '<h1>🐾 Tous nos animaux</h1>'
+    +'<p>Voici toutes les fiches disponibles pour le moment. De nouveaux animaux arrivent chaque mois !</p>'
+    +'<ul>'
+    +'<li><a class="lk" data-go="www.zanimo.fr/panda">Le panda géant</a> — le gros gourmand des montagnes</li>'
+    +'<li><a class="lk" data-go="www.zanimo.fr/dauphin">Le dauphin</a> — le plus joueur des mammifères marins</li>'
+    +'<li><a class="lk" data-go="www.zanimo.fr/chouette">La chouette effraie</a> — le fantôme silencieux de la nuit</li>'
+    +'<li><a class="lk" data-go="www.zanimo.fr/kangourou">Le kangourou roux</a> — le boxeur d\'Australie</li>'
+    +'</ul>'
+    +'<div class="wp-fact">🔜 Bientôt : le loup, la tortue des Galápagos et le colibri !</div>';
+});
+WEB['www.zanimo.fr/panda']=pg('zanimo','Le panda géant — Zanimo', function(){
+  return '<h1>🐼 Le panda géant</h1>'
+    +'<div class="wp-img">🐼🎋</div>'
+    +'<p>Le panda géant est un grand ours <b>noir et blanc</b> qui vit dans les <b>montagnes de Chine</b>. C\'est l\'un des animaux les plus rares du monde !</p>'
+    +'<h2>Sa nourriture</h2>'
+    +'<div class="wp-fact">🎋 Le panda mange du <b>bambou</b>, presque uniquement ! Il peut en croquer jusqu\'à <b>20 kilos par jour</b>.</div>'
+    +'<h2>Fiche d\'identité</h2>'
+    +'<ul><li>Taille : environ 1,80 m debout</li><li>Poids : jusqu\'à <b>100 kilos</b></li><li>Habitat : forêts de bambous, en Chine</li><li>Bébé : à la naissance, il est plus petit qu\'une souris !</li></ul>'
+    +'<p>À lire ensuite : <a class="lk" data-go="www.zanimo.fr/dauphin">la fiche du dauphin</a> 🐬 ou <a class="lk" data-go="www.zanimo.fr/animaux">tous les animaux</a>.</p>';
+});
+WEB['www.zanimo.fr/dauphin']=pg('zanimo','Le dauphin — Zanimo', function(){
+  return '<h1>🐬 Le dauphin</h1>'
+    +'<div class="wp-img">🐬🌊</div>'
+    +'<p>Le dauphin vit dans la mer, mais ce n\'est <b>pas un poisson</b> : c\'est un <b>mammifère marin</b>. Il doit remonter à la surface pour <b>respirer de l\'air</b>, comme nous !</p>'
+    +'<h2>Incroyable mais vrai</h2>'
+    +'<div class="wp-fact">💨 Un dauphin peut retenir sa respiration pendant environ <b>10 minutes</b>.</div>'
+    +'<div class="wp-fact">🗣️ Les dauphins se parlent avec des sifflements : chacun a même son propre « prénom » sifflé !</div>'
+    +'<p>À lire ensuite : <a class="lk" data-go="www.zanimo.fr/chouette">la fiche de la chouette</a> 🦉.</p>';
+});
+WEB['www.zanimo.fr/chouette']=pg('zanimo','La chouette effraie — Zanimo', function(){
+  return '<h1>🦉 La chouette effraie</h1>'
+    +'<div class="wp-img">🦉🌙</div>'
+    +'<p>La chouette effraie a un joli cœur blanc à la place du visage. Elle dort le jour et <b>chasse la nuit</b>, en volant sans faire le moindre bruit.</p>'
+    +'<h2>Son menu</h2>'
+    +'<div class="wp-fact">🐭 La chouette effraie mange surtout des <b>souris</b> et des mulots. Elle peut en avaler plusieurs chaque nuit !</div>'
+    +'<h2>Le savais-tu ?</h2>'
+    +'<p>La chouette ne peut pas bouger ses yeux… mais elle peut tourner sa tête presque <b>tout autour</b> !</p>'
+    +'<p>À lire ensuite : <a class="lk" data-go="www.zanimo.fr/kangourou">la fiche du kangourou</a> 🦘.</p>';
+});
+WEB['www.zanimo.fr/kangourou']=pg('zanimo','Le kangourou — Zanimo', function(){
+  return '<h1>🦘 Le kangourou roux</h1>'
+    +'<div class="wp-img">🦘🏜️</div>'
+    +'<p>Le kangourou vit en <b>Australie</b>. La maman transporte son bébé, appelé « joey », dans sa <b>poche ventrale</b> pendant plusieurs mois.</p>'
+    +'<h2>Champion olympique</h2>'
+    +'<div class="wp-fact">🏅 D\'un seul bond, un kangourou peut sauter jusqu\'à <b>9 mètres</b> de long !</div>'
+    +'<p>À lire ensuite : <a class="lk" data-go="www.zanimo.fr/panda">la fiche du panda</a> 🐼.</p>';
+});
+WEB['www.zanimo.fr/coin-jeux']=pg('zanimo','Le coin jeux — Zanimo', function(){
+  return '<h1>🎲 Le coin jeux</h1>'
+    +'<p>Sur une page web, <b>tout n\'est pas cliquable</b> ! Promène ta souris : quand elle survole un vrai lien, elle se transforme en petite main 👆 et l\'adresse de destination s\'affiche <b>en bas à gauche</b>.</p>'
+    +'<h2>Sauras-tu trouver les 3 vrais liens de cette page ?</h2>'
+    +'<p>Voici du texte en <b>gras qui n\'est pas un lien</b>, une image qui ne fait rien du tout, et quelque part… <a class="lk" data-go="www.zanimo.fr/coin-jeux/lien-texte">le mot secret</a> qui est un vrai lien !</p>'
+    +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:stretch;margin:14px 0;">'
+    +'<div style="flex:1;min-width:180px;"><div class="wp-img sm">🎈</div><p class="wp-center" style="font-size:.8rem;">Un simple ballon décoratif (rien ne se passe si tu cliques).</p></div>'
+    +'<div style="flex:1;min-width:180px;"><div class="wp-img sm wp-imglink" data-go="www.zanimo.fr/coin-jeux/lien-image" title="Une image-lien !">🎁</div><p class="wp-center" style="font-size:.8rem;">Ce cadeau a l\'air normal… survole-le pour vérifier !</p></div>'
+    +'</div>'
+    +'<p class="wp-center"><button class="wp-btnlink" data-go="www.zanimo.fr/coin-jeux/lien-bouton">🚪 Clique ici !</button></p>'
+    +'<p style="color:#8d9cab;font-size:.85rem;">PS : ce texte souligné à la main n\'est <span style="text-decoration:underline;">pas forcément un lien</span> non plus… vérifie avec ta souris !</p>';
+});
+function bravoPage(kind, emoji, txt){
+  return pg('zanimo','Bien vu ! — Zanimo', function(){
+    return '<div class="wp-center"><h1>'+emoji+' Bien vu !</h1>'
+      +'<div class="wp-img">'+emoji+'✨</div>'
+      +'<p>C\'était bien un <b>'+kind+'</b> ! '+txt+'</p>'
+      +'<p>Maintenant, <b>reviens en arrière</b> avec le bouton <b>◀</b> du navigateur pour continuer la chasse.</p></div>';
+  });
+}
+WEB['www.zanimo.fr/coin-jeux/lien-texte']=bravoPage('lien texte','📜','Les liens texte sont souvent <b>soulignés et colorés</b>.');
+WEB['www.zanimo.fr/coin-jeux/lien-image']=bravoPage('lien image','🎁','Une image peut cacher un lien : la souris devient une main 👆 quand tu la survoles.');
+WEB['www.zanimo.fr/coin-jeux/lien-bouton']=bravoPage('lien bouton','🚪','Les boutons colorés sont presque toujours cliquables.');
+
+/* ----- École Marie-Curie ----- */
+WEB['www.ecole-curie.fr']=pg('ecole','École Marie-Curie — site officiel', function(){
+  return '<div class="wp-hero"><span class="h-ic">🏫</span><div class="h-tx">'
+    +'<h1>Bienvenue à l\'école Marie-Curie</h1><p>Toutes les informations de l\'école pour les élèves et les parents.</p></div></div>'
+    +'<h2>📣 Les actualités</h2>'
+    +'<div class="wp-fact">🎭 La fête de l\'école aura lieu le <b>28 juin</b> — au programme : spectacle, jeux et crêpes !</div>'
+    +'<div class="wp-fact">🚀 La classe de CM1 prépare une <a class="lk" data-go="www.ecole-curie.fr/sorties">sortie au Musée de l\'Espace</a>.</div>'
+    +'<p>Pour connaître les repas de la semaine, consulte la page <a class="lk" data-go="www.ecole-curie.fr/cantine">de la cantine</a>.</p>';
+});
+WEB['www.ecole-curie.fr/cantine']=pg('ecole','Les menus de la cantine — École Marie-Curie', function(){
+  return '<h1>🍽️ Les menus de la semaine</h1>'
+    +'<p>Voici ce que le chef Roberto a préparé cette semaine. Bon appétit !</p>'
+    +'<table class="wp-table"><tr><th>Jour</th><th>Plat</th><th>Dessert</th></tr>'
+    +'<tr><td><b>Lundi</b></td><td>Gratin de pâtes au fromage</td><td>Yaourt à la fraise</td></tr>'
+    +'<tr><td><b>Mardi</b></td><td>Poisson pané et riz</td><td>Banane</td></tr>'
+    +'<tr><td><b>Jeudi</b></td><td>Poulet rôti et haricots verts</td><td><b>Compote de pommes</b></td></tr>'
+    +'<tr><td><b>Vendredi</b></td><td>Pizza aux légumes</td><td>Gâteau au yaourt</td></tr>'
+    +'</table>'
+    +'<p style="font-size:.85rem;color:#8d9cab;">Le mercredi, il n\'y a pas d\'école — donc pas de cantine !</p>';
+});
+WEB['www.ecole-curie.fr/sorties']=pg('ecole','Les sorties scolaires — École Marie-Curie', function(){
+  return '<h1>🚌 Les sorties scolaires</h1>'
+    +'<h2>Prochaine sortie : le Musée de l\'Espace</h2>'
+    +'<div class="wp-img">🚀🪐</div>'
+    +'<p>Le <b>12 mai</b>, la classe de CM1 visitera le <a class="lk" data-go="www.musee-espace.fr">Musée de l\'Espace</a>. Les élèves pourront toucher une vraie météorite !</p>'
+    +'<p>Pense à apporter un pique-nique et une casquette. 🧢</p>';
+});
+
+/* ----- Météo Mini (contenu qui change quand on actualise) ----- */
+WEB['www.meteo-mini.fr']=pg('meteo','Météo Mini — Trouville-les-Pixels', function(){
+  const wx=[['☀️','Grand soleil','Pense à ta casquette !'],['🌤️','Soleil et petits nuages','Parfait pour jouer dehors.'],['⛅','Nuageux avec éclaircies','Un pull suffira.'],['🌦️','Quelques averses','Prends ton parapluie, on ne sait jamais !']];
+  const pick=wx[Math.floor(Math.random()*wx.length)];
+  const temp=17+Math.floor(Math.random()*8);
+  const now=new Date();
+  const hh=String(now.getHours()).padStart(2,'0'), mm=String(now.getMinutes()).padStart(2,'0'), ss=String(now.getSeconds()).padStart(2,'0');
+  return '<h1>⛅ La météo à Trouville-les-Pixels</h1>'
+    +'<div class="wp-hero"><span class="h-ic">'+pick[0]+'</span><div class="h-tx">'
+    +'<h1>'+temp+' °C</h1><p><b>'+pick[1]+'</b> — '+pick[2]+'</p></div></div>'
+    +'<div class="wp-fact">🕐 Dernière mise à jour : <b>'+hh+':'+mm+':'+ss+'</b></div>'
+    +'<p>La météo change tout le temps ! Clique sur le bouton <b>⟳ Actualiser</b> de ton navigateur pour recharger la page et voir les toutes dernières prévisions.</p>';
+});
+
+/* ----- Paris Monuments ----- */
+WEB['www.paris-monuments.fr']=pg('monuments','Paris Monuments — découvrir Paris', function(){
+  return '<div class="wp-hero"><span class="h-ic">🗼</span><div class="h-tx">'
+    +'<h1>Paris Monuments</h1><p>Découvre les monuments les plus célèbres de Paris, expliqués aux enfants.</p></div></div>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card" data-go="www.paris-monuments.fr/tour-eiffel"><span class="c-ic">🗼</span><span class="c-t">La tour Eiffel</span><div class="c-s">La dame de fer</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🏰</span><span class="c-t">Le Louvre</span><div class="c-s">Bientôt disponible</div></div>'
+    +'<div class="wp-card"><span class="c-ic">⛪</span><span class="c-t">Notre-Dame</span><div class="c-s">Bientôt disponible</div></div>'
+    +'</div>';
+});
+WEB['www.paris-monuments.fr/tour-eiffel']=pg('monuments','La tour Eiffel — Paris Monuments', function(){
+  return '<h1>🗼 La tour Eiffel</h1>'
+    +'<div class="wp-img">🗼✨</div>'
+    +'<p>La tour Eiffel a été construite en <b>1889</b> par l\'ingénieur <b>Gustave Eiffel</b>. Au début, beaucoup de Parisiens la trouvaient très laide… aujourd\'hui, c\'est le symbole de la France !</p>'
+    +'<h2>Sa taille</h2>'
+    +'<div class="wp-fact">📏 Avec ses antennes, la tour Eiffel mesure <b>330 mètres</b> de haut. C\'est comme 110 girafes les unes sur les autres !</div>'
+    +'<h2>En chiffres</h2>'
+    +'<ul><li>18 038 pièces de fer</li><li>2 500 000 rivets</li><li>1 665 marches jusqu\'au sommet</li></ul>';
+});
+
+/* ----- Les recettes de Lilou ----- */
+WEB['www.recettes-de-lilou.fr']=pg('lilou','Les recettes de Lilou', function(){
+  return '<div class="wp-hero"><span class="h-ic">🍰</span><div class="h-tx">'
+    +'<h1>Les recettes de Lilou</h1><p>Salut, moi c\'est Lilou ! Je partage ici mes recettes préférées, faciles à faire avec un adulte.</p></div></div>'
+    +'<h2>⭐ Ma recette star</h2>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card" data-go="www.recettes-de-lilou.fr/gateau-choco"><span class="c-ic">🍫</span><span class="c-t">Gâteau au chocolat</span><div class="c-s">Facile · 35 minutes</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🍪</span><span class="c-t">Cookies</span><div class="c-s">Bientôt !</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🥞</span><span class="c-t">Crêpes</span><div class="c-s">Bientôt !</div></div>'
+    +'</div>';
+});
+WEB['www.recettes-de-lilou.fr/gateau-choco']=pg('lilou','Gâteau au chocolat facile — Les recettes de Lilou', function(){
+  return '<h1>🍫 Mon gâteau au chocolat facile</h1>'
+    +'<div class="wp-img">🍫🎂</div>'
+    +'<p>C\'est LA recette que je fais pour tous les anniversaires. Demande à un adulte de t\'aider pour le four !</p>'
+    +'<h2>🧺 Les ingrédients</h2>'
+    +'<ul><li><b>200 g de chocolat</b> noir</li><li>100 g de beurre</li><li><b>3 œufs</b></li><li>100 g de sucre</li><li>50 g de farine</li></ul>'
+    +'<h2>👩‍🍳 Les étapes</h2>'
+    +'<ul><li>Fais fondre le chocolat et le beurre.</li><li>Mélange les œufs et le sucre, puis ajoute la farine.</li><li>Verse le chocolat fondu et mélange bien.</li><li>Au four : 25 minutes à 180 °C. C\'est prêt !</li></ul>';
+});
+
+/* ----- Musée de l'Espace ----- */
+WEB['www.musee-espace.fr']=pg('musee','Musée de l\'Espace — fusées et planètes', function(){
+  return '<div class="wp-hero"><span class="h-ic">🚀</span><div class="h-tx">'
+    +'<h1>Bienvenue au Musée de l\'Espace</h1><p>Fusées géantes, combinaisons d\'astronautes et vraie météorite à toucher !</p></div></div>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card"><span class="c-ic">🪐</span><span class="c-t">Salle des planètes</span><div class="c-s">Voyage dans le système solaire</div></div>'
+    +'<div class="wp-card"><span class="c-ic">👩‍🚀</span><span class="c-t">Vie d\'astronaute</span><div class="c-s">Comment dort-on dans l\'espace ?</div></div>'
+    +'<div class="wp-card"><span class="c-ic">☄️</span><span class="c-t">La météorite</span><div class="c-s">Touche une pierre de l\'espace !</div></div>'
+    +'</div>'
+    +'<p>Pour préparer ta visite, consulte nos <a class="lk" data-go="www.musee-espace.fr/horaires">horaires et tarifs</a>.</p>';
+});
+WEB['www.musee-espace.fr/horaires']=pg('musee','Horaires & tarifs — Musée de l\'Espace', function(){
+  return '<h1>🕐 Horaires & tarifs</h1>'
+    +'<h2>Nos horaires</h2>'
+    +'<div class="wp-fact">📅 Ouvert du <b>mardi au dimanche</b>, de <b>10h à 18h</b>.</div>'
+    +'<div class="wp-fact">🚫 Le musée est <b>fermé le lundi</b>.</div>'
+    +'<h2>Nos tarifs</h2>'
+    +'<table class="wp-table"><tr><th>Billet</th><th>Prix</th></tr>'
+    +'<tr><td>Enfant (moins de 12 ans)</td><td><b>4 €</b></td></tr>'
+    +'<tr><td>Adulte</td><td>9 €</td></tr>'
+    +'<tr><td>Famille (2 adultes + 2 enfants)</td><td>22 €</td></tr>'
+    +'</table>';
+});
+
+/* ----- La Chasse au Trésor (défi du niveau 2) ----- */
+WEB['www.chasse-au-tresor.fr']=pg('tresor','La Chasse au Trésor', function(){
+  return '<div class="wp-center"><h1>🗺️ La Chasse au Trésor</h1>'
+    +'<div class="wp-img">🏴‍☠️🗝️</div>'
+    +'<p>Bienvenue, moussaillon ! Un trésor est caché au bout de ce site. Pour le trouver, résous chaque énigme et clique sur <b>la bonne porte</b>. Si tu te trompes, reviens en arrière avec <b>◀</b> !</p>'
+    +'<h2>Énigme n°1</h2>'
+    +'<p>« Je suis noir et blanc et je passe mes journées à croquer du bambou. Qui suis-je ? »</p>'
+    +'<p><button class="wp-btnlink" data-go="www.chasse-au-tresor.fr/perdu">🐟 La porte du poisson</button>'
+    +'<button class="wp-btnlink" data-go="www.chasse-au-tresor.fr/grotte">🐼 La porte du panda</button>'
+    +'<button class="wp-btnlink" data-go="www.chasse-au-tresor.fr/perdu">🐱 La porte du chat</button></p></div>';
+});
+WEB['www.chasse-au-tresor.fr/grotte']=pg('tresor','La grotte mystérieuse — La Chasse au Trésor', function(){
+  return '<div class="wp-center"><h1>⛰️ La grotte mystérieuse</h1>'
+    +'<div class="wp-img">🕯️🦇</div>'
+    +'<p>Bien joué, tu as trouvé la grotte ! Mais trois tunnels s\'enfoncent dans le noir…</p>'
+    +'<h2>Énigme n°2</h2>'
+    +'<p>« Combien y a-t-il de jours dans une semaine ? Prends le tunnel du bon nombre ! »</p>'
+    +'<p><button class="wp-btnlink" data-go="www.chasse-au-tresor.fr/perdu">5️⃣ Le tunnel du 5</button>'
+    +'<button class="wp-btnlink" data-go="www.chasse-au-tresor.fr/pont">7️⃣ Le tunnel du 7</button>'
+    +'<button class="wp-btnlink" data-go="www.chasse-au-tresor.fr/perdu">🔟 Le tunnel du 10</button></p></div>';
+});
+WEB['www.chasse-au-tresor.fr/pont']=pg('tresor','Le pont suspendu — La Chasse au Trésor', function(){
+  return '<div class="wp-center"><h1>🌉 Le pont suspendu</h1>'
+    +'<div class="wp-img">🌉🌫️</div>'
+    +'<p>Le trésor est de l\'autre côté du pont. Dernière énigme, sois malin !</p>'
+    +'<h2>Énigme n°3</h2>'
+    +'<p>« Je suis le contraire du jour. Traverse par ma porte ! »</p>'
+    +'<p><button class="wp-btnlink" data-go="www.chasse-au-tresor.fr/perdu">☀️ La porte du soleil</button>'
+    +'<button class="wp-btnlink" data-go="www.chasse-au-tresor.fr/perdu">🥐 La porte du matin</button>'
+    +'<button class="wp-btnlink" data-go="www.chasse-au-tresor.fr/tresor">🌙 La porte de la nuit</button></p></div>';
+});
+WEB['www.chasse-au-tresor.fr/tresor']=pg('tresor','LE TRÉSOR ! — La Chasse au Trésor', function(){
+  return '<div class="wp-center"><h1>🏆 TU AS TROUVÉ LE TRÉSOR !</h1>'
+    +'<div class="wp-img">💰👑💎</div>'
+    +'<p><b>Félicitations, moussaillon !</b> Tu as résolu toutes les énigmes et navigué comme un vrai pirate du web.</p>'
+    +'<p>🦜 « Bien navigué ! » crie le perroquet.</p></div>';
+});
+WEB['www.chasse-au-tresor.fr/perdu']=pg('tresor','Mauvaise porte… — La Chasse au Trésor', function(){
+  return '<div class="wp-center"><h1>💨 Mauvaise porte !</h1>'
+    +'<div class="wp-img">🕸️🦴</div>'
+    +'<p>Cette pièce est vide, à part quelques toiles d\'araignées… Ce n\'était pas la bonne réponse !</p>'
+    +'<p><b>Reviens en arrière</b> avec le bouton <b>◀</b> du navigateur et essaie une autre porte.</p></div>';
+});
+
+/* ----- Boutiques (faux résultats « pièges » du moteur de recherche) ----- */
+WEB['www.pandacadeaux.fr']=pg('panshop','Panda Cadeaux — peluches et déguisements', function(){
+  return '<h1>🛍️ Panda Cadeaux</h1>'
+    +'<p>La boutique 100 % panda ! Ici on ne t\'apprend rien sur les pandas… on en vend en peluche. 😄</p>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card"><span class="c-ic">🧸</span><span class="c-t">Peluche géante</span><div class="c-s">29,99 €</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🎒</span><span class="c-t">Sac à dos panda</span><div class="c-s">19,99 €</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🥋</span><span class="c-t">Déguisement</span><div class="c-s">24,99 €</div></div>'
+    +'</div>'
+    +'<div class="wp-fact">💡 Tu cherchais des <b>informations</b> sur les pandas ? Ce site est une <b>boutique</b> : reviens en arrière et choisis un autre résultat !</div>';
+});
+WEB['www.boutique-eiffel.fr']=pg('eifshop','Boutique Eiffel — souvenirs de Paris', function(){
+  return '<h1>🛒 Boutique Eiffel</h1>'
+    +'<p>Mini tours Eiffel, porte-clés, magnets… des souvenirs à petits prix !</p>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card"><span class="c-ic">🗼</span><span class="c-t">Mini tour dorée</span><div class="c-s">9,99 €</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🔑</span><span class="c-t">Porte-clés</span><div class="c-s">4,99 €</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🧲</span><span class="c-t">Magnet frigo</span><div class="c-s">3,99 €</div></div>'
+    +'</div>'
+    +'<div class="wp-fact">💡 Ici, on <b>vend</b> des souvenirs — on ne donne pas la hauteur de la vraie tour ! Reviens aux résultats et choisis mieux.</div>';
+});
+WEB['www.pizzeria-la-tour.fr']=pg('pizza','Pizzeria La Tour', function(){
+  return '<h1>🍕 Pizzeria La Tour</h1>'
+    +'<p>Bienvenue dans notre pizzeria familiale ! Nos pizzas sont cuites au feu de bois.</p>'
+    +'<table class="wp-table"><tr><th>Pizza</th><th>Prix</th></tr>'
+    +'<tr><td>La Tour (4 fromages)</td><td>11 €</td></tr>'
+    +'<tr><td>La Margherita</td><td>8 €</td></tr>'
+    +'<tr><td>La Reine</td><td>9 €</td></tr></table>'
+    +'<div class="wp-fact">💡 Ce site parle d\'une pizzeria qui s\'appelle « La Tour »… pas de la tour Eiffel ! Les mots-clés précis évitent ce genre de détour.</div>';
+});
+WEB['www.choco-market.fr']=pg('choco','Choco Market — vente de chocolat', function(){
+  return '<h1>🍫 Choco Market</h1>'
+    +'<p>Commandez vos chocolats préférés, livrés chez vous !</p>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card"><span class="c-ic">🍫</span><span class="c-t">Tablette noire</span><div class="c-s">2,99 €</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🥚</span><span class="c-t">Œufs de Pâques</span><div class="c-s">6,99 €</div></div>'
+    +'<div class="wp-card"><span class="c-ic">☕</span><span class="c-t">Chocolat chaud</span><div class="c-s">4,49 €</div></div>'
+    +'</div>'
+    +'<div class="wp-fact">💡 Ici on <b>achète</b> du chocolat, on ne trouve pas de <b>recette</b> ! Reviens aux résultats et cherche un site de cuisine.</div>';
+});
+
+/* ----- pages spéciales ----- */
+function errorPage(url){
+  return {
+    title:'Adresse introuvable', icon:'⚠️', real:false,
+    html:function(){
+      return '<div class="err-page"><span class="e-ic">🦊❓</span>'
+        +'<h1>Hum… Goupil ne trouve pas ce site</h1>'
+        +'<p>L\'adresse <span class="e-url">'+url.replace(/</g,'&lt;')+'</span> ne mène nulle part.</p>'
+        +'<p>Vérifie qu\'il n\'y a <b>pas de faute de frappe</b> dans l\'adresse, ou fais une recherche :</p>'
+        +'<p><button class="wp-btnlink" style="--site:#2563eb" data-go="www.cherchetout.fr">🔍 Aller sur Cherchetout</button></p>'
+        +'</div>';
+    }
+  };
+}
+function getPage(url){
+  if(WEB[url]) return WEB[url];
+  if(url && url.indexOf('www.cherchetout.fr/recherche')===0) return serpPage(url);
+  return errorPage(url||'');
+}
+function renderPage(url){
+  const p=getPage(url);
+  return (typeof p.html==='function') ? p.html(url) : p.html;
+}
+
+/* ---------------------------------------------------------
+   5. OBJECTIFS DE MISSION (bibliothèque G) + VÉRIFICATION
+   --------------------------------------------------------- */
+function buildCtx(){
+  return { url:curUrl(), tabs:B.tabs, evt:B.evt, bookmarks:B.bookmarks, history:B.history, answers:B.evt.answers };
+}
+const G={
+  clickedAddr:()=>({spot:'addr', hint:'Clique dans la grande barre blanche en haut du navigateur : c\'est la <b>barre d\'adresse</b>.', test:c=>c.evt.addrFocused}),
+  typedUrl:(u)=>({spot:'addr', hint:'Clique dans la <b>barre d\'adresse</b>, tape <b>'+u+'</b> sans faute, puis appuie sur '+kbd('Entrée')+'.', test:c=>c.evt.addrNav.includes(u)}),
+  atUrl:(u)=>({spot:'links', hint:'Trouve le bon <b>lien</b> sur la page et clique dessus pour arriver sur <b>'+u+'</b>.', test:c=>c.url===u}),
+  visited:(u)=>({spot:'addr', hint:'Rends-toi sur <b>'+u+'</b> : tape l\'adresse dans la barre en haut, ou clique un lien qui y mène.', test:c=>c.evt.visits.has(u)}),
+  usedBack:()=>({spot:'back', hint:'Clique sur le bouton <b>◀</b> (en haut à gauche) pour revenir à la page précédente.', test:c=>c.evt.usedBack}),
+  usedFwd:()=>({spot:'fwd', hint:'Clique sur le bouton <b>▶</b> pour repartir en avant.', test:c=>c.evt.usedFwd}),
+  usedReload:()=>({spot:'reload', hint:'Clique sur le bouton <b>⟳</b> pour recharger la page.', test:c=>c.evt.usedReload}),
+  usedHome:()=>({spot:'home', hint:'Clique sur le bouton <b>🏠</b> pour retourner à la page d\'accueil du navigateur.', test:c=>c.evt.usedHome}),
+  newTab:()=>({spot:'newtab', hint:'Clique sur le bouton <b>+</b> à droite des onglets, tout en haut.', test:c=>c.evt.newTab}),
+  switchedTab:()=>({spot:'tabs', hint:'Clique sur l\'autre <b>onglet</b>, tout en haut de l\'écran.', test:c=>c.evt.tabSwitched}),
+  closedTabUrl:(u)=>({spot:'tabs', hint:'Clique sur la petite croix <b>✕</b> de l\'onglet pour le fermer.', test:c=>c.evt.closedTabs && c.evt.closedTabs.has(u)}),
+  tabsCount:(n)=>({spot:'tabs', hint:'Ouvre (ou ferme) des onglets pour en avoir le bon nombre.', test:c=>c.tabs.length===n}),
+  linkHovered:()=>({spot:'links', hint:'Déplace ta souris sur la page <b>sans cliquer</b> : quand elle survole un lien, l\'adresse s\'affiche en bas à gauche.', test:c=>c.evt.linkHovered}),
+  clickedLogoHome:(u)=>({spot:'logo', hint:'Clique sur le <b>logo</b> du site, tout en haut à gauche de la page : il ramène toujours à l\'accueil.', test:c=>c.evt.clickedLogo && c.url===u}),
+  searched:(words)=>({spot:'search', hint:'Tape tes <b>mots-clés</b> dans la barre de recherche ('+words.join(', ')+'), puis appuie sur '+kbd('Entrée')+'.', test:c=>c.evt.searches.some(q=>words.every(w=>q.includes(w)))}),
+  openedResult:(u)=>({spot:'links', hint:'Lis bien la liste des résultats : le <b>titre</b>, l\'<b>adresse verte</b> et le petit texte t\'aident à choisir. Clique le titre du bon résultat.', test:c=>c.evt.results && c.evt.results.has(u)}),
+  bookmarked:(u)=>({spot:'star', hint:'Va sur la page, puis clique sur l\'<b>étoile ☆</b> au bout de la barre d\'adresse.', test:c=>c.evt.bmAdded && c.evt.bmAdded.has(u)}),
+  removedBookmark:(u)=>({spot:'sidebar', hint:'Dans le panneau <b>Favoris</b> (menu ☰), clique le <b>🗑️</b> du favori à supprimer. Tu peux aussi re-cliquer l\'étoile ★ quand tu es sur la page.', test:c=>c.evt.bmRemoved && c.evt.bmRemoved.has(u)}),
+  openedBookmark:(u)=>({spot:'bmbar', hint:'Clique sur le favori dans la <b>barre de favoris</b>, juste sous la barre d\'adresse.', test:c=>c.evt.openedBookmark && c.evt.openedBookmark.has(u)}),
+  openedBmPanel:()=>({spot:'menu', hint:'Clique sur le bouton <b>☰</b> (en haut à droite), puis choisis <b>⭐ Favoris</b>.', test:c=>c.evt.openedBmPanel}),
+  openedHistory:()=>({spot:'menu', hint:'Clique sur le bouton <b>☰</b> (en haut à droite), puis choisis <b>🕘 Historique</b>.', test:c=>c.evt.openedHistoryPanel}),
+  openedFromHistory:(u)=>({spot:'sidebar', hint:'Dans le panneau Historique, lis la liste et <b>clique</b> sur la bonne page pour la rouvrir.', test:c=>c.evt.openedFromHistory && c.evt.openedFromHistory.has(u)})
+};
+/* objectif « question » : la réponse se donne dans le carnet 📝 sous l'écran */
+function quizObj(t, key, q, accepted, hint){
+  return { t:t, quiz:{key:key, q:q, accepted:accepted},
+    goal:{ spot:'quiz',
+      hint:(hint||'La réponse est écrite sur la bonne page !')+' Écris-la dans le <b>carnet 📝</b> sous l\'écran, puis clique <b>Valider</b>.',
+      test:c=>{ const v=c.answers[key]; if(v==null) return false; const n=normText(v); return accepted.some(a=>n===a||n.includes(a)); } } };
+}
+
+let _missionDone=false;
+function checkMission(){
+  if(!currentStep) return;
+  if(_missionDone) return;
+  const objs=currentStep.objectives; if(!objs || !objs.length) return;
+  if(currentStep._jalonAnim) return;
+  const ctx=buildCtx();
+  const i=currentStep._jalonIdx;
+  if(i<objs.length && !currentStep._objDone[i]){
+    if(objs[i].goal.test(ctx)){
+      currentStep._objDone[i]=true; beep('good'); jalonAdvance();
+    }
+  }
+}
+function renderJalonObjective(enter){
+  const sub=document.getElementById('bSub'); if(!sub) return;
+  const s=currentStep, objs=s.objectives||[], i=s._jalonIdx, n=objs.length;
+  const blue = s.kind!=='jalon';   /* missions normales = bleu ; défis = orange */
+  sub.innerHTML='<div class="jalon-head"><span class="b-goal-label">Objectif '+(Math.min(i+1,n))+' / '+n+'</span></div>'
+    +'<div class="jalon-wrap"><div class="jalon-obj'+(blue?' blue':'')+(enter?' entering':'')+'"><span class="jo-check">'+(i+1)+'</span><span class="jo-text">'+(objs[i]&&objs[i].t||'')+'</span></div></div>';
+  if(enter) requestAnimationFrame(()=>{ const el=sub.querySelector('.jalon-obj'); if(el) el.classList.remove('entering'); });
+  renderQuizDock();
+}
+function jalonAdvance(){
+  currentStep._jalonAnim=true;
+  const sub=document.getElementById('bSub'); const el=sub&&sub.querySelector('.jalon-obj');
+  if(el){ el.classList.add('done'); const ck=el.querySelector('.jo-check'); if(ck) ck.textContent='✓'; }
+  setTimeout(()=>{ if(el) el.classList.add('slideup'); }, 520);
+  setTimeout(()=>{
+    currentStep._jalonIdx++;
+    currentStep._jalonAnim=false;
+    const objs=currentStep.objectives||[];
+    if(currentStep._jalonIdx>=objs.length){ _missionDone=true; renderQuizDock(); onMissionWin(); return; }
+    renderJalonObjective(true);
+    /* cascade : si l'objectif révélé est déjà rempli, on enchaîne */
+    setTimeout(checkMission, 260);
+  }, 980);
+}
+function activeObj(){
+  const objs=(currentStep&&currentStep.objectives)||[]; if(!objs.length) return null;
+  return objs[Math.min(currentStep._jalonIdx||0, objs.length-1)];
+}
+
+/* ----- le carnet de mission (questions / réponses) ----- */
+function renderQuizDock(){
+  const dock=document.getElementById('quizDock'); if(!dock) return;
+  const o=activeObj(); const q=o && o.quiz;
+  if(!q || _missionDone){ dock.hidden=true; dock.innerHTML=''; return; }
+  dock.hidden=false;
+  dock.innerHTML='<span class="qd-ic">📝</span><div class="qd-q">'+q.q+'</div>'
+    +'<input id="qdIn" placeholder="Écris ta réponse ici" autocomplete="off" spellcheck="false">'
+    +'<button class="qd-ok" id="qdOk">Valider</button><span class="qd-fb" id="qdFb"></span>';
+  const inp=dock.querySelector('#qdIn');
+  function submit(){
+    const v=inp.value.trim(); if(!v) return;
+    B.evt.answers[q.key]=v;
+    const n=normText(v);
+    if(q.accepted.some(a=>n===a||n.includes(a))){
+      checkMission();
+    } else {
+      beep('bad');
+      dock.classList.remove('shake'); void dock.offsetWidth; dock.classList.add('shake');
+      dock.querySelector('#qdFb').textContent='Ce n\'est pas ça… cherche la réponse sur la page !';
+      inp.select();
+    }
+  }
+  dock.querySelector('#qdOk').onclick=submit;
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+}
+
+/* ---------------------------------------------------------
+   6. LES NIVEAUX
+   --------------------------------------------------------- */
+const LEVELS=[
+/* ===== NIVEAU 1 — Ton navigateur ===== */
+{ n:1, title:'Ton navigateur', subtitle:'découverte',
+  intro:{ emoji:'🦊',
+    lead:'Voici <b>Goupil</b> 🦊, ton navigateur internet ! Un navigateur, c\'est le programme qui sert à visiter les <b>sites web</b>. Aujourd\'hui, tu apprends à le piloter.',
+    teach:'En haut, la <b>barre d\'adresse</b> : clique dedans, tape l\'adresse d\'un site (comme <b>www.zanimo.fr</b>) puis appuie sur '+kbd('Entrée')+'. Le bouton <b>◀</b> revient à la page précédente, <b>▶</b> repart en avant, <b>⟳</b> recharge la page et <b>🏠</b> ramène à l\'accueil. Tout en haut, chaque page vit dans un <b>onglet</b> : le bouton <b>+</b> en ouvre un nouveau, la croix <b>✕</b> le ferme.',
+    tools:[{g:'🧭',n:'La barre d\'adresse'},{g:'◀ ▶',n:'Précédent / Suivant'},{g:'⟳',n:'Actualiser la page'},{g:'🗂️',n:'Les onglets et le bouton +'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'🧭',title:'Ta première adresse',
+      intro:'Chaque site web a une <b>adresse</b>, comme une maison ! Tu vas taper ta toute première adresse pour visiter <b>Zanimo</b>, l\'encyclopédie des animaux.',
+      seed:{tabs:['goupil.start']},
+      objectives:[
+        {t:'<b>Clique</b> dans la barre d\'adresse (la grande barre, en haut)', goal:G.clickedAddr()},
+        {t:'Tape <b>www.zanimo.fr</b> puis appuie sur '+kbd('Entrée'), goal:G.typedUrl('www.zanimo.fr')},
+        {t:'Sur le site, clique la carte du <b>panda 🐼</b> pour ouvrir sa fiche', goal:G.atUrl('www.zanimo.fr/panda')}
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'↔️',title:'Précédent, suivant, accueil',
+      intro:'Le navigateur se souvient de ton chemin ! <b>◀</b> revient en arrière, <b>▶</b> repart en avant, et <b>🏠</b> te ramène toujours à la maison.',
+      seed:{tabs:['www.zanimo.fr']},
+      objectives:[
+        {t:'Ouvre la fiche du <b>dauphin 🐬</b>', goal:G.atUrl('www.zanimo.fr/dauphin')},
+        {t:'<b>Reviens en arrière</b> avec le bouton <b>◀</b>', goal:G.usedBack()},
+        {t:'Repars <b>en avant</b> avec le bouton <b>▶</b>', goal:G.usedFwd()},
+        {t:'Retourne à la page d\'accueil avec <b>🏠</b>', goal:G.usedHome()}
+      ]},
+    {kind:'mission',label:'Mission 3',emoji:'🗂️',title:'Les onglets',
+      intro:'Les <b>onglets</b> permettent de garder plusieurs pages ouvertes en même temps, comme des feuilles dans un classeur. Le <b>+</b> en ouvre un, la croix <b>✕</b> le ferme.',
+      seed:{tabs:['www.zanimo.fr']},
+      objectives:[
+        {t:'Ouvre un <b>nouvel onglet</b> avec le bouton <b>+</b> (en haut)', goal:G.newTab()},
+        {t:'Dans ce nouvel onglet, va sur <b>www.meteo-mini.fr</b>', goal:G.visited('www.meteo-mini.fr')},
+        {t:'La météo change tout le temps : <b>actualise</b> la page avec <b>⟳</b>', goal:G.usedReload()},
+        {t:'Reviens sur le <b>premier onglet</b> (clique dessus, tout en haut)', goal:G.switchedTab()},
+        {t:'<b>Ferme</b> l\'onglet météo avec sa petite croix <b>✕</b>', goal:G.closedTabUrl('www.meteo-mini.fr')}
+      ]},
+    {kind:'jalon',label:'Défi',emoji:'🏆',title:'Permis de naviguer',
+      intro:'Montre que tu sais tout faire : onglet, adresse, liens et boutons de navigation. À toi de jouer, pilote !',
+      seed:{tabs:['goupil.start']},
+      objectives:[
+        {t:'Ouvre un <b>nouvel onglet</b> avec <b>+</b>', goal:G.newTab()},
+        {t:'Tape l\'adresse <b>www.zanimo.fr</b>', goal:G.typedUrl('www.zanimo.fr')},
+        {t:'Ouvre la fiche de la <b>chouette 🦉</b>', goal:G.atUrl('www.zanimo.fr/chouette')},
+        {t:'Reviens en arrière avec <b>◀</b>', goal:G.usedBack()},
+        {t:'Termine sur la page d\'accueil avec <b>🏠</b>', goal:G.usedHome()}
+      ]}
+  ]},
+
+/* ===== NIVEAU 2 — Les liens et les sites ===== */
+{ n:2, title:'Les liens et les sites', subtitle:'liens & sites',
+  intro:{ emoji:'🔗',
+    lead:'Le web est une toile géante : les pages sont reliées entre elles par des <b>liens</b>. Apprends à les reconnaître et à explorer un site sans jamais te perdre !',
+    teach:'Un <b>lien</b>, ça se clique ! Quand ta souris le survole, elle devient une petite main 👆 et l\'adresse de destination s\'affiche <b>en bas à gauche</b> de l\'écran. Un lien peut être un <b>texte souligné</b>, une <b>image</b> ou un <b>bouton</b>. Les sites ont un <b>menu</b> en haut pour changer de page, et cliquer le <b>logo</b> ramène toujours à l\'accueil. Une adresse se lit comme ça : <b>www.zanimo.fr/panda</b> = la page « panda » du site « zanimo.fr ».',
+    tools:[{g:'👆',n:'Reconnaître un lien au survol'},{g:'🧾',n:'L\'adresse s\'affiche en bas à gauche'},{g:'📑',n:'Le menu du site'},{g:'🏷️',n:'Le logo ramène à l\'accueil'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'🕵️',title:'La chasse aux liens',
+      intro:'Sur une page web, <b>tout n\'est pas cliquable</b> ! Promène ta souris pour démasquer les 3 vrais liens de la page : un <b>texte</b>, une <b>image</b> et un <b>bouton</b>. Après chaque découverte, reviens avec <b>◀</b>.',
+      seed:{tabs:['www.zanimo.fr/coin-jeux']},
+      objectives:[
+        {t:'<b>Survole</b> la page sans cliquer : trouve un vrai lien (regarde en bas à gauche !)', goal:G.linkHovered()},
+        {t:'Clique le <b>lien texte</b> « le mot secret »', goal:G.atUrl('www.zanimo.fr/coin-jeux/lien-texte')},
+        {t:'Reviens avec <b>◀</b>, puis clique l\'<b>image-lien</b> du cadeau 🎁', goal:G.atUrl('www.zanimo.fr/coin-jeux/lien-image')},
+        {t:'Reviens avec <b>◀</b>, puis clique le <b>bouton</b> « Clique ici ! »', goal:G.atUrl('www.zanimo.fr/coin-jeux/lien-bouton')}
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'🏫',title:'Explore le site de l\'école',
+      intro:'Un site, c\'est plusieurs pages reliées par un <b>menu</b> (en haut). Explore le site de l\'école Marie-Curie pour retrouver le menu de la cantine !',
+      seed:{tabs:['www.ecole-curie.fr']},
+      objectives:[
+        {t:'Avec le <b>menu du site</b> (en haut), ouvre la page <b>La cantine</b>', goal:G.atUrl('www.ecole-curie.fr/cantine')},
+        quizObj('Trouve le <b>dessert de jeudi</b> et note-le dans le carnet 📝 (sous l\'écran)', 'dessertJeudi', 'Quel est le dessert de jeudi à la cantine ?', ['compote'], 'Regarde bien le tableau des menus, ligne « Jeudi ».'),
+        {t:'Clique le <b>logo de l\'école</b> (en haut à gauche de la page) pour revenir à l\'accueil', goal:G.clickedLogoHome('www.ecole-curie.fr')}
+      ]},
+    {kind:'mission',label:'Mission 3',emoji:'🔤',title:'Lis les adresses',
+      intro:'Quand tu connais l\'adresse <b>exacte</b> d\'une page, tu peux y aller directement, sans cliquer nulle part ! <b>www.zanimo.fr/dauphin</b> = la page « dauphin » du site « zanimo.fr ».',
+      seed:{tabs:['goupil.start']},
+      objectives:[
+        {t:'Tape l\'adresse <b>www.zanimo.fr/dauphin</b> pour aller <b>directement</b> à la fiche du dauphin', goal:G.typedUrl('www.zanimo.fr/dauphin')},
+        quizObj('Réponds à la question du carnet 📝', 'siteName', 'Dans l\'adresse www.zanimo.fr/dauphin, quel est le nom du SITE ?', ['zanimo'], 'Le nom du site est entre « www. » et « .fr ».'),
+        {t:'Tape maintenant <b>www.musee-espace.fr/horaires</b> : la page des horaires, en un seul coup !', goal:G.typedUrl('www.musee-espace.fr/horaires')}
+      ]},
+    {kind:'jalon',label:'Défi',emoji:'🏴‍☠️',title:'La chasse au trésor',
+      intro:'Un trésor est caché au bout du site <b>chasse-au-tresor.fr</b> ! Résous chaque énigme et clique la <b>bonne porte</b>. Mauvaise porte ? Reviens avec <b>◀</b> et réessaie !',
+      seed:{tabs:['www.chasse-au-tresor.fr']},
+      objectives:[
+        {t:'Résous l\'<b>énigme n°1</b> et passe la bonne porte', goal:G.atUrl('www.chasse-au-tresor.fr/grotte')},
+        {t:'Résous l\'<b>énigme n°2</b> et trouve le bon tunnel', goal:G.atUrl('www.chasse-au-tresor.fr/pont')},
+        {t:'Résous l\'<b>énigme n°3</b> et attrape le <b>trésor</b> !', goal:G.atUrl('www.chasse-au-tresor.fr/tresor')}
+      ]}
+  ]},
+
+/* ===== NIVEAU 3 — Chercher sur internet ===== */
+{ n:3, title:'Chercher sur internet', subtitle:'recherche',
+  intro:{ emoji:'🔍',
+    lead:'Et si on ne connaît pas l\'adresse ? On demande à un <b>moteur de recherche</b> ! Sur <b>Cherchetout</b>, tu vas apprendre à trouver n\'importe quelle information.',
+    teach:'Va sur <b>www.cherchetout.fr</b> et tape des <b>mots-clés</b> : seulement les mots importants de ta question, pas la phrase entière ! Tu obtiens une liste de <b>résultats</b>. Pour chacun, lis le <b>titre</b>, l\'<b>adresse</b> (en vert) et le petit texte de description. Choisis celui qui répond vraiment à ta question — méfie-toi des pièges, comme les <b>boutiques</b> qui veulent juste vendre !',
+    tools:[{g:'🔍',n:'Le moteur de recherche Cherchetout'},{g:'🔑',n:'Choisir de bons mots-clés'},{g:'📋',n:'Lire la liste des résultats'},{g:'📝',n:'Le carnet de mission, sous l\'écran'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'🔍',title:'Ta première recherche',
+      intro:'On veut savoir <b>ce que mange le panda</b>. Demande au moteur de recherche, choisis le bon résultat, et note la réponse dans ton carnet !',
+      seed:{tabs:['goupil.start']},
+      objectives:[
+        {t:'Va sur <b>www.cherchetout.fr</b> (tape l\'adresse, ou clique sa tuile 🔍)', goal:G.visited('www.cherchetout.fr')},
+        {t:'Cherche <b>panda</b> et appuie sur '+kbd('Entrée'), goal:G.searched(['panda'])},
+        {t:'Dans les résultats, ouvre la fiche du panda du site <b>Zanimo</b>', goal:G.openedResult('www.zanimo.fr/panda')},
+        quizObj('Note la réponse dans le carnet 📝', 'mangePanda', 'Que mange le panda ?', ['bambou'], 'La réponse est dans le paragraphe « Sa nourriture ».')
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'🔑',title:'Les bons mots-clés',
+      intro:'Question du jour : <b>« Quelle est la hauteur de la tour Eiffel ? »</b> Pas besoin de taper toute la phrase : les mots-clés <b>tour eiffel hauteur</b> suffisent !',
+      seed:{tabs:['www.cherchetout.fr']},
+      objectives:[
+        {t:'Cherche avec les mots-clés <b>tour eiffel hauteur</b>', goal:G.searched(['eiffel','hauteur'])},
+        {t:'Ouvre le résultat qui parle du <b>monument</b>… pas la boutique de souvenirs !', goal:G.openedResult('www.paris-monuments.fr/tour-eiffel')},
+        quizObj('Note la réponse dans le carnet 📝', 'hauteurEiffel', 'Quelle est la hauteur de la tour Eiffel (en mètres) ?', ['330'], 'Cherche le paragraphe « Sa taille ».')
+      ]},
+    {kind:'mission',label:'Mission 3',emoji:'🪤',title:'Gare aux pièges !',
+      intro:'Ton amie veut la <b>recette du gâteau au chocolat</b>. Attention : dans les résultats, certains sites <b>vendent</b> du chocolat mais ne donnent aucune recette. Lis bien avant de cliquer !',
+      seed:{tabs:['www.cherchetout.fr']},
+      objectives:[
+        {t:'Cherche <b>gâteau au chocolat</b>', goal:G.searched(['gateau','chocolat'])},
+        {t:'Repère le site de <b>recettes</b> parmi les résultats et ouvre-le (évite les boutiques !)', goal:G.openedResult('www.recettes-de-lilou.fr/gateau-choco')},
+        quizObj('Note la réponse dans le carnet 📝', 'oeufsGateau', 'Combien d\'œufs faut-il pour ce gâteau ?', ['3','trois'], 'Compte les œufs dans la liste des ingrédients.')
+      ]},
+    {kind:'jalon',label:'Défi',emoji:'🕵️',title:'L\'enquête express',
+      intro:'Trois questions, trois recherches ! Choisis bien tes <b>mots-clés</b>, trouve les bonnes pages et remplis ton carnet de détective.',
+      seed:{tabs:['www.cherchetout.fr']},
+      objectives:[
+        quizObj('<b>Question 1</b> : quel jour le Musée de l\'Espace est-il fermé ?', 'qMusee', 'Quel jour le Musée de l\'Espace est-il fermé ?', ['lundi'], 'Essaie les mots-clés « musée espace horaires ».'),
+        quizObj('<b>Question 2</b> : dans quel pays vit le kangourou ?', 'qKangourou', 'Dans quel pays vit le kangourou ?', ['australie'], 'Essaie le mot-clé « kangourou ».'),
+        quizObj('<b>Question 3</b> : combien de minutes le dauphin peut-il retenir sa respiration ?', 'qDauphin', 'Combien de minutes le dauphin peut-il retenir sa respiration ?', ['10','dix'], 'Essaie les mots-clés « dauphin respiration ».')
+      ]}
+  ]},
+
+/* ===== NIVEAU 4 — Favoris et historique ===== */
+{ n:4, title:'Favoris et historique', subtitle:'favoris & historique',
+  intro:{ emoji:'⭐',
+    lead:'Comment retrouver une super page vue hier ? Grâce aux <b>favoris</b> et à l\'<b>historique</b>, ton navigateur a une mémoire d\'éléphant !',
+    teach:'L\'<b>étoile ☆</b> au bout de la barre d\'adresse ajoute la page aux <b>favoris</b> : elle apparaît alors dans la <b>barre de favoris</b>, juste en dessous — un clic, et tu y retournes ! Pour retirer un favori : re-clique l\'étoile ★, ou ouvre le menu <b>☰ → Favoris</b> et clique le 🗑️. Le menu <b>☰</b> cache aussi l\'<b>Historique</b> : la liste de toutes les pages que tu as visitées, même celles d\'hier !',
+    tools:[{g:'⭐',n:'Ajouter / retirer un favori'},{g:'📌',n:'La barre de favoris'},{g:'☰',n:'Le menu du navigateur'},{g:'🕘',n:'L\'historique des pages visitées'}] },
+  rounds:[
+    {kind:'mission',label:'Mission 1',emoji:'⭐',title:'L\'étoile magique',
+      intro:'Tu regardes la météo <b>tous les matins</b> ? Mets la page en favori : plus jamais besoin de taper l\'adresse !',
+      seed:{tabs:['goupil.start']},
+      objectives:[
+        {t:'Va sur <b>www.meteo-mini.fr</b>', goal:G.visited('www.meteo-mini.fr')},
+        {t:'Clique sur l\'<b>étoile ☆</b> (au bout de la barre d\'adresse) pour l\'ajouter aux favoris', goal:G.bookmarked('www.meteo-mini.fr')},
+        {t:'Retourne à l\'accueil avec <b>🏠</b>', goal:G.usedHome()},
+        {t:'Rouvre <b>Météo Mini</b> d\'un seul clic, depuis la <b>barre de favoris</b>', goal:G.openedBookmark('www.meteo-mini.fr')}
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'📌',title:'Range tes favoris',
+      intro:'Une collection de favoris, ça s\'entretient ! Ajoute tes sites préférés… et supprime ceux qui ne servent plus.',
+      seed:{tabs:['goupil.start'], bookmarks:['www.meteo-mini.fr']},
+      objectives:[
+        {t:'Va sur <b>www.zanimo.fr</b> et ajoute-le aux favoris <b>⭐</b>', goal:G.bookmarked('www.zanimo.fr')},
+        {t:'Va sur <b>www.ecole-curie.fr</b> et ajoute-le aussi <b>⭐</b>', goal:G.bookmarked('www.ecole-curie.fr')},
+        {t:'Ouvre le menu <b>☰</b> puis <b>⭐ Favoris</b>', goal:G.openedBmPanel()},
+        {t:'<b>Supprime</b> le favori <b>Météo Mini</b> avec son 🗑️', goal:G.removedBookmark('www.meteo-mini.fr')}
+      ]},
+    {kind:'mission',label:'Mission 3',emoji:'🕰️',title:'La machine à remonter le temps',
+      intro:'Le navigateur note <b>toutes</b> les pages que tu visites dans son <b>historique</b>. Pratique pour retrouver une page sans se souvenir de l\'adresse !',
+      seed:{tabs:['goupil.start']},
+      objectives:[
+        {t:'Visite la fiche du dauphin : <b>www.zanimo.fr/dauphin</b>', goal:G.visited('www.zanimo.fr/dauphin')},
+        {t:'Va ensuite sur <b>www.recettes-de-lilou.fr</b>', goal:G.visited('www.recettes-de-lilou.fr')},
+        {t:'Ouvre le menu <b>☰</b> puis <b>🕘 Historique</b>', goal:G.openedHistory()},
+        {t:'Dans l\'historique, retrouve la fiche du <b>dauphin</b> et <b>rouvre-la</b>', goal:G.openedFromHistory('www.zanimo.fr/dauphin')}
+      ]},
+    {kind:'jalon',label:'Défi',emoji:'🕵️',title:'Détective du passé',
+      intro:'Hier, tu as vu une super <b>recette de gâteau</b>… mais impossible de te souvenir de l\'adresse ! Heureusement, ton navigateur, lui, se souvient de tout.',
+      seed:{tabs:['goupil.start'], history:[
+        {url:'www.pizzeria-la-tour.fr', label:'Hier'},
+        {url:'www.recettes-de-lilou.fr/gateau-choco', label:'Hier'},
+        {url:'www.zanimo.fr/kangourou', label:'Hier'},
+        {url:'www.musee-espace.fr', label:'Hier'}
+      ]},
+      objectives:[
+        {t:'Ouvre l\'<b>Historique</b> (menu ☰)', goal:G.openedHistory()},
+        {t:'Retrouve la page de la <b>recette</b> vue hier et rouvre-la', goal:G.openedFromHistory('www.recettes-de-lilou.fr/gateau-choco')},
+        {t:'Ajoute-la aux <b>favoris ⭐</b> pour ne plus jamais la perdre', goal:G.bookmarked('www.recettes-de-lilou.fr/gateau-choco')},
+        quizObj('Dernière question dans le carnet 📝 !', 'qChoco', 'Combien de grammes de chocolat faut-il pour la recette ?', ['200'], 'Regarde la liste des ingrédients de la recette.')
+      ]}
+  ]}
+];
+
+/* ---------------------------------------------------------
+   7. DÉROULÉ DES MISSIONS
+   --------------------------------------------------------- */
+function reviewing(){ return playIdx<progressIdx; }
+function startStep(idx){
+  clearSpots();
+  playIdx=idx; currentStep=STEPS[idx]; _missionDone=false;
+  currentStep._objDone=(currentStep.objectives||[]).map(()=>false);
+  currentStep._jalonIdx=0; currentStep._jalonAnim=false;
+  buildScreen();
+  seedBrowser(currentStep.seed||{});
+  updateProgress(); updateBanner();
+  openRoundPopup();
+}
+function updateProgress(){
+  const track=document.getElementById('track'); track.innerHTML='';
+  STEPS.forEach((st,i)=>{
+    const d=document.createElement('div');
+    const mile=st.kind==='jalon';
+    d.className='seg'+(mile?' milestone':'');
+    if(i<progressIdx) d.classList.add('done');
+    if(i===playIdx) d.classList.add('current');
+    if(mile) d.textContent='🏆';
+    if(i<=progressIdx){
+      d.classList.add('clickable');
+      d.title=(i===playIdx?'Mission en cours : ':'Revenir à ')+(st.label||'')+' · '+(st.title||'');
+      d.onclick=()=>{ if(i<=progressIdx) startStep(i); };
+    }
+    track.appendChild(d);
+  });
+  const shown=Math.min(playIdx+1, STEPS.length);
+  document.getElementById('stepCount').textContent='Niveau '+currentLevel+' · '+(STEPS[playIdx].label||'')+' ('+shown+'/'+STEPS.length+')';
+}
+function updateBanner(){
+  const b=document.getElementById('banner');
+  b.className='banner'+(currentStep.kind==='jalon'?' test':'')+(reviewing()?' review':'');
+  document.getElementById('bEmoji').textContent=currentStep.emoji;
+  document.getElementById('bTitle').textContent=(reviewing()?'Révision · ':'')+(currentStep.label||'')+' : '+(currentStep.title||'');
+  renderJalonObjective(false);
+  const lbl=(currentStep.kind==='jalon')?'le défi':'la mission';
+  document.getElementById('restartBtn').textContent='↺ Recommencer '+lbl;
+  document.getElementById('resetBtn').title='Recommencer '+lbl;
+}
+function stripTags(s){ return String(s).replace(/<[^>]+>/g,''); }
+function refreshLevelBtn(){ const b=document.getElementById('levelBtn'); if(b) b.textContent='🗺️ Niveau '+currentLevel+'/'+LEVELS.length; }
+
+function openLevelIntro(n, cont){
+  const lvl=LEVELS[n-1], it=lvl.intro;
+  const tools=(it.tools||[]).map(t=>'<li><span class="ni-glyph">'+t.g+'</span> '+t.n+'</li>').join('');
+  modal.className='modal';
+  modal.innerHTML='<span class="m-emoji">'+it.emoji+'</span>'
+    +'<div class="kicker">Niveau '+n+'</div><h2>'+lvl.title+'</h2>'
+    +'<p>'+it.lead+'</p>'
+    +'<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p></div>'
+    +(tools?'<ul class="newtools">'+tools+'</ul>':'')
+    +'<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
+  openOverlay();
+  document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
+}
+function openRoundPopup(){
+  const s=currentStep, jalon=s.kind==='jalon';
+  const list=(s.objectives||[]).map(o=>'<li><span>'+o.t+'</span></li>').join('');
+  modal.className='modal'+(jalon?' test-modal':'');
+  modal.innerHTML='<span class="m-emoji">'+s.emoji+'</span>'
+    +'<div class="kicker">'+(reviewing()?'Entraînement':s.label)+'</div><h2>'+s.title+'</h2>'
+    +'<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta mission :')+'</p>'
+    +(s.intro?'<p>'+s.intro+'</p>':'')
+    +(list?'<ul class="tasklist">'+list+'</ul>':'')
+    +'</div>'
+    +'<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
+  openOverlay();
+  document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); };
+}
+function onMissionWin(){
+  beep('win');
+  clearSpots();
+  if(reviewing()){
+    modal.className='modal good';
+    modal.innerHTML='<span class="m-emoji">💪</span><h2>Bien joué !</h2>'
+      +'<p>Tu as refait cette mission. On revient à <b>ta mission en cours</b>, ta progression est gardée.</p>'
+      +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma mission</button></div>';
+    openOverlay(); document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
+    return;
+  }
+  const last=playIdx===STEPS.length-1;
+  if(last){ progressIdx=STEPS.length; saveProgress(); return levelComplete(); }
+  progressIdx=Math.max(progressIdx, playIdx+1); saveProgress();
+  const jalon=currentStep.kind==='jalon';
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">'+(jalon?'🏆':'✅')+'</span>'
+    +'<h2>'+(jalon?'Défi réussi !':'Mission réussie !')+'</h2>'
+    +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la mission suivante !')+'</p>'
+    +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
+  openOverlay(); if(jalon) confetti();
+  document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
+}
+function levelComplete(){
+  if(currentLevel>=LEVELS.length) return courseFinish();
+  const nextN=currentLevel+1;
+  store.set('nv_unlocked', String(Math.max(getUnlocked(), nextN)));
+  store.set('nv_step_l'+nextN, '0');
+  refreshLevelBtn(); confetti();
+  const lvl=LEVELS[nextN-1];
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">🎉</span>'
+    +'<div class="kicker" style="color:var(--green-d)">Niveau '+nextN+' débloqué</div>'
+    +'<h2>Bravo, tu passes au Niveau '+nextN+' !</h2>'
+    +'<p>Tu as terminé le <b>Niveau '+currentLevel+'</b>. Prochaine étape : <b>'+lvl.title+'</b> !</p>'
+    +'<div class="m-actions">'
+    +'<a class="m-btn ghost" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a>'
+    +'<button class="m-btn primary green" id="goNextLvl">Aller au Niveau '+nextN+' →</button></div>';
+  openOverlay();
+  document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
+}
+function courseFinish(){
+  confetti(); confetti();
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">🦊🏅</span><h2>Quel explorateur du web !</h2>'
+    +'<p>Tu as terminé les <b>4 premiers niveaux</b> de <b>Naviguer sur internet</b> ! Tu sais piloter ton navigateur, reconnaître les liens, chercher des informations avec de bons mots-clés et retrouver n\'importe quelle page grâce aux favoris et à l\'historique. 👏</p>'
+    +'<p><b>La suite arrive bientôt</b> : les pièges du web 🪤, la sécurité 🔒, les téléchargements ⬇️ et les mots de passe 🔑 !</p>'
+    +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
+    +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+  openOverlay();
+  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
+}
+
+/* sélecteur de niveaux */
+function openLevelSelector(){
+  const unlocked=getUnlocked();
+  modal.className='modal';
+  const cards=LEVELS.map(lv=>{
+    const locked=lv.n>unlocked, cur=lv.n===currentLevel;
+    const badge=locked?'🔒':(lv.n<currentLevel?'✓':'▶');
+    return '<button class="lvl-card'+(locked?' locked':'')+(cur?' current':'')+'" data-n="'+lv.n+'" '+(locked?'disabled':'')+'>'
+      +'<span class="lc-badge">'+badge+'</span><span class="lc-n">Niveau '+lv.n+'</span><span class="lc-t">'+lv.title+'</span></button>';
+  }).join('');
+  modal.innerHTML='<span class="m-emoji">🗺️</span><h2>Choisis ton niveau</h2>'
+    +'<p>Reviens sur un niveau déjà débloqué quand tu veux : ta progression est <b>gardée</b>.</p>'
+    +'<div class="lvl-grid">'+cards+'</div>'
+    +'<div class="m-actions"><button class="m-btn ghost" id="lsClose">Fermer</button></div>';
+  openOverlay();
+  modal.querySelectorAll('.lvl-card:not(.locked)').forEach(b=>b.onclick=()=>{ closeOverlay(); loadLevel(+b.getAttribute('data-n'), undefined, true); });
+  document.getElementById('lsClose').onclick=()=>closeOverlay();
+}
+
+function loadLevel(n, stepIdx, showIntro){
+  currentLevel=n;
+  store.set('nv_curlevel', String(n));
+  STEPS=LEVELS[n-1].rounds;
+  const saved=(stepIdx!=null)?stepIdx:getSavedStep(n);
+  progressIdx=Math.max(0, Math.min(saved, STEPS.length-1));
+  document.getElementById('lvlTitle').innerHTML='Naviguer sur internet <span class="dot">·</span> '+LEVELS[n-1].subtitle;
+  refreshLevelBtn();
+  if(showIntro) openLevelIntro(n, ()=>startStep(progressIdx));
+  else startStep(progressIdx);
+}
+
+/* ---------------------------------------------------------
+   8. OVERLAY, TOAST, CONFETTI
+   --------------------------------------------------------- */
+function openOverlay(){ overlay.classList.add('open'); }
+function closeOverlay(){ overlay.classList.remove('open'); }
+let _toastT=null;
+function toast(msg){ const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove('show'),6000); }
+function confetti(){
+  const c=document.createElement('div'); c.className='confetti';
+  const colors=['#2563eb','#f59e0b','#16a34a','#ef4444','#7c3aed','#06b6d4'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('i');
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=colors[i%colors.length];
+    p.style.animationDuration=(2.2+Math.random()*1.6)+'s';
+    p.style.animationDelay=(Math.random()*.5)+'s';
+    c.appendChild(p);
+  }
+  document.body.appendChild(c);
+  setTimeout(()=>{ c.remove(); }, 4800);
+}
+
+/* ---------------------------------------------------------
+   9. ASTUCES (surbrillance des bons éléments)
+   --------------------------------------------------------- */
+let _spots=[], _spotT=null;
+function spotEl(el){ if(el){ el.classList.add('spot'); _spots.push(el); } }
+function clearSpots(){ clearTimeout(_spotT); _spots.forEach(el=>el.classList.remove('spot')); _spots=[]; }
+function highlightForStep(){
+  clearSpots();
+  const o=activeObj(); if(!o || !o.goal) return;
+  const spot=o.goal.spot;
+  const q=s=>document.querySelector(s);
+  if(spot==='addr')        spotEl(q('#addrPill'));
+  else if(spot==='back')   spotEl(q('#btnBack'));
+  else if(spot==='fwd')    spotEl(q('#btnFwd'));
+  else if(spot==='reload') spotEl(q('#btnReload'));
+  else if(spot==='home')   spotEl(q('#btnHome'));
+  else if(spot==='star')   spotEl(q('#btnStar'));
+  else if(spot==='menu')   spotEl(q('#btnMenu'));
+  else if(spot==='bmbar')  spotEl(q('#bmBar'));
+  else if(spot==='tabs')   spotEl(q('#tabstrip'));
+  else if(spot==='newtab') spotEl(q('#btnNewTab'));
+  else if(spot==='quiz')   spotEl(q('#quizDock'));
+  else if(spot==='logo')   spotEl(q('#viewport .wp-logo'));
+  else if(spot==='links'){ document.querySelectorAll('#viewport [data-go]').forEach(spotEl); }
+  else if(spot==='search'){ document.querySelectorAll('#viewport .ct-box, #viewport .start-search').forEach(spotEl); spotEl(q('#addrPill')); }
+  else if(spot==='sidebar'){ const sb=q('#sidebar'); if(sb && !sb.hidden) spotEl(sb); else spotEl(q('#btnMenu')); }
+  if(_spots.length) _spotT=setTimeout(clearSpots, 6000);
+}
+function onHint(){
+  if(overlay.classList.contains('open')) return;
+  const s=currentStep; if(!s) return;
+  const ao=activeObj();
+  const hintTxt=(ao && ao.goal && ao.goal.hint) ? ao.goal.hint : stripTags((ao&&ao.t)||'');
+  modal.className='modal test-modal';
+  modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker" style="color:var(--amber-d)">Astuce</div>'
+    +'<h2>'+(s.title||'Astuce')+'</h2>'
+    +'<div class="howto test"><p class="h-head">👉 Comment faire :</p><p>'+hintTxt+'</p></div>'
+    +'<p style="font-size:.95rem;color:var(--muted)">Les éléments importants vont <b>briller en jaune</b> ✨ sur l\'écran.</p>'
+    +'<div class="m-actions"><button class="m-btn primary test" id="hintGo">Montre-moi ✨</button></div>';
+  openOverlay();
+  document.getElementById('hintGo').onclick=()=>{ closeOverlay(); highlightForStep(); };
+}
+
+/* boutons de la page */
+document.getElementById('hintBtn').onclick=onHint;
+document.getElementById('restartBtn').onclick=()=>startStep(playIdx);
+document.getElementById('resetBtn').onclick=()=>startStep(playIdx);
+document.getElementById('seeMission').onclick=()=>openRoundPopup();
+document.getElementById('levelBtn').onclick=()=>openLevelSelector();
+
+/* ---------------------------------------------------------
+   10. INIT
+   --------------------------------------------------------- */
+(function init(){
+  refreshSoundBtn();
+  const go=/[?&]go=(\d+)(?:[.\-_](\d+))?/.exec(location.search);
+  if(go){
+    const L=Math.max(1,Math.min(LEVELS.length, parseInt(go[1],10)));
+    store.set('nv_unlocked', String(Math.max(getUnlocked(), L)));
+    store.set('nv_curlevel', String(L));
+    if(go[2]!=null) store.set('nv_step_l'+L, String(Math.max(0, parseInt(go[2],10))));
+  }
+  let lvl=parseInt(store.get('nv_curlevel')||'1',10);
+  if(isNaN(lvl)||lvl<1||lvl>LEVELS.length) lvl=1;
+  lvl=Math.min(lvl, getUnlocked());
+  loadLevel(lvl, getSavedStep(lvl), !go);
+})();
+
+/* ---------------------------------------------------------
+   11. ACCÈS DÉVELOPPEUR
+   --------------------------------------------------------- */
+(function devkit(){
+  const UNLOCK='nv_unlocked', CUR='nv_curlevel', STEP='nv_step_l', HOME='naviguer-internet.html';
+  const css=`
+  #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;}
+  #devkit .dk-toggle{display:inline-flex;align-items:center;gap:6px;background:#1e2733;color:#e7eef6;border:none;
+    border-radius:999px;padding:9px 14px;font-weight:800;font-size:.85rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.28);}
+  #devkit .dk-toggle:hover{background:#2a3645;}
+  #devkit .dk-panel{display:none;position:absolute;right:0;bottom:48px;width:320px;max-height:72vh;overflow:auto;
+    background:#1e2733;color:#e7eef6;border-radius:14px;padding:12px 12px 14px;box-shadow:0 16px 40px rgba(0,0,0,.42);}
+  #devkit.open .dk-panel{display:block;}
+  #devkit .dk-head{font-weight:800;font-size:.95rem;margin:0 0 2px;}
+  #devkit .dk-note{color:#9fb0c4;font-size:.72rem;margin:0 0 6px;line-height:1.35;}
+  #devkit .dk-lv{font-weight:800;color:#9fc3ff;margin:11px 0 4px;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;}
+  #devkit .dk-step{display:block;width:100%;text-align:left;background:#2b3949;color:#e7eef6;border:1px solid #3a4a5c;
+    border-radius:8px;padding:6px 9px;margin:3px 0;cursor:pointer;font-size:.78rem;line-height:1.3;}
+  #devkit .dk-step:hover{background:#37485c;border-color:#5a7088;}
+  #devkit .dk-step.jalon{border-color:#f6b73c;}
+  #devkit .dk-step b{color:#ffd479;}
+  #devkit .dk-actions{display:flex;gap:6px;margin-top:12px;}
+  #devkit .dk-act{flex:1;background:#33455a;color:#e7eef6;border:1px solid #44586e;border-radius:8px;padding:7px;
+    font-weight:700;font-size:.74rem;cursor:pointer;}
+  #devkit .dk-act:hover{background:#3d5167;}`;
+  const style=document.createElement('style'); style.textContent=css; document.head.appendChild(style);
+  const root=document.createElement('div'); root.id='devkit';
+  let html='<button class="dk-toggle" id="dkToggle">🛠️ Dev</button>'
+    +'<div class="dk-panel"><p class="dk-head">🛠️ Accès développeur</p>'
+    +'<p class="dk-note">Saute à une mission : tout ce qui précède est considéré comme réussi.</p>';
+  LEVELS.forEach(lv=>{
+    html+='<div class="dk-lv">Niveau '+lv.n+' — '+lv.title+'</div>';
+    lv.rounds.forEach((d,i)=>{
+      const isJ=(d.kind==='jalon');
+      html+='<button class="dk-step'+(isJ?' jalon':'')+'" data-l="'+lv.n+'" data-s="'+i+'"><b>'+(d.label||('Mission '+(i+1)))+'</b> · '+(d.title||'')+'</button>';
+    });
+  });
+  html+='<div class="dk-actions"><button class="dk-act" id="dkUnlockAll">🔓 Tout débloquer</button>'
+    +'<button class="dk-act" id="dkReset">🧹 Reset complet</button></div></div>';
+  root.innerHTML=html; document.body.appendChild(root);
+  function devJump(L,S){
+    L=Math.max(1,Math.min(LEVELS.length,L));
+    const maxS=LEVELS[L-1].rounds.length-1; S=Math.max(0,Math.min(maxS,S||0));
+    store.set(UNLOCK, String(Math.max(getUnlocked(),L))); store.set(CUR, String(L)); store.set(STEP+L, String(S));
+    closeOverlay(); loadLevel(L,S,false);
+  }
+  document.getElementById('dkToggle').onclick=()=>root.classList.toggle('open');
+  root.querySelectorAll('.dk-step').forEach(b=>b.onclick=()=>{ root.classList.remove('open'); devJump(+b.getAttribute('data-l'), +b.getAttribute('data-s')); });
+  document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
+  document.getElementById('dkReset').onclick=()=>{ const keys=[UNLOCK,CUR]; for(let i=1;i<=LEVELS.length;i++) keys.push(STEP+i); keys.forEach(k=>store.del(k)); location.href=HOME; };
+})();
+</script>
+<script>
+/* Bouton bascule OpenDyslexic — préférence partagée entre toutes les pages */
+(function(){
+  var KEY='a11y_dys', root=document.documentElement;
+  var btn=document.createElement('button');
+  btn.type='button'; btn.className='dys-toggle';
+  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dyslexique</span><span class="dys-switch"><span class="dys-knob"></span></span>';
+  function apply(on){ root.classList.toggle('dys',on); btn.setAttribute('aria-pressed',on?'true':'false');
+    btn.title=on?'Mode Dyslexique activé — clique pour revenir à la police normale':'Activer le Mode Dyslexique (police OpenDyslexic)'; }
+  btn.addEventListener('click',function(){ var want=!root.classList.contains('dys'); try{localStorage.setItem(KEY,want?'1':'0');}catch(e){} apply(want); });
+  document.body.appendChild(btn);
+  var on=false; try{on=localStorage.getItem(KEY)==='1';}catch(e){} apply(on);
+})();
+</script>
+</body>
+</html>
