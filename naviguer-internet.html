@@ -508,6 +508,124 @@
   }
 </style>
 <style>
+  /* ===== 5 bis. MOTEUR ARCADE — HUD, juice, mini-jeux ===== */
+  .arc-hud{max-width:1000px;margin:10px auto 0;width:calc(100% - 36px);display:flex;align-items:center;gap:18px;
+    background:#1f2a37;color:#fff;border-radius:13px;padding:9px 18px;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.02rem;box-shadow:0 8px 22px -14px rgba(15,23,42,.8);}
+  .arc-hud .ah-score{color:#fde047;letter-spacing:.03em;}
+  .arc-hud .ah-combo{color:#fb923c;min-width:66px;transition:transform .15s;}
+  .arc-hud .ah-combo.hot{transform:scale(1.22);animation:comboFlame .5s ease infinite alternate;}
+  @keyframes comboFlame{from{text-shadow:0 0 4px #fb923c;}to{text-shadow:0 0 14px #f59e0b;}}
+  .arc-hud .ah-shields .off{filter:grayscale(1);opacity:.35;}
+  .arc-hud .ah-timer{margin-left:auto;font-variant-numeric:tabular-nums;}
+  .arc-hud .ah-timer.low{color:#f87171;animation:timBlink .6s steps(2) infinite;}
+  @keyframes timBlink{50%{opacity:.4;}}
+  .screen.shake{animation:scrShake .4s;}
+  @keyframes scrShake{0%,100%{transform:translate(0,0);}15%{transform:translate(-9px,4px);}30%{transform:translate(8px,-5px);}
+    45%{transform:translate(-7px,-3px);}60%{transform:translate(6px,4px);}75%{transform:translate(-4px,2px);}90%{transform:translate(3px,-2px);}}
+  .arc-flash{position:absolute;inset:0;z-index:120;pointer-events:none;
+    background:radial-gradient(circle,rgba(255,80,40,0) 40%,rgba(255,60,30,.5) 100%);animation:arcFlashK .32s ease-out forwards;}
+  @keyframes arcFlashK{0%{opacity:0;}30%{opacity:1;}100%{opacity:0;}}
+  .arc-banner{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);z-index:130;pointer-events:none;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.5rem;color:#fff;
+    background:rgba(31,42,55,.93);padding:12px 26px;border-radius:16px;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis;
+    animation:arcBanK 1.5s ease forwards;}
+  .arc-banner.bad{background:rgba(185,28,28,.95);}
+  .arc-banner.good{background:rgba(21,128,61,.95);}
+  @keyframes arcBanK{0%{transform:translate(-50%,-50%) scale(.5);opacity:0;}14%{transform:translate(-50%,-50%) scale(1.06);opacity:1;}
+    24%{transform:translate(-50%,-50%) scale(1);}78%{opacity:1;}100%{opacity:0;}}
+  .arc-fly{position:absolute;z-index:125;pointer-events:none;font-family:"Fredoka","Fluent Emoji",sans-serif;
+    font-weight:700;font-size:1.3rem;color:#f59e0b;text-shadow:0 2px 0 #fff,0 0 10px #fde047;animation:arcFlyK .95s ease-out forwards;}
+  @keyframes arcFlyK{0%{transform:translateY(0) scale(.7);opacity:0;}18%{opacity:1;transform:translateY(-8px) scale(1.15);}
+    100%{transform:translateY(-64px) scale(1);opacity:0;}}
+  .arc-burst{position:absolute;pointer-events:none;z-index:124;}
+  .arc-spark{position:absolute;width:8px;height:8px;border-radius:50%;top:0;left:0;
+    transform:translate(-50%,-50%);animation:arcSparkK .5s ease-out forwards;}
+  @keyframes arcSparkK{0%{transform:translate(-50%,-50%) scale(1);opacity:1;}
+    100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(0);opacity:0;}}
+  .arc-count{position:absolute;inset:0;z-index:140;display:flex;align-items:center;justify-content:center;
+    background:rgba(15,23,42,.55);}
+  .arc-count b{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:5.4rem;color:#fff;
+    text-shadow:0 6px 30px rgba(0,0,0,.5);animation:cntPop .65s ease;}
+  .arc-count b.go{color:#4ade80;}
+  @keyframes cntPop{0%{transform:scale(.3);opacity:0;}55%{transform:scale(1.15);opacity:1;}100%{transform:scale(1);}}
+  .ghost-hand{position:absolute;z-index:150;font-size:2.3rem;pointer-events:none;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,.4));
+    transition:left 1s cubic-bezier(.35,.7,.3,1), top 1s cubic-bezier(.35,.7,.3,1);}
+  .ghost-hand.tap{animation:ghostTapK .45s ease 2;}
+  @keyframes ghostTapK{50%{transform:scale(.72);}}
+  .ord-card{position:absolute;left:50%;top:128px;transform:translateX(-50%);z-index:110;pointer-events:none;
+    display:flex;align-items:center;gap:12px;max-width:88%;
+    background:#fff;border:3px solid var(--blue);border-radius:16px;padding:10px 20px;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.1rem;color:var(--ink);
+    box-shadow:0 16px 40px -18px rgba(15,23,42,.75);}
+  .ord-card .oc-ic{font-size:1.7rem;line-height:1;}
+  .ord-card .oc-n{font-size:.78rem;color:var(--muted);align-self:flex-start;}
+  .ord-card.pop{animation:ordPopK .3s ease;}
+  @keyframes ordPopK{0%{transform:translateX(-50%) scale(.7);}70%{transform:translateX(-50%) scale(1.06);}100%{transform:translateX(-50%) scale(1);}}
+  .px-bar{width:230px;height:12px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin:7px auto 3px;}
+  .px-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f59e0b,#dc2626);border-radius:99px;transition:width .25s linear;}
+  .px-lbl{font-size:.74rem;color:var(--muted);display:block;font-family:"Nunito",sans-serif;font-weight:800;}
+  /* étoiles gagnées */
+  .progress-wrap{padding-top:20px;}
+  .seg{overflow:visible;}
+  .seg .seg-stars{position:absolute;top:-15px;left:0;right:0;text-align:center;font-size:.6rem;letter-spacing:-2px;pointer-events:none;}
+  .lc-stars{font-size:.72rem;font-weight:800;color:#b45309;}
+  .star-line{font-size:2.7rem;line-height:1.2;margin:6px 0 2px;letter-spacing:6px;}
+  .star-line .sp{display:inline-block;opacity:.25;transform:scale(.55);}
+  .star-line .sp.on{animation:starPopK .5s ease forwards;}
+  @keyframes starPopK{0%{transform:scale(.4);opacity:.4;}60%{transform:scale(1.5);opacity:1;}100%{transform:scale(1);opacity:1;}}
+  .arc-score-line{font-family:"Fredoka","Fluent Emoji",sans-serif;color:var(--ink);}
+  /* pages de mini-jeu (plein viewport) */
+  .arcpage{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:26px 22px;text-align:center;background:linear-gradient(155deg,#eef4ff,#fef9ec 75%);cursor:default;}
+  .arcpage .ap-k{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:.76rem;color:var(--blue-d);margin:0 0 8px;}
+  .arcpage .ap-q{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.3rem;margin:0 0 16px;}
+  .vp-url{font-weight:800;font-size:clamp(1.05rem,3.2vw,1.5rem);background:#fff;border:3px solid var(--line);
+    border-radius:14px;padding:14px 24px;margin:0 0 20px;box-shadow:0 12px 30px -20px rgba(15,23,42,.7);}
+  .vp-url .bad-ch{color:#dc2626;background:#fee2e2;border-radius:4px;animation:badBlink .4s steps(2) 5;}
+  @keyframes badBlink{50%{background:#dc2626;color:#fff;}}
+  .ap-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+  .ap-btn{border:none;border-radius:14px;padding:15px 30px;font-family:"Fredoka","Fluent Emoji",sans-serif;
+    font-weight:600;font-size:1.15rem;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.18);transition:transform .1s;}
+  .ap-btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.18);}
+  .ap-btn.yes{background:var(--green);}
+  .ap-btn.no{background:var(--red);}
+  .ap-btn.go{background:var(--blue);margin-top:14px;}
+  .kw-zone{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:560px;}
+  .kw-block{border:2px solid var(--line);background:#fff;border-radius:999px;padding:9px 17px;
+    font-weight:800;font-size:.95rem;color:var(--ink);transition:.12s;}
+  .kw-block:hover{border-color:var(--blue);transform:translateY(-2px);}
+  .kw-block.sel{background:var(--blue);border-color:var(--blue-d);color:#fff;}
+  .kw-res{margin-top:16px;background:#fff;border:2px solid #86efac;border-left:6px solid var(--green);
+    border-radius:12px;padding:10px 16px;font-weight:800;animation:resPopK .3s ease;}
+  @keyframes resPopK{from{transform:scale(.85);opacity:0;}to{transform:scale(1);opacity:1;}}
+  /* SERP à nettoyer */
+  .clean-list{max-width:600px;width:100%;text-align:left;}
+  .clean-it{position:relative;background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 10px;cursor:pointer;transition:.12s;}
+  .clean-it:hover{border-color:var(--blue);transform:translateY(-2px);}
+  .clean-it.ok{border-color:#86efac;background:#f0fdf4;cursor:default;}
+  .clean-it .ci-u{font-weight:700;font-size:.76rem;color:#0f7b3c;}
+  .clean-it .ci-t{font-weight:800;font-size:1rem;color:#1d4ed8;}
+  .clean-it .ci-s{font-weight:600;font-size:.82rem;color:#4a5a68;margin-top:2px;}
+  .clean-it .ci-ad{display:inline-block;background:#fde68a;color:#92400e;font-weight:800;font-size:.64rem;border-radius:4px;padding:1px 7px;margin-right:6px;}
+  .clean-it .ci-done{position:absolute;top:8px;right:10px;font-size:1.15rem;}
+  /* tri des favoris */
+  .tri-list{display:flex;flex-direction:column;gap:9px;max-width:620px;width:100%;text-align:left;}
+  .tri-card{display:flex;align-items:center;gap:11px;background:#fff;border:2px solid var(--line);border-radius:13px;padding:9px 13px;}
+  .tri-card .tc-ic{font-size:1.5rem;}
+  .tri-card .tc-tx{flex:1;min-width:0;}
+  .tri-card .tc-tx b{font-size:.94rem;}
+  .tri-card .tc-u{display:block;font-weight:700;font-size:.74rem;color:#7b8b9b;}
+  .tri-card .tc-why{display:block;font-weight:700;font-size:.76rem;color:var(--muted);margin-top:2px;}
+  .tri-card .tc-btn{border:none;border-radius:9px;padding:8px 13px;font-weight:800;font-size:.82rem;color:#fff;}
+  .tri-card .tc-btn.keep{background:var(--green);}
+  .tri-card .tc-btn.jet{background:var(--red);}
+  .tri-card.done{opacity:.85;}
+  .tri-card.done.keep{border-color:#86efac;background:#f0fdf4;}
+  .tri-card.done.jet{border-color:#fca5a5;background:#fef2f2;opacity:.7;}
+</style>
+<style>
   /* ===== Bascule police OpenDyslexic (accessibilité lecture/dyslexie) ===== */
   @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
   @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
@@ -552,6 +670,8 @@
     </div>
     <button class="b-btn" id="seeMission">📋 Revoir la consigne</button>
   </div>
+
+  <div class="arc-hud" id="arcHud" hidden></div>
 
   <div class="stage-wrap"><div id="stage"></div></div>
 
@@ -934,6 +1054,7 @@ function syncAddrBar(){
   inp.value=(url===B.homepage)?'':url;
   const lock=document.getElementById('addrLock');
   if(url===B.homepage){ lock.textContent='🦊'; lock.title='Page d\'accueil de Goupil'; }
+  else if(page.game){ lock.textContent='🎮'; lock.title='Zone d\'entraînement de la Cyber-Patrouille'; }
   else if(page.real===false){ lock.textContent='⚠️'; lock.title='Page introuvable'; }
   else if(page.secure===false){ lock.textContent='⚠️'; lock.title='Connexion NON sécurisée (http) — clique pour en savoir plus'; }
   else { lock.textContent='🔒'; lock.title='Connexion sécurisée (https) — clique pour en savoir plus'; }
@@ -1346,6 +1467,18 @@ const SITES={
   eifshop:{ base:'www.boutique-eiffel.fr', name:'Boutique Eiffel', icon:'🛒', color:'#9333ea', soft:'#f3e8fd', nav:[] },
   pizza:{ base:'www.pizzeria-la-tour.fr', name:'Pizzeria La Tour', icon:'🍕', color:'#dc2626', soft:'#fdeaea', nav:[] },
   choco:{ base:'www.choco-market.fr', name:'Choco Market', icon:'🍫', color:'#92400e', soft:'#f7ecdf', nav:[] },
+  /* --- nouveaux sites (refonte arcade) --- */
+  tubix:{ base:'www.tubix.fr', name:'Tubix', icon:'📺', color:'#dc2626', soft:'#fdeaea',
+    nav:[['Tendances','www.tubix.fr']] },
+  copains:{ base:'www.copains2college.fr', name:'Copains2Collège', icon:'💬', color:'#7c3aed', soft:'#f1eafd',
+    nav:[['Le fil','www.copains2college.fr']] },
+  gamerz:{ base:'www.forum-gamerz.fr', name:'Forum Gamerz', icon:'🎮', color:'#0f766e', soft:'#e2f7f4',
+    nav:[['Les sujets','www.forum-gamerz.fr']] },
+  shopix:{ base:'www.shopix.fr', name:'Shopix', icon:'🛒', color:'#ea580c', soft:'#fff1e5', nav:[] },
+  ent:{ base:'ent.college-curie.fr', name:'ENT · Collège Marie-Curie', icon:'🏫', color:'#155e75', soft:'#e3f3f8',
+    nav:[['Accueil','ent.college-curie.fr'],['Cahier de texte','ent.college-curie.fr/cahier-de-texte']] },
+  presse:{ base:'www.presse-jeunes.fr', name:'Presse-Jeunes', icon:'📰', color:'#1d4ed8', soft:'#e8f0fe', nav:[] },
+  wikimini:{ base:'www.wikimini-fr.org', name:'Wikimini', icon:'📚', color:'#0e9f6e', soft:'#e6f7ef', nav:[] },
   /* --- niveaux 5 à 9 --- */
   jeuxmax:{ base:'www.jeuxmax.fr', name:'JeuxMax', icon:'🕹️', color:'#7c3aed', soft:'#f1eafd',
     nav:[['Accueil','www.jeuxmax.fr']] },
@@ -1448,6 +1581,14 @@ const INDEX=[
   {url:'www.blockcraft.fr', t:'Blockcraft — site officiel du jeu', s:'Le site officiel de Blockcraft : actualités, versions et téléchargement sécurisé.', kw:'blockcraft jeu construction officiel telecharger site'},
   {url:'www.astuces-exposes.fr', t:'Astuces Exposés — modèles gratuits pour le collège', s:'Modèles de documents et conseils pour réussir tes exposés au collège.', kw:'expose modele astuces college document telecharger'},
   {url:'www.scoopz.fr', t:'Scoopz — l\'actu la plus CHOC du web', s:'Les scoops les plus incroyables du web !!! (fiabilité non garantie…)', kw:'scoopz actu choc buzz scoop rumeur'},
+  {url:'www.college-curie.fr/sorties', t:'Les sorties scolaires — Collège Marie-Curie', s:'Prochaine sortie : le Musée de l\'Espace, le 12 mai, avec la 5e B.', kw:'college sortie scolaire musee espace classe voyage'},
+  {url:'www.tubix.fr', t:'Tubix — les vidéos du moment', s:'Les vidéos tendances : le panda qui éternue, le prof au Rubik\'s cube…', kw:'video videos tubix tendances drole panda eternue regarder'},
+  {url:'www.copains2college.fr', t:'Copains2Collège — le réseau du collège', s:'Le fil des élèves : posts, photos et (parfois) grosses rumeurs.', kw:'reseau social copains college fil posts amis messages'},
+  {url:'www.forum-gamerz.fr', t:'Forum Gamerz — entraide jeux vidéo', s:'Tutos, équipes et discussions. Méfie-toi des « cheats gratuits »…', kw:'forum jeux video gamerz astuces tuto blockcraft equipe'},
+  {url:'www.shopix.fr', t:'Shopix — tout à petits prix', s:'Mugs, trottinettes, casques : la boutique en ligne aux avis 5 étoiles (hum).', kw:'boutique acheter shopix pas cher prix commander mug trottinette'},
+  {url:'ent.college-curie.fr', t:'ENT — Collège Marie-Curie', s:'Notes, cahier de texte et messages officiels du collège.', kw:'ent espace numerique travail college curie notes cahier texte devoirs'},
+  {url:'www.presse-jeunes.fr', t:'Presse-Jeunes — l\'info vérifiée', s:'Le journal des collégiens : articles signés, datés, vérifiés. Rumeurs démontées.', kw:'actualite info fiable journal presse jeunes verifie rumeur portique telephone'},
+  {url:'www.wikimini-fr.org', t:'Wikimini — l\'encyclopédie junior', s:'12 408 articles écrits par des élèves et relus par des profs.', kw:'encyclopedie wikimini savoir articles expose panda volcans internet'},
   /* résultats sponsorisés (annonces) */
   {ad:true, url:'www.super-jeux-cadeaux.com', t:'1000 JEUX GRATUITS — gagne un smartphone !', s:'Clique vite : jeux gratuits et CADEAUX pour les 100 premiers visiteurs. Offre limitée !!!', kw:'jeux gratuits gratuit jouer gagner cadeau smartphone'},
   {ad:true, url:'www.logiciels-turbo.com', t:'Ton ordinateur est LENT ? Turbo-Boost GRATUIT', s:'Rends ton PC 10× plus rapide en 30 secondes. Téléchargement gratuit aujourd\'hui seulement !', kw:'ordinateur lent accelerer rapide turbo logiciel gratuit telecharger'}
@@ -1788,6 +1929,164 @@ WEB['www.choco-market.fr']=pg('choco','Choco Market — vente de chocolat', func
     +'<div class="wp-card"><span class="c-ic">☕</span><span class="c-t">Chocolat chaud</span><div class="c-s">4,49 €</div></div>'
     +'</div>'
     +'<div class="wp-fact">💡 Ici on <b>achète</b> du chocolat, on ne trouve pas de <b>recette</b> ! Reviens aux résultats et cherche un site de cuisine.</div>';
+});
+
+/* ===========================================================
+   NOUVEAUX SITES (décor + munitions des mini-jeux)
+   =========================================================== */
+/* ----- Tubix, la plateforme vidéo ----- */
+WEB['www.tubix.fr']=pg('tubix','Tubix — les vidéos du moment', function(){
+  return '<div class="wp-hero"><span class="h-ic">📺</span><div class="h-tx">'
+    +'<h1>Tendances du jour</h1><p>Les vidéos que tout le collège regarde (au lieu de réviser).</p></div></div>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card" data-go="www.tubix.fr/panda-eternue"><span class="c-ic">🐼</span><span class="c-t">Un panda éternue et se fait peur</span><div class="c-s">2,3 M de vues · 0:12</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🎲</span><span class="c-t">J\'ai testé les 47 desserts de la cantine</span><div class="c-s">812 k vues · l\'infirmière est au courant</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🧊</span><span class="c-t">Ce prof résout un Rubik\'s cube en 12 s</span><div class="c-s">406 k vues · véridique</div></div>'
+    +'<div class="wp-card"><span class="c-ic">😱</span><span class="c-t">INCROYABLE tu ne devineras JAMAIS</span><div class="c-s">3 vues · on devine très bien</div></div>'
+    +'</div>'
+    +'<div class="wp-fact">💡 Les titres qui hurlent « INCROYABLE !!! » veulent ton clic, pas t\'informer.</div>';
+});
+WEB['www.tubix.fr/panda-eternue']=pg('tubix','Un panda éternue — Tubix', function(){
+  return '<h1>🐼 Un panda éternue et se fait peur</h1>'
+    +'<div class="wp-img">🐼💨</div>'
+    +'<p class="wp-center">▶ 0:12 · 2,3 M de vues · ajoutée par ZooFan88</p>'
+    +'<div class="wp-fact">🐼 Le bébé panda de la vidéo vit dans une réserve en Chine. Sa maman a sursauté, pas lui.</div>';
+});
+
+/* ----- Copains2Collège, le réseau social ----- */
+WEB['www.copains2college.fr']=pg('copains','Copains2Collège — le fil', function(){
+  return '<h1>💬 Le fil du collège</h1>'
+    +'<div class="wp-fact">👟 <b>Lila_4B</b> · il y a 2 h<br>Quelqu\'un a perdu UNE chaussure au gymnase ??? Une seule. Comment on rentre chez soi comme ça ??</div>'
+    +'<div class="wp-fact" style="border-left-color:#e11d48">😱 <b>Kevin_dumouv</b> · il y a 3 h<br>ALERTE : le collège va installer un portique qui CONFISQUE les téléphones À DISTANCE !!! Un surveillant l\'a dit à mon cousin. PARTAGEZ avant que ce soit censuré !!!<br><span style="color:#8d9cab;font-size:.8rem">🔁 partagé 214 fois</span></div>'
+    +'<div class="wp-fact">🛹 <b>Tom_skate</b> · hier<br>Premier ollie réussi !! La vidéo arrive sur mon blog. (Le genou, lui, n\'a pas survécu.)</div>'
+    +'<div class="wp-fact">🍰 <b>Lilou.cuisine</b> · hier<br>Nouveau record : gâteau au chocolat englouti par la 4e B en 47 secondes.</div>'
+    +'<p style="color:#8d9cab;font-size:.85rem">💡 Une info « partagée 214 fois » n\'est pas 214 fois plus vraie. Qui l\'a vérifiée ? Personne.</p>';
+});
+
+/* ----- Forum Gamerz ----- */
+WEB['www.forum-gamerz.fr']=pg('gamerz','Forum Gamerz — les sujets du jour', function(){
+  return '<h1>🎮 Les sujets du jour</h1>'
+    +'<div class="wp-fact">🏰 <b>[TUTO]</b> Construire un château imprenable dans Blockcraft — par <b>Castor_Pro</b> · 48 réponses</div>'
+    +'<div class="wp-fact">🏆 Cherche équipe pour le tournoi de vendredi (niveau : on verra bien) — par <b>Noob_Assumé</b> · 12 réponses</div>'
+    +'<div class="wp-fact" style="border-left-color:#e11d48">⚡ <b>CHEAT GRATUIT Blockcraft</b> — ressources infinies, 100 % indétectable !!! — par <b>x_Dark_Hackeur_x</b> · <a class="lk" data-go="www.forum-gamerz.fr/cheat-gratuit">voir le sujet</a></div>'
+    +'<div class="wp-fact">🐴 Pourquoi mon cheval refuse de monter dans la barque ? — par <b>Jean-Michel_Blocs</b> · 156 réponses</div>';
+});
+WEB['www.forum-gamerz.fr/cheat-gratuit']=pg('gamerz','CHEAT GRATUIT — Forum Gamerz', function(){
+  return '<h1>⚡ CHEAT GRATUIT Blockcraft !!!</h1>'
+    +'<p><b>x_Dark_Hackeur_x</b> écrit : « Téléchargez mon cheat, ressources infinies garanties, aucun virus promis juré. »</p>'
+    +'<p class="wp-center"><button class="wp-btnlink" style="--site:#dc2626" data-dl="cheat-ultime.exe" data-dlsize="6,66 Mo" data-danger>⬇️ Télécharger cheat-ultime.exe</button></p>'
+    +'<div class="wp-fact">💡 Réponse de <b>Castor_Pro</b> : « Un .exe “gratuit et indétectable” posté par un inconnu ? C\'est TOI la ressource infinie. Ne télécharge pas ça. »</div>';
+});
+
+/* ----- Shopix, la boutique en ligne ----- */
+WEB['www.shopix.fr']=pg('shopix','Shopix — tout à petits prix', function(){
+  return '<h1>🛒 Les affaires du moment</h1>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card"><span class="c-ic">☕</span><span class="c-t">Mug panda −70 %</span><div class="c-s">4,99 € · « le mug qui fait panda »</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🛴</span><span class="c-t">Trottinette Turbo-X</span><div class="c-s">89 € · casque non inclus (dommage)</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🎧</span><span class="c-t">Casque SuperBass</span><div class="c-s">19,99 € · basses « surprenantes »</div></div>'
+    +'</div>'
+    +'<h2>Avis clients</h2>'
+    +'<div class="wp-fact">⭐⭐⭐⭐⭐ « Incroyable, j\'achète tout ! » — <i>client_vérifié_du_92</i> (compte créé hier)</div>'
+    +'<div class="wp-fact">⭐ « Le mug fuit. » — <i>Monique</i> (avis étrangement absent de la page d\'accueil)</div>'
+    +'<div class="wp-fact">💡 Ici on <b>vend</b>. Pour t\'informer, cherche un site qui n\'a rien à te vendre.</div>';
+});
+
+/* ----- ENT du collège ----- */
+WEB['ent.college-curie.fr']=pg('ent','ENT — Collège Marie-Curie', function(){
+  return '<div class="wp-hero"><span class="h-ic">🏫</span><div class="h-tx">'
+    +'<h1>Bonjour Sam !</h1><p>Ton espace numérique de travail — notes, devoirs et messages officiels.</p></div></div>'
+    +'<h2>📊 Dernières notes</h2>'
+    +'<table class="wp-table"><tr><th>Matière</th><th>Note</th><th>Remarque</th></tr>'
+    +'<tr><td>Technologie</td><td><b>15/20</b></td><td>Très bon exposé</td></tr>'
+    +'<tr><td>Maths</td><td>11/20</td><td>Relis les énoncés !</td></tr>'
+    +'<tr><td>SVT</td><td>13/20</td><td>Schéma soigné</td></tr></table>'
+    +'<p>À faire cette semaine : consulte le <a class="lk" data-go="ent.college-curie.fr/cahier-de-texte">cahier de texte</a>.</p>';
+});
+WEB['ent.college-curie.fr/cahier-de-texte']=pg('ent','Cahier de texte — ENT', function(){
+  return '<h1>📓 Cahier de texte — 4e B</h1>'
+    +'<div class="wp-fact">🔢 <b>Maths</b> — pour jeudi : exercices 4 et 7 p. 42.</div>'
+    +'<div class="wp-fact">🌋 <b>SVT</b> — pour vendredi : terminer l\'exposé sur les volcans.</div>'
+    +'<div class="wp-fact">💻 <b>Technologie</b> — pour lundi : finir l\'atelier « Naviguer sur internet » (tiens donc).</div>';
+});
+
+/* ----- Presse-Jeunes, l'info fiable ----- */
+WEB['www.presse-jeunes.fr']=pg('presse','Presse-Jeunes — l\'info vérifiée', function(){
+  return '<div class="wp-hero"><span class="h-ic">📰</span><div class="h-tx">'
+    +'<h1>Presse-Jeunes</h1><p>Un vrai journal pour les collégiens : chaque article est signé, daté et vérifié.</p></div></div>'
+    +'<h2>✅ Vérification des rumeurs</h2>'
+    +'<div class="wp-fact">📵 <b>NON, aucun « portique confisque-téléphones » n\'existe.</b> La rumeur venue des réseaux est fausse : interrogée, la direction dément, et ce portique magique… n\'existe dans aucun catalogue. <i>— Nadia B., 2 juin</i></div>'
+    +'<div class="wp-fact">🚀 <b>OUI, le Musée de l\'Espace ouvrira une salle Mars en 2027.</b> Confirmé par le musée lui-même. <i>— Karim T., 28 mai</i></div>'
+    +'<div class="wp-fact">💡 Notre règle d\'or : une info sans auteur, sans date et sans source n\'est pas une info.</div>';
+});
+
+/* ----- Wikimini, l'encyclopédie junior ----- */
+WEB['www.wikimini-fr.org']=pg('wikimini','Wikimini — l\'encyclopédie junior', function(){
+  return '<div class="wp-hero"><span class="h-ic">📚</span><div class="h-tx">'
+    +'<h1>Wikimini</h1><p>L\'encyclopédie écrite par des élèves et relue par des profs. 12 408 articles.</p></div></div>'
+    +'<div class="wp-cards">'
+    +'<div class="wp-card"><span class="c-ic">🌋</span><span class="c-t">Les volcans</span><div class="c-s">Article de la semaine</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🌐</span><span class="c-t">Internet</span><div class="c-s">Comment ça marche ?</div></div>'
+    +'<div class="wp-card"><span class="c-ic">🐼</span><span class="c-t">Le panda</span><div class="c-s">Relu par 2 professeurs</div></div>'
+    +'</div>'
+    +'<div class="wp-fact">💡 Parfait pour démarrer un exposé — et chaque article cite ses sources.</div>';
+});
+
+/* ----- Page « zone de jeu » de la Cyber-Patrouille (mini-jeux plein écran) ----- */
+WEB['goupil.jeu']={
+  title:'Zone d\'entraînement', icon:'🎮', real:false, game:true,
+  html:function(){ return ARC.screenHtml||'<div class="arcpage"><p class="ap-q">🦊 Zone d\'entraînement de la Cyber-Patrouille</p><p style="font-weight:700;color:var(--muted)">Clique « GO » dans la consigne de mission pour lancer le jeu !</p></div>'; }
+};
+
+/* ----- Labyrinthes de la Cyber-Patrouille (niveau 2) ----- */
+function buildMaze(rooms, winSlug, winPage){
+  const base='www.chasse-au-tresor.fr';
+  rooms.forEach(function(r,i){
+    const nextUrl=base+'/'+(i+1<rooms.length?rooms[i+1].slug:winSlug);
+    WEB[base+'/'+r.slug]=pg('tresor', r.t+' — La Chasse au Trésor', function(){
+      let doors='';
+      r.doors.forEach(function(d){
+        doors+='<button class="wp-btnlink" data-go="'+(d[1]?nextUrl:(base+'/xperdu'))+'">'+d[0]+'</button>';
+      });
+      return '<div class="wp-center"><h1>'+r.ic+' '+r.t+' <span style="font-size:.55em;color:#8d9cab">salle '+(i+1)+' / '+rooms.length+'</span></h1>'
+        +'<div class="wp-fact" style="text-align:left">'+r.q+'</div>'
+        +'<p>'+doors+'</p></div>';
+    });
+  });
+  WEB[base+'/'+winSlug]=pg('tresor', winPage+' — La Chasse au Trésor', function(){
+    return '<div class="wp-center"><h1>🏆 '+winPage+' !</h1>'
+      +'<div class="wp-img">💰👑💎</div>'
+      +'<p><b>Bien joué, agent !</b> Toutes les salles sont derrière toi.</p></div>';
+  });
+}
+const MAZE1=[
+  {slug:'x1', ic:'🧭', t:'La salle des commandes', q:'Quel bouton du navigateur <b>revient à la page précédente</b> ?',
+    doors:[['⟳ Cette porte',false],['◀ Cette porte',true],['🏠 Cette porte',false]]},
+  {slug:'x2', ic:'🔤', t:'Le couloir des adresses', q:'Quelle adresse est <b>écrite correctement</b> ?',
+    doors:[['www zanimo fr',false],['wwwzanimo.fr',false],['www.zanimo.fr',true]]},
+  {slug:'x3', ic:'🗂️', t:'La grotte des onglets', q:'Le bouton <b>+</b> en haut du navigateur sert à…',
+    doors:[['➕ ouvrir un nouvel onglet',true],['🖨️ imprimer la page',false],['📞 appeler Goupil',false]]},
+  {slug:'x4', ic:'👆', t:'Le pont des liens', q:'Comment savoir où mène un lien <b>sans cliquer</b> ?',
+    doors:[['🍀 cliquer en croisant les doigts',false],['👆 le survoler et lire en bas à gauche',true],['🔮 demander à une boule de cristal',false]]},
+  {slug:'x5', ic:'🚪', t:'La salle du trésor', q:'Trois portes identiques… <b>Survole-les</b> et lis l\'adresse en bas à gauche : une seule mène à <b>/xfin</b> !',
+    doors:[['🚪 Porte de gauche',false],['🚪 Porte du milieu',true],['🚪 Porte de droite',false]]}
+];
+const MAZE2=[
+  {slug:'y1', ic:'🧱', t:'La porte Blockcraft', q:'Quelle porte mène au <b>VRAI site</b> de Blockcraft ?',
+    doors:[['www.b1ockcraft.fr',false],['www.blockcraft.fr',true],['www.blockcraft-gratuit.com',false]]},
+  {slug:'y2', ic:'📧', t:'La porte Pixmail', q:'Le <b>vrai</b> Pixmail, c\'est…',
+    doors:[['www.pixmail-secure-verif.com',false],['www.pixmail.connexion.fr',false],['www.pixmail.fr',true]]},
+  {slug:'y3', ic:'🏫', t:'La porte du collège', q:'Le site <b>officiel</b> du collège Marie-Curie ?',
+    doors:[['www.college-curie.fr',true],['www.colege-curie.fr',false],['www.college-curie-eleves.com',false]]},
+  {slug:'y4', ic:'🐾', t:'La dernière porte', q:'Le <b>vrai</b> Zanimo — lis chaque lettre !',
+    doors:[['www.zanim0.fr',false],['www.zanimo.fr',true],['www.zanimo-premium.fr',false]]}
+];
+buildMaze(MAZE1,'xfin','Le trésor est à toi');
+buildMaze(MAZE2,'yfin','Examen bouclé');
+WEB['www.chasse-au-tresor.fr/xperdu']=pg('tresor','Mauvaise porte… — La Chasse au Trésor', function(){
+  return '<div class="wp-center"><h1>💨 Mauvaise porte !</h1>'
+    +'<div class="wp-img">🕸️🦴</div>'
+    +'<p>Reviens avec <b>◀</b> et réessaie.</p></div>';
 });
 
 /* ===========================================================
@@ -2146,6 +2445,7 @@ const PHISH_MSGS={
   cadeaux:'Tu allais envoyer des <b>coordonnées bancaires</b> à des inconnus ! Personne ne distribue 1 000 € : c\'était une arnaque évidente.'
 };
 const PAGE_ACTIONS={
+  'arc':function(el){ if(ARC.onAction) ARC.onAction(el.getAttribute('data-arg')||'', el); },
   'play':function(){
     B.evt.playedGame=true; beep('good');
     toast('🚀 Partie lancée ! (version démo de JeuxMax)');
@@ -2290,6 +2590,7 @@ function quizObj(t, key, q, accepted, hint){
 let _missionDone=false;
 function checkMission(){
   if(!currentStep) return;
+  if(currentStep.kind==='game') return; /* les rounds arcade se vérifient eux-mêmes */
   if(_missionDone) return;
   const objs=currentStep.objectives; if(!objs || !objs.length) return;
   if(currentStep._jalonAnim) return;
@@ -2360,307 +2661,886 @@ function renderQuizDock(){
 }
 
 /* ---------------------------------------------------------
+   5 bis. MOTEUR ARCADE (score, combo, boucliers, étoiles)
+   ---------------------------------------------------------
+   API pour les rounds kind:'game' :
+   - le round définit run:function(done) — lancé après le
+     compte à rebours (bouton GO de la popup) ; il appelle
+     done() (= arcWin()) quand la mission est gagnée.
+   - arcStart({shields,timer,bonus,goalText}) au début du run.
+   - arcHit(pts, el) / arcMiss('msg court') pendant le jeu.
+   - arcGoal(txt) met à jour la consigne dynamique (bannière).
+   - banner(txt,kind) bandeau central ; countdown(cb) 3-2-1-GO ;
+     ghostClick(sel) main de démo ; showOrder/hideOrder carte
+     d'ordre ; arcSeries({steps,done}) enchaîne des ordres.
+   --------------------------------------------------------- */
+const ARC={ on:false, over:false, score:0, combo:0, comboT:null, misses:0,
+  shields:3, maxShields:3, timer:null, left:0, bonus:null, t0:0,
+  goalTxt:'', screenHtml:'', onAction:null };
+
+/* ----- étoiles persistées (nv_stars, on garde le max) ----- */
+function getStarsMap(){ try{ return JSON.parse(store.get('nv_stars')||'{}')||{}; }catch(e){ return {}; } }
+function saveStars(key,n){ const m=getStarsMap(); if(!m[key]||n>m[key]){ m[key]=n; store.set('nv_stars', JSON.stringify(m)); } }
+function starKey(){ return currentLevel+'.'+(playIdx+1); }
+function levelStars(n){ const m=getStarsMap(); let t=0; LEVELS[n-1].rounds.forEach((r,i)=>{ t+=m[n+'.'+(i+1)]||0; }); return t; }
+function starLineHtml(stars){
+  return '<div class="star-line">'+[0,1,2].map(i=>'<span class="sp" id="spStar'+i+'">'+(i<stars?'⭐':'☆')+'</span>').join('')+'</div>';
+}
+function popStars(stars){
+  [0,1,2].forEach(i=>{ if(i<stars) setTimeout(()=>{ const s=document.getElementById('spStar'+i); if(s){ s.classList.add('on'); beep('ding'); } }, 420+i*360); });
+}
+
+/* ----- sons arcade ----- */
+function arcTone(freq,dur,type,vol,delay){
+  if(!soundOn) return; const a=audioCtx(); if(!a) return;
+  const o=a.createOscillator(), g=a.createGain(); o.type=type||'triangle'; o.frequency.value=freq;
+  o.connect(g); g.connect(a.destination); const t=a.currentTime+(delay||0);
+  g.gain.setValueAtTime(vol||.11,t); g.gain.exponentialRampToValueAtTime(.0001,t+(dur||.1)); o.start(t); o.stop(t+(dur||.1));
+}
+function arcJingle(n){
+  const f=440*Math.pow(1.09,Math.min(n||1,10));
+  arcTone(f,.08,'triangle',.11); arcTone(f*1.5,.1,'triangle',.09,.06);
+}
+
+/* ----- juice : shake, flash, particules, "+N" volant ----- */
+function scr(){ return document.querySelector('.screen'); }
+function screenShake(){ const s=scr(); if(!s) return; s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); }
+function redFlash(){ const s=scr(); if(!s) return; const f=document.createElement('div'); f.className='arc-flash'; s.appendChild(f); setTimeout(()=>{ try{f.remove();}catch(e){} },340); }
+function elCenterInScreen(el){
+  const s=scr(); if(!s) return null;
+  const sr=s.getBoundingClientRect();
+  if(!el || !el.getBoundingClientRect) return {x:sr.width/2, y:sr.height/2};
+  const r=el.getBoundingClientRect();
+  return {x:r.left-sr.left+r.width/2, y:r.top-sr.top+r.height/2};
+}
+function flyPts(txt, el){
+  const s=scr(); if(!s) return;
+  const p=elCenterInScreen(el)||{x:s.offsetWidth/2,y:s.offsetHeight/2};
+  const d=document.createElement('div'); d.className='arc-fly'; d.textContent=txt;
+  d.style.left=(p.x-14)+'px'; d.style.top=(p.y-16)+'px';
+  s.appendChild(d); setTimeout(()=>{ try{d.remove();}catch(e){} },980);
+}
+function arcBurst(el){
+  const s=scr(); if(!s) return;
+  const p=elCenterInScreen(el); if(!p) return;
+  const burst=document.createElement('div'); burst.className='arc-burst';
+  burst.style.left=p.x+'px'; burst.style.top=p.y+'px';
+  const colors=['#fde047','#fff','#f59e0b','#60a5fa','#4ade80','#fde047'];
+  for(let i=0;i<12;i++){
+    const a=(i/12)*2*Math.PI, dist=30+Math.random()*28;
+    const sp=document.createElement('div'); sp.className='arc-spark';
+    sp.style.setProperty('--dx',(Math.cos(a)*dist)+'px');
+    sp.style.setProperty('--dy',(Math.sin(a)*dist)+'px');
+    sp.style.background=colors[i%colors.length];
+    sp.style.animationDelay=(Math.random()*.06)+'s';
+    burst.appendChild(sp);
+  }
+  s.appendChild(burst); setTimeout(()=>{ try{burst.remove();}catch(e){} },540);
+}
+function banner(txt, kind){
+  const s=scr(); if(!s) return;
+  const old=s.querySelector('.arc-banner'); if(old) old.remove();
+  const b=document.createElement('div'); b.className='arc-banner'+(kind?' '+kind:'');
+  b.innerHTML=txt;
+  s.appendChild(b); setTimeout(()=>{ try{b.remove();}catch(e){} },1550);
+}
+
+/* ----- compte à rebours 3-2-1-GO ----- */
+function countdown(cb){
+  const s=scr(); if(!s){ cb&&cb(); return; }
+  const old=s.querySelector('.arc-count'); if(old) old.remove();
+  const ov=document.createElement('div'); ov.className='arc-count'; s.appendChild(ov);
+  const seq=['3','2','1','GO !'];
+  let k=0;
+  (function tick(){
+    if(k>=seq.length){ try{ov.remove();}catch(e){} cb&&cb(); return; }
+    ov.innerHTML='<b'+(k===3?' class="go"':'')+'>'+seq[k]+'</b>';
+    arcTone(k===3?900:420+k*70,.14,'square',.1);
+    k++; after(k===4?520:720, tick);
+  })();
+}
+
+/* ----- main fantôme de démonstration ----- */
+function ghostClick(sel){
+  const s=scr(); const el=document.querySelector(sel);
+  if(!s||!el) return;
+  const g=document.createElement('div'); g.className='ghost-hand'; g.textContent='👆';
+  const sr=s.getBoundingClientRect(), er=el.getBoundingClientRect();
+  g.style.left=(sr.width*.5)+'px'; g.style.top=(sr.height*.72)+'px';
+  s.appendChild(g);
+  requestAnimationFrame(()=>{ g.style.left=(er.left-sr.left+er.width/2-15)+'px'; g.style.top=(er.top-sr.top+er.height/2-6)+'px'; });
+  after(1050, ()=>{ g.classList.add('tap'); el.classList.add('spot'); beep('click'); });
+  after(2100, ()=>{ try{g.remove();}catch(e){} el.classList.remove('spot'); });
+}
+
+/* ----- carte d'ordre (consigne flottante en jeu) ----- */
+function showOrder(html){
+  const s=scr(); if(!s) return;
+  let c=document.getElementById('ordCard');
+  if(!c){ c=document.createElement('div'); c.id='ordCard'; c.className='ord-card'; s.appendChild(c); }
+  c.innerHTML=html;
+  c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+}
+function hideOrder(){ const c=document.getElementById('ordCard'); if(c) c.remove(); }
+function orderEl(){ return document.getElementById('ordCard'); }
+
+/* ----- HUD, consigne dynamique ----- */
+function fmtTime(sec){ sec=Math.max(0,Math.ceil(sec)); return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0'); }
+function arcHudRender(){
+  const h=document.getElementById('arcHud'); if(!h) return;
+  if(!ARC.on){ h.hidden=true; return; }
+  h.hidden=false;
+  let sh='';
+  for(let i=0;i<ARC.maxShields;i++) sh+=(i<ARC.shields?'🛡️':'<span class="off">🛡️</span>');
+  h.innerHTML='<span class="ah-score">SCORE '+ARC.score+'</span>'
+    +'<span class="ah-combo'+(ARC.combo>=3?' hot':'')+'">'+(ARC.combo>=2?'🔥 x'+ARC.combo:'')+'</span>'
+    +'<span class="ah-shields">'+sh+'</span>'
+    +(ARC.timer?'<span class="ah-timer'+(ARC.left<=10?' low':'')+'">⏱ '+fmtTime(ARC.left)+'</span>':'');
+}
+function arcGoal(txt){ const el=document.getElementById('arcGoalTxt'); if(el) el.innerHTML=txt; }
+
+/* ----- cycle de manche ----- */
+function arcStart(cfg){
+  cfg=cfg||{};
+  ARC.on=true; ARC.over=false; ARC.score=0; ARC.combo=0; ARC.misses=0;
+  clearTimeout(ARC.comboT);
+  ARC.shields=(cfg.shields!=null)?cfg.shields:3; ARC.maxShields=ARC.shields;
+  ARC.timer=cfg.timer||null; ARC.left=ARC.timer||0; ARC.bonus=cfg.bonus||null;
+  ARC.goalTxt=cfg.goalText||'';
+  if(ARC.timer){ ARC.t0=Date.now(); every(250, arcTick); }
+  arcHudRender();
+  if(ARC.goalTxt) arcGoal('🎯 '+ARC.goalTxt);
+}
+function arcTick(){
+  if(!ARC.on||ARC.over||!ARC.timer) return;
+  ARC.left=Math.max(0, ARC.timer-(Date.now()-ARC.t0)/1000);
+  arcHudRender();
+  if(ARC.left<=0) arcFail('⏱ Temps écoulé !');
+}
+function arcHit(pts, el){
+  if(!ARC.on||ARC.over) return;
+  ARC.combo++;
+  clearTimeout(ARC.comboT);
+  ARC.comboT=setTimeout(()=>{ ARC.combo=0; arcHudRender(); },4000);
+  const gain=(pts||10)*Math.max(1,ARC.combo);
+  ARC.score+=gain;
+  arcJingle(ARC.combo);
+  flyPts('+'+gain, el||null);
+  if(el) arcBurst(el);
+  arcHudRender();
+}
+function arcMiss(msg){
+  if(!ARC.on||ARC.over) return;
+  ARC.combo=0; ARC.misses++; ARC.shields=Math.max(0,ARC.shields-1);
+  beep('bad'); screenShake(); redFlash();
+  arcHudRender();
+  if(ARC.shields<=0){ arcFail('💥 Raté ! On recommence…'); }
+  else banner('❌ '+(msg||'Raté !'),'bad');
+}
+function arcFail(msg){
+  if(ARC.over) return;
+  ARC.over=true;
+  beep('alarm'); screenShake(); redFlash();
+  banner(msg,'bad');
+  after(1600, arcRestart);
+}
+function arcRestart(){
+  clearTimers(); clearTimeout(ARC.comboT); clearSpots();
+  ARC.on=false; ARC.over=false; ARC.onAction=null; ARC.screenHtml='';
+  buildScreen();
+  seedBrowser(currentStep.seed||{});
+  arcLaunch();
+}
+function arcLaunch(){
+  countdown(function(){
+    if(currentStep && currentStep.run) currentStep.run(function(){ arcWin(); });
+  });
+}
+function arcWin(){
+  if(!ARC.on||ARC.over) return;
+  ARC.on=false; ARC.over=true;
+  clearTimers(); clearTimeout(ARC.comboT);
+  _missionDone=true;
+  hideOrder(); arcHudRender();
+  let stars=(ARC.misses===0)?3:(ARC.misses<=2?2:1);
+  if(ARC.timer && ARC.bonus && ARC.left>=ARC.bonus) stars=Math.min(3,stars+1);
+  saveStars(starKey(), stars);
+  beep('win'); confetti();
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">🏅</span>'
+    +'<h2>'+(currentStep.exam?'Examen réussi !':'Mission accomplie !')+'</h2>'
+    +starLineHtml(stars)
+    +'<p class="arc-score-line">SCORE <b>'+ARC.score+'</b>'+(ARC.misses?' · '+ARC.misses+' erreur'+(ARC.misses>1?'s':''):' · sans faute !')+'</p>'
+    +(stars<3?'<p style="font-size:.9rem;color:var(--muted)">'+(ARC.misses?'Zéro erreur = ⭐⭐⭐ !':'Encore plus rapide = ⭐⭐⭐ !')+'</p>':'')
+    +'<div class="m-actions"><button class="m-btn primary green" id="arcNext">Continuer →</button></div>';
+  openOverlay();
+  popStars(stars);
+  document.getElementById('arcNext').onclick=()=>{ closeOverlay(); arcAdvance(); };
+}
+function arcAdvance(){
+  if(reviewing()){ startStep(progressIdx); return; }
+  if(playIdx===STEPS.length-1){ progressIdx=STEPS.length; saveProgress(); levelComplete(); return; }
+  progressIdx=Math.max(progressIdx, playIdx+1); saveProgress();
+  startStep(playIdx+1);
+}
+
+/* ----- série d'ordres (détection par sondage de l'état B) ----- */
+function arcSeries(cfg){
+  let i=-1;
+  function show(){
+    const o=cfg.steps[i]; if(!o) return;
+    if(o.prep) o.prep();
+    showOrder('<span class="oc-ic">'+(o.ic||'👉')+'</span><span>'+o.t+'</span><span class="oc-n">'+(i+1)+'/'+cfg.steps.length+'</span>');
+    arcGoal((o.ic||'👉')+' '+o.t+' · <b>'+(i+1)+' / '+cfg.steps.length+'</b>');
+  }
+  function next(){
+    i++;
+    if(i>=cfg.steps.length){ hideOrder(); cfg.done(); return; }
+    show();
+  }
+  every(150, function(){
+    if(!ARC.on||ARC.over) return;
+    const o=cfg.steps[i]; if(!o) return;
+    if(o.miss){ const m=o.miss(); if(m){ arcMiss(m); if(o.prep) o.prep(); return; } }
+    if(o.test()){ arcHit(o.pts||15, orderEl()); next(); }
+  });
+  next();
+}
+/* petites briques d'ordres réutilisables */
+const SL={
+  typeUrl:function(u){ return {ic:'⌨️', t:'Tape <b>'+u+'</b>', pts:20,
+    prep:function(){ SL._b=B.evt.addrNav.length; focusAddr(); },
+    miss:function(){ const nav=B.evt.addrNav; if(nav.length>SL._b && nav[nav.length-1]!==u){ SL._b=nav.length; return 'Mauvaise adresse !'; } return null; },
+    test:function(){ return B.evt.addrNav.slice(SL._b).includes(u); }}; },
+  goTab:function(u,l){ return {ic:'▶', t:'Va sur l\'onglet <b>'+l+'</b>', pts:15,
+    prep:function(){ delete B.evt.tabSwitched; },
+    miss:function(){ if(B.evt.tabSwitched && curUrl()!==u){ delete B.evt.tabSwitched; return 'Pas cet onglet !'; } return null; },
+    test:function(){ return curUrl()===u; }}; },
+  closeTab:function(u,l){ return {ic:'✕', t:'Ferme l\'onglet <b>'+l+'</b>', pts:15,
+    prep:function(){ SL._ct=new Set(B.evt.closedTabs||[]); },
+    miss:function(){ const c=B.evt.closedTabs; if(!c) return null;
+      for(const x of c){ if(!SL._ct.has(x) && x!==u){ SL._ct.add(x); return 'Pas celui-là !'; } } return null; },
+    test:function(){ return B.evt.closedTabs && B.evt.closedTabs.has(u); }}; },
+  newTab:function(){ return {ic:'➕', t:'Ouvre un <b>nouvel onglet</b>', pts:15,
+    prep:function(){ delete B.evt.newTab; },
+    test:function(){ return !!B.evt.newTab; }}; },
+  back:function(){ return {ic:'◀', t:'Reviens <b>en arrière</b>', pts:12,
+    prep:function(){ delete B.evt.usedBack; }, test:function(){ return !!B.evt.usedBack; }}; },
+  fwd:function(){ return {ic:'▶', t:'Repars <b>en avant</b>', pts:12,
+    prep:function(){ delete B.evt.usedFwd; }, test:function(){ return !!B.evt.usedFwd; }}; },
+  reload:function(){ return {ic:'⟳', t:'<b>Actualise</b> la page', pts:12,
+    prep:function(){ delete B.evt.usedReload; }, test:function(){ return !!B.evt.usedReload; }}; },
+  home:function(){ return {ic:'🏠', t:'Retourne à l\'<b>accueil</b>', pts:12,
+    prep:function(){ delete B.evt.usedHome; }, test:function(){ return !!B.evt.usedHome; }}; },
+  star:function(u,l){ return {ic:'⭐', t:'Mets <b>'+l+'</b> en favori (étoile ☆)', pts:15,
+    test:function(){ return B.evt.bmAdded && B.evt.bmAdded.has(u); }}; },
+  unstar:function(u,l){ return {ic:'🗑️', t:'Supprime le favori <b>'+l+'</b>', pts:15,
+    test:function(){ return B.evt.bmRemoved && B.evt.bmRemoved.has(u); }}; },
+  openBm:function(u,l){ return {ic:'📌', t:'Rouvre <b>'+l+'</b> via la barre de favoris', pts:15,
+    test:function(){ return B.evt.openedBookmark && B.evt.openedBookmark.has(u); }}; },
+  fromHist:function(u,l){ return {ic:'🕘', t:'Rouvre <b>'+l+'</b> depuis l\'historique (☰)', pts:20,
+    test:function(){ return B.evt.openedFromHistory && B.evt.openedFromHistory.has(u); }}; },
+  goUrl:function(u,l){ return {ic:'🧭', t:'Rends-toi sur <b>'+(l||u)+'</b>', pts:15,
+    test:function(){ return curUrl()===u; }}; }
+};
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+
+/* ---------------------------------------------------------
+   5 ter. MINI-JEUX ARCADE (niveaux 1 à 4)
+   --------------------------------------------------------- */
+/* ----- N1 M2 : Livraison express ----- */
+function livraisonRun(done){
+  arcStart({shields:3, timer:150, bonus:35, goalText:'Livre les 6 colis !'});
+  const colis=['www.zanimo.fr','www.meteo-mini.fr','www.tubix.fr','www.college-curie.fr','www.presse-jeunes.fr','www.zanimo.fr/panda'];
+  arcSeries({ steps:colis.map(function(u){ const s=SL.typeUrl(u); s.ic='📦'; s.t='Livre le colis : tape <b>'+u+'</b>'; return s; }), done:done });
+}
+/* ----- N1 M3 : Jonglage d'onglets ----- */
+function jonglageRun(done){
+  arcStart({shields:3, timer:120, bonus:30, goalText:'Suis les ordres, jongle avec les onglets !'});
+  arcSeries({ steps:[
+    SL.goTab('www.meteo-mini.fr','Météo Mini'),
+    SL.goTab('www.college-curie.fr','Collège Marie-Curie'),
+    SL.newTab(),
+    SL.typeUrl('www.tubix.fr'),
+    SL.closeTab('www.meteo-mini.fr','Météo Mini'),
+    SL.goTab('www.zanimo.fr','Zanimo'),
+    SL.newTab(),
+    SL.typeUrl('www.presse-jeunes.fr'),
+    SL.closeTab('www.tubix.fr','Tubix')
+  ], done:done });
+}
+/* ----- N1 Examen : parcours mixte chrono ----- */
+function examenNavRun(done){
+  arcStart({shields:3, timer:110, bonus:25, goalText:'Examen : enchaîne les manœuvres !'});
+  arcSeries({ steps:[
+    SL.typeUrl('www.wikimini-fr.org'),
+    SL.back(), SL.fwd(), SL.reload(),
+    SL.newTab(),
+    SL.typeUrl('www.presse-jeunes.fr'),
+    SL.goTab('www.wikimini-fr.org','Wikimini'),
+    SL.closeTab('www.presse-jeunes.fr','Presse-Jeunes'),
+    SL.home()
+  ], done:done });
+}
+/* ----- N2 M2 : Vrai ou piège v1 ----- */
+const VP1=[
+  {u:'www.zanimo.fr', site:'Zanimo', ok:true},
+  {u:'www.zanimo-gratuit.fr', site:'Zanimo', ok:false, bad:'-gratuit'},
+  {u:'www.meteo-mini.fr', site:'Météo Mini', ok:true},
+  {u:'www.meteo-mini-cadeaux.fr', site:'Météo Mini', ok:false, bad:'-cadeaux'},
+  {u:'www.college-curie.fr', site:'Collège Marie-Curie', ok:true},
+  {u:'www.college-curie-officiel.com', site:'Collège Marie-Curie', ok:false, bad:'-officiel.com'},
+  {u:'www.blockcraft.fr', site:'Blockcraft', ok:true},
+  {u:'www.blockcraft-promo.fr', site:'Blockcraft', ok:false, bad:'-promo'},
+  {u:'www.pixmail.fr', site:'Pixmail', ok:true},
+  {u:'www.pixmail-connexion.fr', site:'Pixmail', ok:false, bad:'-connexion'}
+];
+function vraiPiegeRun(done){
+  arcStart({shields:3, goalText:'10 adresses : vraie ✅ ou piège ❌ ?'});
+  let i=0, lock=false;
+  function urlHtml(it, blink){
+    if(!it.bad) return it.u;
+    const k=it.u.indexOf(it.bad);
+    return it.u.slice(0,k)+'<span class="'+(blink?'bad-ch':'')+'">'+it.bad+'</span>'+it.u.slice(k+it.bad.length);
+  }
+  function draw(blink){
+    const it=VP1[i];
+    ARC.screenHtml='<div class="arcpage">'
+      +'<p class="ap-k">🔎 Adresse '+(i+1)+' / '+VP1.length+'</p>'
+      +'<p class="ap-q">Cette adresse mène au <b>vrai site '+it.site+'</b> ?</p>'
+      +'<div class="vp-url">'+urlHtml(it, blink)+'</div>'
+      +'<div class="ap-btns">'
+      +'<button class="ap-btn yes" data-act="arc" data-arg="vrai">✅ VRAIE</button>'
+      +'<button class="ap-btn no" data-act="arc" data-arg="piege">❌ PIÈGE</button>'
+      +'</div></div>';
+    renderViewport();
+  }
+  function nextOrEnd(){ i++; if(i>=VP1.length){ done(); } else { lock=false; draw(); } }
+  ARC.onAction=function(arg, el){
+    if(lock||ARC.over||!ARC.on) return;
+    const it=VP1[i];
+    if((arg==='vrai')===it.ok){
+      arcHit(20, el);
+      banner(it.ok?'✅ Vraie adresse !':'🎯 Piège grillé !','good');
+      nextOrEnd();
+    } else {
+      lock=true;
+      arcMiss(it.ok?'Elle était vraie !':'C\'était un piège !');
+      draw(true);
+      after(1500, nextOrEnd);
+    }
+  };
+  draw();
+}
+/* ----- N2 M3 + Examen : labyrinthes ----- */
+function mazeRun(rooms, winSlug, opts, done){
+  arcStart({shields:3, timer:opts.timer, bonus:opts.bonus, goalText:opts.goal});
+  const base='www.chasse-au-tresor.fr';
+  const seq=rooms.map(r=>base+'/'+r.slug).concat([base+'/'+winSlug]);
+  let step=0, inPerdu=false;
+  arcGoal('🚪 Salle 1 / '+rooms.length+' — '+opts.goal);
+  every(160, function(){
+    if(!ARC.on||ARC.over) return;
+    const u=curUrl();
+    if(u===base+'/xperdu'){ if(!inPerdu){ inPerdu=true; arcMiss('Mauvaise porte !'); } return; }
+    inPerdu=false;
+    const idx=seq.indexOf(u);
+    if(idx>step){
+      step=idx;
+      arcHit(25, null);
+      if(u===base+'/'+winSlug){ done(); return; }
+      banner('🚪 Salle '+(step+1)+' !','good');
+      arcGoal('🚪 Salle '+(step+1)+' / '+rooms.length+' — '+opts.goal);
+    }
+  });
+}
+/* ----- N3 M1 : Forge à mots-clés ----- */
+const FORGE=[
+  {q:'Quelle est la hauteur de la tour Eiffel ?', res:'📏 « 330 mètres avec les antennes » — Paris Monuments',
+    ok:['tour eiffel','hauteur'], ko:['je veux savoir','s\'il te plaît','la','vite','euh','question']},
+  {q:'Que mange le panda géant ?', res:'🎋 « Du bambou, jusqu\'à 20 kg par jour » — Zanimo',
+    ok:['panda','nourriture'], ko:['dis-moi','trop mignon','le truc','svp','un animal','alors']},
+  {q:'Quel temps fera-t-il à Trouville-les-Pixels ?', res:'⛅ « Éclaircies, 21 °C » — Météo Mini',
+    ok:['météo','trouville'], ko:['bonjour','je crois','pull ou pas ?','hein','stp','au fait']},
+  {q:'Combien coûte l\'entrée enfant au Musée de l\'Espace ?', res:'🎟️ « Enfant : 4 € » — Musée de l\'Espace',
+    ok:['musée espace','tarif'], ko:['coucou','c\'est combien','les sous','trop cool','??','bon']},
+  {q:'Quel est le menu de la cantine jeudi ?', res:'🍗 « Poulet rôti, compote » — Collège Marie-Curie',
+    ok:['cantine','menu','jeudi'], ko:['j\'ai faim','miam','on mange quoi','dis','stp']}
+];
+function forgeRun(done){
+  arcStart({shields:3, goalText:'Assemble les bons mots-clés !'});
+  FORGE.forEach(function(f){ f.blocks=shuffle(f.ok.map(w=>({w:w,ok:true})).concat(f.ko.map(w=>({w:w,ok:false})))); });
+  let i=0, sel=new Set(), lock=false;
+  function draw(showRes){
+    const f=FORGE[i];
+    let blocks='';
+    f.blocks.forEach(function(b,bi){
+      blocks+='<button class="kw-block'+(sel.has(bi)?' sel':'')+'" data-act="arc" data-arg="kw:'+bi+'">'+b.w+'</button>';
+    });
+    ARC.screenHtml='<div class="arcpage">'
+      +'<p class="ap-k">🔍 Recherche '+(i+1)+' / '+FORGE.length+'</p>'
+      +'<p class="ap-q">'+f.q+'</p>'
+      +'<div class="kw-zone">'+blocks+'</div>'
+      +'<button class="ap-btn go" data-act="arc" data-arg="go">🔍 Lancer la recherche</button>'
+      +(showRes?'<div class="kw-res">'+f.res+'</div>':'')
+      +'</div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg, el){
+    if(ARC.over||!ARC.on||lock) return;
+    if(arg.indexOf('kw:')===0){
+      const bi=+arg.slice(3);
+      if(sel.has(bi)) sel.delete(bi); else sel.add(bi);
+      beep('click'); draw(); return;
+    }
+    if(arg==='go'){
+      const f=FORGE[i];
+      const chosen=Array.from(sel).map(bi=>f.blocks[bi]);
+      if(!chosen.length){ banner('Choisis des mots-clés !','bad'); return; }
+      if(chosen.some(b=>!b.ok)){ arcMiss('Mot inutile choisi !'); sel=new Set(); draw(); return; }
+      if(f.blocks.some((b,bi)=>b.ok && !sel.has(bi))){ arcMiss('Il manque un mot-clé !'); sel=new Set(); draw(); return; }
+      lock=true;
+      arcHit(25, el); draw(true);
+      after(1400, function(){ i++; sel=new Set(); lock=false; if(i>=FORGE.length) done(); else draw(); });
+    }
+  };
+  draw();
+}
+/* ----- N3 M2 + Examen : Course contre Pixel 🤖 ----- */
+function courseRun(manches, secs, done){
+  arcStart({shields:3, goalText:'Trouve l\'info avant Pixel 🤖 !'});
+  let i=0, g=0;
+  function show(){
+    g=0;
+    const m=manches[i];
+    arcGoal('🤖 Manche '+(i+1)+' / '+manches.length+' — bats Pixel de vitesse !');
+    showOrder('<span class="oc-ic">🔎</span><span>Trouve : <b>'+m.t+'</b>'
+      +'<div class="px-bar"><i id="pxBar"></i></div><span class="px-lbl">🤖 Pixel cherche aussi…</span></span>');
+  }
+  every(250, function(){
+    if(!ARC.on||ARC.over) return;
+    const m=manches[i]; if(!m) return;
+    g+=100*0.25/secs;
+    const bar=document.getElementById('pxBar'); if(bar) bar.style.width=Math.min(100,g)+'%';
+    if(curUrl()===m.u){
+      arcHit(30, orderEl()); banner('🏁 Battu, Pixel !','good');
+      i++;
+      if(i>=manches.length){ done(); } else show();
+      return;
+    }
+    if(g>=100){ arcMiss('Pixel a trouvé avant toi !'); show(); }
+  });
+  show();
+}
+const COURSE1=[
+  {t:'le dessert du jeudi à la cantine', u:'www.college-curie.fr/cantine'},
+  {t:'le jour de fermeture du Musée de l\'Espace', u:'www.musee-espace.fr/horaires'},
+  {t:'le pays du kangourou (sa fiche Zanimo)', u:'www.zanimo.fr/kangourou'}
+];
+const COURSE2=[
+  {t:'l\'article FIABLE sur le « portique à téléphones »', u:'www.presse-jeunes.fr'},
+  {t:'l\'encyclopédie junior Wikimini', u:'www.wikimini-fr.org'},
+  {t:'la page des sorties scolaires du collège', u:'www.college-curie.fr/sorties'}
+];
+/* ----- N3 M3 : Nettoie la SERP ----- */
+const SERPCLEAN=[
+  {t:'Le panda géant — Zanimo', u:'www.zanimo.fr/panda', s:'La fiche complète : habitat, nourriture, poids.', k:'ok'},
+  {t:'PANDA GRATUIT chez toi !!!', u:'www.super-jeux-cadeaux.com', s:'Gagne un vrai panda (ou presque) en 1 clic !!!', k:'ad'},
+  {t:'Peluches panda — Panda Cadeaux', u:'www.pandacadeaux.fr', s:'La boutique 100 % panda, livraison 48 h.', k:'shop'},
+  {t:'Le panda — Wikimini', u:'www.wikimini-fr.org', s:'Article relu par des professeurs, sources citées.', k:'ok'},
+  {t:'Ton PC est LENT ?', u:'www.logiciels-turbo.com', s:'Turbo-Boost GRATUIT aujourd\'hui seulement !', k:'ad'},
+  {t:'Sauver les pandas — Presse-Jeunes', u:'www.presse-jeunes.fr', s:'Reportage signé et vérifié sur la protection des pandas.', k:'ok'},
+  {t:'Mug panda −70 % — Shopix', u:'www.shopix.fr', s:'Le mug qui fait panda. Avis 5 étoiles (écrits par le vendeur).', k:'shop'},
+  {t:'Tous les animaux — Zanimo', u:'www.zanimo.fr/animaux', s:'Toutes les fiches animaux de l\'encyclopédie.', k:'ok'}
+];
+function serpCleanRun(done){
+  arcStart({shields:3, goalText:'Clique TOUS les résultats fiables !'});
+  const items=shuffle(SERPCLEAN.slice());
+  const state=items.map(()=>false);
+  const total=items.filter(x=>x.k==='ok').length;
+  function found(){ return items.filter((x,xi)=>state[xi]&&x.k==='ok').length; }
+  function draw(){
+    let list='';
+    items.forEach(function(x,xi){
+      list+='<div class="clean-it'+(state[xi]?' ok':'')+'" data-act="arc" data-arg="'+xi+'">'
+        +(state[xi]?'<span class="ci-done">✅</span>':'')
+        +'<div class="ci-u">'+(x.k==='ad'?'<span class="ci-ad">Annonce</span>':'')+'🌐 https://'+x.u+'</div>'
+        +'<div class="ci-t">'+x.t+'</div><div class="ci-s">'+x.s+'</div></div>';
+    });
+    ARC.screenHtml='<div class="arcpage" style="justify-content:flex-start">'
+      +'<p class="ap-k">🧹 Résultats pour « panda » — fiables trouvés : '+found()+' / '+total+'</p>'
+      +'<p class="ap-q">Clique les résultats <b>fiables</b>. Évite annonces et boutiques !</p>'
+      +'<div class="clean-list">'+list+'</div></div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg, el){
+    if(ARC.over||!ARC.on) return;
+    const xi=+arg; const x=items[xi];
+    if(!x||state[xi]) return;
+    if(x.k==='ok'){
+      state[xi]=true; arcHit(20, el); draw();
+      arcGoal('🧹 Fiables : '+found()+' / '+total);
+      if(found()>=total) after(700, done);
+    } else {
+      arcMiss(x.k==='ad'?'C\'est une annonce !':'C\'est une boutique !');
+    }
+  };
+  draw(); arcGoal('🧹 Fiables : 0 / '+total);
+}
+/* ----- N4 M2 : Bibliothécaire speed ----- */
+function biblioRun(done){
+  arcStart({shields:3, timer:150, bonus:35, goalText:'Exécute les ordres du bibliothécaire !'});
+  arcSeries({ steps:[
+    SL.star('www.zanimo.fr','Zanimo'),
+    SL.openBm('www.meteo-mini.fr','Météo Mini'),
+    SL.fromHist('www.musee-espace.fr/horaires','les horaires du musée'),
+    SL.star('www.musee-espace.fr/horaires','cette page'),
+    SL.unstar('www.recettes-de-lilou.fr/gateau-choco','la recette de Lilou'),
+    SL.home(),
+    SL.openBm('www.zanimo.fr','Zanimo'),
+    SL.unstar('www.meteo-mini.fr','Météo Mini')
+  ], done:done });
+}
+/* ----- N4 M3 : Tri des favoris ----- */
+const TRI=[
+  {u:'www.wikimini-fr.org', ic:'📚', t:'Wikimini — encyclopédie junior', keep:true, why:'fiable, parfait pour les exposés'},
+  {u:'www.zanim0.fr', ic:'🐾', t:'Zanimo Premium GRATUIT', keep:false, why:'« zanim0 » avec un zéro : sosie !'},
+  {u:'ent.college-curie.fr', ic:'🏫', t:'ENT du collège', keep:true, why:'site officiel du collège'},
+  {u:'www.super-jeux-cadeaux.com', ic:'🎁', t:'1000 JEUX GRATUITS !!!', keep:false, why:'promesses énormes = piège'},
+  {u:'www.presse-jeunes.fr', ic:'📰', t:'Presse-Jeunes', keep:true, why:'info signée et vérifiée'},
+  {u:'www.logiciels-turbo.com', ic:'🚀', t:'Turbo-Boost ton PC', keep:false, why:'faux logiciel « miracle »'},
+  {u:'www.zanimo.fr', ic:'🐾', t:'Zanimo', keep:true, why:'le vrai Zanimo, sans zéro'},
+  {u:'www.cadeaux-1000euros.com', ic:'💶', t:'1 000 € offerts', keep:false, why:'personne ne donne 1 000 €'}
+];
+function triRun(done){
+  arcStart({shields:3, goalText:'Trie les 8 favoris hérités du cousin !'});
+  const items=shuffle(TRI.slice());
+  const state=items.map(()=>false);
+  function left(){ return state.filter(x=>!x).length; }
+  function draw(){
+    let cards='';
+    items.forEach(function(c,ci){
+      if(state[ci]){
+        cards+='<div class="tri-card done'+(c.keep?' keep':' jet')+'"><span class="tc-ic">'+c.ic+'</span>'
+          +'<div class="tc-tx"><b>'+c.t+'</b><span class="tc-u">'+c.u+'</span>'
+          +'<span class="tc-why">'+(c.keep?'✅ Gardé':'🗑️ Jeté')+' — '+c.why+'</span></div></div>';
+      } else {
+        cards+='<div class="tri-card"><span class="tc-ic">'+c.ic+'</span>'
+          +'<div class="tc-tx"><b>'+c.t+'</b><span class="tc-u">'+c.u+'</span></div>'
+          +'<button class="tc-btn keep" data-act="arc" data-arg="k:'+ci+'">✅ Garder</button>'
+          +'<button class="tc-btn jet" data-act="arc" data-arg="j:'+ci+'">🗑️ Jeter</button></div>';
+      }
+    });
+    ARC.screenHtml='<div class="arcpage" style="justify-content:flex-start">'
+      +'<p class="ap-k">📌 Les favoris du cousin — restants : '+left()+' / '+items.length+'</p>'
+      +'<p class="ap-q">Garde les sites sûrs, jette les pièges !</p>'
+      +'<div class="tri-list">'+cards+'</div></div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg, el){
+    if(ARC.over||!ARC.on) return;
+    const ci=+arg.slice(2); const c=items[ci];
+    if(!c||state[ci]) return;
+    if((arg[0]==='k')===c.keep){ state[ci]=true; arcHit(15, el); }
+    else arcMiss(c.keep?'Celui-là était sûr !':'C\'est un piège connu !');
+    draw();
+    arcGoal('📌 Restants : '+left()+' / '+items.length);
+    if(!left()) after(700, done);
+  };
+  draw();
+}
+/* ----- N4 Examen : mémoire du navigateur, chrono ----- */
+function examenMemRun(done){
+  arcStart({shields:3, timer:130, bonus:30, goalText:'Examen : la mémoire du navigateur !'});
+  arcSeries({ steps:[
+    SL.fromHist('www.recettes-de-lilou.fr/gateau-choco','la recette vue hier'),
+    SL.star('www.recettes-de-lilou.fr/gateau-choco','la recette'),
+    SL.home(),
+    SL.openBm('ent.college-curie.fr','l\'ENT du collège'),
+    SL.unstar('www.super-jeux-cadeaux.com','« 1000 JEUX GRATUITS »'),
+    SL.typeUrl('www.wikimini-fr.org'),
+    SL.star('www.wikimini-fr.org','Wikimini')
+  ], done:done });
+}
+
+/* ---------------------------------------------------------
    6. LES NIVEAUX
    --------------------------------------------------------- */
 const LEVELS=[
 /* ===== NIVEAU 1 — Ton navigateur ===== */
 { n:1, title:'Ton navigateur', subtitle:'découverte',
   intro:{ emoji:'🦊',
-    lead:'Voici <b>Goupil</b> 🦊, ton navigateur internet ! Un navigateur, c\'est le programme qui sert à visiter les <b>sites web</b>. Aujourd\'hui, tu apprends à le piloter.',
-    teach:'En haut, la <b>barre d\'adresse</b> : clique dedans, tape l\'adresse d\'un site (comme <b>www.zanimo.fr</b>) puis appuie sur '+kbd('Entrée')+'. Le bouton <b>◀</b> revient à la page précédente, <b>▶</b> repart en avant, <b>⟳</b> recharge la page et <b>🏠</b> ramène à l\'accueil. Tout en haut, chaque page vit dans un <b>onglet</b> : le bouton <b>+</b> en ouvre un nouveau, la croix <b>✕</b> le ferme.',
-    tools:[{g:'🧭',n:'La barre d\'adresse'},{g:'◀ ▶',n:'Précédent / Suivant'},{g:'⟳',n:'Actualiser la page'},{g:'🗂️',n:'Les onglets et le bouton +'}] },
+    lead:'Bienvenue à la <b>Cyber-Patrouille</b>, recrue ! Première étape du permis web : piloter <b>Goupil</b> 🦊, ton navigateur.',
+    teach:'La <b>barre d\'adresse</b> t\'emmène sur un site (tape l\'adresse + '+kbd('Entrée')+'). Les boutons <b>◀ ▶ ⟳ 🏠</b> manœuvrent, les <b>onglets</b> gardent plusieurs pages ouvertes.',
+    tools:[{g:'🧭',n:'La barre d\'adresse'},{g:'◀ ▶',n:'Précédent / Suivant'},{g:'⟳ 🏠',n:'Actualiser / Accueil'},{g:'🗂️',n:'Les onglets (+ et ✕)'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'🧭',title:'Ta première adresse',
-      intro:'Chaque site web a une <b>adresse</b>, comme une maison ! Tu vas taper ta toute première adresse pour visiter <b>Zanimo</b>, l\'encyclopédie des animaux.',
+    {kind:'mission',label:'Mission 1',emoji:'🧭',title:'Prise en main',
+      intro:'Apprends les commandes de Goupil : adresse, ◀ ▶ ⟳ et 🏠.',
       seed:{tabs:['goupil.start']},
+      boot:function(){ ghostClick('#addrPill'); },
       objectives:[
-        {t:'<b>Clique</b> dans la barre d\'adresse (la grande barre, en haut)', goal:G.clickedAddr()},
-        {t:'Tape <b>www.zanimo.fr</b> puis appuie sur '+kbd('Entrée'), goal:G.typedUrl('www.zanimo.fr')},
-        {t:'Sur le site, clique la carte du <b>panda 🐼</b> pour ouvrir sa fiche', goal:G.atUrl('www.zanimo.fr/panda')}
-      ]},
-    {kind:'mission',label:'Mission 2',emoji:'↔️',title:'Précédent, suivant, accueil',
-      intro:'Le navigateur se souvient de ton chemin ! <b>◀</b> revient en arrière, <b>▶</b> repart en avant, et <b>🏠</b> te ramène toujours à la maison.',
-      seed:{tabs:['www.zanimo.fr']},
-      objectives:[
-        {t:'Ouvre la fiche du <b>dauphin 🐬</b>', goal:G.atUrl('www.zanimo.fr/dauphin')},
-        {t:'<b>Reviens en arrière</b> avec le bouton <b>◀</b>', goal:G.usedBack()},
-        {t:'Repars <b>en avant</b> avec le bouton <b>▶</b>', goal:G.usedFwd()},
-        {t:'Retourne à la page d\'accueil avec <b>🏠</b>', goal:G.usedHome()}
-      ]},
-    {kind:'mission',label:'Mission 3',emoji:'🗂️',title:'Les onglets',
-      intro:'Les <b>onglets</b> permettent de garder plusieurs pages ouvertes en même temps, comme des feuilles dans un classeur. Le <b>+</b> en ouvre un, la croix <b>✕</b> le ferme.',
-      seed:{tabs:['www.zanimo.fr']},
-      objectives:[
-        {t:'Ouvre un <b>nouvel onglet</b> avec le bouton <b>+</b> (en haut)', goal:G.newTab()},
-        {t:'Dans ce nouvel onglet, va sur <b>www.meteo-mini.fr</b>', goal:G.visited('www.meteo-mini.fr')},
-        {t:'La météo change tout le temps : <b>actualise</b> la page avec <b>⟳</b>', goal:G.usedReload()},
-        {t:'Reviens sur le <b>premier onglet</b> (clique dessus, tout en haut)', goal:G.switchedTab()},
-        {t:'<b>Ferme</b> l\'onglet météo avec sa croix <b>✕</b>', goal:G.closedTabUrl('www.meteo-mini.fr')}
-      ]},
-    {kind:'jalon',label:'Défi',emoji:'🏆',title:'Permis de naviguer',
-      intro:'Montre que tu sais tout faire : onglet, adresse, liens et boutons de navigation. À toi de jouer, pilote !',
-      seed:{tabs:['goupil.start']},
-      objectives:[
-        {t:'Ouvre un <b>nouvel onglet</b> avec <b>+</b>', goal:G.newTab()},
-        {t:'Tape l\'adresse <b>www.zanimo.fr</b>', goal:G.typedUrl('www.zanimo.fr')},
-        {t:'Ouvre la fiche de la <b>chouette 🦉</b>', goal:G.atUrl('www.zanimo.fr/chouette')},
+        {t:'Clique la <b>barre d\'adresse</b>', goal:G.clickedAddr()},
+        {t:'Tape <b>www.zanimo.fr</b> puis '+kbd('Entrée'), goal:G.typedUrl('www.zanimo.fr')},
+        {t:'Tape <b>www.meteo-mini.fr</b>', goal:G.typedUrl('www.meteo-mini.fr')},
+        {t:'<b>Actualise</b> la météo avec <b>⟳</b>', goal:G.usedReload()},
         {t:'Reviens en arrière avec <b>◀</b>', goal:G.usedBack()},
-        {t:'Termine sur la page d\'accueil avec <b>🏠</b>', goal:G.usedHome()}
-      ]}
+        {t:'Repars en avant avec <b>▶</b>', goal:G.usedFwd()},
+        {t:'Termine à l\'accueil avec <b>🏠</b>', goal:G.usedHome()}
+      ]},
+    {kind:'game',label:'Mission 2',emoji:'📦',title:'Livraison express',
+      intro:'6 colis à livrer : tape chaque adresse affichée, vite et sans faute !',
+      goal:'Tape les adresses des colis, sans faute !',
+      hint:'Recopie l\'adresse du colis dans la barre d\'adresse, puis '+kbd('Entrée')+'.',
+      seed:{tabs:['goupil.start'], focusAddr:true},
+      run:function(done){ livraisonRun(done); }},
+    {kind:'game',label:'Mission 3',emoji:'🗂️',title:'Jonglage d\'onglets',
+      intro:'Suis les ordres à toute vitesse : change d\'onglet, ouvre, ferme !',
+      goal:'Suis les ordres onglets !',
+      hint:'Lis la carte d\'ordre : ▶ = clique l\'onglet, ✕ = sa croix, ➕ = nouvel onglet.',
+      seed:{tabs:['www.zanimo.fr','www.meteo-mini.fr','www.college-curie.fr']},
+      run:function(done){ jonglageRun(done); }},
+    {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'Permis de naviguer',
+      intro:'Examen chrono : adresses, boutons et onglets, tout mélangé !',
+      goal:'Enchaîne les manœuvres avant la fin du chrono !',
+      hint:'Une manœuvre à la fois : lis la carte d\'ordre et exécute.',
+      seed:{tabs:['goupil.start']},
+      run:function(done){ examenNavRun(done); }}
   ]},
 
-/* ===== NIVEAU 2 — Les liens et les sites ===== */
-{ n:2, title:'Les liens et les sites', subtitle:'liens & sites',
+/* ===== NIVEAU 2 — Les liens et les adresses ===== */
+{ n:2, title:'Les liens et les adresses', subtitle:'liens & adresses',
   intro:{ emoji:'🔗',
-    lead:'Le web est une toile géante : les pages sont reliées entre elles par des <b>liens</b>. Apprends à les reconnaître et à explorer un site sans jamais te perdre !',
-    teach:'Un <b>lien</b>, ça se clique ! Quand ta souris le survole, elle devient une main 👆 et l\'adresse de destination s\'affiche <b>en bas à gauche</b> de l\'écran. Un lien peut être un <b>texte souligné</b>, une <b>image</b> ou un <b>bouton</b>. Les sites ont un <b>menu</b> en haut pour changer de page, et cliquer le <b>logo</b> ramène toujours à l\'accueil. Une adresse se lit comme ça : <b>www.zanimo.fr/panda</b> = la page « panda » du site « zanimo.fr ».',
-    tools:[{g:'👆',n:'Reconnaître un lien au survol'},{g:'🧾',n:'L\'adresse s\'affiche en bas à gauche'},{g:'📑',n:'Le menu du site'},{g:'🏷️',n:'Le logo ramène à l\'accueil'}] },
+    lead:'Le web est une toile de <b>liens</b>… et certains sont piégés. Un agent lit toujours l\'adresse <b>avant</b> de cliquer !',
+    teach:'Survole un lien : la souris devient 👆 et sa destination s\'affiche <b>en bas à gauche</b>. Une adresse se lit lettre par lettre : <b>www.zanimo.fr/panda</b> = page « panda » du site « zanimo.fr ».',
+    tools:[{g:'👆',n:'Survoler avant de cliquer'},{g:'🧾',n:'L\'adresse s\'affiche en bas à gauche'},{g:'🔤',n:'Lire l\'adresse lettre par lettre'},{g:'🏷️',n:'Le logo ramène à l\'accueil'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'🕵️',title:'La chasse aux liens',
-      intro:'Sur une page web, <b>tout n\'est pas cliquable</b> ! Promène ta souris pour démasquer les 3 vrais liens de la page : un <b>texte</b>, une <b>image</b> et un <b>bouton</b>. Après chaque découverte, reviens avec <b>◀</b>.',
+      intro:'Démasque les 3 vrais liens de la page : texte, image, bouton.',
       seed:{tabs:['www.zanimo.fr/jeu-des-liens']},
       objectives:[
-        {t:'<b>Survole</b> la page sans cliquer : trouve un vrai lien (regarde en bas à gauche !)', goal:G.linkHovered()},
+        {t:'<b>Survole</b> la page : trouve un lien (regarde en bas à gauche)', goal:G.linkHovered()},
         {t:'Clique le <b>lien texte</b> « le mot caché »', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-texte')},
-        {t:'Reviens avec <b>◀</b>, puis clique l\'<b>image-lien</b> 📷', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-image')},
-        {t:'Reviens avec <b>◀</b>, puis clique le <b>bouton</b> « Clique ici ! »', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-bouton')}
+        {t:'Reviens avec <b>◀</b>, clique l\'<b>image-lien</b> 📷', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-image')},
+        {t:'Reviens avec <b>◀</b>, clique le <b>bouton</b>', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-bouton')}
       ]},
-    {kind:'mission',label:'Mission 2',emoji:'🏫',title:'Explore le site du collège',
-      intro:'Un site, c\'est plusieurs pages reliées par un <b>menu</b> (en haut). Explore le site du collège Marie-Curie pour retrouver le menu de la cantine !',
-      seed:{tabs:['www.college-curie.fr']},
-      objectives:[
-        {t:'Avec le <b>menu du site</b> (en haut), ouvre la page <b>La cantine</b>', goal:G.atUrl('www.college-curie.fr/cantine')},
-        quizObj('Trouve le <b>dessert de jeudi</b> et note-le dans le carnet 📝 (sous l\'écran)', 'dessertJeudi', 'Quel est le dessert de jeudi à la cantine ?', ['compote'], 'Regarde bien le tableau des menus, ligne « Jeudi ».'),
-        {t:'Clique le <b>logo du collège</b> (en haut à gauche de la page) pour revenir à l\'accueil', goal:G.clickedLogoHome('www.college-curie.fr')}
-      ]},
-    {kind:'mission',label:'Mission 3',emoji:'🔤',title:'Lis les adresses',
-      intro:'Quand tu connais l\'adresse <b>exacte</b> d\'une page, tu peux y aller directement, sans cliquer nulle part ! <b>www.zanimo.fr/dauphin</b> = la page « dauphin » du site « zanimo.fr ».',
-      seed:{tabs:['goupil.start']},
-      objectives:[
-        {t:'Tape l\'adresse <b>www.zanimo.fr/dauphin</b> pour aller <b>directement</b> à la fiche du dauphin', goal:G.typedUrl('www.zanimo.fr/dauphin')},
-        quizObj('Réponds à la question du carnet 📝', 'siteName', 'Dans l\'adresse www.zanimo.fr/dauphin, quel est le nom du SITE ?', ['zanimo'], 'Le nom du site est entre « www. » et « .fr ».'),
-        {t:'Tape maintenant <b>www.musee-espace.fr/horaires</b> : la page des horaires, en un seul coup !', goal:G.typedUrl('www.musee-espace.fr/horaires')}
-      ]},
-    {kind:'jalon',label:'Défi',emoji:'🏴‍☠️',title:'La chasse au trésor',
-      intro:'Un trésor est caché au bout du site <b>chasse-au-tresor.fr</b> ! Résous chaque énigme et clique la <b>bonne porte</b>. Mauvaise porte ? Reviens avec <b>◀</b> et réessaie !',
-      seed:{tabs:['www.chasse-au-tresor.fr']},
-      objectives:[
-        {t:'Résous l\'<b>énigme n°1</b> et passe la bonne porte', goal:G.atUrl('www.chasse-au-tresor.fr/grotte')},
-        {t:'Résous l\'<b>énigme n°2</b> et trouve le bon tunnel', goal:G.atUrl('www.chasse-au-tresor.fr/pont')},
-        {t:'Résous l\'<b>énigme n°3</b> et attrape le <b>trésor</b> !', goal:G.atUrl('www.chasse-au-tresor.fr/tresor')}
-      ]}
+    {kind:'game',label:'Mission 2',emoji:'🎣',title:'Vrai ou piège',
+      intro:'10 adresses en grand : vraie ✅ ou piège ❌ ? Lis chaque lettre !',
+      goal:'Vraie adresse ou piège ? Décide vite !',
+      hint:'Les pirates ajoutent un mot (-gratuit, -promo) au nom du vrai site.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ vraiPiegeRun(done); }},
+    {kind:'game',label:'Mission 3',emoji:'🚪',title:'Le labyrinthe',
+      intro:'5 salles, 3 portes par salle : réponds juste et fonce vers le trésor !',
+      goal:'Traverse les 5 salles du labyrinthe !',
+      hint:'Mauvaise porte = retour avec ◀. En cas de doute, survole les portes !',
+      seed:{tabs:['www.chasse-au-tresor.fr/x1']},
+      run:function(done){ mazeRun(MAZE1,'xfin',{timer:150,bonus:40,goal:'vers le trésor !'},done); }},
+    {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'Le labyrinthe des sosies',
+      intro:'Examen : 4 salles, et chaque porte est une adresse. Une seule est la vraie !',
+      goal:'Passe les portes-adresses sans te faire piéger !',
+      hint:'Lis chaque adresse lettre par lettre : 0 à la place du o, mot ajouté…',
+      seed:{tabs:['www.chasse-au-tresor.fr/y1']},
+      run:function(done){ mazeRun(MAZE2,'yfin',{timer:120,bonus:30,goal:'repère les vraies adresses !'},done); }}
   ]},
 
 /* ===== NIVEAU 3 — Chercher sur internet ===== */
 { n:3, title:'Chercher sur internet', subtitle:'recherche',
   intro:{ emoji:'🔍',
-    lead:'Et si on ne connaît pas l\'adresse ? On demande à un <b>moteur de recherche</b> ! Sur <b>Cherchetout</b>, tu vas apprendre à trouver n\'importe quelle information.',
-    teach:'Va sur <b>www.cherchetout.fr</b> et tape des <b>mots-clés</b> : seulement les mots importants de ta question, pas la phrase entière ! Tu obtiens une liste de <b>résultats</b>. Pour chacun, lis le <b>titre</b>, l\'<b>adresse</b> (en vert) et le texte de description. Choisis celui qui répond vraiment à ta question — méfie-toi des pièges, comme les <b>boutiques</b> qui veulent juste vendre !',
-    tools:[{g:'🔍',n:'Le moteur de recherche Cherchetout'},{g:'🔑',n:'Choisir de bons mots-clés'},{g:'📋',n:'Lire la liste des résultats'},{g:'📝',n:'Le carnet de mission, sous l\'écran'}] },
+    lead:'Adresse inconnue ? Le moteur de recherche <b>Cherchetout</b> la trouve pour toi — si tu lui donnes les bons <b>mots-clés</b>.',
+    teach:'Tape les mots <b>importants</b> (pas la phrase !), puis lis chaque résultat : titre, <b>adresse verte</b>, description. Les boutiques et les annonces sont des pièges à clics.',
+    tools:[{g:'🔍',n:'Cherchetout, le moteur de recherche'},{g:'🔑',n:'Mots-clés : que l\'essentiel'},{g:'📋',n:'Lire les résultats avant de cliquer'},{g:'🛒',n:'Boutique ≠ information'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'🔍',title:'Ta première recherche',
-      intro:'On veut savoir <b>ce que mange le panda</b>. Demande au moteur de recherche, choisis le bon résultat, et note la réponse dans ton carnet !',
-      seed:{tabs:['goupil.start']},
-      objectives:[
-        {t:'Va sur <b>www.cherchetout.fr</b> (tape l\'adresse, ou clique sa tuile 🔍)', goal:G.visited('www.cherchetout.fr')},
-        {t:'Cherche <b>panda</b> et appuie sur '+kbd('Entrée'), goal:G.searched(['panda'])},
-        {t:'Dans les résultats, ouvre la fiche du panda du site <b>Zanimo</b>', goal:G.openedResult('www.zanimo.fr/panda')},
-        quizObj('Note la réponse dans le carnet 📝', 'mangePanda', 'Que mange le panda ?', ['bambou'], 'La réponse est dans le paragraphe « Sa nourriture ».')
-      ]},
-    {kind:'mission',label:'Mission 2',emoji:'🔑',title:'Les bons mots-clés',
-      intro:'Question du jour : <b>« Quelle est la hauteur de la tour Eiffel ? »</b> Pas besoin de taper toute la phrase : les mots-clés <b>tour eiffel hauteur</b> suffisent !',
+    {kind:'game',label:'Mission 1',emoji:'🔑',title:'La forge à mots-clés',
+      intro:'5 questions : assemble les bons mots-clés, jette le blabla !',
+      goal:'Choisis les mots-clés utiles, lance la recherche !',
+      hint:'Garde les mots importants (noms, sujets), jette la politesse et le blabla.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ forgeRun(done); }},
+    {kind:'game',label:'Mission 2',emoji:'🤖',title:'Course contre Pixel',
+      intro:'Le robot Pixel cherche la même info que toi. Trouve la page avant lui !',
+      goal:'Trouve la page avant le robot Pixel !',
+      hint:'Cherchetout + bons mots-clés = victoire. La jauge de Pixel monte, fonce !',
       seed:{tabs:['www.cherchetout.fr']},
-      objectives:[
-        {t:'Cherche avec les mots-clés <b>tour eiffel hauteur</b>', goal:G.searched(['eiffel','hauteur'])},
-        {t:'Ouvre le résultat qui parle du <b>monument</b>… pas la boutique de souvenirs !', goal:G.openedResult('www.paris-monuments.fr/tour-eiffel')},
-        quizObj('Note la réponse dans le carnet 📝', 'hauteurEiffel', 'Quelle est la hauteur de la tour Eiffel (en mètres) ?', ['330'], 'Cherche le paragraphe « Sa taille ».')
-      ]},
-    {kind:'mission',label:'Mission 3',emoji:'🪤',title:'Gare aux pièges !',
-      intro:'Ton amie veut la <b>recette du gâteau au chocolat</b>. Attention : dans les résultats, certains sites <b>vendent</b> du chocolat mais ne donnent aucune recette. Lis bien avant de cliquer !',
+      run:function(done){ courseRun(COURSE1, 50, done); }},
+    {kind:'game',label:'Mission 3',emoji:'🧹',title:'Nettoie la SERP',
+      intro:'Une page de résultats truquée : clique les fiables, évite annonces et boutiques.',
+      goal:'Clique tous les résultats fiables !',
+      hint:'Lis l\'adresse verte et cherche le badge « Annonce » avant de cliquer.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ serpCleanRun(done); }},
+    {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'La course de l\'info',
+      intro:'Examen : 3 courses contre Pixel, et il a mangé des épinards.',
+      goal:'3 infos à trouver avant Pixel !',
+      hint:'Mots-clés courts et précis, puis le bon résultat — pas le premier venu.',
       seed:{tabs:['www.cherchetout.fr']},
-      objectives:[
-        {t:'Cherche <b>gâteau au chocolat</b>', goal:G.searched(['gateau','chocolat'])},
-        {t:'Repère le site de <b>recettes</b> parmi les résultats et ouvre-le (évite les boutiques !)', goal:G.openedResult('www.recettes-de-lilou.fr/gateau-choco')},
-        quizObj('Note la réponse dans le carnet 📝', 'oeufsGateau', 'Combien d\'œufs faut-il pour ce gâteau ?', ['3','trois'], 'Compte les œufs dans la liste des ingrédients.')
-      ]},
-    {kind:'jalon',label:'Défi',emoji:'🕵️',title:'L\'enquête express',
-      intro:'Trois questions, trois recherches ! Choisis bien tes <b>mots-clés</b>, trouve les bonnes pages et remplis ton carnet de détective.',
-      seed:{tabs:['www.cherchetout.fr']},
-      objectives:[
-        quizObj('<b>Question 1</b> : quel jour le Musée de l\'Espace est-il fermé ?', 'qMusee', 'Quel jour le Musée de l\'Espace est-il fermé ?', ['lundi'], 'Essaie les mots-clés « musée espace horaires ».'),
-        quizObj('<b>Question 2</b> : dans quel pays vit le kangourou ?', 'qKangourou', 'Dans quel pays vit le kangourou ?', ['australie'], 'Essaie le mot-clé « kangourou ».'),
-        quizObj('<b>Question 3</b> : combien de minutes le dauphin peut-il retenir sa respiration ?', 'qDauphin', 'Combien de minutes le dauphin peut-il retenir sa respiration ?', ['10','dix'], 'Essaie les mots-clés « dauphin respiration ».')
-      ]}
+      run:function(done){ courseRun(COURSE2, 40, done); }}
   ]},
 
 /* ===== NIVEAU 4 — Favoris et historique ===== */
 { n:4, title:'Favoris et historique', subtitle:'favoris & historique',
   intro:{ emoji:'⭐',
-    lead:'Comment retrouver une super page vue hier ? Grâce aux <b>favoris</b> et à l\'<b>historique</b>, ton navigateur a une mémoire d\'éléphant !',
-    teach:'L\'<b>étoile ☆</b> au bout de la barre d\'adresse ajoute la page aux <b>favoris</b> : elle apparaît alors dans la <b>barre de favoris</b>, juste en dessous — un clic, et tu y retournes ! Pour retirer un favori : re-clique l\'étoile ★, ou ouvre le menu <b>☰ → Favoris</b> et clique le 🗑️. Le menu <b>☰</b> cache aussi l\'<b>Historique</b> : la liste de toutes les pages que tu as visitées, même celles d\'hier !',
-    tools:[{g:'⭐',n:'Ajouter / retirer un favori'},{g:'📌',n:'La barre de favoris'},{g:'☰',n:'Le menu du navigateur'},{g:'🕘',n:'L\'historique des pages visitées'}] },
+    lead:'Ton navigateur a une mémoire d\'éléphant : l\'<b>étoile ☆</b> garde tes pages préférées, l\'<b>historique</b> se souvient de tout.',
+    teach:'L\'étoile ☆ (bout de la barre d\'adresse) ajoute un favori dans la <b>barre de favoris</b>. Le menu <b>☰</b> ouvre les panneaux <b>Favoris</b> et <b>Historique</b>.',
+    tools:[{g:'⭐',n:'Ajouter / retirer un favori'},{g:'📌',n:'La barre de favoris'},{g:'☰',n:'Le menu du navigateur'},{g:'🕘',n:'L\'historique'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'⭐',title:'L\'étoile magique',
-      intro:'Tu regardes la météo <b>tous les matins</b> ? Mets la page en favori : plus jamais besoin de taper l\'adresse !',
+    {kind:'mission',label:'Mission 1',emoji:'⭐',title:'La mémoire de Goupil',
+      intro:'Découvre l\'étoile, la barre de favoris et l\'historique.',
       seed:{tabs:['goupil.start']},
+      boot:function(){ ghostClick('#btnStar'); },
       objectives:[
         {t:'Va sur <b>www.meteo-mini.fr</b>', goal:G.visited('www.meteo-mini.fr')},
-        {t:'Clique sur l\'<b>étoile ☆</b> (au bout de la barre d\'adresse) pour l\'ajouter aux favoris', goal:G.bookmarked('www.meteo-mini.fr')},
+        {t:'Clique l\'<b>étoile ☆</b> (bout de la barre d\'adresse)', goal:G.bookmarked('www.meteo-mini.fr')},
         {t:'Retourne à l\'accueil avec <b>🏠</b>', goal:G.usedHome()},
-        {t:'Rouvre <b>Météo Mini</b> d\'un seul clic, depuis la <b>barre de favoris</b>', goal:G.openedBookmark('www.meteo-mini.fr')}
-      ]},
-    {kind:'mission',label:'Mission 2',emoji:'📌',title:'Range tes favoris',
-      intro:'Une collection de favoris, ça s\'entretient ! Ajoute tes sites préférés… et supprime ceux qui ne servent plus.',
-      seed:{tabs:['goupil.start'], bookmarks:['www.meteo-mini.fr']},
-      objectives:[
-        {t:'Va sur <b>www.zanimo.fr</b> et ajoute-le aux favoris <b>⭐</b>', goal:G.bookmarked('www.zanimo.fr')},
-        {t:'Va sur <b>www.college-curie.fr</b> et ajoute-le aussi <b>⭐</b>', goal:G.bookmarked('www.college-curie.fr')},
-        {t:'Ouvre le menu <b>☰</b> puis <b>⭐ Favoris</b>', goal:G.openedBmPanel()},
-        {t:'<b>Supprime</b> le favori <b>Météo Mini</b> avec son 🗑️', goal:G.removedBookmark('www.meteo-mini.fr')}
-      ]},
-    {kind:'mission',label:'Mission 3',emoji:'🕰️',title:'La machine à remonter le temps',
-      intro:'Le navigateur note <b>toutes</b> les pages que tu visites dans son <b>historique</b>. Pratique pour retrouver une page sans se souvenir de l\'adresse !',
-      seed:{tabs:['goupil.start']},
-      objectives:[
-        {t:'Visite la fiche du dauphin : <b>www.zanimo.fr/dauphin</b>', goal:G.visited('www.zanimo.fr/dauphin')},
-        {t:'Va ensuite sur <b>www.recettes-de-lilou.fr</b>', goal:G.visited('www.recettes-de-lilou.fr')},
+        {t:'Rouvre <b>Météo Mini</b> depuis la <b>barre de favoris</b>', goal:G.openedBookmark('www.meteo-mini.fr')},
         {t:'Ouvre le menu <b>☰</b> puis <b>🕘 Historique</b>', goal:G.openedHistory()},
-        {t:'Dans l\'historique, retrouve la fiche du <b>dauphin</b> et <b>rouvre-la</b>', goal:G.openedFromHistory('www.zanimo.fr/dauphin')}
+        {t:'Dans l\'historique, <b>rouvre</b> la page météo', goal:G.openedFromHistory('www.meteo-mini.fr')}
       ]},
-    {kind:'jalon',label:'Défi',emoji:'🕵️',title:'Détective du passé',
-      intro:'Hier, tu as vu une super <b>recette de gâteau</b>… mais impossible de te souvenir de l\'adresse ! Heureusement, ton navigateur, lui, se souvient de tout.',
-      seed:{tabs:['goupil.start'], history:[
-        {url:'www.pizzeria-la-tour.fr', label:'Hier'},
-        {url:'www.recettes-de-lilou.fr/gateau-choco', label:'Hier'},
-        {url:'www.zanimo.fr/kangourou', label:'Hier'},
-        {url:'www.musee-espace.fr', label:'Hier'}
-      ]},
-      objectives:[
-        {t:'Ouvre l\'<b>Historique</b> (menu ☰)', goal:G.openedHistory()},
-        {t:'Retrouve la page de la <b>recette</b> vue hier et rouvre-la', goal:G.openedFromHistory('www.recettes-de-lilou.fr/gateau-choco')},
-        {t:'Ajoute-la aux <b>favoris ⭐</b> pour ne plus jamais la perdre', goal:G.bookmarked('www.recettes-de-lilou.fr/gateau-choco')},
-        quizObj('Dernière question dans le carnet 📝 !', 'qChoco', 'Combien de grammes de chocolat faut-il pour la recette ?', ['200'], 'Regarde la liste des ingrédients de la recette.')
-      ]}
+    {kind:'game',label:'Mission 2',emoji:'📚',title:'Bibliothécaire speed',
+      intro:'Le bibliothécaire dicte : étoile, rouvre, supprime… à toute vitesse !',
+      goal:'Exécute les ordres du bibliothécaire !',
+      hint:'⭐ = étoile de la barre d\'adresse, 📌 = barre de favoris, 🕘 = menu ☰ → Historique.',
+      seed:{tabs:['www.zanimo.fr'],
+        bookmarks:['www.meteo-mini.fr','www.recettes-de-lilou.fr/gateau-choco'],
+        history:[{url:'www.musee-espace.fr/horaires',label:'Hier'},{url:'www.tubix.fr',label:'Hier'}]},
+      run:function(done){ biblioRun(done); }},
+    {kind:'game',label:'Mission 3',emoji:'🗑️',title:'Le tri des favoris',
+      intro:'Ton cousin te lègue 8 favoris… dont des pièges connus. Garde ou jette !',
+      goal:'GARDER les sites sûrs, JETER les pièges !',
+      hint:'Sosie (zanim0), promesses folles, « gratuit » partout : poubelle !',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ triRun(done); }},
+    {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'Détective du passé',
+      intro:'Examen chrono : retrouve, épingle, nettoie — la mémoire totale !',
+      goal:'Historique + favoris, sans te perdre !',
+      hint:'🕘 = menu ☰ → Historique ; l\'étoile s\'ajoute ET se retire.',
+      seed:{tabs:['goupil.start'],
+        bookmarks:['ent.college-curie.fr','www.super-jeux-cadeaux.com'],
+        history:[
+          {url:'www.pizzeria-la-tour.fr', label:'Hier'},
+          {url:'www.recettes-de-lilou.fr/gateau-choco', label:'Hier'},
+          {url:'www.zanimo.fr/kangourou', label:'Hier'}
+        ]},
+      run:function(done){ examenMemRun(done); }}
   ]},
 
 /* ===== NIVEAU 5 — Pubs et pop-ups ===== */
 { n:5, title:'Pubs et pop-ups', subtitle:'pubs & pop-ups',
   intro:{ emoji:'📢',
-    lead:'Le web est truffé de <b>publicités</b> et de <b>pop-ups</b> conçus pour attraper tes clics : faux cadeaux, fausses alertes, faux boutons. Apprends à les démasquer pour ne plus jamais tomber dans le panneau.',
-    teach:'Une publicité porte presque toujours un badge <b>« Annonce »</b> ou <b>« Sponsorisé »</b> — écrit en tout petit ! Un <b>pop-up</b> est une fenêtre qui s\'ouvre toute seule par-dessus la page : ferme-le avec sa <b>vraie croix ✕</b> (souvent discrète), jamais avec ses gros boutons colorés qui clignotent. Et si un site demande à t\'envoyer des <b>notifications</b>, choisis <b>Bloquer</b>. Règle d\'or : trop beau pour être vrai = piège.',
-    tools:[{g:'📢',n:'Le badge « Annonce »'},{g:'✕',n:'La vraie croix du pop-up'},{g:'🔕',n:'Bloquer les notifications'},{g:'🎁',n:'Trop beau pour être vrai = piège'}] },
+    lead:'Pubs criardes, pop-ups, faux cadeaux : le web veut tes clics. Mission : ne plus jamais tomber dans le panneau.',
+    teach:'Repère le badge <b>« Annonce »</b>, ferme les pop-ups avec leur <b>vraie croix ✕</b>, réponds <b>Bloquer</b> aux notifications.',
+    tools:[{g:'📢',n:'Le badge « Annonce »'},{g:'✕',n:'La vraie croix du pop-up'},{g:'🔕',n:'Bloquer les notifications'},{g:'🎁',n:'Trop beau = piège'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'🕶️',title:'Repère les pubs',
-      intro:'Bienvenue sur <b>JeuxMax</b>, un site de jeux… financé par la pub. Des encarts criards essaient de te détourner : apprends à les repérer <b>avant</b> de cliquer.',
+      intro:'JeuxMax est truffé de pubs : repère-les <b>avant</b> de cliquer.',
       seed:{tabs:['www.jeuxmax.fr']},
       objectives:[
-        {t:'<b>Survole</b> les encarts criards sans cliquer : repère le badge <b>« Annonce »</b>', goal:G.flag('adHovered','Passe ta souris sur les gros encarts colorés <b>sans cliquer</b> : un badge « Annonce » se cache dans le coin, et l\'adresse de destination s\'affiche en bas à gauche.','links')},
-        {t:'Ouvre le jeu <b>Labyrinthe 3D</b> — sans cliquer sur une seule pub !', goal:G.atUrl('www.jeuxmax.fr/labyrinthe-3d')},
-        {t:'Lance le jeu avec le bouton <b>▶ Jouer</b>', goal:G.flag('playedGame','Le bouton ▶ Jouer, au centre de la page, est le seul bouton qui n\'est PAS une pub !','links')},
-        quizObj('Réponds dans le carnet 📝', 'badgePub', 'Quel mot, écrit en petit dans un coin, signale une publicité ?', ['annonce','sponsorise'], 'Tu l\'as vu sur les encarts criards de JeuxMax.')
+        {t:'<b>Survole</b> les encarts criards : trouve le badge <b>« Annonce »</b>', goal:G.flag('adHovered','Survole les gros encarts sans cliquer : le badge « Annonce » se cache dans un coin.','links')},
+        {t:'Ouvre <b>Labyrinthe 3D</b> sans cliquer une pub', goal:G.atUrl('www.jeuxmax.fr/labyrinthe-3d')},
+        {t:'Lance le jeu avec <b>▶ Jouer</b>', goal:G.flag('playedGame','Le bouton ▶ Jouer au centre est le seul qui n\'est pas une pub.','links')},
+        quizObj('Réponds dans le carnet 📝', 'badgePub', 'Quel mot, écrit en petit, signale une publicité ?', ['annonce','sponsorise'], 'Tu l\'as vu dans le coin des encarts criards.')
       ]},
     {kind:'mission',label:'Mission 2',emoji:'🪟',title:'Ferme les pop-ups',
-      intro:'Le jeu <b>Astro Runner</b> a l\'air génial… mais sa page déclenche des <b>pop-ups</b>. Souviens-toi : la <b>croix ✕</b> pour fermer, <b>Bloquer</b> pour les notifications, et on ne touche JAMAIS aux gros boutons.',
+      intro:'Astro Runner déclenche des pop-ups : croix ✕, Bloquer, jamais les gros boutons.',
       seed:{tabs:['www.jeuxmax.fr']},
       objectives:[
-        {t:'Ouvre le jeu <b>Astro Runner</b> depuis l\'accueil de JeuxMax', goal:G.atUrl('www.jeuxmax.fr/astro-runner')},
-        {t:'Un pop-up « cadeau » surgit : ferme-le avec sa <b>vraie croix ✕</b>', goal:G.flag('closedPrize','La vraie fermeture, c\'est la <b>petite croix ✕</b> dans la barre du pop-up. Le gros bouton clignotant est un piège qui en fait apparaître d\'autres !','popupx')},
-        {t:'Le site veut t\'envoyer des <b>notifications</b> : clique <b>Bloquer</b>', goal:G.flag('blockedNotif','Dans le pop-up de notifications, choisis <b>Bloquer</b> — sinon, pluie de pubs garantie !','popupx')},
-        {t:'Tranquille ! Lance enfin le jeu avec <b>▶ Jouer</b>', goal:G.flag('playedGame','Maintenant que l\'écran est dégagé, clique le bouton ▶ Jouer.','links')}
+        {t:'Ouvre le jeu <b>Astro Runner</b>', goal:G.atUrl('www.jeuxmax.fr/astro-runner')},
+        {t:'Ferme le pop-up « cadeau » avec sa <b>croix ✕</b>', goal:G.flag('closedPrize','La petite croix ✕ dans la barre du pop-up — le gros bouton est un piège.','popupx')},
+        {t:'Notifications ? Clique <b>Bloquer</b>', goal:G.flag('blockedNotif','Choisis Bloquer, sinon pluie de pubs garantie.','popupx')},
+        {t:'Lance enfin le jeu avec <b>▶ Jouer</b>', goal:G.flag('playedGame','L\'écran est dégagé : clique ▶ Jouer.','links')}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'🎯',title:'L\'annonce dans les résultats',
-      intro:'Les moteurs de recherche aussi affichent des <b>résultats sponsorisés</b>, placés tout en haut. Ils ressemblent aux vrais… à un détail près.',
+      intro:'Les résultats « sponsorisés » se glissent en haut des recherches.',
       seed:{tabs:['www.cherchetout.fr']},
       objectives:[
-        {t:'Cherche <b>jeux gratuits</b> sur Cherchetout', goal:G.searched(['jeux','gratuit'])},
-        {t:'Ignore le résultat <b>« Annonce »</b> en haut : ouvre le vrai résultat, <b>JeuxMax</b>', goal:G.openedResult('www.jeuxmax.fr')},
-        quizObj('Réponds dans le carnet 📝', 'posAnnonce', 'Où se placent les résultats sponsorisés dans la page de résultats ?', ['haut','debut','premier','dessus'], 'Compare la position de l\'annonce et celle des vrais résultats.')
+        {t:'Cherche <b>jeux gratuits</b>', goal:G.searched(['jeux','gratuit'])},
+        {t:'Ignore l\'<b>Annonce</b> : ouvre le vrai résultat <b>JeuxMax</b>', goal:G.openedResult('www.jeuxmax.fr')},
+        quizObj('Réponds dans le carnet 📝', 'posAnnonce', 'Où se placent les résultats sponsorisés ?', ['haut','debut','premier','dessus'], 'Compare la position de l\'annonce et des vrais résultats.')
       ]},
     {kind:'jalon',mode:'storm',label:'Mini-boss',emoji:'🪟',title:'L\'attaque des pop-ups',
-      intro:'JeuxMax devient fou : des pop-ups surgissent en continu ! <b>Ferme-en 15</b> avec leur vraie croix <b>✕</b>. Chaque clic sur un faux bouton en fait apparaître d\'autres… et si <b>9 pop-ups</b> envahissent l\'écran en même temps, c\'est perdu !',
+      intro:'Ferme <b>15 pop-ups</b> avec leur croix ✕. 9 à l\'écran = perdu !',
       seed:{tabs:['www.jeuxmax.fr']},
       boot:function(){ startPopupStorm(); },
       objectives:[
-        {t:'Ferme <b>15 pop-ups</b> avec leur croix <b>✕</b> — sans laisser l\'écran se faire envahir !', goal:{spot:'popupx', hint:'Vise uniquement la <b>petite croix ✕</b> en haut à droite de chaque pop-up. Ignore les gros boutons qui clignotent : chacun en fait apparaître un de plus !', test:c=>(c.evt.popupsClosed||0)>=15}}
+        {t:'Ferme <b>15 pop-ups</b> avec leur croix <b>✕</b>', goal:{spot:'popupx', hint:'Vise la petite croix ✕ : chaque gros bouton cliqué en fait apparaître un de plus !', test:c=>(c.evt.popupsClosed||0)>=15}}
       ]}
   ]},
 
 /* ===== NIVEAU 6 — Sécurité et fiabilité ===== */
 { n:6, title:'Sécurité et fiabilité', subtitle:'sécurité',
   intro:{ emoji:'🛡️',
-    lead:'Tous les sites ne sont pas dignes de confiance : certains se déguisent en sites connus pour voler des mots de passe. Ta meilleure arme : <b>lire la barre d\'adresse</b>.',
-    teach:'Le <b>cadenas 🔒</b> signale une connexion <b>https</b> chiffrée (clique-le pour vérifier) ; un <b>⚠️</b> signale du <b>http</b> non sécurisé : jamais de mot de passe là-dessus ! Mais attention : https ne veut pas dire honnête. Lis le <b>nom de domaine</b> lettre par lettre : les pirates créent des sosies (un <b>0</b> à la place d\'un o, un mot ajouté…). Un message qui met la <b>pression</b> (« URGENT ! compte supprimé ! ») ou promet des <b>cadeaux</b>, c\'est du <b>phishing</b> : on ne clique pas, on <b>signale 🚩</b>.',
-    tools:[{g:'🔒',n:'Cadenas = connexion chiffrée (https)'},{g:'⚠️',n:'http = jamais de mot de passe'},{g:'🔍',n:'Lire le domaine lettre par lettre'},{g:'🚩',n:'Signaler le phishing'}] },
+    lead:'Des sites se déguisent en sites connus pour voler des mots de passe. Ton arme d\'agent : <b>lire la barre d\'adresse</b>.',
+    teach:'🔒 = https chiffré, ⚠️ = http : jamais de mot de passe. Lis le domaine <b>lettre par lettre</b>, et signale 🚩 les messages qui paniquent.',
+    tools:[{g:'🔒',n:'Cadenas = https chiffré'},{g:'⚠️',n:'http = pas de mot de passe'},{g:'🔍',n:'Lire lettre par lettre'},{g:'🚩',n:'Signaler le phishing'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'🔒',title:'Le cadenas et le http',
-      intro:'Deux sites, deux connexions. Clique le symbole à gauche de la barre d\'adresse pour découvrir ce qu\'il raconte.',
+      intro:'Clique le symbole à gauche de la barre d\'adresse : il parle.',
       seed:{tabs:['goupil.start']},
       objectives:[
-        {t:'Va sur <b>www.zanimo.fr</b> puis clique le <b>cadenas 🔒</b> dans la barre d\'adresse', goal:G.flag('lockChecked','Une fois sur www.zanimo.fr, clique le petit <b>cadenas 🔒</b> tout à gauche de la barre d\'adresse.','addr')},
-        {t:'Va sur <b>www.blog-de-tom.fr</b> et clique le symbole <b>⚠️</b>', goal:G.flag('lockCheckedInsecure','Tape www.blog-de-tom.fr : le cadenas devient <b>⚠️</b>. Clique-le pour lire l\'avertissement.','addr')},
-        quizObj('Réponds dans le carnet 📝', 'siteHttp', 'Sur lequel des deux sites ne faut-il JAMAIS taper de mot de passe ?', ['blog-de-tom','blog de tom','tom'], 'C\'est celui marqué ⚠️ : sa connexion http n\'est pas chiffrée.')
+        {t:'Sur <b>www.zanimo.fr</b>, clique le <b>cadenas 🔒</b>', goal:G.flag('lockChecked','Le petit cadenas 🔒 est tout à gauche de la barre d\'adresse.','addr')},
+        {t:'Sur <b>www.blog-de-tom.fr</b>, clique le <b>⚠️</b>', goal:G.flag('lockCheckedInsecure','Sur ce site http, le cadenas devient ⚠️ : clique-le.','addr')},
+        quizObj('Réponds dans le carnet 📝', 'siteHttp', 'Sur quel site ne faut-il JAMAIS taper de mot de passe ?', ['blog-de-tom','blog de tom','tom'], 'Celui marqué ⚠️ : connexion http non chiffrée.')
       ]},
     {kind:'mission',label:'Mission 2',emoji:'🕵️',title:'Le site sosie',
-      intro:'Un lien circule : « Zanimo Premium gratuit sur <b>www.zanim0.fr</b> » ! Va enquêter… mais ne remplis <b>surtout pas</b> le formulaire.',
+      intro:'« Zanimo Premium gratuit sur www.zanim0.fr » ! Enquête — sans remplir le formulaire.',
       seed:{tabs:['goupil.start']},
       objectives:[
-        {t:'Tape l\'adresse <b>www.zanim0.fr</b> (avec un zéro !) et observe la page', goal:G.typedUrl('www.zanim0.fr')},
-        quizObj('Quelque chose cloche… Réponds dans le carnet 📝', 'fauxDomaine', 'Recopie le nom exact du site imposteur (entre « www. » et « .fr »)', ['zanim0'], 'Lis la barre d\'adresse lettre par lettre : un caractère a changé ! (Et as-tu vu la faute dans « abonement » ?)'),
-        {t:'Fuis l\'imposteur : retourne sur le vrai <b>www.zanimo.fr</b>', goal:G.typedUrl('www.zanimo.fr')}
+        {t:'Tape <b>www.zanim0.fr</b> (avec un zéro !) et observe', goal:G.typedUrl('www.zanim0.fr')},
+        quizObj('Quelque chose cloche… carnet 📝', 'fauxDomaine', 'Recopie le nom exact du site imposteur (entre « www. » et « .fr »)', ['zanim0'], 'Lis la barre d\'adresse lettre par lettre : un caractère a changé !'),
+        {t:'Fuis : retourne sur le vrai <b>www.zanimo.fr</b>', goal:G.typedUrl('www.zanimo.fr')}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'🎣',title:'Alerte au phishing',
-      intro:'Un message <b>« URGENT »</b> t\'attend dans ta boîte Pixmail : ton compte serait supprimé demain ! Avant de paniquer… enquête comme un pro.',
+      intro:'Un message « URGENT » menace ton compte Pixmail. Enquête avant de paniquer.',
       seed:{tabs:['www.pixmail.fr']},
       objectives:[
-        {t:'Ouvre le message <b>« ⚠️ URGENT : ton compte sera supprimé »</b>', goal:G.atUrl('www.pixmail.fr/message-urgent')},
-        {t:'<b>Survole</b> le gros bouton « VÉRIFIER MON COMPTE » : lis sa vraie destination en bas à gauche', goal:G.inSet('hoveredUrls','www.pixmail-secure-verif.com','Passe la souris sur le gros bouton rouge <b>sans cliquer</b> : l\'adresse en bas à gauche n\'est PAS www.pixmail.fr…','links')},
-        {t:'C\'est une arnaque : clique <b>🚩 Signaler comme phishing</b>', goal:G.flag('reportedPhishing','Le bouton 🚩 est sous le message. Les indices : fautes d\'orthographe, menace urgente, fausse adresse d\'expéditeur.','links')},
-        quizObj('Réponds dans le carnet 📝', 'phishSentiment', 'Quelle émotion ce message veut-il provoquer pour te faire cliquer sans réfléchir ?', ['urgence','peur','panique','stress'], '« SUPPRIMÉ sous 24 h !!! » — ça met dans quel état ?')
+        {t:'Ouvre le message <b>« ⚠️ URGENT »</b>', goal:G.atUrl('www.pixmail.fr/message-urgent')},
+        {t:'<b>Survole</b> le gros bouton : lis sa vraie destination', goal:G.inSet('hoveredUrls','www.pixmail-secure-verif.com','Survole le bouton rouge sans cliquer : l\'adresse en bas à gauche n\'est PAS pixmail.fr.','links')},
+        {t:'Arnaque ! Clique <b>🚩 Signaler comme phishing</b>', goal:G.flag('reportedPhishing','Le bouton 🚩 est sous le message.','links')},
+        quizObj('Réponds dans le carnet 📝', 'phishSentiment', 'Quelle émotion ce message veut-il provoquer ?', ['urgence','peur','panique','stress'], '« SUPPRIMÉ sous 24 h !!! » — ça met dans quel état ?')
       ]},
-    {kind:'jalon',label:'Défi',emoji:'🧱',title:'Le vrai Blockcraft',
-      intro:'Sam veut installer <b>Blockcraft</b> et a reçu <b>3 liens identiques en apparence</b>. Un seul mène au site officiel — les deux autres sont des sosies. À toi de jouer, inspecteur !',
+    {kind:'jalon',label:'Examen',emoji:'🧱',title:'Le vrai Blockcraft',
+      intro:'3 liens identiques en apparence, 1 seul site officiel. À toi, inspecteur !',
       seed:{tabs:['www.pixmail.fr/message-de-sam']},
       objectives:[
-        {t:'<b>Survole les 3 liens</b> du message et compare leurs adresses en bas à gauche', goal:G.setAll('hoveredUrls',['www.blockcraft.fr','www.blockcraft-gratuit.com','www.b1ockcraft.fr'],'Passe la souris sur chacun des 3 boutons <b>sans cliquer</b> et lis les 3 adresses. Cherche les intrus : mot ajouté, lettre remplacée…','links')},
-        {t:'Clique <b>uniquement</b> le lien du site officiel', goal:G.atUrl('www.blockcraft.fr')},
-        quizObj('Réponds dans le carnet 📝', 'nbPieges', 'Combien de liens étaient des pièges ?', ['2','deux'], '3 liens… 1 seul site officiel.')
+        {t:'<b>Survole les 3 liens</b> et compare leurs adresses', goal:G.setAll('hoveredUrls',['www.blockcraft.fr','www.blockcraft-gratuit.com','www.b1ockcraft.fr'],'Survole chaque bouton sans cliquer : mot ajouté, lettre remplacée…','links')},
+        {t:'Clique <b>uniquement</b> le site officiel', goal:G.atUrl('www.blockcraft.fr')},
+        quizObj('Réponds dans le carnet 📝', 'nbPieges', 'Combien de liens étaient des pièges ?', ['2','deux'], '3 liens… 1 seul officiel.')
       ]}
   ]},
 
 /* ===== NIVEAU 7 — Les téléchargements ===== */
 { n:7, title:'Les téléchargements', subtitle:'téléchargements',
   intro:{ emoji:'⬇️',
-    lead:'Télécharger, c\'est <b>copier un fichier</b> d\'internet sur ton ordinateur. Très pratique… à condition de savoir <b>quoi</b> télécharger, <b>où</b> le retrouver, et quels fichiers <b>refuser</b>.',
-    teach:'Sur un site fiable, clique le lien du fichier : il atterrit dans le panneau <b>⬇️ Téléchargements</b> du navigateur (bouton en haut à droite, ou menu ☰). Méfie-toi des <b>gros boutons « TÉLÉCHARGER »</b> : ce sont souvent des pubs, le vrai lien est discret ! Et si le fichier se termine en <b>.exe</b> ou <b>.bat</b>, c\'est un <b>programme</b> : venu d\'un site douteux, il peut infecter ton ordinateur → <b>Supprimer</b>.',
-    tools:[{g:'⬇️',n:'Le panneau Téléchargements'},{g:'🔗',n:'Le vrai lien est discret'},{g:'⚙️',n:'.exe / .bat = programme : prudence !'},{g:'🗑️',n:'Au doute : Supprimer'}] },
+    lead:'Télécharger = copier un fichier sur ton ordinateur. Encore faut-il savoir quoi accepter… et quoi refuser.',
+    teach:'Le fichier atterrit dans le panneau <b>⬇️</b>. Les gros boutons « TÉLÉCHARGER » sont des pubs ; un <b>.exe</b> douteux → <b>Supprimer</b>.',
+    tools:[{g:'⬇️',n:'Le panneau Téléchargements'},{g:'🔗',n:'Le vrai lien est discret'},{g:'⚙️',n:'.exe / .bat = programme'},{g:'🗑️',n:'Au doute : Supprimer'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'📕',title:'Ton premier téléchargement',
-      intro:'Le collège a mis en ligne la <b>fiche de révisions de maths</b>. Télécharge-la et retrouve-la dans le navigateur.',
+      intro:'Télécharge la fiche de révisions du collège et retrouve-la.',
       seed:{tabs:['www.college-curie.fr']},
       objectives:[
-        {t:'Avec le menu du site, ouvre la page <b>Documents</b>', goal:G.atUrl('www.college-curie.fr/documents')},
-        {t:'Télécharge <b>fiche-revisions-maths.pdf</b>', goal:G.inSet('downloaded','fiche-revisions-maths.pdf','Clique le lien du fichier dans la page : la flèche ⬇️ apparaît en haut du navigateur.','links')},
-        {t:'Ouvre le panneau <b>⬇️ Téléchargements</b>', goal:G.flag('openedDlPanel','Clique le bouton <b>⬇️</b> apparu en haut à droite, ou passe par le menu ☰ → Téléchargements.','dlbtn')},
-        {t:'<b>Ouvre</b> la fiche depuis le panneau (bouton « Ouvrir »)', goal:G.inSet('openedDownload','fiche-revisions-maths.pdf','Dans le panneau, clique le bouton <b>Ouvrir</b> à côté du fichier téléchargé.','sidebar')}
+        {t:'Ouvre la page <b>Documents</b> (menu du site)', goal:G.atUrl('www.college-curie.fr/documents')},
+        {t:'Télécharge <b>fiche-revisions-maths.pdf</b>', goal:G.inSet('downloaded','fiche-revisions-maths.pdf','Clique le lien du fichier : la flèche ⬇️ apparaît en haut.','links')},
+        {t:'Ouvre le panneau <b>⬇️ Téléchargements</b>', goal:G.flag('openedDlPanel','Bouton ⬇️ en haut à droite, ou menu ☰ → Téléchargements.','dlbtn')},
+        {t:'<b>Ouvre</b> la fiche (bouton « Ouvrir »)', goal:G.inSet('openedDownload','fiche-revisions-maths.pdf','Dans le panneau, clique Ouvrir à côté du fichier.','sidebar')}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'🪤',title:'Le vrai bouton',
-      intro:'Tu cherches un <b>modèle d\'exposé</b> sur astuces-exposes.fr. Le site affiche d\'énormes boutons « TÉLÉCHARGER »… trop énormes pour être honnêtes.',
+      intro:'Des boutons « TÉLÉCHARGER » énormes… trop énormes pour être honnêtes.',
       seed:{tabs:['www.astuces-exposes.fr']},
       objectives:[
-        {t:'<b>Survole</b> les gros boutons « TÉLÉCHARGER » : où mènent-ils vraiment ?', goal:G.flag('adHovered','Passe la souris sur les gros encarts <b>sans cliquer</b> : l\'adresse en bas à gauche n\'a rien à voir avec ton fichier !','links')},
-        {t:'Télécharge le <b>vrai</b> fichier : le petit lien <b>modele-expose.doc</b>', goal:G.inSet('downloaded','modele-expose.doc','Le vrai lien est <b>discret</b>, dans le texte : « modele-expose.doc (245 Ko) ».','links')},
-        quizObj('Réponds dans le carnet 📝', 'fauxBoutons', 'Les gros boutons « TÉLÉCHARGER MAINTENANT » étaient en réalité des… ?', ['pub','annonce','piege','arnaque'], 'Ils portaient le fameux badge dans le coin…')
+        {t:'<b>Survole</b> les gros boutons : où mènent-ils vraiment ?', goal:G.flag('adHovered','Survole sans cliquer : l\'adresse en bas à gauche n\'a rien à voir avec ton fichier.','links')},
+        {t:'Télécharge le <b>vrai</b> fichier : <b>modele-expose.doc</b>', goal:G.inSet('downloaded','modele-expose.doc','Le vrai lien est discret, dans le texte.','links')},
+        quizObj('Réponds dans le carnet 📝', 'fauxBoutons', 'Les gros boutons « TÉLÉCHARGER » étaient des… ?', ['pub','annonce','piege','arnaque'], 'Ils portaient le fameux badge dans le coin…')
       ]},
     {kind:'mission',label:'Mission 3',emoji:'⚙️',title:'Le fichier dangereux',
-      intro:'Un site promet de rendre ton PC « 10× plus rapide » avec un fichier <b>.exe</b> gratuit. Spoiler : c\'est louche. Va voir, tente le téléchargement… et fais le bon choix.',
+      intro:'Un .exe « miracle » pour PC lent. Spoiler : c\'est louche.',
       seed:{tabs:['goupil.start']},
       objectives:[
-        {t:'Va sur <b>www.logiciels-turbo.com</b> (remarque le ⚠️ dans la barre d\'adresse…)', goal:G.visited('www.logiciels-turbo.com')},
-        {t:'Clique « Télécharger Turbo-Boost » puis, dans l\'alerte de Goupil, choisis <b>🗑️ Supprimer</b>', goal:G.inSet('dlDeleted','turbo-boost.exe','Lance le téléchargement : Goupil détecte un fichier <b>.exe</b> suspect et t\'alerte. Choisis <b>Supprimer</b> !','viewport')},
-        quizObj('Réponds dans le carnet 📝', 'extDanger', 'Quelle extension signale un programme capable de s\'installer sur ton ordinateur ?', ['exe'], 'Trois lettres — celles du fichier que tu viens de supprimer.')
+        {t:'Va sur <b>www.logiciels-turbo.com</b> (vois le ⚠️…)', goal:G.visited('www.logiciels-turbo.com')},
+        {t:'Tente le téléchargement, puis choisis <b>🗑️ Supprimer</b>', goal:G.inSet('dlDeleted','turbo-boost.exe','Goupil détecte le .exe suspect : choisis Supprimer !','viewport')},
+        quizObj('Réponds dans le carnet 📝', 'extDanger', 'Quelle extension signale un programme ?', ['exe'], 'Trois lettres — celles du fichier supprimé.')
       ]},
-    {kind:'jalon',label:'Défi',emoji:'🧹',title:'Le grand ménage',
-      intro:'Ton panneau Téléchargements est un vrai capharnaüm : des fichiers de classe <b>sains</b>… et des <b>intrus dangereux</b> téléchargés par erreur. Supprime les 3 fichiers suspects — et <b>seulement</b> eux !',
+    {kind:'jalon',label:'Examen',emoji:'🧹',title:'Le grand ménage',
+      intro:'Supprime les 3 fichiers suspects du panneau — et seulement eux !',
       guardSafeDl:true,
       seed:{tabs:['goupil.start'], downloads:[
         {name:'expose-volcans.pdf', size:'1,8 Mo', safe:true, preview:'Exposé SVT — Les volcans, par Sam (5e B).'},
@@ -2671,73 +3551,73 @@ const LEVELS=[
       ]},
       objectives:[
         {t:'Ouvre le panneau <b>⬇️ Téléchargements</b>', goal:G.flag('openedDlPanel','Bouton ⬇️ en haut à droite, ou menu ☰ → Téléchargements.','dlbtn')},
-        {t:'Supprime les <b>3 fichiers dangereux</b> — et seulement eux !', goal:G.setAll('dlDeleted',['super-cheat-gratuit.exe','pack-skins-gratuit.exe','mise-a-jour-urgente.bat'],'Les <b>.exe</b> et <b>.bat</b> « gratuits » ou « urgents » venus de nulle part : poubelle ! Les .pdf et .jpg de ta classe sont sûrs.','sidebar')},
-        quizObj('Réponds dans le carnet 📝', 'pdfExe', 'Un fichier nommé « devoir-maths.pdf.exe » est-il vraiment un PDF ? (oui/non)', ['non'], 'Seule la DERNIÈRE extension compte : .pdf.exe = programme déguisé !')
+        {t:'Supprime les <b>3 fichiers dangereux</b>, eux seuls !', goal:G.setAll('dlDeleted',['super-cheat-gratuit.exe','pack-skins-gratuit.exe','mise-a-jour-urgente.bat'],'Les .exe et .bat « gratuits » ou « urgents » : poubelle ! Les .pdf et .jpg de ta classe sont sûrs.','sidebar')},
+        quizObj('Réponds dans le carnet 📝', 'pdfExe', '« devoir-maths.pdf.exe » est-il vraiment un PDF ? (oui/non)', ['non'], 'Seule la DERNIÈRE extension compte !')
       ]}
   ]},
 
 /* ===== NIVEAU 8 — Les mots de passe ===== */
 { n:8, title:'Les mots de passe', subtitle:'mots de passe',
   intro:{ emoji:'🔑',
-    lead:'Ton mot de passe est la <b>clé</b> de tes comptes. Trop simple, il se devine en quelques secondes ; bien construit, il résiste à tout. Apprends à forger des clés en béton — et à en retrouver une perdue.',
-    teach:'Un bon mot de passe : <b>12 caractères minimum</b>, avec majuscules + minuscules + chiffres + symboles, sans prénom, date de naissance ni suite connue (azerty, 123456…). Technique imparable : assemble <b>3 mots</b> avec des symboles, comme <i>Fusee!Panda#2026</i>. Un mot de passe <b>différent par site</b>, et on ne le donne à <b>personne</b>. Perdu ? Utilise la <b>procédure officielle</b> « Mot de passe oublié » du site — jamais un lien reçu par message.',
-    tools:[{g:'📏',n:'12 caractères minimum'},{g:'🎲',n:'Majuscules, chiffres, symboles'},{g:'🧩',n:'La phrase de passe (3 mots +)'},{g:'🤫',n:'Secret et unique par site'}] },
+    lead:'Ton mot de passe est la clé de tes comptes : trop simple, il casse en 2 secondes. À la forge, agent !',
+    teach:'Recette : <b>12 caractères mini</b>, majuscules + chiffres + symboles, ni prénom ni « azerty ». Astuce : 3 mots assemblés, genre <i>Fusee!Panda#2026</i>.',
+    tools:[{g:'📏',n:'12 caractères minimum'},{g:'🎲',n:'Majuscules, chiffres, symboles'},{g:'🧩',n:'3 mots assemblés'},{g:'🤫',n:'Secret, unique par site'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'⚖️',title:'Robuste ou fragile ?',
-      intro:'Le club informatique a mis en ligne un <b>testeur de mots de passe</b>. Mets-le à l\'épreuve — d\'abord avec un mot de passe nul, puis avec ta création.',
+      intro:'Mets le testeur à l\'épreuve : un mot de passe nul, puis ta création.',
       seed:{tabs:['www.teste-ton-mdp.fr']},
       objectives:[
-        {t:'Dans le testeur, tape <b>azerty123</b> et admire le désastre', goal:G.flag('testedAzerty','Clique dans le champ du testeur et tape exactement <b>azerty123</b>.','form')},
-        {t:'Efface, puis invente un mot de passe qui atteint <b>Fort 🟢</b>', goal:G.flag('testedStrong','12 caractères minimum, majuscules + minuscules, chiffres, symboles. Essaie la technique des 3 mots : <i>Fusee!Panda#2026</i>','form')},
-        quizObj('Réponds dans le carnet 📝', 'minChars', 'Combien de caractères minimum pour un bon mot de passe ?', ['12','douze'], 'Le testeur te le rappelle quand il en manque…')
+        {t:'Tape <b>azerty123</b> dans le testeur : admire le désastre', goal:G.flag('testedAzerty','Clique le champ du testeur et tape exactement azerty123.','form')},
+        {t:'Efface, puis forge un mot de passe <b>Fort 🟢</b>', goal:G.flag('testedStrong','12 caractères mini, majuscules, chiffres, symboles : Fusee!Panda#2026','form')},
+        quizObj('Réponds dans le carnet 📝', 'minChars', 'Combien de caractères minimum ?', ['12','douze'], 'Le testeur te le rappelle quand il en manque…')
       ]},
     {kind:'mission',label:'Mission 2',emoji:'📧',title:'Crée ton compte',
-      intro:'Sam veut son adresse Pixmail. Crée son compte avec un mot de passe digne de ce nom — le site refusera les mots de passe fragiles !',
+      intro:'Crée le compte Pixmail de Sam — les mots de passe fragiles seront refusés.',
       seed:{tabs:['www.pixmail.fr']},
       objectives:[
-        {t:'Sur Pixmail, ouvre la page <b>S\'inscrire</b> (menu du site)', goal:G.atUrl('www.pixmail.fr/inscription')},
-        {t:'Crée le compte avec un mot de passe <b>Fort 🟢</b>', goal:G.flag('createdStrong','Invente un mot de passe Fort (sans « sam » dedans !) puis clique « Créer mon compte ».','form')},
-        quizObj('Réponds dans le carnet 📝', 'memeMdp', 'Faut-il utiliser le même mot de passe sur tous les sites ? (oui/non)', ['non'], 'Si un seul site se fait pirater, tous tes comptes tomberaient d\'un coup…')
+        {t:'Ouvre <b>S\'inscrire</b> (menu du site)', goal:G.atUrl('www.pixmail.fr/inscription')},
+        {t:'Crée le compte avec un mot de passe <b>Fort 🟢</b>', goal:G.flag('createdStrong','Un mot de passe Fort, sans « sam » dedans, puis « Créer mon compte ».','form')},
+        quizObj('Réponds dans le carnet 📝', 'memeMdp', 'Le même mot de passe partout ? (oui/non)', ['non'], 'Un site piraté = tous tes comptes tombent…')
       ]},
     {kind:'mission',label:'Mission 3',emoji:'🆘',title:'Mot de passe perdu',
-      intro:'Catastrophe : impossible de te connecter à Pixmail ! Pas de panique — les sites sérieux ont une <b>procédure officielle</b> de récupération. Suis-la étape par étape.',
+      intro:'Impossible de te connecter ! Suis la procédure officielle, étape par étape.',
       seed:{tabs:['www.pixmail.fr/connexion']},
       objectives:[
         {t:'Clique <b>« Mot de passe oublié ? »</b>', goal:G.atUrl('www.pixmail.fr/recuperation')},
-        {t:'Demande un code, lis le <b>SMS 📱</b> (pop-up) et entre le code', goal:G.flag('codeEntered','Clique « M\'envoyer un code », lis le code à 4 chiffres dans le pop-up SMS, tape-le puis « Vérifier le code ».','form')},
-        {t:'Choisis un <b>nouveau mot de passe fort</b> et enregistre-le', goal:G.flag('resetDone','Même recette que d\'habitude : 12+ caractères, majuscules, chiffres, symboles → « Enregistrer ».','form')}
+        {t:'Demande un code, lis le <b>SMS 📱</b>, entre-le', goal:G.flag('codeEntered','Le code à 4 chiffres est dans le pop-up SMS.','form')},
+        {t:'Enregistre un <b>nouveau mot de passe fort</b>', goal:G.flag('resetDone','12+ caractères, majuscules, chiffres, symboles → Enregistrer.','form')}
       ]},
-    {kind:'jalon',label:'Défi',emoji:'🏦',title:'Le coffre-fort',
-      intro:'Triple épreuve finale : gagne le <b>duel des mots de passe</b>, forge une clé <b>Ultra 💪</b>, et réponds à LA question qui fâche.',
+    {kind:'jalon',label:'Examen',emoji:'🏦',title:'Le coffre-fort',
+      intro:'Gagne le duel, forge une clé Ultra 💪, réponds à LA question.',
       seed:{tabs:['www.teste-ton-mdp.fr/duel']},
       objectives:[
-        {t:'Dans le <b>duel</b>, clique le mot de passe le plus robuste', goal:G.flag('pickedStrongest','Élimine : suite de clavier, prénom + année de naissance, mot ultra-connu… Il n\'en reste qu\'un !','links')},
-        {t:'Va sur <b>le testeur</b> (menu du site) et forge un mot de passe <b>Ultra 💪</b>', goal:G.flag('testedUltra','Vise <b>16 caractères ou plus</b>, avec majuscules, chiffres et symboles. La phrase de passe est ton amie : <i>Goupil!Mange#2Pommes</i>','form')},
-        quizObj('Dernière question 📝', 'quiMdp', 'À qui peux-tu donner ton mot de passe ?', ['personne','parents'], 'Même pas à ton meilleur ami ! (À la rigueur, tes parents.)')
+        {t:'Au <b>duel</b>, clique le mot de passe le plus robuste', goal:G.flag('pickedStrongest','Élimine : suite clavier, prénom + année, mot archi-connu…','links')},
+        {t:'Sur <b>le testeur</b>, forge un mot de passe <b>Ultra 💪</b>', goal:G.flag('testedUltra','16 caractères ou plus : Goupil!Mange#2Pommes','form')},
+        quizObj('Dernière question 📝', 'quiMdp', 'À qui donner ton mot de passe ?', ['personne','parents'], 'Même pas à ton meilleur ami !')
       ]}
   ]},
 
 /* ===== NIVEAU 9 — BOSS : INFOX, le semeur de rumeurs ===== */
 { n:9, title:'INFOX, le semeur de rumeurs', subtitle:'boss final',
   intro:{ emoji:'🕵️',
-    lead:'Dernière épreuve ! Sur <b>Scoopz</b>, « l\'actu la plus choc du web », les rumeurs se répandent plus vite que la vérité. Ton arme ultime : l\'<b>esprit critique</b>.',
-    teach:'Avant de croire (ou partager) une info, pose-toi 4 questions : <b>Qui</b> l\'a écrite (auteur identifiable ?) — <b>Quand</b> (une date ?) — <b>D\'où</b> vient-elle (des sources vérifiables ?) — <b>Pourquoi</b> ce titre hurle-t-il en majuscules (informer… ou faire cliquer ?). Puis <b>recoupe</b> : va vérifier sur un <b>site officiel</b> ou reconnu. Et souviens-toi : une info surprenante peut être vraie, une info plausible peut être fausse — seule la <b>vérification</b> tranche.',
-    tools:[{g:'✍️',n:'Qui ? Un auteur identifiable'},{g:'📅',n:'Quand ? Une date claire'},{g:'🔗',n:'D\'où ? Des sources vérifiables'},{g:'🔁',n:'Recouper sur un site fiable'}] },
+    lead:'Dernière épreuve du permis web : sur <b>Scoopz</b>, les rumeurs courent plus vite que la vérité. Ton arme : l\'esprit critique.',
+    teach:'Avant de croire : <b>qui</b> écrit, <b>quand</b>, avec quelles <b>sources</b> ? Puis va <b>recouper</b> sur un site fiable.',
+    tools:[{g:'✍️',n:'Qui ? Un auteur identifiable'},{g:'📅',n:'Quand ? Une date claire'},{g:'🔗',n:'D\'où ? Des sources'},{g:'🔁',n:'Recouper sur un site fiable'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'🧐',title:'Autopsie d\'un article louche',
-      intro:'Échauffement : dissèque cet article de Scoopz sur un <b>« chat venu de Mars »</b>. Cherche l\'auteur, la date, les sources… si tu les trouves !',
+      intro:'Dissèque le scoop du « chat venu de Mars » : auteur, date, sources… si tu les trouves !',
       seed:{tabs:['www.scoopz.fr/chat-martien']},
       objectives:[
         quizObj('Enquête 📝 : qui a écrit cet article ?', 'auteurScoopz', 'Qui est l\'auteur de l\'article ?', ['anonyme','inconnu','personne','on ne sait pas'], 'Regarde la ligne grise sous le titre.'),
-        quizObj('Continue l\'enquête 📝', 'sourceScoopz', 'Quelle est la « source » de l\'article ?', ['video','floue'], 'C\'est écrit sous le titre… et ce n\'est pas très solide comme preuve.'),
-        quizObj('Dernière analyse 📝', 'partageScoopz', '« Partage vite avant la censure !!! » — l\'article veut que tu partages avant de… ?', ['reflechir','verifier','penser','lire'], 'Les fausses nouvelles comptent sur la vitesse. Partager avant de ré-flé-…')
+        quizObj('Continue l\'enquête 📝', 'sourceScoopz', 'Quelle est la « source » de l\'article ?', ['video','floue'], 'C\'est sous le titre… et ce n\'est pas très solide.'),
+        quizObj('Dernière analyse 📝', 'partageScoopz', 'L\'article veut que tu partages avant de… ?', ['reflechir','verifier','penser','lire'], 'Les fausses nouvelles comptent sur la vitesse.')
       ]},
     {kind:'jalon',mode:'boss',label:'BOSS',emoji:'👾',title:'INFOX, le semeur de rumeurs',
-      intro:'<b>INFOX</b> inonde Scoopz de scoops douteux et le collège panique ! Rédacteur en chef du journal, tu dois <b>vérifier les 5 scoops</b> (✅ vrai ou ❌ faux) avant que la jauge de rumeur n\'atteigne <b>100 %</b>. Va <b>recouper chaque info</b> sur les sites fiables (musée, Zanimo, Paris Monuments, mairie…). Attention : un mauvais verdict fait bondir la rumeur de <b>+15 %</b>, et INFOX t\'enverra des <b>pop-ups</b> pour te ralentir — chaque pop-up ouvert accélère la rumeur !',
+      intro:'Vérifie les <b>5 scoops</b> (✅/❌) avant que la rumeur n\'atteigne <b>100 %</b>. Recoupe sur les sites fiables — et ferme vite les pop-ups d\'INFOX !',
       seed:{tabs:['www.scoopz.fr']},
       boot:function(){ startInfoxBoss(); },
       objectives:[
-        {t:'Vérifie les <b>5 scoops</b> de Scoopz avant que la rumeur n\'atteigne <b>100 %</b> !', goal:{spot:'links', hint:'Pour chaque scoop : ouvre l\'article, va <b>vérifier sur le site officiel</b> concerné (adresse directe ou Cherchetout), reviens et donne ton verdict. Ferme vite les pop-ups d\'INFOX avec leur croix ✕ : ouverts, ils accélèrent la rumeur !', test:c=>B.boss && Object.keys(B.boss.solved).length>=CLAIMS.length}}
+        {t:'Vérifie les <b>5 scoops</b> avant 100 % de rumeur !', goal:{spot:'links', hint:'Ouvre chaque scoop, vérifie sur le site officiel (nouvel onglet !), reviens trancher. Pop-ups ouverts = rumeur accélérée.', test:c=>B.boss && Object.keys(B.boss.solved).length>=CLAIMS.length}}
       ]}
   ]}
 ];
@@ -2857,8 +3737,10 @@ function dlGuardFail(d){
 function reviewing(){ return playIdx<progressIdx; }
 function startStep(idx){
   clearSpots(); clearTimers();
+  ARC.on=false; ARC.over=false; ARC.onAction=null; ARC.screenHtml='';
+  clearTimeout(ARC.comboT); arcHudRender();
   playIdx=idx; currentStep=STEPS[idx]; _missionDone=false;
-  currentStep._booted=false;
+  currentStep._booted=false; currentStep._launched=false; currentStep._hints=0;
   currentStep._gen=(currentStep._gen||0)+1;
   currentStep._objDone=(currentStep.objectives||[]).map(()=>false);
   currentStep._jalonIdx=0; currentStep._jalonAnim=false;
@@ -2869,16 +3751,19 @@ function startStep(idx){
 }
 function updateProgress(){
   const track=document.getElementById('track'); track.innerHTML='';
+  const starsMap=getStarsMap();
   STEPS.forEach((st,i)=>{
     const d=document.createElement('div');
-    const mile=st.kind==='jalon';
+    const mile=st.kind==='jalon'||st.exam;
     d.className='seg'+(mile?' milestone':'');
     if(i<progressIdx) d.classList.add('done');
     if(i===playIdx) d.classList.add('current');
     if(mile) d.textContent=(st.mode==='boss'?'👾':(st.mode==='storm'?'🪟':'🏆'));
+    const stn=starsMap[currentLevel+'.'+(i+1)]||0;
+    if(stn){ const sp=document.createElement('span'); sp.className='seg-stars'; sp.textContent='⭐'.repeat(stn); d.appendChild(sp); }
     if(i<=progressIdx){
       d.classList.add('clickable');
-      d.title=(i===playIdx?'Mission en cours : ':'Revenir à ')+(st.label||'')+' · '+(st.title||'');
+      d.title=(i===playIdx?'Mission en cours : ':'Revenir à ')+(st.label||'')+' · '+(st.title||'')+(stn?' · '+stn+'⭐':'');
       d.onclick=()=>{ if(i<=progressIdx) startStep(i); };
     }
     track.appendChild(d);
@@ -2889,11 +3774,17 @@ function updateProgress(){
 function updateBanner(){
   const b=document.getElementById('banner');
   const boss=currentStep.mode==='boss'||currentStep.mode==='storm';
-  b.className='banner'+(boss?' boss':(currentStep.kind==='jalon'?' test':''))+(reviewing()?' review':'');
+  const exam=currentStep.kind==='jalon'||currentStep.exam;
+  b.className='banner'+(boss?' boss':(exam?' test':''))+(reviewing()?' review':'');
   document.getElementById('bEmoji').textContent=currentStep.emoji;
   document.getElementById('bTitle').textContent=(reviewing()?'Révision · ':'')+(currentStep.label||'')+' : '+(currentStep.title||'');
-  renderJalonObjective(false);
-  const lbl=boss?'le combat':((currentStep.kind==='jalon')?'le défi':'la mission');
+  if(currentStep.kind==='game'){
+    document.getElementById('bSub').innerHTML='<span class="b-goal-label">🎯</span> <span id="arcGoalTxt">'+(currentStep.goal||stripTags(currentStep.intro||''))+'</span>';
+    renderQuizDock();
+  } else {
+    renderJalonObjective(false);
+  }
+  const lbl=boss?'le combat':(exam?'l\'examen':'la mission');
   document.getElementById('restartBtn').textContent='↺ Recommencer '+lbl;
   document.getElementById('resetBtn').title='Recommencer '+lbl;
 }
@@ -2905,7 +3796,7 @@ function openLevelIntro(n, cont){
   const tools=(it.tools||[]).map(t=>'<li><span class="ni-glyph">'+t.g+'</span> '+t.n+'</li>').join('');
   modal.className='modal';
   modal.innerHTML='<span class="m-emoji">'+it.emoji+'</span>'
-    +'<div class="kicker">Niveau '+n+'</div><h2>'+lvl.title+'</h2>'
+    +'<div class="kicker">Cyber-Patrouille · Niveau '+n+'</div><h2>'+lvl.title+'</h2>'
     +'<p>'+it.lead+'</p>'
     +'<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p></div>'
     +(tools?'<ul class="newtools">'+tools+'</ul>':'')
@@ -2914,20 +3805,26 @@ function openLevelIntro(n, cont){
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
 }
 function openRoundPopup(){
-  const s=currentStep, jalon=s.kind==='jalon';
+  const s=currentStep, exam=s.kind==='jalon'||s.exam;
   const boss=s.mode==='boss'||s.mode==='storm';
+  const game=s.kind==='game';
   const list=(s.objectives||[]).map(o=>'<li><span>'+o.t+'</span></li>').join('');
-  modal.className='modal'+(jalon?' test-modal':'');
+  modal.className='modal'+(exam?' test-modal':'');
   modal.innerHTML='<span class="m-emoji">'+s.emoji+'</span>'
     +'<div class="kicker"'+(boss?' style="color:var(--red-d)"':'')+'>'+(reviewing()?'Entraînement':(boss?(s.mode==='storm'?'⚔️ Mini-boss':'⚔️ Boss final'):s.label))+'</div><h2>'+s.title+'</h2>'
-    +'<div class="howto'+(boss?' boss':(jalon?' test':''))+'"><p class="h-head">'+(boss?'⚔️ Le combat :':(jalon?'🏆 Le défi :':'👉 Ta mission :'))+'</p>'
+    +'<div class="howto'+(boss?' boss':(exam?' test':''))+'"><p class="h-head">'+(boss?'⚔️ Le combat :':(exam?'🏆 L\'examen :':'👉 Ta mission :'))+'</p>'
     +(s.intro?'<p>'+s.intro+'</p>':'')
     +(list?'<ul class="tasklist">'+list+'</ul>':'')
     +'</div>'
-    +'<div class="m-actions"><button class="m-btn primary'+(boss?' boss':(jalon?' test':''))+'" id="goBtn">'+(boss?'À l\'attaque ! ⚔️':'C\'est parti ! 🚀')+'</button></div>';
+    +'<div class="m-actions"><button class="m-btn primary'+(boss?' boss':(exam?' test':''))+'" id="goBtn">'
+    +(boss?'À l\'attaque ! ⚔️':(game?(s._launched?'Reprendre 🎮':'GO ! 🎮'):'C\'est parti ! 🚀'))+'</button></div>';
   openOverlay();
   document.getElementById('goBtn').onclick=()=>{
     closeOverlay(); audioCtx();
+    if(currentStep && currentStep.kind==='game'){
+      if(!currentStep._launched){ currentStep._launched=true; arcLaunch(); }
+      return;
+    }
     if(currentStep && currentStep.boot && !currentStep._booted){ currentStep._booted=true; currentStep.boot(); }
   };
 }
@@ -2942,6 +3839,8 @@ function onMissionWin(){
     openOverlay(); document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
     return;
   }
+  const guidedStars=Math.max(1, 3-Math.min(2, currentStep._hints||0));
+  if(currentStep.kind!=='game') saveStars(starKey(), guidedStars);
   const last=playIdx===STEPS.length-1;
   if(last){ progressIdx=STEPS.length; saveProgress(); return levelComplete(); }
   progressIdx=Math.max(progressIdx, playIdx+1); saveProgress();
@@ -2949,9 +3848,11 @@ function onMissionWin(){
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">'+(jalon?'🏆':'✅')+'</span>'
     +'<h2>'+(jalon?'Défi réussi !':'Mission réussie !')+'</h2>'
-    +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la mission suivante !')+'</p>'
+    +starLineHtml(guidedStars)
+    +'<p>'+(guidedStars<3?'Sans l\'astuce 💡, c\'est ⭐⭐⭐ !':'Nickel, agent. Mission suivante !')+'</p>'
     +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
   openOverlay(); if(jalon) confetti();
+  popStars(guidedStars);
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
 }
 function levelComplete(){
@@ -2991,8 +3892,10 @@ function openLevelSelector(){
   const cards=LEVELS.map(lv=>{
     const locked=lv.n>unlocked, cur=lv.n===currentLevel;
     const badge=locked?'🔒':(lv.n<currentLevel?'✓':'▶');
+    const st=locked?0:levelStars(lv.n), stMax=lv.rounds.length*3;
     return '<button class="lvl-card'+(locked?' locked':'')+(cur?' current':'')+'" data-n="'+lv.n+'" '+(locked?'disabled':'')+'>'
-      +'<span class="lc-badge">'+badge+'</span><span class="lc-n">Niveau '+lv.n+'</span><span class="lc-t">'+lv.title+'</span></button>';
+      +'<span class="lc-badge">'+badge+'</span><span class="lc-n">Niveau '+lv.n+'</span><span class="lc-t">'+lv.title+'</span>'
+      +(locked?'':'<span class="lc-stars">⭐ '+st+' / '+stMax+'</span>')+'</button>';
   }).join('');
   modal.innerHTML='<span class="m-emoji">🗺️</span><h2>Choisis ton niveau</h2>'
     +'<p>Reviens sur un niveau déjà débloqué quand tu veux : ta progression est <b>gardée</b>.</p>'
@@ -3071,16 +3974,20 @@ function highlightForStep(){
 function onHint(){
   if(overlay.classList.contains('open')) return;
   const s=currentStep; if(!s) return;
+  s._hints=(s._hints||0)+1;
+  const game=s.kind==='game';
   const ao=activeObj();
-  const hintTxt=(ao && ao.goal && ao.goal.hint) ? ao.goal.hint : stripTags((ao&&ao.t)||'');
+  const hintTxt=game
+    ? (s.hint||'Suis la consigne affichée sur l\'écran !')
+    : ((ao && ao.goal && ao.goal.hint) ? ao.goal.hint : stripTags((ao&&ao.t)||''));
   modal.className='modal test-modal';
   modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker" style="color:var(--amber-d)">Astuce</div>'
     +'<h2>'+(s.title||'Astuce')+'</h2>'
     +'<div class="howto test"><p class="h-head">👉 Comment faire :</p><p>'+hintTxt+'</p></div>'
-    +'<p style="font-size:.95rem;color:var(--muted)">Les éléments importants vont <b>briller en jaune</b> ✨ sur l\'écran.</p>'
-    +'<div class="m-actions"><button class="m-btn primary test" id="hintGo">Montre-moi ✨</button></div>';
+    +(game?'':'<p style="font-size:.95rem;color:var(--muted)">Les éléments importants vont <b>briller en jaune</b> ✨ sur l\'écran.</p>')
+    +'<div class="m-actions"><button class="m-btn primary test" id="hintGo">'+(game?'Compris !':'Montre-moi ✨')+'</button></div>';
   openOverlay();
-  document.getElementById('hintGo').onclick=()=>{ closeOverlay(); highlightForStep(); };
+  document.getElementById('hintGo').onclick=()=>{ closeOverlay(); if(!game) highlightForStep(); };
 }
 
 /* boutons de la page */
