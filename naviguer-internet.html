@@ -707,6 +707,45 @@
   .pz-mode{flex:1;min-width:112px;border:2px solid var(--line);border-radius:12px;background:#fff;padding:9px 8px;cursor:pointer;font-weight:800;font-size:.82rem;color:var(--ink);}
   .pz-mode small{display:block;font-weight:700;color:var(--muted);font-size:.68rem;margin-top:2px;}
   .pz-mode.sel{border-color:var(--blue);background:#eaf2ff;box-shadow:0 0 0 2px #bfdbfe;}
+
+  /* ===== 5 quinquies. NIVEAU 9 : FABRIQUE + BOSS FINAL INFOX ===== */
+  /* --- la fabrique de l'INFOX --- */
+  .fab-head{display:flex;align-items:center;gap:14px;margin:0 0 12px;}
+  .fab-boss{font-size:2.6rem;line-height:1;}
+  .fab-k{font-weight:800;font-size:.7rem;letter-spacing:.09em;color:#b91c1c;text-transform:uppercase;text-align:left;}
+  .fab-count{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.45rem;color:var(--ink);font-variant-numeric:tabular-nums;text-align:left;}
+  .fab-count.pump{animation:fabPumpK .18s ease;}
+  @keyframes fabPumpK{50%{transform:scale(1.16);color:#dc2626;}}
+  .fab-opts{display:flex;flex-direction:column;gap:10px;width:100%;max-width:540px;}
+  .fab-opt{border:2px solid var(--line);background:#fff;border-radius:12px;padding:13px 16px;font-weight:800;font-size:.98rem;color:var(--ink);cursor:pointer;transition:.12s;}
+  .fab-opt:hover{border-color:var(--blue);transform:translateY(-2px);}
+  .fab-scoop{max-width:600px;width:100%;text-align:left;background:#fff;border:3px solid #e11d48;border-radius:14px;padding:14px 18px;line-height:1.7;}
+  .fab-line{display:block;margin:0 0 9px;font-weight:700;font-size:.92rem;}
+  .fab-line.big{font-weight:900;font-size:1.12rem;color:#b91c1c;}
+  /* --- arène INFOX --- */
+  .ix-arena{justify-content:flex-start;}
+  .ix-top{display:flex;align-items:center;gap:14px;width:min(560px,96%);flex:none;}
+  .ix-sprite{font-size:3rem;margin-top:0;flex:none;}
+  .ix-sprite .pz-face{font-size:1.15rem;top:58%;}
+  .ix-stats{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;}
+  .ix-zone{flex:1;width:100%;min-height:0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:6px 0;}
+  .ixv-wrap{width:min(600px,96%);display:flex;flex-direction:column;gap:9px;align-items:center;margin:auto;}
+  .ixv-k{font-weight:800;font-size:.72rem;letter-spacing:.07em;color:#fca5a5;text-transform:uppercase;}
+  .ixv-scoop{width:100%;background:#fff;border:3px solid #e11d48;border-radius:13px;padding:10px 14px;text-align:left;}
+  .ixv-t{font-weight:900;font-size:1.02rem;color:#b91c1c;}
+  .ixv-m{font-weight:700;font-size:.74rem;color:#8d9cab;margin-top:2px;}
+  .ix-proof{width:100%;background:#f0fdf4;border:3px solid #16a34a;border-radius:13px;padding:9px 14px;text-align:left;animation:resPopK .3s ease;}
+  .ix-proof .ixp-k{font-weight:800;font-size:.72rem;color:#15803d;letter-spacing:.04em;}
+  .ix-proof .ixp-q{font-weight:700;font-size:.92rem;color:#14532d;margin-top:2px;}
+  .ix-timer{width:min(340px,80%);height:9px;border-radius:99px;background:rgba(255,255,255,.18);overflow:hidden;flex:none;}
+  .ix-timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#60a5fa,#4ade80);border-radius:99px;}
+  .ix-timer.low i{background:linear-gradient(90deg,#f87171,#dc2626);}
+  .ix-fw{position:relative;width:100%;height:100%;min-height:230px;overflow:hidden;cursor:crosshair;}
+  .ix-zone .vp-url{font-size:clamp(.92rem,2.8vw,1.22rem);padding:12px 18px;margin:0;max-width:96%;word-break:break-all;}
+  .ix-zone .ap-btn{padding:12px 24px;font-size:1.02rem;}
+  .ix-zone .fg-out{min-height:42px;font-size:1rem;background:#fff;}
+  .ix-zone .kw-zone{max-width:520px;}
+  .ix-zone .kw-block{padding:7px 13px;font-size:.86rem;}
 </style>
 <style>
   /* ===== Bascule police OpenDyslexic (accessibilité lecture/dyslexie) ===== */
@@ -2457,9 +2496,29 @@ const CLAIMS=[
   {id:'euros', truth:false, t:'1 000 € OFFERTS à chaque collégien inscrit !',
     body:'Un site distribuerait 1 000 € à tous les collégiens qui s\'inscrivent avant vendredi : www.cadeaux-1000euros.com. Il paraît que ça marche vraiment !',
     hint:'va inspecter ce fameux site : son cadenas, ses demandes bizarres…', shares:'32 108',
-    explain:'Le site est en <b>http</b> (non sécurisé), sans mentions légales, et demande… les <b>coordonnées bancaires des parents</b>. Arnaque classique : personne ne donne 1 000 € gratuitement.'}
+    explain:'Le site est en <b>http</b> (non sécurisé), sans mentions légales, et demande… les <b>coordonnées bancaires des parents</b>. Arnaque classique : personne ne donne 1 000 € gratuitement.'},
+  {id:'colibri', truth:true, t:'Un OISEAU qui vole en MARCHE ARRIÈRE ?!',
+    body:'Des vidéos montrent un mini-oiseau volant à reculons. Trucage grossier… ou pas ?',
+    hint:'la newsletter oiseaux de Zanimo', shares:'4 812',
+    explain:'C\'est <b>VRAI</b> : le colibri est le seul oiseau capable de voler en <b>marche arrière</b>. Vérifié sur Zanimo.'},
+  {id:'portique', truth:false, t:'Un PORTIQUE confisque les téléphones au collège !',
+    body:'Un portique magique aspirerait les téléphones à l\'entrée des collèges. Panique générale !!!',
+    hint:'la rubrique vérification de Presse-Jeunes', shares:'18 940',
+    explain:'Presse-Jeunes a enquêté : la direction dément, et ce portique n\'existe <b>dans aucun catalogue</b>.'},
+  {id:'mars2027', truth:true, t:'Marcher sur MARS… au Musée de l\'Espace !',
+    body:'Une salle entière reconstituerait le sol de la planète Mars. Trop beau pour être vrai ?',
+    hint:'le site officiel du Musée de l\'Espace', shares:'2 371',
+    explain:'C\'est <b>VRAI</b> : le musée annonce lui-même une <b>salle Mars pour 2027</b>.'},
+  {id:'cantine', truth:false, t:'CANTINE FERMÉE tout le mois de juin !!!',
+    body:'Fini les frites : la cantine fermerait UN MOIS ENTIER pour des travaux mystères.',
+    hint:'le site du collège', shares:'9 654',
+    explain:'Le site du collège publie les <b>menus de juin</b> : la cantine reste ouverte tout le mois.'},
+  {id:'fontaine', truth:true, t:'Une fontaine GÉANTE place des Pixels !',
+    body:'La mairie construirait une fontaine toute neuve en plein centre-ville. Info ou intox ?',
+    hint:'le site de la mairie', shares:'1 208',
+    explain:'C\'est <b>VRAI</b> : la mairie annonce l\'inauguration le <b>6 juillet</b>.'}
 ];
-function claimState(id){ return !!(B.boss && B.boss.solved[id]); }
+function claimState(id){ return !!(B.evt.claimOk && B.evt.claimOk.has(id)); }
 WEB['www.scoopz.fr']=pg('scoopz','Scoopz — l\'actu la plus CHOC du web', function(){
   let cards='';
   CLAIMS.forEach(c=>{
@@ -2600,7 +2659,14 @@ const PAGE_ACTIONS={
   },
   'verdict':function(el){
     const parts=(el.getAttribute('data-arg')||'').split(':');
-    infoxVerdict(parts[0], parts[1]==='vrai');
+    const c=CLAIMS.find(x=>x.id===parts[0]); if(!c) return;
+    if((parts[1]==='vrai')===c.truth){
+      (B.evt.claimOk=B.evt.claimOk||new Set()).add(c.id);
+      beep('ding'); toast('🗞️ Bien vu ! '+(c.truth?'Info confirmée.':'Rumeur démentie.'));
+      renderViewport(); checkMission();
+    } else {
+      beep('bad'); toast('📢 Raté… va vérifier '+c.hint+' !');
+    }
   }
 };
 
@@ -2662,14 +2728,6 @@ const G={
   inSet:(key,val,hint,spot)=>({spot:spot||'viewport', hint:hint, test:c=>c.evt[key] && c.evt[key].has(val)}),
   setAll:(key,vals,hint,spot)=>({spot:spot||'viewport', hint:hint, test:c=>c.evt[key] && vals.every(v=>c.evt[key].has(v))})
 };
-/* objectif « question » : la réponse se donne dans le carnet 📝 sous l'écran */
-function quizObj(t, key, q, accepted, hint){
-  return { t:t, quiz:{key:key, q:q, accepted:accepted},
-    goal:{ spot:'quiz',
-      hint:(hint||'La réponse est écrite sur la bonne page !')+' Écris-la dans le <b>carnet 📝</b> sous l\'écran, puis clique <b>Valider</b>.',
-      test:c=>{ const v=c.answers[key]; if(v==null) return false; const n=normText(v); return accepted.some(a=>n===a||n.includes(a)); } } };
-}
-
 let _missionDone=false;
 function checkMission(){
   if(!currentStep) return;
@@ -4183,6 +4241,561 @@ function duelForgeRun(done){
 }
 
 /* ---------------------------------------------------------
+   5 quinquies. NIVEAU 9 — FABRIQUE DE L'INFOX + BOSS FINAL
+   --------------------------------------------------------- */
+/* ----- N9 M1 : la fabrique de l'INFOX (inoculation) ----- */
+const FAB=[
+  {q:'Choisis le TITRE du scoop :', opts:[
+    {t:'😱 UN CHAT VENU DE MARS AU COLLÈGE !!!', viral:true, gain:9400},
+    {t:'🐱 Un chat trouvé près du collège', viral:false}]},
+  {q:'Choisis la SOURCE :', opts:[
+    {t:'✍️ Une vétérinaire nommée, avec la date', viral:false},
+    {t:'🕶️ « Quelqu\'un de sûr » (anonyme)', viral:true, gain:8300},
+    {t:'📰 Un article signé Presse-Jeunes', viral:false}]},
+  {q:'La touche finale :', opts:[
+    {t:'🧘 « Prenez le temps de vérifier »', viral:false},
+    {t:'🚀 « PARTAGE VITE avant la censure !!! »', viral:true, gain:14700}]}
+];
+const FAB_FAILS=[
+  {t:'😱 UN CHAT VENU DE MARS AU COLLÈGE !!!', tag:'Titre choc', big:true},
+  {t:'Auteur : anonyme · Source : « quelqu\'un de sûr » · Date : ???', tag:'Source anonyme'},
+  {t:'🚀 PARTAGE VITE avant la censure !!!', tag:'Piège à partage', big:true}
+];
+function fabriqueRun(done){
+  arcStart({shields:3, goalText:'Fabrique le scoop d\'INFOX !'});
+  let step=0, shares=0, found={}, lock=false, mode='make';
+  function fmt(n){ return n.toLocaleString('fr-FR'); }
+  function headHtml(){
+    return '<div class="fab-head"><span class="fab-boss">😈</span><div>'
+      +'<div class="fab-k">Stage chez INFOX</div>'
+      +'<div class="fab-count" id="fabCount">📢 '+fmt(shares)+' partages</div></div></div>';
+  }
+  function drawMake(){
+    const c=FAB[step];
+    let opts='';
+    c.opts.forEach(function(o,oi){ opts+='<button class="fab-opt" data-act="arc" data-arg="o:'+oi+'">'+o.t+'</button>'; });
+    ARC.screenHtml='<div class="arcpage" style="justify-content:flex-start">'+headHtml()
+      +'<p class="ap-k">Choix '+(step+1)+' / '+FAB.length+' — vise le VIRAL</p>'
+      +'<p class="ap-q">'+c.q+'</p>'
+      +'<div class="fab-opts">'+opts+'</div></div>';
+    renderViewport();
+  }
+  function pump(target, cb){
+    const from=shares, steps=14;
+    let k=0;
+    (function tick(){
+      if(!ARC.on||ARC.over) return;
+      k++;
+      shares=Math.round(from+(target-from)*(k/steps));
+      const el=document.getElementById('fabCount');
+      if(el){ el.textContent='📢 '+fmt(shares)+' partages'; el.classList.remove('pump'); void el.offsetWidth; el.classList.add('pump'); }
+      arcTone(300+k*60,.05,'square',.08);
+      if(k<steps){ after(75, tick); } else { beep('ding'); after(650, cb); }
+    })();
+  }
+  function drawTurn(){
+    mode='turn';
+    ARC.screenHtml='<div class="arcpage">'+headHtml()
+      +'<p class="ap-q">« '+fmt(shares)+' partages en 3 clics.<br>Tu vois comme c\'est FACILE ? »</p>'
+      +'<p class="ap-k">— INFOX, très fier de toi</p>'
+      +'<button class="ap-btn no" data-act="arc" data-arg="rev">🔧 Maintenant, je le DÉMONTE</button></div>';
+    renderViewport();
+  }
+  function zline(fi){
+    const f=FAB_FAILS[fi];
+    return found[fi]
+      ? '<span class="det-z found fab-line'+(f.big?' big':'')+'">'+f.t+'<span class="det-tag">'+f.tag+'</span></span>'
+      : '<span class="det-z fab-line'+(f.big?' big':'')+'" data-act="arc" data-arg="c:'+fi+'">'+f.t+'</span>';
+  }
+  function drawBreak(){
+    mode='break';
+    ARC.screenHtml='<div class="arcpage" style="justify-content:flex-start">'+headHtml()
+      +'<p class="ap-k">Failles trouvées : '+Object.keys(found).length+' / 3</p>'
+      +'<p class="ap-q">Clique les <b>3 failles</b> de TON scoop !</p>'
+      +'<div class="fab-scoop">'
+      +zline(0)
+      +zline(1)
+      +'<span class="det-z fab-line" data-act="arc" data-arg="x">Un chat aux yeux brillants aurait été vu près du gymnase.</span>'
+      +zline(2)
+      +'</div></div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg, el){
+    if(lock||!ARC.on||ARC.over) return;
+    if(mode==='make' && arg.indexOf('o:')===0){
+      const o=FAB[step].opts[+arg.slice(2)]; if(!o) return;
+      if(o.viral){
+        lock=true;
+        arcHit(20, el);
+        pump(shares+o.gain, function(){
+          if(!ARC.on||ARC.over) return;
+          step++; lock=false;
+          if(step>=FAB.length){ banner('🤑 SCOOP VIRAL !','good'); after(900, drawTurn); }
+          else drawMake();
+        });
+      } else {
+        beep('bad');
+        banner('😴 0 partage… INFOX bâille !','bad');
+      }
+      return;
+    }
+    if(mode==='turn' && arg==='rev'){
+      arcHit(10, el); drawBreak();
+      arcGoal('🔧 Démonte ton scoop : 3 failles !');
+      return;
+    }
+    if(mode==='break'){
+      if(arg==='x'){ arcMiss('Ça, c\'est juste le récit !'); return; }
+      if(arg.indexOf('c:')===0){
+        const fi=+arg.slice(2); if(found[fi]) return;
+        found[fi]=true; arcHit(25, el);
+        drawBreak();
+        if(Object.keys(found).length>=3){ banner('💥 Scoop démonté !','good'); after(1000, done); }
+      }
+    }
+  };
+  drawMake();
+}
+
+/* ===== BOSS FINAL : INFOX 👾 (medley spiralaire, 5 phases) ===== */
+const IX_MODES={
+  tranquille:{hearts:4, spd:.78, pop:1, tmul:1.4},
+  normal:    {hearts:3, spd:1,   pop:2, tmul:1},
+  heroique:  {hearts:2, spd:1.3, pop:3, tmul:.72}
+};
+const IXPROOF={
+  musee:   {src:'🚀 www.musee-espace.fr', q:'« Le musée ne ferme PAS : une nouvelle salle Mars ouvrira en 2027 ! »'},
+  panda:   {src:'🐼 www.zanimo.fr/panda', q:'« Poids : jusqu\'à 100 kilos. »'},
+  eiffel:  {src:'🗼 www.paris-monuments.fr', q:'« Avec ses antennes, la tour Eiffel mesure 330 mètres. »'},
+  eau:     {src:'🏛️ www.mairie-trouville.fr', q:'« Coupure d\'eau une seule nuit : le 12 juillet, de 23 h à 5 h. »'},
+  euros:   {src:'🔓 http://www.cadeaux-1000euros.com', q:'Pas de cadenas… et il demande la carte bancaire des parents.'},
+  colibri: {src:'🐦 Newsletter Zanimo', q:'« Le colibri : le seul oiseau qui vole en marche arrière ! »'},
+  portique:{src:'📰 www.presse-jeunes.fr', q:'« NON, aucun portique confisque-téléphones n\'existe. La direction dément. »'},
+  mars2027:{src:'🚀 www.musee-espace.fr', q:'« Grande nouvelle : une salle Mars ouvrira en 2027 ! »'},
+  cantine: {src:'🏫 ent.college-curie.fr', q:'« Menus de juin en ligne : la cantine reste ouverte tout le mois. »'},
+  fontaine:{src:'🏛️ www.mairie-trouville.fr', q:'« La nouvelle fontaine sera inaugurée le 6 juillet. »'}
+};
+const IX_P1=['musee','eiffel','panda','fontaine','eau'];
+const IX_P2=['portique','colibri','cantine','euros'];
+const IX_FINAL='mars2027';
+const IX_SOSIES=[
+  {t:'www.zanimo.fr', ok:true},
+  {t:'www.tub1x.fr', ok:false, bad:'1'},
+  {t:'secretariat@college-curie.fr', ok:true},
+  {t:'direction@ent-college-curie.secure-login.com', ok:false, bad:'.secure-login.com'},
+  {t:'www.presse-jeunes.fr', ok:true},
+  {t:'securite@p1xmail-verif.com', ok:false, bad:'p1xmail-verif.com'},
+  {t:'ent.college-curie.fr', ok:true},
+  {t:'www.zanim0.fr', ok:false, bad:'0'}
+];
+const IX_LINES=[
+  'Pff ! Mange mes POP-UPS !',
+  'Tu lis trop bien… voici mes SOSIES !',
+  'Alors gobe mes fichiers CADEAUX !',
+  'NON !! Pas mon QG !!'
+];
+const IX_TIPS=[
+  'Lis la PREUVE, puis tranche.',
+  'Preuve d\'abord, croix ✕ ensuite.',
+  'Lis l\'adresse lettre par lettre.',
+  'Bloque .exe, .bat, doubles extensions.',
+  'Forge la clé Ultra 💪 !'
+];
+const IX_ADVICE=[
+  'Lis la preuve, puis tranche.',
+  'Vise toujours la vraie croix.',
+  'Lis l\'adresse lettre par lettre.',
+  'Bloque .exe et doubles extensions.',
+  'Long, varié, sans ton prénom.'
+];
+let IX=null, ixAudio=null;
+function ixMusic(rate){
+  try{
+    if(!ixAudio){ ixAudio=new Audio('musics/musique_corruptus.mp3'); ixAudio.loop=true; ixAudio.volume=.5; }
+    ixAudio.playbackRate=rate||1;
+    if(soundOn&&ixAudio.paused){ const p=ixAudio.play(); if(p&&p.catch) p.catch(function(){}); }
+  }catch(e){}
+}
+function ixMusicStop(){ if(ixAudio){ try{ ixAudio.pause(); ixAudio.currentTime=0; }catch(e){} } }
+function ixCleanup(){ if(IX){ IX.over=true; IX=null; ixMusicStop(); pzFsTeardown(); } }
+function ixArenaHtml(){
+  return '<div class="pz-arena ix-arena" id="ixArena">'
+    +'<button class="pz-fs-btn" id="pzFsBtn" title="Plein écran">⛶</button>'
+    +'<div class="ix-top">'
+    +'<div class="pz-sprite ix-sprite" id="ixSprite">👾<span class="pz-face" id="ixFace">😈</span></div>'
+    +'<div class="ix-stats">'
+    +'<div class="pz-name">👾 INFOX <span style="opacity:.75;font-size:.72em">· '+IX.md.label+' · <span id="ixPhase">Phase 1/5</span></span></div>'
+    +'<div class="pz-hpbar" id="ixHpBar"><i id="ixHp" style="width:100%"></i></div>'
+    +'<div class="pz-hearts" id="ixHearts"></div>'
+    +'</div></div>'
+    +'<div class="ix-zone" id="ixZoneEl"></div>'
+    +'<p class="pz-tip" id="ixTip">💡 '+IX_TIPS[0]+'</p>'
+    +'</div>';
+}
+function ixZone(html){ const z=document.getElementById('ixZoneEl'); if(z) z.innerHTML=html; }
+function ixHud(){
+  if(!IX) return;
+  const bar=document.getElementById('ixHp'), wrap=document.getElementById('ixHpBar'),
+    hearts=document.getElementById('ixHearts'), ph=document.getElementById('ixPhase');
+  if(bar) bar.style.width=Math.max(0,IX.hp/IX.max*100)+'%';
+  if(wrap) wrap.className='pz-hpbar'+(IX.hp<=IX.max/3?' low':(IX.hp<=IX.max*2/3?' mid':''));
+  if(hearts){ let h=''; for(let i=0;i<IX.maxHearts;i++) h+=(i<IX.hearts?'❤️':'<span class="lost">🖤</span>'); hearts.innerHTML=h; }
+  if(ph) ph.textContent='Phase '+IX.phase+'/5';
+  arcGoal('👾 INFOX : '+Math.max(0,IX.hp)+' / '+IX.max+' PV · Phase '+IX.phase+'/5');
+}
+function ixTipSet(t){ const el=document.getElementById('ixTip'); if(el) el.textContent='💡 '+t; }
+function ixSetFace(f){ if(IX) IX.face=f; const el=document.getElementById('ixFace'); if(el) el.textContent=f; }
+function ixFaceFlash(f){
+  const el=document.getElementById('ixFace'); if(!el) return;
+  el.textContent=f;
+  after(650, function(){ const e2=document.getElementById('ixFace'); if(e2&&IX&&!IX.over) e2.textContent=IX.face||'😈'; });
+}
+function ixHurt(msg){
+  if(!IX||IX.over) return false;
+  IX.hearts--;
+  beep('alarm'); screenShake(); redFlash();
+  banner('💔 '+(msg||'Touché !'),'bad');
+  ixFaceFlash('😂');
+  ixHud();
+  if(IX.hearts<=0){ ixDefeat(); return false; }
+  return true;
+}
+function ixDamage(el){
+  if(!IX||IX.over) return;
+  IX.hp--;
+  beep('good');
+  const spr=document.getElementById('ixSprite');
+  if(spr){ spr.classList.remove('hit'); void spr.offsetWidth; spr.classList.add('hit'); arcBurst(spr); }
+  if(el) arcBurst(el);
+  ixFaceFlash('😖');
+  ixHud();
+  if(IX.hp<=0){ ixVictory(); return; }
+  if(IX.phase<5 && (IX.max-IX.hp)>=IX.cut[IX.phase-1]) ixNextPhase();
+}
+function ixPopupDef(){
+  const makers=[popupPrize,popupVirus,popupPromo,popupVbucks];
+  const p=makers[Math.floor(Math.random()*makers.length)]();
+  p.trapMsg='⚠️ Piège ! Vise la vraie croix ✕.';
+  p.onTrap=function(){ ixHurt('Gros bouton = piège !'); };
+  p.onClose=function(){ if(IX&&!IX.over) arcTone(620,.07,'triangle',.1); };
+  return p;
+}
+function ixNextPhase(){
+  IX.phase++; IX.gen++; IX.busy=true; IX.deadline=null;
+  IX.hVerdict=IX.hSosie=IX.hFile=IX.hForge=IX.hTimeout=null;
+  const line=IX_LINES[IX.phase-2]||'GRRRR !';
+  const ar=document.getElementById('ixArena'); if(ar) ar.classList.add('rage');
+  ixSetFace(IX.phase>=4?'🤬':'😠');
+  banner('👾 « '+line+' »','bad'); beep('alarm'); screenShake();
+  ixMusic(1+(IX.phase-1)*.07);
+  ixTipSet(IX_TIPS[IX.phase-1]);
+  ixHud();
+  after(1700, function(){
+    if(!IX||IX.over) return;
+    const a2=document.getElementById('ixArena');
+    if(a2&&IX.phase<5) a2.classList.remove('rage');
+    IX.busy=false;
+    ixStartPhase();
+  });
+}
+function ixStartPhase(){
+  if(!IX||IX.over) return;
+  if(IX.phase===1){ ixPhaseVerdicts(IX_P1, false); banner('📁 Lis la PREUVE, puis tranche !','good'); }
+  else if(IX.phase===2){ ixPhaseVerdicts(IX_P2, true); ixStormLoop(); }
+  else if(IX.phase===3) ixPhaseSosies();
+  else if(IX.phase===4) ixPhaseBombard();
+  else ixPhaseFinale();
+}
+function ixVerdictHtml(c, timed){
+  const pr=IXPROOF[c.id]||{src:'📁 dossier', q:'…'};
+  return '<div class="ixv-wrap">'
+    +'<div class="ixv-scoop"><div class="ixv-t">'+c.t+'</div>'
+    +'<div class="ixv-m">Scoopz · auteur : anonyme · 📢 '+c.shares+' partages</div></div>'
+    +'<div class="ix-proof"><div class="ixp-k">📁 PREUVE — '+pr.src+'</div><div class="ixp-q">'+pr.q+'</div></div>'
+    +(timed?'<div class="ix-timer" id="ixTimerWrap"><i id="ixTimer" style="width:100%"></i></div>':'')
+    +'<div class="ap-btns"><button class="ap-btn yes" data-act="arc" data-arg="v:vrai">✅ VRAI</button>'
+    +'<button class="ap-btn no" data-act="arc" data-arg="v:faux">❌ FAUX</button></div>'
+    +'</div>';
+}
+function ixPhaseVerdicts(ids, timed){
+  const g=IX.gen;
+  let queue=shuffle(ids.slice()), cur=null, lock=false;
+  function show(){
+    if(!IX||IX.over||IX.gen!==g) return;
+    if(!queue.length) queue=shuffle(ids.slice());
+    const id=queue.shift();
+    cur=CLAIMS.find(function(c){ return c.id===id; });
+    lock=false;
+    ixZone(ixVerdictHtml(cur, timed));
+    if(timed){ IX.tTotal=Math.round(11000*IX.md.tmul); IX.deadline=Date.now()+IX.tTotal; }
+  }
+  IX.hTimeout=function(){
+    if(!IX||IX.over||IX.gen!==g||lock||!cur) return;
+    queue.push(cur.id);
+    if(!ixHurt('⏱ Trop lent !')) return;
+    show();
+  };
+  IX.hVerdict=function(saysTrue, el){
+    if(!IX||IX.over||IX.gen!==g||lock||!cur) return;
+    lock=true; IX.deadline=null;
+    if(saysTrue===cur.truth){
+      banner(cur.truth?'✅ Info confirmée !':'🎯 Rumeur démentie !','good');
+      ixDamage(el);
+      if(IX&&!IX.over&&IX.gen===g) after(650, show);
+    } else {
+      queue.push(cur.id);
+      if(!ixHurt(cur.truth?'C\'était VRAI (lis la preuve) !':'C\'était FAUX (lis la preuve) !')) return;
+      after(950, show);
+    }
+  };
+  show();
+}
+function ixStormLoop(){
+  const g=IX.gen;
+  every(Math.round(5600/IX.md.spd), function(){
+    if(!IX||IX.over||IX.busy||IX.gen!==g) return;
+    if(B.popups.length<3) spawnPopup(ixPopupDef());
+  });
+}
+function ixPhaseSosies(){
+  const g=IX.gen, need=IX.cut[2]-IX.cut[1];
+  let queue=shuffle(IX_SOSIES.slice()), cur=null, lock=false, got=0;
+  function html(blink){
+    let t=cur.t;
+    if(cur.bad){ const k=t.indexOf(cur.bad); if(k>=0) t=t.slice(0,k)+'<span class="'+(blink?'bad-ch':'')+'">'+cur.bad+'</span>'+t.slice(k+cur.bad.length); }
+    return '<div class="ixv-wrap">'
+      +'<div class="ixv-k">🎣 Hameçons — '+got+' / '+need+'</div>'
+      +'<p class="ap-q" style="margin:0;color:#fff">'+(cur.t.indexOf('@')>=0?'Cet expéditeur ?':'Cette adresse ?')+'</p>'
+      +'<div class="vp-url">'+t+'</div>'
+      +'<div class="ix-timer" id="ixTimerWrap"><i id="ixTimer" style="width:100%"></i></div>'
+      +'<div class="ap-btns"><button class="ap-btn yes" data-act="arc" data-arg="s:sur">✅ SÛR</button>'
+      +'<button class="ap-btn no" data-act="arc" data-arg="s:piege">❌ PIÈGE</button></div></div>';
+  }
+  function show(){
+    if(!IX||IX.over||IX.gen!==g) return;
+    if(!queue.length) queue=shuffle(IX_SOSIES.slice());
+    cur=queue.shift(); lock=false;
+    ixZone(html(false));
+    IX.tTotal=Math.round(8500*IX.md.tmul); IX.deadline=Date.now()+IX.tTotal;
+  }
+  IX.hTimeout=function(){
+    if(!IX||IX.over||IX.gen!==g||lock) return;
+    if(!ixHurt('⏱ Trop lent !')) return;
+    show();
+  };
+  IX.hSosie=function(saysSafe, el){
+    if(!IX||IX.over||IX.gen!==g||lock||!cur) return;
+    lock=true; IX.deadline=null;
+    if(saysSafe===cur.ok){
+      got++;
+      banner(cur.ok?'✅ Adresse sûre !':'🎯 Sosie grillé !','good');
+      ixDamage(el);
+      if(IX&&!IX.over&&IX.gen===g) after(600, show);
+    } else {
+      if(cur.bad) ixZone(html(true));
+      if(!ixHurt(cur.ok?'Elle était sûre !':'Regarde le rouge…')) return;
+      after(1250, show);
+    }
+  };
+  show();
+}
+function ixPhaseBombard(){
+  const g=IX.gen, need=IX.cut[3]-IX.cut[2];
+  let got=0, seq=0, act=[], queue=[];
+  ixZone('<div class="ix-fw" id="ixFw"><div class="fw-ground"></div><div class="fw-pc">🖥️</div></div>');
+  function refill(){
+    queue=shuffle(
+      shuffle(FW_SAFE.slice()).slice(0,3).map(function(f){ return {ic:f[0],n:f[1],danger:false}; })
+      .concat(shuffle(FW_DANGER.slice()).slice(0,Math.max(2,need-got)).map(function(f){ return {ic:f[0],n:f[1],danger:true}; }))
+    );
+  }
+  function spawnNext(){
+    if(!IX||IX.over||IX.gen!==g) return;
+    if(!queue.length){ if(got<need) refill(); else return; }
+    const f=queue.shift(); const z=document.getElementById('ixFw'); if(!z) return;
+    const id='ix'+(++seq);
+    const el=document.createElement('button');
+    el.className='fw-file'; el.setAttribute('data-act','arc'); el.setAttribute('data-arg','w:'+id);
+    el.innerHTML='<span class="ff-ic">'+f.ic+'</span><span class="ff-n">'+f.n+'</span>';
+    el.style.left=(10+Math.random()*80)+'%'; el.style.top='-16%';
+    z.appendChild(el);
+    act.push({id:id, el:el, y:-16, danger:f.danger, n:f.n, dead:false, warned:false});
+    after(Math.round(1250/IX.md.spd), spawnNext);
+  }
+  every(40, function(){
+    if(!IX||IX.over||IX.busy||IX.gen!==g) return;
+    const sp=13*IX.md.spd*(IX.boost?1.7:1);
+    act.forEach(function(it){
+      if(it.dead) return;
+      it.y+=sp*0.04;
+      it.el.style.top=it.y+'%';
+      if(it.y>=82){
+        it.dead=true;
+        if(it.danger){ it.el.classList.add('boom'); ixHurt('« '+it.n+' » est entré !'); }
+        else it.el.classList.add('landed');
+        (function(e){ after(500, function(){ try{e.remove();}catch(x){} }); })(it.el);
+      }
+    });
+  });
+  IX.hFile=function(id, el){
+    if(!IX||IX.over||IX.gen!==g) return;
+    const it=act.find(function(x){ return x.id===id; }); if(!it||it.dead) return;
+    if(it.danger){
+      it.dead=true; it.el.classList.add('boom'); got++;
+      (function(e){ after(400, function(){ try{e.remove();}catch(x){} }); })(it.el);
+      ixDamage(el);
+    } else if(!it.warned){
+      it.warned=true;
+      ixHurt('« '+it.n+' » était sûr !');
+    }
+  };
+  refill(); spawnNext();
+}
+function ixPhaseFinale(){
+  const g=IX.gen;
+  let cur='', locked=false, stepB=false;
+  function drawForge(){
+    const r=pwScore(cur,'');
+    let bars='<div class="pw-bars">';
+    for(let k=1;k<=5;k++) bars+='<i class="'+(k<=r.score?('f'+r.score):'')+'"></i>';
+    bars+='</div>';
+    let blocks='';
+    FGB.forEach(function(b,bi){ blocks+='<button class="kw-block" data-act="arc" data-arg="f:b:'+bi+'">'+b+'</button>'; });
+    ixZone('<div class="ixv-wrap">'
+      +'<div class="ixv-k">🔐 Le code final — verrouille son QG !</div>'
+      +'<div class="fg-out">'+(cur||'<span style="color:#9aa8b6">Clique des blocs…</span>')+'</div>'
+      +'<div class="fg-meter">'+bars+'</div>'
+      +'<div class="fg-verdict" style="color:#e7eef6">'+(cur?r.label:'Vise Ultra 💪 (16 caractères et +)')+'</div>'
+      +'<div class="kw-zone">'+blocks+'</div>'
+      +'<div class="ap-btns">'
+      +'<button class="ap-btn no" style="font-size:.9rem;padding:10px 18px" data-act="arc" data-arg="f:clear">🧹 Vider</button>'
+      +'<button class="ap-btn go" style="margin-top:0" data-act="arc" data-arg="f:go">🔒 Verrouiller !</button>'
+      +'</div></div>');
+  }
+  function drawFinal(){
+    if(!IX||IX.over||IX.gen!==g) return;
+    stepB=true;
+    const c=CLAIMS.find(function(x){ return x.id===IX_FINAL; });
+    ixZone(ixVerdictHtml(c, false));
+    IX.hVerdict=function(saysTrue, el){
+      if(!IX||IX.over||IX.gen!==g||locked) return;
+      if(saysTrue===c.truth){ locked=true; banner('🏁 DERNIER COUP !','good'); ixDamage(el); }
+      else { ixHurt(c.truth?'C\'était VRAI !':'C\'était FAUX !'); }
+    };
+    banner('🗞️ Un DERNIER verdict !','bad');
+  }
+  IX.hForge=function(arg, el){
+    if(!IX||IX.over||IX.gen!==g||stepB) return;
+    if(arg.indexOf('b:')===0){ cur+=FGB[+arg.slice(2)]; beep('click'); drawForge(); return; }
+    if(arg==='clear'){ cur=''; beep('delete'); drawForge(); return; }
+    if(arg==='go'){
+      const r=pwScore(cur,'');
+      if(r.score>=5){
+        banner('🔒 QG verrouillé !','good'); ixDamage(el);
+        if(IX&&!IX.over) after(900, drawFinal);
+      } else {
+        beep('bad'); screenShake();
+        banner('❌ '+fgMissMsg(r,5),'bad');
+      }
+    }
+  };
+  drawForge();
+}
+function ixVictory(){
+  if(!IX||IX.over) return;
+  IX.over=true; _missionDone=true;
+  clearTimers(); ixMusicStop(); pzFsTeardown();
+  B.popups=[]; renderPopups();
+  const lost=IX.maxHearts-IX.hearts;
+  const stars=lost===0?3:(lost===1?2:1);
+  saveStars(starKey(), stars);
+  const spr=document.getElementById('ixSprite');
+  if(spr){ spr.style.animation='none'; spr.innerHTML='💥'; }
+  ixZone('<div class="ixv-wrap"><p class="ap-q" style="color:#fff">👾💥 « NOOOON !! Mes rumeurs !! »</p></div>');
+  banner('🏆 INFOX EST VAINCU !','good');
+  beep('win'); confetti(); confetti();
+  const modeLbl=IX.md.label;
+  setTimeout(function(){
+    modal.className='modal good';
+    modal.innerHTML='<span class="m-emoji">🏆</span>'
+      +'<div class="kicker" style="color:var(--green-d)">Boss final vaincu · '+modeLbl+'</div>'
+      +'<h2>INFOX est K.-O. !</h2>'
+      +starLineHtml(stars)
+      +'<p>'+(lost?'Victoire ! ('+lost+' cœur'+(lost>1?'s':'')+' perdu'+(lost>1?'s':'')+')':'Victoire PARFAITE, sans perdre un cœur !')+'</p>'
+      +(stars<3?'<p style="font-size:.9rem;color:var(--muted)">Zéro cœur perdu = ⭐⭐⭐ !</p>':'')
+      +'<div class="m-actions"><button class="m-btn primary green" id="ixNext">Voir mon permis →</button></div>';
+    openOverlay(); popStars(stars);
+    document.getElementById('ixNext').onclick=function(){ closeOverlay(); IX=null; arcAdvance(); };
+  }, 1300);
+}
+function ixDefeat(){
+  if(!IX||IX.over) return;
+  IX.over=true; _missionDone=true;
+  const advice=IX_ADVICE[IX.phase-1]||IX_ADVICE[0];
+  clearTimers(); ixMusicStop(); pzFsTeardown();
+  B.popups=[]; renderPopups();
+  beep('alarm'); screenShake(); redFlash();
+  ixSetFace('😎');
+  setTimeout(function(){
+    modal.className='modal warn';
+    modal.innerHTML='<span class="m-emoji">👾</span><h2>Combat perdu…</h2>'
+      +'<p>INFOX ricane et relance ses rumeurs.</p>'
+      +'<p style="font-family:\'Fredoka\',\'Fluent Emoji\',sans-serif;font-size:1.3rem;font-weight:700;color:var(--red-d)">💡 '+advice+'</p>'
+      +'<div class="m-actions"><button class="m-btn primary boss" id="ixRetry">↺ Revanche immédiate</button></div>';
+    openOverlay();
+    document.getElementById('ixRetry').onclick=function(){ closeOverlay(); startStep(playIdx); };
+  }, 800);
+}
+function infoxBossRun(){
+  const k=nvBossMode();
+  const md=Object.assign({key:k, label:PZ_MODES[k].label}, IX_MODES[k]);
+  IX={md:md, gen:0, phase:1, hp:22, max:22, cut:[5,9,15,20,22], hearts:md.hearts, maxHearts:md.hearts,
+      face:'😈', over:false, busy:false, charging:false, boost:false, deadline:null, tTotal:1,
+      hVerdict:null, hSosie:null, hFile:null, hForge:null, hTimeout:null};
+  ARC.screenHtml=ixArenaHtml();
+  renderViewport();
+  ixHud(); pzFsSetup(); ixMusic(1);
+  banner('👾 INFOX attaque le collège !','bad');
+  /* horloge des défis chronométrés */
+  every(100, function(){
+    if(!IX||IX.over||IX.busy||!IX.deadline) return;
+    const rem=IX.deadline-Date.now();
+    const bar=document.getElementById('ixTimer'), wrap=document.getElementById('ixTimerWrap');
+    if(bar) bar.style.width=Math.max(0,rem/IX.tTotal*100)+'%';
+    if(wrap) wrap.classList.toggle('low', rem<=IX.tTotal*.3);
+    if(rem<=0){ IX.deadline=null; if(IX.hTimeout) IX.hTimeout(); }
+  });
+  /* attaques télégraphiées (1,5 s de charge visible) */
+  every(9500, function(){
+    if(!IX||IX.over||IX.busy||IX.charging||IX.phase<2) return;
+    IX.charging=true;
+    const spr=document.getElementById('ixSprite'); if(spr) spr.classList.add('charge');
+    banner('⚠️ INFOX charge son attaque…','bad'); arcTone(180,.34,'sawtooth',.11);
+    after(1500, function(){
+      if(!IX||IX.over) return;
+      const s2=document.getElementById('ixSprite'); if(s2) s2.classList.remove('charge');
+      IX.charging=false;
+      if(IX.busy) return;
+      beep('alarm');
+      if(IX.phase===4){
+        IX.boost=true; banner('💨 Fichiers en RAFALE !','bad');
+        after(2600, function(){ if(IX) IX.boost=false; });
+      } else {
+        for(let i=0;i<IX.md.pop;i++) spawnPopup(ixPopupDef());
+      }
+    });
+  });
+  ARC.onAction=function(arg, el){
+    if(!IX||IX.over||IX.busy) return;
+    if(arg.indexOf('v:')===0 && IX.hVerdict) IX.hVerdict(arg.slice(2)==='vrai', el);
+    else if(arg.indexOf('s:')===0 && IX.hSosie) IX.hSosie(arg.slice(2)==='sur', el);
+    else if(arg.indexOf('w:')===0 && IX.hFile) IX.hFile(arg.slice(2), el);
+    else if(arg.indexOf('f:')===0 && IX.hForge) IX.hForge(arg.slice(2), el);
+  };
+  ixStartPhase();
+}
+
+/* ---------------------------------------------------------
    6. LES NIVEAUX
    --------------------------------------------------------- */
 const LEVELS=[
@@ -4481,89 +5094,31 @@ const LEVELS=[
       run:function(done){ duelForgeRun(done); }}
   ]},
 
-/* ===== NIVEAU 9 — BOSS : INFOX, le semeur de rumeurs ===== */
+/* ===== NIVEAU 9 — Esprit critique + BOSS FINAL INFOX ===== */
 { n:9, title:'INFOX, le semeur de rumeurs', subtitle:'boss final',
-  intro:{ emoji:'🕵️',
-    lead:'Dernière épreuve du permis web : sur <b>Scoopz</b>, les rumeurs courent plus vite que la vérité. Ton arme : l\'esprit critique.',
-    teach:'Avant de croire : <b>qui</b> écrit, <b>quand</b>, avec quelles <b>sources</b> ? Puis va <b>recouper</b> sur un site fiable.',
-    tools:[{g:'✍️',n:'Qui ? Un auteur identifiable'},{g:'📅',n:'Quand ? Une date claire'},{g:'🔗',n:'D\'où ? Des sources'},{g:'🔁',n:'Recouper sur un site fiable'}] },
+  intro:{ emoji:'👾',
+    lead:'Mission finale, agent : <b>INFOX</b> inonde le web de rumeurs depuis Scoopz. Infiltre sa fabrique… puis affronte-le.',
+    teach:'Sa recette : titre <b>choc</b>, source <b>anonyme</b>, « partage <b>vite</b> ». Ton arme : la <b>preuve</b> avant le verdict.',
+    tools:[{g:'📁',n:'La preuve avant le verdict'},{g:'😱',n:'Titre choc = méfiance'},{g:'🕶️',n:'Anonyme = alerte'},{g:'🚀',n:'« Partage vite » = piège'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'🧐',title:'Autopsie d\'un article louche',
-      intro:'Dissèque le scoop du « chat venu de Mars » : auteur, date, sources… si tu les trouves !',
-      seed:{tabs:['www.scoopz.fr/chat-martien']},
-      objectives:[
-        quizObj('Enquête 📝 : qui a écrit cet article ?', 'auteurScoopz', 'Qui est l\'auteur de l\'article ?', ['anonyme','inconnu','personne','on ne sait pas'], 'Regarde la ligne grise sous le titre.'),
-        quizObj('Continue l\'enquête 📝', 'sourceScoopz', 'Quelle est la « source » de l\'article ?', ['video','floue'], 'C\'est sous le titre… et ce n\'est pas très solide.'),
-        quizObj('Dernière analyse 📝', 'partageScoopz', 'L\'article veut que tu partages avant de… ?', ['reflechir','verifier','penser','lire'], 'Les fausses nouvelles comptent sur la vitesse.')
-      ]},
-    {kind:'jalon',mode:'boss',label:'BOSS',emoji:'👾',title:'INFOX, le semeur de rumeurs',
-      intro:'Vérifie les <b>5 scoops</b> (✅/❌) avant que la rumeur n\'atteigne <b>100 %</b>. Recoupe sur les sites fiables — et ferme vite les pop-ups d\'INFOX !',
-      seed:{tabs:['www.scoopz.fr']},
-      boot:function(){ startInfoxBoss(); },
-      objectives:[
-        {t:'Vérifie les <b>5 scoops</b> avant 100 % de rumeur !', goal:{spot:'links', hint:'Ouvre chaque scoop, vérifie sur le site officiel (nouvel onglet !), reviens trancher. Pop-ups ouverts = rumeur accélérée.', test:c=>B.boss && Object.keys(B.boss.solved).length>=CLAIMS.length}}
-      ]}
+    {kind:'game',label:'Mission 1',emoji:'🏭',title:'La fabrique de l\'INFOX',
+      intro:'Infiltre la fabrique : monte un scoop bidon, puis démonte-le.',
+      goal:'Fabrique le scoop… puis démonte-le !',
+      hint:'La recette du faux : choc, anonyme, urgence. Repère-la !',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ fabriqueRun(done); }},
+    {kind:'game',exam:true,mode:'boss',bossmode:true,label:'BOSS FINAL',emoji:'👾',title:'INFOX, le semeur de rumeurs',
+      intro:'5 phases, tout ce que tu as appris. Lis la preuve, tranche, survis !',
+      goal:'Vide les PV d\'INFOX !',
+      hint:'Preuve avant verdict · croix ✕ · adresses sosies · bloque les .exe · forge Ultra.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(){ infoxBossRun(); }}
   ]}
 ];
 
 /* ---------------------------------------------------------
-   6 bis. MINI-BOSS POP-UPS, BOSS INFOX, ÉCHECS SPÉCIAUX
+   6 bis. ÉCHECS SPÉCIAUX (leçons)
    --------------------------------------------------------- */
-function bossHudHtml(html){ const h=document.getElementById('bossHud'); if(h){ h.hidden=false; h.innerHTML=html; } }
-function stormPopupDef(){
-  const mk=[popupPrize, popupVirus, popupPromo, popupVbucks, function(){ return popupNotif('jeuxmax.fr'); }];
-  return mk[Math.floor(Math.random()*mk.length)]();
-}
-function infoxHud(){
-  const S=B.boss; if(!S) return;
-  const solved=Object.keys(S.solved).length;
-  bossHudHtml('<span class="bh-ic">👾</span><b>INFOX</b>'
-    +'<div class="bh-bar"><i style="width:'+Math.min(100,Math.round(S.gauge))+'%"></i></div>'
-    +'<span class="bh-stat">📢 Rumeur : '+Math.round(S.gauge)+' %</span>'
-    +'<span class="bh-stat">🗞️ Vérifiées : '+solved+' / '+CLAIMS.length+'</span>');
-}
-function startInfoxBoss(){
-  B.boss={gauge:15, solved:{}, wrong:0};
-  infoxHud();
-  every(1000, ()=>{
-    const S=B.boss; if(!S || _missionDone) return;
-    S.gauge+=0.5 + B.popups.length*0.5;
-    if(S.gauge>=100){ infoxFail(); return; }
-    infoxHud();
-  });
-  every(22000, ()=>{
-    if(_missionDone || !B.boss) return;
-    if(B.popups.length<3){ spawnPopup(stormPopupDef()); toast('👾 INFOX t\'envoie des pop-ups pour te ralentir — croix ✕, vite !'); }
-  });
-}
-function infoxVerdict(id, saysTrue){
-  const S=B.boss;
-  const c=CLAIMS.find(x=>x.id===id); if(!c) return;
-  if(!S){ toast('🗞️ Reviens vérifier ce scoop pendant le combat contre INFOX !'); return; }
-  if(S.solved[id] || _missionDone) return;
-  if(saysTrue===c.truth){
-    S.solved[id]=true;
-    S.gauge=Math.max(4, S.gauge-9);
-    beep('ding');
-    toast('🗞️ Bien vu, rédacteur ! '+(c.truth?'Info confirmée.':'Rumeur démentie.')+' (−9 % de rumeur)');
-    infoxHud(); renderViewport(); checkMission();
-  } else {
-    S.gauge=Math.min(99, S.gauge+15); S.wrong++;
-    beep('alarm');
-    toast('📢 Mauvais verdict : la rumeur bondit de +15 % ! Indice : va voir '+c.hint+'.');
-    infoxHud();
-  }
-}
-function infoxFail(){
-  if(_missionDone) return;
-  _missionDone=true; clearTimers(); beep('alarm');
-  modal.className='modal warn';
-  modal.innerHTML='<span class="m-emoji">📢</span><h2>La rumeur a envahi le collège !</h2>'
-    +'<p>INFOX a gagné cette manche… Pour la revanche : <b>fonce vérifier</b> chaque scoop sur le site officiel concerné, donne ton verdict sans te tromper, et <b>ferme vite les pop-ups</b> — ouverts, ils accélèrent la rumeur.</p>'
-    +'<div class="m-actions"><button class="m-btn primary boss" id="failRetry">↺ Reprendre le combat</button></div>';
-  openOverlay();
-  document.getElementById('failRetry').onclick=()=>{ closeOverlay(); startStep(playIdx); };
-}
 /* échecs pédagogiques (on explique, puis on recommence la mission) */
 function phishingFail(msg){
   beep('alarm');
@@ -4590,7 +5145,7 @@ function dlGuardFail(d){
    --------------------------------------------------------- */
 function reviewing(){ return playIdx<progressIdx; }
 function startStep(idx){
-  clearSpots(); clearTimers(); pzCleanup();
+  clearSpots(); clearTimers(); pzCleanup(); ixCleanup();
   ARC.on=false; ARC.over=false; ARC.onAction=null; ARC.screenHtml='';
   clearTimeout(ARC.comboT); arcHudRender();
   playIdx=idx; currentStep=STEPS[idx]; _missionDone=false;
@@ -4731,10 +5286,18 @@ function levelComplete(){
 }
 function courseFinish(){
   confetti(); confetti();
+  const m=getStarsMap();
+  let tot=0, max=0;
+  LEVELS.forEach(lv=>{ lv.rounds.forEach((r,i)=>{ max+=3; tot+=(m[lv.n+'.'+(i+1)]||0); }); });
   modal.className='modal good';
-  modal.innerHTML='<span class="m-emoji">🦊🏅</span><h2>Maître du web !</h2>'
-    +'<p>Tu as terminé les <b>9 niveaux</b> de <b>Naviguer sur internet</b> et fait taire <b>INFOX</b> ! 👏</p>'
-    +'<p>Tu sais piloter un navigateur, chercher avec les bons mots-clés, gérer favoris et historique, démasquer pubs et pop-ups, flairer les sites sosies et le phishing, télécharger sans danger, forger des mots de passe en béton… et surtout <b>vérifier avant de croire</b>. Internet n\'a plus de pièges pour toi !</p>'
+  modal.innerHTML='<span class="m-emoji">🦊🏅</span>'
+    +'<div class="kicker" style="color:var(--green-d)">Cyber-Patrouille · dossier clos</div>'
+    +'<h2>Permis d\'agent du web !</h2>'
+    +'<p><b>9 niveaux</b>, POPZILLA écrasé, <b>INFOX</b> au tapis. Le web n\'a plus de pièges pour toi, agent. 🫡</p>'
+    +'<p class="arc-score-line" style="font-size:1.3rem">⭐ <b>'+tot+' / '+max+'</b> étoiles récoltées</p>'
+    +(tot<max
+      ?'<p style="font-size:.9rem;color:var(--muted)">Rejoue tes missions préférées (🗺️ Niveaux) pour tout dorer !</p>'
+      :'<p style="font-size:.9rem;color:var(--muted)">Récolte PARFAITE. Chapeau bas, agent. 🎩</p>')
     +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   openOverlay();
