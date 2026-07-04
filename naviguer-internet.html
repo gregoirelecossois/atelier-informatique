@@ -624,6 +624,89 @@
   .tri-card.done{opacity:.85;}
   .tri-card.done.keep{border-color:#86efac;background:#f0fdf4;}
   .tri-card.done.jet{border-color:#fca5a5;background:#fef2f2;opacity:.7;}
+
+  /* ===== 5 quater. MINI-JEUX N5-N8 + POPZILLA ===== */
+  /* --- loupe à pubs --- */
+  .lp-page{max-width:620px;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;overflow:hidden;}
+  .lp-head{display:flex;align-items:center;gap:8px;padding:10px 14px;font-weight:800;border-bottom:2px solid var(--line);background:#f8fafc;}
+  .lp-body{padding:12px 14px;}
+  .lp-card{border:2px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 9px;font-weight:700;font-size:.86rem;color:#3a4a59;background:#fff;}
+  .lp-ad{position:relative;border-color:#f59e0b;background:linear-gradient(120deg,#fff7e2,#ffe9d1);cursor:pointer;padding-bottom:18px;}
+  .lp-ad .lp-big{display:block;color:#b91c1c;font-weight:900;font-size:1rem;}
+  .lp-ad .lp-sub{font-size:.78rem;color:#92400e;}
+  .lp-badge{position:absolute;cursor:pointer;background:#e5e7eb;color:#475569;font-weight:800;border-radius:4px;padding:1px 7px;border:none;line-height:1.3;}
+  .lp-badge.b1{top:6px;right:8px;font-size:.74rem;}
+  .lp-badge.b2{top:6px;right:8px;font-size:.62rem;opacity:.9;}
+  .lp-badge.b3{bottom:4px;left:9px;font-size:.56rem;opacity:.75;}
+  .lp-badge.b4{bottom:3px;right:7px;font-size:.5rem;opacity:.55;background:#f3f4f6;color:#94a3b8;}
+  .lp-badge.found{background:var(--green);color:#fff;opacity:1;}
+  /* --- loupe du détective --- */
+  .det-mail{max-width:640px;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;padding:14px 18px;font-size:.92rem;line-height:1.65;}
+  .det-mail .dm-h{font-weight:700;font-size:.8rem;color:#5a6b7b;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:10px;}
+  .det-z{cursor:pointer;border-radius:5px;padding:0 2px;transition:.12s;}
+  .det-z:hover{background:#fef3c7;outline:2px dashed #f59e0b;}
+  .det-z.found{background:#fee2e2;outline:2px solid #dc2626;color:#b91c1c;font-weight:800;cursor:default;}
+  .det-tag{display:inline-block;background:#dc2626;color:#fff;font-size:.6rem;font-weight:800;border-radius:4px;padding:1px 6px;margin-left:4px;vertical-align:middle;animation:resPopK .3s ease;}
+  /* --- pare-feu (défense de zone) --- */
+  .fw-zone{position:absolute;inset:0;overflow:hidden;background:linear-gradient(#0f2038,#15304f 70%,#1d3a5f);cursor:crosshair;}
+  .fw-top{position:absolute;top:8px;left:0;right:0;text-align:center;color:#cfe3ff;font-weight:800;font-size:.8rem;z-index:6;pointer-events:none;}
+  .fw-file{position:absolute;display:flex;flex-direction:column;align-items:center;gap:1px;border:none;background:transparent;cursor:pointer;transform:translateX(-50%);z-index:5;padding:2px;}
+  .fw-file .ff-ic{font-size:1.9rem;line-height:1;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));}
+  .fw-file .ff-n{font-weight:800;font-size:.66rem;color:#fff;background:rgba(15,23,42,.72);border-radius:5px;padding:1px 6px;white-space:nowrap;}
+  .fw-file.boom{animation:fwBoomK .35s ease forwards;pointer-events:none;}
+  @keyframes fwBoomK{40%{transform:translateX(-50%) scale(1.5);filter:brightness(2.2);}100%{transform:translateX(-50%) scale(0);opacity:0;}}
+  .fw-file.landed{animation:fwLandK .45s ease forwards;pointer-events:none;}
+  @keyframes fwLandK{100%{opacity:0;transform:translateX(-50%) translateY(12px);}}
+  .fw-pc{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:2.6rem;z-index:4;filter:drop-shadow(0 0 12px rgba(96,165,250,.55));}
+  .fw-ground{position:absolute;left:0;right:0;bottom:0;height:46px;background:linear-gradient(rgba(37,99,235,0),rgba(37,99,235,.28));border-top:2px solid rgba(96,165,250,.6);}
+  /* --- le vrai bouton --- */
+  .vb-wrap{max-width:600px;width:100%;text-align:left;}
+  .vb-fake{position:relative;display:block;width:100%;border:2px solid #f59e0b;border-radius:12px;background:linear-gradient(120deg,#fff3d6,#ffe1c9);padding:15px 14px;margin:0 0 10px;cursor:pointer;text-align:center;font-weight:900;color:#b91c1c;font-size:1.02rem;}
+  .vb-fake:hover{filter:brightness(1.05);}
+  .vb-real{display:block;background:#fff;border:2px solid var(--line);border-radius:10px;padding:9px 12px;margin:0 0 10px;font-weight:700;font-size:.85rem;color:#3a4a59;}
+  .vb-real a{color:#1d4ed8;text-decoration:underline;cursor:pointer;}
+  /* --- bris de coffre --- */
+  .bc-pw{font-weight:800;font-size:clamp(1.15rem,3.4vw,1.7rem);background:#fff;border:3px solid var(--line);border-radius:14px;padding:12px 26px;margin:0 0 14px;letter-spacing:.05em;}
+  .bc-count{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.7rem;min-height:52px;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .bc-count.crack{color:#dc2626;}
+  .bc-count.hold{color:#15803d;}
+  .bc-why{font-weight:800;font-size:.92rem;margin-top:6px;min-height:26px;color:var(--muted);}
+  /* --- la forge --- */
+  .fg-out{font-weight:800;font-size:1.15rem;background:#fff;border:3px solid var(--line);border-radius:12px;padding:10px 18px;min-height:47px;min-width:min(300px,90%);max-width:92%;word-break:break-all;}
+  .fg-meter{width:min(300px,90%);margin:8px auto 2px;}
+  .fg-verdict{font-weight:800;font-size:.9rem;min-height:22px;}
+  /* --- POPZILLA --- */
+  .pz-arena{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;overflow:hidden;background:linear-gradient(#101828,#1e2a44 60%,#2b3a5e);padding:14px;text-align:center;}
+  .pz-arena.rage{box-shadow:inset 0 0 90px rgba(220,38,38,.55);}
+  .pz-name{font-family:"Fredoka","Fluent Emoji",sans-serif;color:#fff;font-weight:700;font-size:1.12rem;letter-spacing:.04em;}
+  .pz-hpbar{width:min(420px,82%);height:16px;border:2px solid rgba(255,255,255,.5);border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;margin:6px 0 4px;flex:none;}
+  .pz-hpbar i{display:block;height:100%;background:linear-gradient(90deg,#4ade80,#a3e635);transition:width .4s;border-radius:99px;}
+  .pz-hpbar.mid i{background:linear-gradient(90deg,#facc15,#f59e0b);}
+  .pz-hpbar.low i{background:linear-gradient(90deg,#f87171,#dc2626);}
+  .pz-hearts{font-size:1.15rem;letter-spacing:2px;}
+  .pz-hearts .lost{filter:grayscale(1);opacity:.4;}
+  .pz-sprite{position:relative;font-size:5rem;line-height:1;margin-top:8px;animation:pzIdle 2.4s ease-in-out infinite;user-select:none;flex:none;}
+  .pz-arena.rage .pz-sprite{animation-duration:.9s;}
+  @keyframes pzIdle{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-12px) rotate(2deg);}}
+  .pz-sprite .pz-face{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);font-size:1.9rem;}
+  .pz-sprite.hit{animation:pzHitK .55s ease;}
+  @keyframes pzHitK{0%{transform:scale(1);}25%{transform:scale(.8) rotate(-9deg);filter:brightness(1.7);}60%{transform:scale(1.1) rotate(5deg);}100%{transform:scale(1);}}
+  .pz-sprite.charge{animation:pzChargeK .45s ease infinite alternate;}
+  @keyframes pzChargeK{from{filter:drop-shadow(0 0 6px #f59e0b);}to{filter:drop-shadow(0 0 24px #f59e0b) brightness(1.35);transform:scale(1.08);}}
+  .pz-fly{position:absolute;z-index:135;font-size:1.6rem;pointer-events:none;transition:left .48s cubic-bezier(.3,.6,.4,1),top .48s cubic-bezier(.3,.6,.4,1);filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));}
+  .pz-fs-btn{position:absolute;top:8px;right:10px;z-index:8;border:none;border-radius:8px;background:rgba(255,255,255,.16);color:#fff;font-size:1rem;padding:5px 9px;cursor:pointer;}
+  .pz-fs-btn:hover{background:rgba(255,255,255,.3);}
+  .pz-tip{color:#9db4d8;font-weight:800;font-size:.78rem;margin:12px 0 0;}
+  .pp-bar.pzred{background:linear-gradient(90deg,#7f1d1d,#dc2626);}
+  .pp-bar.pzred .pp-x{background:#ef4444;color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.35);animation:ppPulse 1.1s infinite;}
+  .screen:fullscreen{background:#000;display:flex;align-items:center;justify-content:center;border-radius:0;}
+  .screen:fullscreen .browser{position:relative;inset:auto;flex:none;transform:scale(var(--pzfs,1));transform-origin:center center;}
+  .screen:-webkit-full-screen .browser{position:relative;inset:auto;flex:none;transform:scale(var(--pzfs,1));transform-origin:center center;}
+  /* choix de difficulté du boss */
+  .pz-modes{display:flex;gap:8px;justify-content:center;margin:12px 0 2px;flex-wrap:wrap;}
+  .pz-mode{flex:1;min-width:112px;border:2px solid var(--line);border-radius:12px;background:#fff;padding:9px 8px;cursor:pointer;font-weight:800;font-size:.82rem;color:var(--ink);}
+  .pz-mode small{display:block;font-weight:700;color:var(--muted);font-size:.68rem;margin-top:2px;}
+  .pz-mode.sel{border-color:var(--blue);background:#eaf2ff;box-shadow:0 0 0 2px #bfdbfe;}
 </style>
 <style>
   /* ===== Bascule police OpenDyslexic (accessibilité lecture/dyslexie) ===== */
@@ -3264,6 +3347,842 @@ function examenMemRun(done){
 }
 
 /* ---------------------------------------------------------
+   5 quater. MINI-JEUX ARCADE (niveaux 5 à 8) + MINI-BOSS POPZILLA
+   --------------------------------------------------------- */
+/* ----- N5 M1 : La loupe à pubs ----- */
+const LP=[
+  {ic:'🕹️', name:'JeuxMax', cls:'b1', big:'📱 GAGNE UN SMARTPHONE !!!', sub:'Offre réservée aux 100 premiers visiteurs !',
+    cards:['🌀 Labyrinthe 3D — jouer','🚀 Astro Runner — jouer','⚽ Foot Legends — bientôt']},
+  {ic:'📺', name:'Tubix', cls:'b2', big:'🔥 TON PC EST LENT ?', sub:'Ce truc INCROYABLE le rend 10× plus rapide…',
+    cards:['🐼 Un panda éternue (2,3 M de vues)','🧊 Un prof résout un Rubik\'s cube en 12 s','🎲 J\'ai testé les 47 desserts de la cantine']},
+  {ic:'🛒', name:'Shopix', cls:'b3', big:'💶 BON D\'ACHAT DE 500 € OFFERT', sub:'Réponds à 3 questions pour le recevoir !',
+    cards:['☕ Mug panda −70 %','🛴 Trottinette Turbo-X — 89 €','🎧 Casque SuperBass — 19,99 €']},
+  {ic:'💬', name:'Copains2Collège', cls:'b4', big:'🎁 UN iPHONE RETROUVÉ PRÈS DE CHEZ TOI', sub:'Réclame-le avant ce soir !!',
+    cards:['👟 Lila a perdu UNE chaussure au gymnase','🛹 Tom a réussi son premier ollie','🍰 Record : gâteau englouti en 47 s']}
+];
+function loupePubRun(done){
+  arcStart({shields:3, timer:90, bonus:30, goalText:'Clique le badge « Annonce » de chaque page !'});
+  let i=0, lock=false;
+  function draw(){
+    const p=LP[i];
+    const cards=p.cards.map(c=>'<div class="lp-card">'+c+'</div>').join('');
+    const ad='<div class="lp-card lp-ad" data-act="arc" data-arg="ad"><span class="lp-big">'+p.big+'</span><span class="lp-sub">'+p.sub+'</span>'
+      +'<button class="lp-badge '+p.cls+'" data-act="arc" data-arg="ok">Annonce</button></div>';
+    ARC.screenHtml='<div class="arcpage" style="justify-content:flex-start">'
+      +'<p class="ap-k">🔎 Page '+(i+1)+' / '+LP.length+' — le badge rétrécit…</p>'
+      +'<div class="lp-page"><div class="lp-head">'+p.ic+' '+p.name+'</div><div class="lp-body">'
+      +(i%2?cards+ad:ad+cards)
+      +'</div></div></div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg, el){
+    if(lock||!ARC.on||ARC.over) return;
+    if(arg==='ok'){
+      lock=true; el.classList.add('found');
+      arcHit(25, el); banner('🎯 Badge trouvé !','good');
+      after(750, function(){ i++; lock=false; if(i>=LP.length) done(); else draw(); });
+    } else if(arg==='ad'){
+      arcMiss('Ça, c\'est la pub !');
+    }
+  };
+  draw();
+}
+/* ----- N5 M2 : Anti pop-ups (3 vagues) ----- */
+function antiPopupsRun(done){
+  arcStart({shields:3, goalText:'Ferme tout : vraie croix ✕ !'});
+  const waves=[{n:4,gap:1600},{n:5,gap:1150},{n:6,gap:820}];
+  let w=0, spawned=0, closed=0, totalClosed=0;
+  const total=waves.reduce((s,x)=>s+x.n,0);
+  function mk(){
+    const makers=[popupPrize,popupVirus,popupPromo,popupVbucks,function(){return popupNotif('jeuxmax.fr');}];
+    const p=makers[Math.floor(Math.random()*makers.length)]();
+    p.trapMsg='⚠️ Piège ! Vise la croix ✕.';
+    p.onTrap=function(){ arcMiss('Gros bouton = piège !'); };
+    p.onClose=function(){
+      if(!ARC.on||ARC.over) return;
+      closed++; totalClosed++;
+      arcHit(12, null);
+      arcGoal('🪟 Fermés : '+totalClosed+' / '+total);
+      if(closed>=waves[w].n && !B.popups.length){
+        w++;
+        if(w>=waves.length){ done(); return; }
+        closed=0; spawned=0;
+        banner('🌊 Vague '+(w+1)+' !','good'); beep('ding');
+        after(900, spawnLoop);
+      }
+    };
+    return p;
+  }
+  function spawnLoop(){
+    if(!ARC.on||ARC.over) return;
+    if(spawned<waves[w].n){ spawnPopup(mk()); spawned++; after(waves[w].gap, spawnLoop); }
+  }
+  arcGoal('🪟 Fermés : 0 / '+total);
+  spawnLoop();
+}
+/* ----- N5 M3 : La SERP minée ----- */
+const SERPMINE=[
+  {t:'JeuxMax — jeux gratuits en ligne', u:'www.jeuxmax.fr', s:'Des centaines de jeux, direct dans ton navigateur.', k:'ok'},
+  {t:'1000 JEUX + SMARTPHONE OFFERT !!!', u:'www.super-jeux-cadeaux.com', s:'CADEAUX pour les 100 premiers, vite !!!', k:'ad'},
+  {t:'Blockcraft — site officiel', u:'www.blockcraft.fr', s:'Actus, versions et téléchargement sécurisé.', k:'ok'},
+  {t:'Blockcraft COMPLET gratuit', u:'www.blockcraft-gratuit.com', s:'Le jeu entier gratuit, promis juré.', k:'ad'},
+  {t:'La Chasse au Trésor — jeu d\'aventure', u:'www.chasse-au-tresor.fr', s:'Énigmes et trésor caché, sans pièges à clics.', k:'ok'},
+  {t:'Ton PC est LENT ? Turbo-Boost', u:'www.logiciels-turbo.com', s:'10× plus rapide en 30 secondes. GRATUIT !', k:'ad'},
+  {t:'Consoles à prix cassés — Shopix', u:'www.shopix.fr', s:'Jeux d\'occasion, avis 5 étoiles (écrits par le vendeur).', k:'shop'},
+  {t:'Forum Gamerz — entraide jeux vidéo', u:'www.forum-gamerz.fr', s:'Tutos et équipes, par de vrais joueurs.', k:'ok'},
+  {t:'J3uxMax — jeux « gratuits »', u:'www.j3uxmax.fr', s:'Comme JeuxMax… mais avec un 3. Bizarre, non ?', k:'fake'}
+];
+function serpMineeRun(done){
+  arcStart({shields:3, timer:75, bonus:25, goalText:'Clique SEULEMENT les résultats fiables !'});
+  const items=shuffle(SERPMINE.slice());
+  const state=items.map(()=>false);
+  const total=items.filter(x=>x.k==='ok').length;
+  function found(){ return items.filter((x,xi)=>state[xi]&&x.k==='ok').length; }
+  function draw(){
+    let list='';
+    items.forEach(function(x,xi){
+      list+='<div class="clean-it'+(state[xi]?' ok':'')+'" data-act="arc" data-arg="'+xi+'">'
+        +(state[xi]?'<span class="ci-done">✅</span>':'')
+        +'<div class="ci-u">'+(x.k==='ad'?'<span class="ci-ad">Annonce</span>':'')+'🌐 https://'+x.u+'</div>'
+        +'<div class="ci-t">'+x.t+'</div><div class="ci-s">'+x.s+'</div></div>';
+    });
+    ARC.screenHtml='<div class="arcpage" style="justify-content:flex-start">'
+      +'<p class="ap-k">🧨 Résultats pour « jeux gratuits » — fiables : '+found()+' / '+total+'</p>'
+      +'<p class="ap-q">Champ de mines : annonces, boutiques, sosies…</p>'
+      +'<div class="clean-list">'+list+'</div></div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg, el){
+    if(ARC.over||!ARC.on) return;
+    const xi=+arg; const x=items[xi];
+    if(!x||state[xi]) return;
+    if(x.k==='ok'){
+      state[xi]=true; arcHit(20, el); draw();
+      arcGoal('🧨 Fiables : '+found()+' / '+total);
+      if(found()>=total) after(700, done);
+    } else {
+      arcMiss(x.k==='ad'?'Annonce piégée !':(x.k==='shop'?'Boutique, pas un jeu !':'Adresse sosie (le 3) !'));
+    }
+  };
+  draw(); arcGoal('🧨 Fiables : 0 / '+total);
+}
+
+/* ===== MINI-BOSS POPZILLA 🪟👾 ===== */
+const PZ_MODES={
+  tranquille:{key:'tranquille',label:'Tranquille',emoji:'🛡️',sub:'Boss plus lent',hp:8, hearts:4, gap:2600, burst:2, max:5, move:2300},
+  normal:    {key:'normal',    label:'Normal',    emoji:'⚔️',sub:'Le vrai duel', hp:12,hearts:3, gap:2000, burst:2, max:6, move:1700},
+  heroique:  {key:'heroique',  label:'Héroïque',  emoji:'🔥',sub:'Pour les pros',hp:16,hearts:2, gap:1450, burst:3, max:7, move:1300}
+};
+function nvBossMode(){ const m=store.get('nv_bossmode'); return PZ_MODES[m]?m:'normal'; }
+function bossModesHtml(){
+  const cur=nvBossMode();
+  return '<p style="font-weight:800;margin:10px 0 0">Choisis ta difficulté :</p><div class="pz-modes">'
+    +Object.keys(PZ_MODES).map(function(k){ const m=PZ_MODES[k];
+      return '<button class="pz-mode'+(k===cur?' sel':'')+'" data-pzmode="'+k+'">'+m.emoji+' '+m.label+'<small>'+m.sub+'</small></button>';
+    }).join('')+'</div>';
+}
+function bindBossModes(){
+  modal.querySelectorAll('[data-pzmode]').forEach(function(b){
+    b.onclick=function(){
+      store.set('nv_bossmode', b.getAttribute('data-pzmode'));
+      modal.querySelectorAll('[data-pzmode]').forEach(function(x){ x.classList.toggle('sel', x===b); });
+      beep('click');
+    };
+  });
+}
+let PZ=null, pzAudio=null, _pzFsH=null;
+function pzMusicStart(){
+  try{
+    if(!pzAudio){ pzAudio=new Audio('musics/musique_boss.mp3'); pzAudio.loop=true; pzAudio.volume=.45; }
+    if(soundOn){ pzAudio.currentTime=0; const p=pzAudio.play(); if(p&&p.catch) p.catch(function(){}); }
+  }catch(e){}
+}
+function pzMusicStop(){ if(pzAudio){ try{ pzAudio.pause(); pzAudio.currentTime=0; }catch(e){} } }
+function pzFsEl(){ return document.fullscreenElement||document.webkitFullscreenElement||null; }
+function pzFsSetup(){
+  const btn=document.getElementById('pzFsBtn'), wrap=scr(), br=document.getElementById('browser');
+  if(!btn||!wrap||!br) return;
+  let dim=null;
+  function layout(){
+    if(pzFsEl()===wrap && dim){
+      br.style.width=dim.w+'px'; br.style.height=dim.h+'px';
+      const S=Math.max(.2, Math.min(window.innerWidth/dim.w, window.innerHeight/dim.h));
+      br.style.setProperty('--pzfs', S);
+    } else {
+      br.style.width=''; br.style.height=''; br.style.removeProperty('--pzfs');
+    }
+  }
+  function sync(){ const on=pzFsEl()===wrap; btn.textContent=on?'🗗':'⛶'; btn.title=on?'Quitter le plein écran':'Plein écran'; layout(); }
+  btn.onclick=function(){
+    try{
+      if(pzFsEl()){ const ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex){ const pr=ex.call(document); if(pr&&pr.catch) pr.catch(function(){}); } }
+      else{
+        dim={w:br.clientWidth, h:br.clientHeight};
+        const rq=wrap.requestFullscreen||wrap.webkitRequestFullscreen;
+        if(rq){ const pr=rq.call(wrap); if(pr&&pr.catch) pr.catch(function(){}); }
+      }
+    }catch(e){}
+  };
+  _pzFsH={sync:sync, resize:function(){ if(pzFsEl()===wrap) layout(); }, br:br};
+  document.addEventListener('fullscreenchange', _pzFsH.sync);
+  document.addEventListener('webkitfullscreenchange', _pzFsH.sync);
+  window.addEventListener('resize', _pzFsH.resize);
+}
+function pzFsTeardown(){
+  if(_pzFsH){
+    document.removeEventListener('fullscreenchange', _pzFsH.sync);
+    document.removeEventListener('webkitfullscreenchange', _pzFsH.sync);
+    window.removeEventListener('resize', _pzFsH.resize);
+    if(_pzFsH.br){ _pzFsH.br.style.width=''; _pzFsH.br.style.height=''; _pzFsH.br.style.removeProperty('--pzfs'); }
+    _pzFsH=null;
+  }
+  if(pzFsEl()){ try{ const ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex){ const pr=ex.call(document); if(pr&&pr.catch) pr.catch(function(){}); } }catch(e){} }
+}
+function pzCleanup(){ pzMusicStop(); pzFsTeardown(); if(PZ){ PZ.over=true; PZ=null; } }
+function pzArenaHtml(md){
+  return '<div class="pz-arena" id="pzArena">'
+    +'<button class="pz-fs-btn" id="pzFsBtn" title="Plein écran">⛶</button>'
+    +'<div class="pz-name">👾 POPZILLA <span style="opacity:.7;font-size:.72em">· '+md.label+'</span></div>'
+    +'<div class="pz-hpbar" id="pzHpBar"><i id="pzHp" style="width:100%"></i></div>'
+    +'<div class="pz-hearts" id="pzHearts"></div>'
+    +'<div class="pz-sprite" id="pzSprite">🪟<span class="pz-face" id="pzFace">😏</span></div>'
+    +'<p class="pz-tip" id="pzTip">💡 Vraie croix ✕ = le pop-up boomerang sur POPZILLA !</p>'
+    +'</div>';
+}
+function pzHud(){
+  if(!PZ) return;
+  const bar=document.getElementById('pzHp'), wrap=document.getElementById('pzHpBar'), hearts=document.getElementById('pzHearts');
+  if(bar) bar.style.width=Math.max(0,PZ.hp/PZ.max*100)+'%';
+  if(wrap) wrap.className='pz-hpbar'+(PZ.hp<=PZ.max/3?' low':(PZ.hp<=PZ.max*2/3?' mid':''));
+  if(hearts){ let h=''; for(let i=0;i<PZ.maxHearts;i++) h+=(i<PZ.hearts?'❤️':'<span class="lost">🖤</span>'); hearts.innerHTML=h; }
+  arcGoal('👾 POPZILLA : '+Math.max(0,PZ.hp)+' / '+PZ.max+' PV · toi : '+'❤️'.repeat(Math.max(0,PZ.hearts)));
+}
+function pzSetFace(f){ if(PZ) PZ.face=f; const el=document.getElementById('pzFace'); if(el) el.textContent=f; }
+function pzFaceFlash(f){
+  const el=document.getElementById('pzFace'); if(!el) return;
+  el.textContent=f;
+  after(650, function(){ const e2=document.getElementById('pzFace'); if(e2&&PZ&&!PZ.over) e2.textContent=PZ.face||'😏'; });
+}
+function pzTipSet(t){ const el=document.getElementById('pzTip'); if(el) el.textContent='💡 '+t; }
+function pzTrapXDef(){
+  const def={kind:'pzinv', bar:'pzred', title:'🧨 Fenêtre piégée',
+    body:'La croix <b style="color:#dc2626">ROUGE</b> est piégée !<br>Lis avant de cliquer…',
+    buttons:[{label:'🚪 Fermer sans risque', cls:'ok', act:'close'}],
+    trapX:true};
+  def.onClose=function(how){ if(how==='x') pzTrap('La croix ROUGE était piégée !'); else pzBossHit(def); };
+  return def;
+}
+function pzPopupDef(){
+  if(PZ && PZ.phase===3 && Math.random()<.45) return pzTrapXDef();
+  let makers;
+  if(!PZ || PZ.phase===1) makers=[popupPrize,popupPromo];
+  else if(PZ.phase===2) makers=[popupVirus,popupPrize,popupPromo,popupVbucks,function(){return popupNotif('popzilla.net');}];
+  else makers=[popupVirus,popupPromo,popupVbucks];
+  const p=makers[Math.floor(Math.random()*makers.length)]();
+  p.trapMsg='⚠️ Piège ! Vise la vraie croix ✕.';
+  p.onTrap=function(){ pzTrap('Gros bouton = piège !'); };
+  p.onClose=function(how){ pzBossHit(p); };
+  return p;
+}
+function pzTrap(msg){
+  if(!PZ||PZ.over) return;
+  PZ.hearts--;
+  beep('alarm'); screenShake(); redFlash();
+  banner('💔 '+msg,'bad');
+  pzFaceFlash('😂');
+  pzHud();
+  if(PZ.hearts<=0){ pzDefeat(); return; }
+  after(500, function(){ if(PZ&&!PZ.over){ spawnPopup(pzPopupDef()); spawnPopup(pzPopupDef()); } });
+}
+function pzBossHit(p){
+  if(!PZ||PZ.over) return;
+  const s=scr(), layer=document.getElementById('popupLayer'), spr=document.getElementById('pzSprite');
+  if(s&&layer&&spr){
+    const sr=s.getBoundingClientRect(), lr=layer.getBoundingClientRect();
+    const x0=lr.left-sr.left+(p.x/100)*lr.width+70, y0=lr.top-sr.top+(p.y/100)*lr.height+14;
+    const tgt=elCenterInScreen(spr)||{x:sr.width/2,y:120};
+    const fly=document.createElement('div'); fly.className='pz-fly'; fly.textContent='🪟';
+    fly.style.left=x0+'px'; fly.style.top=y0+'px';
+    s.appendChild(fly);
+    requestAnimationFrame(function(){ fly.style.left=(tgt.x-13)+'px'; fly.style.top=(tgt.y-13)+'px'; });
+    after(480, function(){ try{fly.remove();}catch(e){} });
+  }
+  arcTone(620,.08,'triangle',.1);
+  after(470, function(){
+    if(!PZ||PZ.over) return;
+    PZ.hp--;
+    beep('good');
+    const spr2=document.getElementById('pzSprite');
+    if(spr2){ spr2.classList.remove('hit'); void spr2.offsetWidth; spr2.classList.add('hit'); arcBurst(spr2); }
+    pzFaceFlash('😖');
+    pzHud();
+    if(PZ.hp<=0){ pzVictory(); return; }
+    const np=(PZ.hp<=PZ.max/3)?3:((PZ.hp<=PZ.max*2/3)?2:1);
+    if(np>PZ.phase){
+      PZ.phase=np;
+      if(np===2){
+        banner('🪟 Phase 2 : les fenêtres BOUGENT !','bad');
+        pzSetFace('😠'); pzTipSet('Les pop-ups se déplacent : vise bien la croix ✕ !');
+      } else {
+        banner('🔥 RAGE ! Croix ROUGE = piégée !','bad');
+        pzSetFace('🤬'); beep('alarm');
+        const ar=document.getElementById('pzArena'); if(ar) ar.classList.add('rage');
+        pzTipSet('Croix ROUGE piégée : clique « Fermer sans risque » !');
+      }
+    }
+  });
+}
+function pzVictory(){
+  if(!PZ||PZ.over) return;
+  PZ.over=true; _missionDone=true;
+  clearTimers(); pzMusicStop(); pzFsTeardown();
+  B.popups=[]; renderPopups();
+  const lost=PZ.maxHearts-PZ.hearts;
+  const stars=lost===0?3:(lost===1?2:1);
+  saveStars(starKey(), stars);
+  const spr=document.getElementById('pzSprite');
+  if(spr){ spr.style.animation='none'; spr.textContent='💥'; }
+  banner('🏆 POPZILLA est vaincu !','good');
+  beep('win'); confetti();
+  const modeLbl=PZ_MODES[nvBossMode()].label;
+  setTimeout(function(){
+    modal.className='modal good';
+    modal.innerHTML='<span class="m-emoji">🏆</span>'
+      +'<div class="kicker" style="color:var(--green-d)">Mini-boss vaincu · '+modeLbl+'</div>'
+      +'<h2>POPZILLA est K.-O. !</h2>'
+      +starLineHtml(stars)
+      +'<p>'+(lost?'Victoire ! ('+lost+' cœur'+(lost>1?'s':'')+' perdu'+(lost>1?'s':'')+')':'Victoire parfaite, sans perdre un cœur !')+'</p>'
+      +(stars<3?'<p style="font-size:.9rem;color:var(--muted)">Zéro cœur perdu = ⭐⭐⭐ !</p>':'')
+      +'<div class="m-actions"><button class="m-btn primary green" id="pzNext">Continuer →</button></div>';
+    openOverlay(); popStars(stars);
+    document.getElementById('pzNext').onclick=function(){ closeOverlay(); PZ=null; arcAdvance(); };
+  }, 1100);
+}
+function pzDefeat(){
+  if(!PZ||PZ.over) return;
+  PZ.over=true; _missionDone=true;
+  clearTimers(); pzMusicStop(); pzFsTeardown();
+  beep('alarm'); screenShake(); redFlash();
+  pzSetFace('😎');
+  setTimeout(function(){
+    modal.className='modal warn';
+    modal.innerHTML='<span class="m-emoji">🪟</span><h2>Combat perdu…</h2>'
+      +'<p>POPZILLA t\'a noyé sous les fenêtres.</p>'
+      +'<p style="font-family:\'Fredoka\',\'Fluent Emoji\',sans-serif;font-size:1.3rem;font-weight:700;color:var(--red-d)">💡 Cherche la vraie croix ✕</p>'
+      +'<div class="m-actions"><button class="m-btn primary boss" id="pzRetry">↺ Revanche immédiate</button></div>';
+    openOverlay();
+    document.getElementById('pzRetry').onclick=function(){ closeOverlay(); startStep(playIdx); };
+  }, 800);
+}
+function popzillaRun(done){
+  const md=PZ_MODES[nvBossMode()];
+  PZ={hp:md.hp, max:md.hp, hearts:md.hearts, maxHearts:md.hearts, md:md, phase:1, face:'😏', over:false, charging:false};
+  ARC.screenHtml=pzArenaHtml(md);
+  renderViewport();
+  pzHud(); pzFsSetup();
+  pzMusicStart();
+  banner('👾 POPZILLA attaque !','bad');
+  function loop(){
+    if(!PZ||PZ.over) return;
+    if(B.popups.length<md.max) spawnPopup(pzPopupDef());
+    const g=PZ.phase===3?md.gap*0.55:(PZ.phase===2?md.gap*0.8:md.gap);
+    after(g, loop);
+  }
+  after(900, loop);
+  every(8500, function(){
+    if(!PZ||PZ.over||PZ.charging) return;
+    PZ.charging=true;
+    const spr=document.getElementById('pzSprite'); if(spr) spr.classList.add('charge');
+    banner('⚠️ POPZILLA charge son attaque…','bad'); arcTone(190,.32,'sawtooth',.1);
+    after(1500, function(){
+      if(!PZ||PZ.over) return;
+      const spr2=document.getElementById('pzSprite'); if(spr2) spr2.classList.remove('charge');
+      beep('alarm');
+      const n=md.burst+(PZ.phase===3?1:0);
+      for(let i=0;i<n;i++) spawnPopup(pzPopupDef());
+      PZ.charging=false;
+    });
+  });
+  every(md.move, function(){
+    if(!PZ||PZ.over||PZ.phase<2) return;
+    B.popups.forEach(function(p){
+      p.x=Math.max(2,Math.min(58,p.x+(Math.random()*18-9)));
+      p.y=Math.max(4,Math.min(50,p.y+(Math.random()*14-7)));
+    });
+    renderPopups();
+  });
+}
+
+/* ----- N6 M1 : Vrai ou piège v2 (sosies experts) ----- */
+const VP2=[
+  {u:'www.zanimo.fr', site:'Zanimo', ok:true},
+  {u:'www.zanim0.fr', site:'Zanimo', ok:false, bad:'0'},
+  {u:'www.pixmail.fr.secure-verif.com', site:'Pixmail', ok:false, bad:'.secure-verif.com'},
+  {u:'www.pixmail.fr', site:'Pixmail', ok:true},
+  {u:'www.b1ockcraft.fr', site:'Blockcraft', ok:false, bad:'1'},
+  {u:'ent.college-curie.fr', site:'l\'ENT du collège', ok:true},
+  {u:'ent-college-curie.secure-login.com', site:'l\'ENT du collège', ok:false, bad:'.secure-login.com'},
+  {u:'www.tub1x.fr', site:'Tubix', ok:false, bad:'1'},
+  {u:'www.wikimini-fr.org', site:'Wikimini', ok:true},
+  {u:'www.col1ege-curie.fr', site:'le collège', ok:false, bad:'1'},
+  {u:'www.blog-de-tom.fr', pw:true, http:true, ok:false},
+  {u:'www.pixmail.fr', pw:true, http:false, ok:true}
+];
+function vraiPiege2Run(done){
+  arcStart({shields:3, timer:110, bonus:30, goalText:'12 adresses expertes : vraie ✅ ou piège ❌ ?'});
+  const items=shuffle(VP2.slice());
+  let i=0, lock=false;
+  function urlHtml(it, blink){
+    const pre=it.pw?(it.http?'<span style="color:#b45309">⚠️ http://</span>':'<span style="color:#15803d">🔒 https://</span>'):'';
+    if(!it.bad) return pre+it.u;
+    const k=it.u.indexOf(it.bad);
+    return pre+it.u.slice(0,k)+'<span class="'+(blink?'bad-ch':'')+'">'+it.bad+'</span>'+it.u.slice(k+it.bad.length);
+  }
+  function draw(blink){
+    const it=items[i];
+    const q=it.pw?'Taper ton <b>mot de passe</b> ici : bonne idée ?':'Cette adresse mène au <b>vrai site '+it.site+'</b> ?';
+    ARC.screenHtml='<div class="arcpage">'
+      +'<p class="ap-k">🔎 Adresse '+(i+1)+' / '+items.length+'</p>'
+      +'<p class="ap-q">'+q+'</p>'
+      +'<div class="vp-url">'+urlHtml(it, blink)+'</div>'
+      +'<div class="ap-btns">'
+      +'<button class="ap-btn yes" data-act="arc" data-arg="vrai">'+(it.pw?'✅ OUI, ça va':'✅ VRAIE')+'</button>'
+      +'<button class="ap-btn no" data-act="arc" data-arg="piege">'+(it.pw?'❌ NON, jamais':'❌ PIÈGE')+'</button>'
+      +'</div></div>';
+    renderViewport();
+  }
+  function nextOrEnd(){ i++; if(i>=items.length){ done(); } else { lock=false; draw(); } }
+  ARC.onAction=function(arg, el){
+    if(lock||ARC.over||!ARC.on) return;
+    const it=items[i];
+    if((arg==='vrai')===it.ok){
+      arcHit(20, el);
+      banner(it.pw?(it.ok?'🔒 https + vrai site : OK !':'🎯 http = jamais de mdp !'):(it.ok?'✅ Vraie adresse !':'🎯 Piège grillé !'),'good');
+      nextOrEnd();
+    } else {
+      lock=true;
+      arcMiss(it.pw?(it.ok?'https + vrai site = OK !':'http = jamais de mdp !'):(it.ok?'Elle était vraie !':'Regarde le rouge…'));
+      draw(true);
+      after(1500, nextOrEnd);
+    }
+  };
+  draw();
+}
+/* ----- N6 M2 : La loupe du détective (indices de phishing) ----- */
+const DET=[
+  {t:'📦 « Ton colis est bloqué »',
+    from:'livraizon@colis-rapide-verif.net', fromTag:'Expéditeur louche',
+    parts:[
+      ['Bonjour, ',0],
+      ['ton colis n°8471 attend à l\'entrepôt. ',0],
+      ['Tu doit payé 1,99 €',1,'Fautes d\'orthographe'],
+      [' pour le récupérer ',0],
+      ['DANS LES 2 HEURES, sinon il sera DÉTRUIT !!!',1,'Fausse urgence'],
+      ['<br>👉 Payer ici : ',0],
+      ['colis-rapide.fr ➜ pointe en vrai vers www.paiement-verif-24.net',1,'Lien déguisé'],
+      ['<br>L\'équipe de livraison.',0]
+    ]},
+  {t:'🏫 « Tes notes ont été modifiées »',
+    from:'direction@ent-college-curie.secure-login.com', fromTag:'Faux domaine',
+    parts:[
+      ['Cher élève, ',0],
+      ['tes notes du trimestre ont était changées',1,'Faute louche'],
+      [' dans l\'ENT du collège. ',0],
+      ['Connecte-toi AVANT CE SOIR ou ton compte sera bloqué !!!',1,'Fausse urgence'],
+      ['<br>👉 Vérifier : ',0],
+      ['ent.college-curie.fr ➜ pointe en vrai vers secure-login.com',1,'Lien déguisé'],
+      ['<br>La direction.',0]
+    ]},
+  {t:'🎁 « Tu as gagné une console »',
+    from:'cadeaux@pixmail-loterie.win', fromTag:'Expéditeur louche',
+    parts:[
+      ['Félicitation ! Tu a gagner',1,'Fautes d\'orthographe'],
+      [' une console dernier cri au tirage au sort. ',0],
+      ['Plus que 10 MINUTES pour la réclamer !!!',1,'Fausse urgence'],
+      ['<br>👉 Réclamer : ',0],
+      ['pixmail.fr/cadeau ➜ pointe en vrai vers www.arnaque-cadeaux.biz',1,'Lien déguisé'],
+      ['<br>Le service des cadeaux.',0]
+    ]}
+];
+function detectiveRun(done){
+  arcStart({shields:3, goalText:'Clique les 4 indices de chaque mail !'});
+  let m=0, found={};
+  function nFound(){ return Object.keys(found).length; }
+  function draw(){
+    const mail=DET[m];
+    let body='';
+    mail.parts.forEach(function(p,pi){
+      const isClue=p[1]===1;
+      if(found['p'+pi]){
+        body+='<span class="det-z found">'+p[0]+'<span class="det-tag">'+p[2]+'</span></span>';
+      } else {
+        body+='<span class="det-z" data-act="arc" data-arg="'+(isClue?'c:':'x:')+pi+'">'+p[0]+'</span>';
+      }
+    });
+    const fromHtml=found.from
+      ? '<span class="det-z found">'+mail.from+'<span class="det-tag">'+mail.fromTag+'</span></span>'
+      : '<span class="det-z" data-act="arc" data-arg="c:from">'+mail.from+'</span>';
+    ARC.screenHtml='<div class="arcpage" style="justify-content:flex-start">'
+      +'<p class="ap-k">🕵️ Mail '+(m+1)+' / '+DET.length+' — indices : '+nFound()+' / 4</p>'
+      +'<p class="ap-q">'+mail.t+' — clique les 4 indices louches !</p>'
+      +'<div class="det-mail"><div class="dm-h">De : '+fromHtml+' · À : sam.martin@pixmail.fr</div>'
+      +body+'</div></div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg, el){
+    if(!ARC.on||ARC.over) return;
+    if(arg.indexOf('x:')===0){ arcMiss('Ça, c\'est normal !'); return; }
+    if(arg==='c:from'){ if(found.from) return; found.from=true; }
+    else if(arg.indexOf('c:')===0){ const k='p'+arg.slice(2); if(found[k]) return; found[k]=true; }
+    else return;
+    arcHit(15, el);
+    draw();
+    arcGoal('🕵️ Indices : '+nFound()+' / 4 · Mail '+(m+1)+' / '+DET.length);
+    if(nFound()>=4){
+      banner('🕵️ Mail percé à jour !','good');
+      after(1000, function(){ m++; found={}; if(m>=DET.length) done(); else draw(); });
+    }
+  };
+  draw();
+}
+/* ----- N6 Examen : le tri de la boîte mail ----- */
+const MTRI=[
+  {from:'secretariat@college-curie.fr', sub:'Sortie au Musée de l\'Espace', snip:'Rendez-vous 8 h 15, prévoir un pique-nique.', ok:true, why:'expéditeur officiel, ton normal'},
+  {from:'securite@pixmail-verif-urgence.com', sub:'⚠️ Compte supprimé sous 24 h !!!', snip:'Clique VITE pour vérifier ton identité.', ok:false, why:'urgence + faux domaine'},
+  {from:'newsletter@zanimo.fr', sub:'Le colibri arrive sur Zanimo 🐦', snip:'Le seul oiseau qui vole en marche arrière !', ok:true, why:'newsletter connue, rien de demandé'},
+  {from:'sam.dubois@pixmail.fr', sub:'On se voit au tournoi vendredi ?', snip:'Castor_Pro dit qu\'on peut encore s\'inscrire.', ok:true, why:'un copain, rien de louche'},
+  {from:'gagnant@super-loterie.win', sub:'🎉 Tu as gagné 1 000 € !!!', snip:'Envoie ton RIB avant ce soir pour recevoir.', ok:false, why:'cadeau + RIB = arnaque'},
+  {from:'ent@ent-college-curie.secure-login.com', sub:'Tes notes ont été modifiées', snip:'Connecte-toi ICI immédiatement.', ok:false, why:'sous-domaine trompeur'}
+];
+function mailTriRun(done){
+  arcStart({shields:3, timer:90, bonus:25, goalText:'Trie les 6 messages : SÛR ou PHISHING ?'});
+  const items=shuffle(MTRI.slice());
+  const state=items.map(()=>false);
+  function left(){ return state.filter(x=>!x).length; }
+  function draw(){
+    let cards='';
+    items.forEach(function(c,ci){
+      if(state[ci]){
+        cards+='<div class="tri-card done'+(c.ok?' keep':' jet')+'"><span class="tc-ic">'+(c.ok?'📧':'🎣')+'</span>'
+          +'<div class="tc-tx"><b>'+c.sub+'</b><span class="tc-u">'+c.from+'</span>'
+          +'<span class="tc-why">'+(c.ok?'✅ Sûr':'🎣 Phishing')+' — '+c.why+'</span></div></div>';
+      } else {
+        cards+='<div class="tri-card"><span class="tc-ic">✉️</span>'
+          +'<div class="tc-tx"><b>'+c.sub+'</b><span class="tc-u">De : '+c.from+'</span>'
+          +'<span class="tc-why">'+c.snip+'</span></div>'
+          +'<button class="tc-btn keep" data-act="arc" data-arg="k:'+ci+'">✅ SÛR</button>'
+          +'<button class="tc-btn jet" data-act="arc" data-arg="j:'+ci+'">🎣 PHISHING</button></div>';
+      }
+    });
+    ARC.screenHtml='<div class="arcpage" style="justify-content:flex-start">'
+      +'<p class="ap-k">📥 Boîte de réception — à trier : '+left()+' / '+items.length+'</p>'
+      +'<p class="ap-q">Examen : lis l\'expéditeur AVANT de trancher !</p>'
+      +'<div class="tri-list">'+cards+'</div></div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg, el){
+    if(ARC.over||!ARC.on) return;
+    const ci=+arg.slice(2); const c=items[ci];
+    if(!c||state[ci]) return;
+    if((arg[0]==='k')===c.ok){ state[ci]=true; arcHit(15, el); }
+    else arcMiss(c.ok?'Celui-là était sûr !':'C\'était un phishing !');
+    draw();
+    arcGoal('📥 À trier : '+left()+' / '+items.length);
+    if(!left()) after(700, done);
+  };
+  draw();
+}
+
+/* ----- N7 M1 + Examen : le Pare-feu (défense de zone) ----- */
+const FW_SAFE=[['📕','expose-volcans.pdf'],['🖼️','photo-classe.jpg'],['📕','fiche-maths.pdf'],['📝','modele-expose.doc'],['🖼️','sortie-musee.jpg'],['📕','recette-lilou.pdf'],['🎵','chant-chorale.mp3']];
+const FW_DANGER=[['⚙️','cheat-gratuit.exe'],['⚙️','turbo-boost.exe'],['⚙️','pack-skins.exe'],['⚙️','mise-a-jour-urgente.bat'],['📕','devoir-maths.pdf.exe'],['🖼️','photo-vacances.jpg.exe']];
+function pareFeuRun(opts, done){
+  arcStart({shields:3, goalText:opts.goal});
+  ARC.screenHtml='<div class="fw-zone" id="fwZone"><div class="fw-top" id="fwTop"></div><div class="fw-ground"></div><div class="fw-pc">🖥️</div></div>';
+  renderViewport();
+  let w=0, act=[], queue=[], seq=0, over=false, waveActive=false;
+  function startWave(){
+    if(over||!ARC.on||ARC.over) return;
+    const wv=opts.waves[w];
+    queue=shuffle(
+      shuffle(FW_SAFE.slice()).slice(0,wv.safe).map(f=>({ic:f[0],n:f[1],danger:false}))
+      .concat(shuffle(FW_DANGER.slice()).slice(0,wv.danger).map(f=>({ic:f[0],n:f[1],danger:true})))
+    );
+    act=[]; waveActive=true;
+    const top=document.getElementById('fwTop');
+    if(top) top.textContent='🌊 Vague '+(w+1)+' / '+opts.waves.length+' — bloque .exe, .bat, doubles extensions !';
+    banner('🌊 Vague '+(w+1)+' !','good');
+    arcGoal('🛡️ Vague '+(w+1)+' / '+opts.waves.length+' — clique les fichiers DANGEREUX !');
+    spawnNext();
+  }
+  function spawnNext(){
+    if(over||!ARC.on||ARC.over) return;
+    const f=queue.shift(); if(!f) return;
+    const z=document.getElementById('fwZone'); if(!z) return;
+    const id='fw'+(++seq);
+    const el=document.createElement('button');
+    el.className='fw-file'; el.id=id;
+    el.setAttribute('data-act','arc'); el.setAttribute('data-arg',id);
+    el.innerHTML='<span class="ff-ic">'+f.ic+'</span><span class="ff-n">'+f.n+'</span>';
+    el.style.left=(8+Math.random()*84)+'%'; el.style.top='-14%';
+    z.appendChild(el);
+    act.push({id:id, el:el, y:-14, danger:f.danger, n:f.n, dead:false, warned:false});
+    if(queue.length) after(opts.waves[w].gap, spawnNext);
+  }
+  every(40, function(){
+    if(over||!ARC.on||ARC.over||!waveActive) return;
+    const wv=opts.waves[w];
+    act.forEach(function(it){
+      if(it.dead) return;
+      it.y+=wv.speed*0.04;
+      it.el.style.top=it.y+'%';
+      if(it.y>=84){
+        it.dead=true;
+        if(it.danger){
+          it.el.classList.add('boom');
+          arcMiss('« '+it.n+' » est entré !');
+        } else {
+          it.el.classList.add('landed');
+          arcHit(5, it.el);
+        }
+        (function(e){ after(500, function(){ try{e.remove();}catch(x){} }); })(it.el);
+      }
+    });
+    if(!queue.length && act.length && act.every(it=>it.dead)){
+      waveActive=false;
+      w++;
+      if(w>=opts.waves.length){ over=true; after(600, done); }
+      else after(1000, startWave);
+    }
+  });
+  if(opts.popups){
+    every(7000, function(){
+      if(over||!ARC.on||ARC.over||B.popups.length>=2) return;
+      const mk=[popupPrize,popupVirus,popupPromo][Math.floor(Math.random()*3)];
+      const p=mk();
+      p.trapMsg='⚠️ Piège !';
+      p.onTrap=function(){ arcMiss('Gros bouton = piège !'); };
+      p.onClose=function(){ if(ARC.on&&!ARC.over) arcHit(8, null); };
+      spawnPopup(p);
+    });
+  }
+  ARC.onAction=function(arg, el){
+    if(over||!ARC.on||ARC.over) return;
+    const it=act.find(x=>x.id===arg); if(!it||it.dead) return;
+    if(it.danger){
+      it.dead=true; it.el.classList.add('boom');
+      arcHit(15, it.el);
+      (function(e){ after(400, function(){ try{e.remove();}catch(x){} }); })(it.el);
+    } else if(!it.warned){
+      it.warned=true; arcMiss('« '+it.n+' » était sûr !');
+    }
+  };
+  startWave();
+}
+/* ----- N7 M3 : Le vrai bouton (4 sites piégés) ----- */
+const VB=[
+  {ic:'📚', name:'Astuces Exposés', pos:2,
+    fakes:['⬇️ TÉLÉCHARGER MAINTENANT ⬇️','⚡ DOWNLOAD GRATUIT ET RAPIDE ⚡'],
+    real:'Télécharger le modèle : <a>modele-expose.doc</a> (245 Ko)'},
+  {ic:'🎮', name:'Forum Gamerz', pos:1,
+    fakes:['🎁 CHEAT GRATUIT — CLIQUE ICI !!!','⬇️ TÉLÉCHARGEMENT DIRECT ⬇️','🚀 BOOSTE TON JEU GRATUITEMENT'],
+    real:'Pièce jointe du sujet : <a>reglement-tournoi.pdf</a> (180 Ko)'},
+  {ic:'🧱', name:'Blockcraft — fonds d\'écran', pos:3,
+    fakes:['💾 INSTALLER BLOCKCRAFT PLUS VITE','⬇️⬇️ DOWNLOAD FREE ⬇️⬇️','🎰 SKINS GRATUITS ILLIMITÉS'],
+    real:'Fond d\'écran officiel : <a>blockcraft-fond-ecran.jpg</a> (2,1 Mo)'},
+  {ic:'🏫', name:'ENT du collège (imité par les pubs)', pos:0,
+    fakes:['📱 GAGNE UN SMARTPHONE !!!','⬇️ TÉLÉCHARGER VITE ⬇️','🔥 TON PC EST LENT ?','💶 500 € OFFERTS'],
+    real:'Document : <a>fiche-revisions-maths.pdf</a> (1,1 Mo)'}
+];
+function vraiBoutonRun(done){
+  arcStart({shields:3, timer:80, bonus:25, goalText:'Trouve le VRAI lien de chaque site !'});
+  let i=0, lock=false;
+  function draw(){
+    const s=VB[i];
+    const rows=s.fakes.map(f=>'<button class="vb-fake" data-act="arc" data-arg="f"><span class="ad-tag">Annonce</span>'+f+'</button>');
+    rows.splice(Math.min(s.pos,rows.length),0,'<span class="vb-real">'+s.real.replace('<a>','<a data-act="arc" data-arg="ok">')+'</span>');
+    ARC.screenHtml='<div class="arcpage" style="justify-content:flex-start">'
+      +'<p class="ap-k">🪤 Site '+(i+1)+' / '+VB.length+' — '+s.ic+' '+s.name+'</p>'
+      +'<p class="ap-q">Clique le <b>vrai</b> lien de téléchargement !</p>'
+      +'<div class="vb-wrap">'+rows.join('')+'</div></div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg, el){
+    if(lock||!ARC.on||ARC.over) return;
+    if(arg==='ok'){
+      lock=true; arcHit(25, el); banner('🎯 Le vrai lien, discret !','good');
+      after(700, function(){ i++; lock=false; if(i>=VB.length) done(); else draw(); });
+    } else if(arg==='f'){
+      arcMiss('Gros bouton = pub !');
+    }
+  };
+  draw();
+}
+
+/* ----- N8 M1 : Bris de coffre (parier avant le crackage) ----- */
+const BRIS=[
+  {pw:'azerty123', res:false, steps:['0,001 s','0,02 s','0,3 s'], end:'💥 CASSÉ en 0,3 seconde !', why:'Suite de clavier archi-connue.'},
+  {pw:'chocolat', res:false, steps:['0,01 s','0,4 s','1 s'], end:'💥 CASSÉ en 1 seconde !', why:'Mot du dictionnaire.'},
+  {pw:'Sam2013', res:false, steps:['1 s','30 s','2 min'], end:'💥 CASSÉ en 2 minutes !', why:'Prénom + année : testé en premier.'},
+  {pw:'T!gre#Vert_2026', res:true, steps:['1 h','3 ans','80 ans','300 ans'], end:'✅ RÉSISTE : 3 siècles !', why:'Long, varié, imprévisible.'},
+  {pw:'Fusee!Panda#2026', res:true, steps:['5 h','40 ans','900 ans','12 000 ans'], end:'✅ RÉSISTE : 12 000 ans !', why:'3 mots + chiffres + symboles.'}
+];
+function brisCoffreRun(done){
+  arcStart({shields:3, goalText:'Parie : il résiste ou il casse ?'});
+  let i=0, lock=false;
+  function draw(anim){
+    const b=BRIS[i];
+    ARC.screenHtml='<div class="arcpage">'
+      +'<p class="ap-k">🔐 Coffre '+(i+1)+' / '+BRIS.length+'</p>'
+      +'<p class="ap-q">Le robot-pirate attaque ce mot de passe :</p>'
+      +'<div class="bc-pw">'+b.pw+'</div>'
+      +(anim
+        ?'<div class="bc-count" id="bcCount">🤖 …</div><div class="bc-why" id="bcWhy"></div>'
+        :'<div class="ap-btns">'
+          +'<button class="ap-btn yes" data-act="arc" data-arg="res">🛡️ IL RÉSISTE</button>'
+          +'<button class="ap-btn no" data-act="arc" data-arg="casse">💥 IL CASSE</button>'
+          +'</div>')
+      +'</div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg){
+    if(lock||!ARC.on||ARC.over) return;
+    if(arg!=='res'&&arg!=='casse') return;
+    const b=BRIS[i], bet=(arg==='res');
+    lock=true;
+    draw(true);
+    let k=0;
+    (function tick(){
+      if(!ARC.on||ARC.over) return;
+      const el=document.getElementById('bcCount'); if(!el) return;
+      if(k<b.steps.length){
+        el.textContent='🤖 '+b.steps[k];
+        arcTone(300+k*130,.05,'square',.07);
+        k++; after(360, tick); return;
+      }
+      el.textContent=b.end;
+      el.className='bc-count '+(b.res?'hold':'crack');
+      if(b.res) beep('ding'); else { beep('bad'); screenShake(); }
+      after(500, function(){
+        if(!ARC.on||ARC.over) return;
+        if(bet===b.res){ arcHit(25, el); banner('🎯 Bien parié !','good'); }
+        else arcMiss(b.res?'Il résistait !':'Il a cassé !');
+        const wEl=document.getElementById('bcWhy'); if(wEl) wEl.textContent='💡 '+b.why;
+        after(1600, function(){ i++; lock=false; if(i>=BRIS.length) done(); else draw(); });
+      });
+    })();
+  };
+  draw();
+}
+/* ----- N8 M2 + Examen : La forge (blocs cliquables) ----- */
+const FGB=['Fusee','panda','Goupil','sam','Comete','pizza','2026','42','7','!','#','_','%'];
+function fgMissMsg(r, need){
+  if(need>=5 && r.score===4) return 'Vise 16 caractères !';
+  if(!r.missing.length) return 'Continue, presque !';
+  return r.missing[0].replace(/<[^>]+>/g,'');
+}
+function forgeStage(cmds, done){
+  let c=0, cur='';
+  function draw(){
+    const cmd=cmds[c];
+    const r=pwScore(cur, cmd.user||'');
+    let bars='<div class="pw-bars">';
+    for(let k=1;k<=5;k++) bars+='<i class="'+(k<=r.score?('f'+r.score):'')+'"></i>';
+    bars+='</div>';
+    let blocks='';
+    FGB.forEach(function(b,bi){ blocks+='<button class="kw-block" data-act="arc" data-arg="b:'+bi+'">'+b+'</button>'; });
+    ARC.screenHtml='<div class="arcpage">'
+      +'<p class="ap-k">⚒️ Commande '+(c+1)+' / '+cmds.length+'</p>'
+      +'<p class="ap-q">'+cmd.t+'</p>'
+      +'<div class="fg-out">'+(cur||'<span style="color:#9aa8b6">Clique des blocs…</span>')+'</div>'
+      +'<div class="fg-meter">'+bars+'</div>'
+      +'<div class="fg-verdict">'+(cur?r.label:'')+'</div>'
+      +'<div class="kw-zone">'+blocks+'</div>'
+      +'<div class="ap-btns" style="margin-top:14px">'
+      +'<button class="ap-btn no" style="font-size:.95rem;padding:11px 20px" data-act="arc" data-arg="clear">🧹 Vider</button>'
+      +'<button class="ap-btn go" style="margin-top:0" data-act="arc" data-arg="go">⚒️ Forger !</button>'
+      +'</div></div>';
+    renderViewport();
+  }
+  ARC.onAction=function(arg, el){
+    if(!ARC.on||ARC.over) return;
+    if(arg.indexOf('b:')===0){ cur+=FGB[+arg.slice(2)]; beep('click'); draw(); return; }
+    if(arg==='clear'){ cur=''; beep('delete'); draw(); return; }
+    if(arg==='go'){
+      const cmd=cmds[c];
+      const r=pwScore(cur, cmd.user||'');
+      if(r.score>=cmd.need){
+        arcHit(30, el); banner('⚒️ '+r.label+' — forgé !','good');
+        c++; cur='';
+        if(c>=cmds.length){ after(700, done); } else after(700, draw);
+      } else {
+        arcMiss(fgMissMsg(r, cmd.need));
+      }
+    }
+  };
+  draw();
+}
+const FGCMD=[
+  {t:'Forge un mot de passe <b>Fort 🟢</b> !', need:4, user:''},
+  {t:'Monte en <b>Ultra 💪</b> (16 caractères et +) !', need:5, user:''},
+  {t:'<b>Ultra 💪</b>… sans « sam » dedans !', need:5, user:'sam'}
+];
+function forgeMdpRun(done){
+  arcStart({shields:3, goalText:'Assemble les blocs, forge du costaud !'});
+  forgeStage(FGCMD, done);
+}
+/* ----- N8 Examen : duel chrono + forge finale ----- */
+const DUEL=[
+  ['azerty2026','T!gre#Vert_2026',1],
+  ['Fusee!Panda#2026','sam2013',0],
+  ['123456','Volcan!Rouge#42ans',1],
+  ['Goupil!Mange#2Pommes','motdepasse',0],
+  ['soleil','Comete_42!Verte',1],
+  ['Pizza#4Fromages!2026','azerty',0],
+  ['sam.martin2013','Volcan!Bleu_777x',1],
+  ['Lune#Verte!2026ok','111111',0]
+];
+function duelForgeRun(done){
+  arcStart({shields:3, timer:150, bonus:35, goalText:'Examen : 8 duels puis forge finale !'});
+  let i=0, lock=false;
+  function draw(){
+    const d=DUEL[i];
+    ARC.screenHtml='<div class="arcpage">'
+      +'<p class="ap-k">⚔️ Duel '+(i+1)+' / '+DUEL.length+'</p>'
+      +'<p class="ap-q">Clique le mot de passe le plus <b>FORT</b> !</p>'
+      +'<div class="ap-btns" style="flex-direction:column;align-items:center">'
+      +'<button class="ap-btn go" style="margin-top:0" data-act="arc" data-arg="0">'+d[0]+'</button>'
+      +'<button class="ap-btn go" style="margin-top:0" data-act="arc" data-arg="1">'+d[1]+'</button>'
+      +'</div></div>';
+    renderViewport();
+  }
+  function next(){
+    i++;
+    if(i>=DUEL.length){
+      banner('⚒️ Forge finale !','good');
+      after(900, function(){
+        if(!ARC.on||ARC.over) return;
+        forgeStage([{t:'Forge la clé <b>Ultra 💪</b> du coffre (sans « sam ») !', need:5, user:'sam'}], done);
+      });
+      return;
+    }
+    draw();
+  }
+  ARC.onAction=function(arg, el){
+    if(lock||!ARC.on||ARC.over) return;
+    if(arg!=='0'&&arg!=='1') return;
+    const d=DUEL[i];
+    if(+arg===d[2]){ arcHit(15, el); next(); }
+    else {
+      lock=true;
+      arcMiss('Trop court ou trop connu !');
+      after(1100, function(){ lock=false; next(); });
+    }
+  };
+  draw();
+}
+
+/* ---------------------------------------------------------
    6. LES NIVEAUX
    --------------------------------------------------------- */
 const LEVELS=[
@@ -3423,99 +4342,89 @@ const LEVELS=[
       run:function(done){ examenMemRun(done); }}
   ]},
 
-/* ===== NIVEAU 5 — Pubs et pop-ups ===== */
+/* ===== NIVEAU 5 — Pubs et pop-ups + POPZILLA ===== */
 { n:5, title:'Pubs et pop-ups', subtitle:'pubs & pop-ups',
   intro:{ emoji:'📢',
-    lead:'Pubs criardes, pop-ups, faux cadeaux : le web veut tes clics. Mission : ne plus jamais tomber dans le panneau.',
+    lead:'Pubs déguisées, pop-ups, faux cadeaux : le web veut tes clics. Et au bout du niveau… <b>POPZILLA</b> 👾.',
     teach:'Repère le badge <b>« Annonce »</b>, ferme les pop-ups avec leur <b>vraie croix ✕</b>, réponds <b>Bloquer</b> aux notifications.',
-    tools:[{g:'📢',n:'Le badge « Annonce »'},{g:'✕',n:'La vraie croix du pop-up'},{g:'🔕',n:'Bloquer les notifications'},{g:'🎁',n:'Trop beau = piège'}] },
+    tools:[{g:'📢',n:'Le badge « Annonce »'},{g:'✕',n:'La vraie croix du pop-up'},{g:'🔕',n:'Bloquer les notifications'},{g:'👾',n:'POPZILLA t\'attend au bout'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'🕶️',title:'Repère les pubs',
-      intro:'JeuxMax est truffé de pubs : repère-les <b>avant</b> de cliquer.',
+    {kind:'game',label:'Mission 1',emoji:'🔎',title:'La loupe à pubs',
+      intro:'4 pages, 1 badge « Annonce » caché sur chacune — de plus en plus discret.',
+      goal:'Clique le badge « Annonce » de chaque page !',
+      hint:'Le badge se cache dans un coin de l\'encart criard. Cliquer la pub elle-même = raté !',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ loupePubRun(done); }},
+    {kind:'game',label:'Mission 2',emoji:'🪟',title:'Anti pop-ups',
+      intro:'3 vagues de pop-ups, de plus en plus rapides. Ferme tout !',
+      goal:'Ferme les pop-ups : vraie croix ✕ !',
+      hint:'La croix ✕ est dans la barre du pop-up. Les gros boutons colorés = pièges. Notification : Bloquer.',
       seed:{tabs:['www.jeuxmax.fr']},
-      objectives:[
-        {t:'<b>Survole</b> les encarts criards : trouve le badge <b>« Annonce »</b>', goal:G.flag('adHovered','Survole les gros encarts sans cliquer : le badge « Annonce » se cache dans un coin.','links')},
-        {t:'Ouvre <b>Labyrinthe 3D</b> sans cliquer une pub', goal:G.atUrl('www.jeuxmax.fr/labyrinthe-3d')},
-        {t:'Lance le jeu avec <b>▶ Jouer</b>', goal:G.flag('playedGame','Le bouton ▶ Jouer au centre est le seul qui n\'est pas une pub.','links')},
-        quizObj('Réponds dans le carnet 📝', 'badgePub', 'Quel mot, écrit en petit, signale une publicité ?', ['annonce','sponsorise'], 'Tu l\'as vu dans le coin des encarts criards.')
-      ]},
-    {kind:'mission',label:'Mission 2',emoji:'🪟',title:'Ferme les pop-ups',
-      intro:'Astro Runner déclenche des pop-ups : croix ✕, Bloquer, jamais les gros boutons.',
-      seed:{tabs:['www.jeuxmax.fr']},
-      objectives:[
-        {t:'Ouvre le jeu <b>Astro Runner</b>', goal:G.atUrl('www.jeuxmax.fr/astro-runner')},
-        {t:'Ferme le pop-up « cadeau » avec sa <b>croix ✕</b>', goal:G.flag('closedPrize','La petite croix ✕ dans la barre du pop-up — le gros bouton est un piège.','popupx')},
-        {t:'Notifications ? Clique <b>Bloquer</b>', goal:G.flag('blockedNotif','Choisis Bloquer, sinon pluie de pubs garantie.','popupx')},
-        {t:'Lance enfin le jeu avec <b>▶ Jouer</b>', goal:G.flag('playedGame','L\'écran est dégagé : clique ▶ Jouer.','links')}
-      ]},
-    {kind:'mission',label:'Mission 3',emoji:'🎯',title:'L\'annonce dans les résultats',
-      intro:'Les résultats « sponsorisés » se glissent en haut des recherches.',
-      seed:{tabs:['www.cherchetout.fr']},
-      objectives:[
-        {t:'Cherche <b>jeux gratuits</b>', goal:G.searched(['jeux','gratuit'])},
-        {t:'Ignore l\'<b>Annonce</b> : ouvre le vrai résultat <b>JeuxMax</b>', goal:G.openedResult('www.jeuxmax.fr')},
-        quizObj('Réponds dans le carnet 📝', 'posAnnonce', 'Où se placent les résultats sponsorisés ?', ['haut','debut','premier','dessus'], 'Compare la position de l\'annonce et des vrais résultats.')
-      ]},
-    {kind:'jalon',mode:'storm',label:'Mini-boss',emoji:'🪟',title:'L\'attaque des pop-ups',
-      intro:'Ferme <b>15 pop-ups</b> avec leur croix ✕. 9 à l\'écran = perdu !',
-      seed:{tabs:['www.jeuxmax.fr']},
-      boot:function(){ startPopupStorm(); },
-      objectives:[
-        {t:'Ferme <b>15 pop-ups</b> avec leur croix <b>✕</b>', goal:{spot:'popupx', hint:'Vise la petite croix ✕ : chaque gros bouton cliqué en fait apparaître un de plus !', test:c=>(c.evt.popupsClosed||0)>=15}}
-      ]}
+      run:function(done){ antiPopupsRun(done); }},
+    {kind:'game',label:'Mission 3',emoji:'🧨',title:'La SERP minée',
+      intro:'Une page de résultats truffée d\'annonces et de sosies. Déminage !',
+      goal:'Clique SEULEMENT les résultats fiables !',
+      hint:'Badge « Annonce », boutique, adresse sosie (j3uxmax avec un 3) : autant de mines.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ serpMineeRun(done); }},
+    {kind:'game',exam:true,mode:'storm',bossmode:true,label:'Mini-boss',emoji:'👾',title:'POPZILLA, le monstre pop-up',
+      intro:'Ferme les pop-ups avec leur <b>vraie croix ✕</b> : ils boomerangent sur POPZILLA ! Cliquer un piège lui redonne des forces… et te coûte un <b>cœur ❤️</b>.',
+      goal:'Renvoie les pop-ups sur POPZILLA !',
+      hint:'Vraie croix ✕ = dégât. Gros bouton = piège. En rage, la croix ROUGE est piégée : bouton « Fermer sans risque » !',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ popzillaRun(done); }}
   ]},
 
-/* ===== NIVEAU 6 — Sécurité et fiabilité ===== */
+/* ===== NIVEAU 6 — Sécurité et phishing ===== */
 { n:6, title:'Sécurité et fiabilité', subtitle:'sécurité',
   intro:{ emoji:'🛡️',
-    lead:'Des sites se déguisent en sites connus pour voler des mots de passe. Ton arme d\'agent : <b>lire la barre d\'adresse</b>.',
+    lead:'Des sites et des mails se déguisent pour voler des mots de passe. Ton arme d\'agent : <b>lire avant de cliquer</b>.',
     teach:'🔒 = https chiffré, ⚠️ = http : jamais de mot de passe. Lis le domaine <b>lettre par lettre</b>, et signale 🚩 les messages qui paniquent.',
     tools:[{g:'🔒',n:'Cadenas = https chiffré'},{g:'⚠️',n:'http = pas de mot de passe'},{g:'🔍',n:'Lire lettre par lettre'},{g:'🚩',n:'Signaler le phishing'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'🔒',title:'Le cadenas et le http',
-      intro:'Clique le symbole à gauche de la barre d\'adresse : il parle.',
-      seed:{tabs:['goupil.start']},
-      objectives:[
-        {t:'Sur <b>www.zanimo.fr</b>, clique le <b>cadenas 🔒</b>', goal:G.flag('lockChecked','Le petit cadenas 🔒 est tout à gauche de la barre d\'adresse.','addr')},
-        {t:'Sur <b>www.blog-de-tom.fr</b>, clique le <b>⚠️</b>', goal:G.flag('lockCheckedInsecure','Sur ce site http, le cadenas devient ⚠️ : clique-le.','addr')},
-        quizObj('Réponds dans le carnet 📝', 'siteHttp', 'Sur quel site ne faut-il JAMAIS taper de mot de passe ?', ['blog-de-tom','blog de tom','tom'], 'Celui marqué ⚠️ : connexion http non chiffrée.')
-      ]},
-    {kind:'mission',label:'Mission 2',emoji:'🕵️',title:'Le site sosie',
-      intro:'« Zanimo Premium gratuit sur www.zanim0.fr » ! Enquête — sans remplir le formulaire.',
-      seed:{tabs:['goupil.start']},
-      objectives:[
-        {t:'Tape <b>www.zanim0.fr</b> (avec un zéro !) et observe', goal:G.typedUrl('www.zanim0.fr')},
-        quizObj('Quelque chose cloche… carnet 📝', 'fauxDomaine', 'Recopie le nom exact du site imposteur (entre « www. » et « .fr »)', ['zanim0'], 'Lis la barre d\'adresse lettre par lettre : un caractère a changé !'),
-        {t:'Fuis : retourne sur le vrai <b>www.zanimo.fr</b>', goal:G.typedUrl('www.zanimo.fr')}
-      ]},
-    {kind:'mission',label:'Mission 3',emoji:'🎣',title:'Alerte au phishing',
-      intro:'Un message « URGENT » menace ton compte Pixmail. Enquête avant de paniquer.',
+    {kind:'game',label:'Mission 1',emoji:'🎣',title:'Vrai ou piège v2',
+      intro:'Retour du jeu du niveau 2… version experte : 0/o, 1/l, faux sous-domaines.',
+      goal:'12 adresses expertes : vraie ✅ ou piège ❌ ?',
+      hint:'Lis la FIN de l\'adresse : « pixmail.fr.secure-verif.com » se termine par secure-verif.com, pas pixmail.fr ! Et http = jamais de mot de passe.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ vraiPiege2Run(done); }},
+    {kind:'game',label:'Mission 2',emoji:'🕵️',title:'La loupe du détective',
+      intro:'3 mails de phishing. Chacun cache 4 indices : trouve-les tous !',
+      goal:'Clique les 4 indices de chaque mail !',
+      hint:'Les 4 indices : expéditeur louche, faute d\'orthographe, fausse urgence, lien déguisé.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ detectiveRun(done); }},
+    {kind:'mission',label:'Mission 3',emoji:'🚩',title:'Infiltration Pixmail',
+      intro:'Un faux mail « URGENT » traîne dans la boîte. Signale-le sans mordre à l\'hameçon.',
       seed:{tabs:['www.pixmail.fr']},
       objectives:[
         {t:'Ouvre le message <b>« ⚠️ URGENT »</b>', goal:G.atUrl('www.pixmail.fr/message-urgent')},
-        {t:'<b>Survole</b> le gros bouton : lis sa vraie destination', goal:G.inSet('hoveredUrls','www.pixmail-secure-verif.com','Survole le bouton rouge sans cliquer : l\'adresse en bas à gauche n\'est PAS pixmail.fr.','links')},
-        {t:'Arnaque ! Clique <b>🚩 Signaler comme phishing</b>', goal:G.flag('reportedPhishing','Le bouton 🚩 est sous le message.','links')},
-        quizObj('Réponds dans le carnet 📝', 'phishSentiment', 'Quelle émotion ce message veut-il provoquer ?', ['urgence','peur','panique','stress'], '« SUPPRIMÉ sous 24 h !!! » — ça met dans quel état ?')
+        {t:'<b>Survole</b> le gros bouton : lis sa vraie destination', goal:G.inSet('hoveredUrls','www.pixmail-secure-verif.com','Survole le bouton rouge SANS cliquer : l\'adresse en bas à gauche n\'est PAS pixmail.fr.','links')},
+        {t:'Arnaque ! Clique <b>🚩 Signaler comme phishing</b>', goal:G.flag('reportedPhishing','Le bouton 🚩 est sous le message.','links')}
       ]},
-    {kind:'jalon',label:'Examen',emoji:'🧱',title:'Le vrai Blockcraft',
-      intro:'3 liens identiques en apparence, 1 seul site officiel. À toi, inspecteur !',
-      seed:{tabs:['www.pixmail.fr/message-de-sam']},
-      objectives:[
-        {t:'<b>Survole les 3 liens</b> et compare leurs adresses', goal:G.setAll('hoveredUrls',['www.blockcraft.fr','www.blockcraft-gratuit.com','www.b1ockcraft.fr'],'Survole chaque bouton sans cliquer : mot ajouté, lettre remplacée…','links')},
-        {t:'Clique <b>uniquement</b> le site officiel', goal:G.atUrl('www.blockcraft.fr')},
-        quizObj('Réponds dans le carnet 📝', 'nbPieges', 'Combien de liens étaient des pièges ?', ['2','deux'], '3 liens… 1 seul officiel.')
-      ]}
+    {kind:'game',exam:true,label:'Examen',emoji:'📥',title:'Le tri de la boîte mail',
+      intro:'6 messages, un chrono : SÛR ✅ ou PHISHING 🎣 ?',
+      goal:'Trie les 6 messages avant la fin !',
+      hint:'Lis l\'expéditeur en entier : le vrai domaine est à la FIN. Urgence + cadeau = phishing.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ mailTriRun(done); }}
   ]},
 
 /* ===== NIVEAU 7 — Les téléchargements ===== */
 { n:7, title:'Les téléchargements', subtitle:'téléchargements',
   intro:{ emoji:'⬇️',
-    lead:'Télécharger = copier un fichier sur ton ordinateur. Encore faut-il savoir quoi accepter… et quoi refuser.',
-    teach:'Le fichier atterrit dans le panneau <b>⬇️</b>. Les gros boutons « TÉLÉCHARGER » sont des pubs ; un <b>.exe</b> douteux → <b>Supprimer</b>.',
-    tools:[{g:'⬇️',n:'Le panneau Téléchargements'},{g:'🔗',n:'Le vrai lien est discret'},{g:'⚙️',n:'.exe / .bat = programme'},{g:'🗑️',n:'Au doute : Supprimer'}] },
+    lead:'Des fichiers pleuvent sur ton PC : certains sont sûrs, d\'autres vérolés. Active le pare-feu, agent !',
+    teach:'<b>.pdf .jpg .doc</b> = sûrs ici. <b>.exe .bat</b> inconnus = danger. Piège ultime : la double extension <b>.pdf.exe</b> — seule la DERNIÈRE compte !',
+    tools:[{g:'⬇️',n:'Le panneau Téléchargements'},{g:'🔗',n:'Le vrai lien est discret'},{g:'⚙️',n:'.exe / .bat = programme'},{g:'🎭',n:'.pdf.exe = déguisement'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'📕',title:'Ton premier téléchargement',
-      intro:'Télécharge la fiche de révisions du collège et retrouve-la.',
+    {kind:'game',label:'Mission 1',emoji:'🛡️',title:'Le Pare-feu',
+      intro:'Des fichiers tombent vers ton PC : bloque les dangereux, laisse passer les sûrs !',
+      goal:'Clique les fichiers DANGEREUX, laisse passer les sûrs !',
+      hint:'Danger : .exe, .bat et doubles extensions (.pdf.exe). Les .pdf, .jpg, .doc de ta classe passent tranquilles.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ pareFeuRun({goal:'Bloque les fichiers dangereux !', waves:[{safe:3,danger:3,speed:9,gap:1600},{safe:4,danger:4,speed:12,gap:1150},{safe:4,danger:5,speed:15,gap:850}]}, done); }},
+    {kind:'mission',label:'Mission 2',emoji:'📕',title:'Téléchargement propre',
+      intro:'Un vrai téléchargement, du clic au panneau ⬇️.',
       seed:{tabs:['www.college-curie.fr']},
       objectives:[
         {t:'Ouvre la page <b>Documents</b> (menu du site)', goal:G.atUrl('www.college-curie.fr/documents')},
@@ -3523,78 +4432,53 @@ const LEVELS=[
         {t:'Ouvre le panneau <b>⬇️ Téléchargements</b>', goal:G.flag('openedDlPanel','Bouton ⬇️ en haut à droite, ou menu ☰ → Téléchargements.','dlbtn')},
         {t:'<b>Ouvre</b> la fiche (bouton « Ouvrir »)', goal:G.inSet('openedDownload','fiche-revisions-maths.pdf','Dans le panneau, clique Ouvrir à côté du fichier.','sidebar')}
       ]},
-    {kind:'mission',label:'Mission 2',emoji:'🪤',title:'Le vrai bouton',
-      intro:'Des boutons « TÉLÉCHARGER » énormes… trop énormes pour être honnêtes.',
-      seed:{tabs:['www.astuces-exposes.fr']},
-      objectives:[
-        {t:'<b>Survole</b> les gros boutons : où mènent-ils vraiment ?', goal:G.flag('adHovered','Survole sans cliquer : l\'adresse en bas à gauche n\'a rien à voir avec ton fichier.','links')},
-        {t:'Télécharge le <b>vrai</b> fichier : <b>modele-expose.doc</b>', goal:G.inSet('downloaded','modele-expose.doc','Le vrai lien est discret, dans le texte.','links')},
-        quizObj('Réponds dans le carnet 📝', 'fauxBoutons', 'Les gros boutons « TÉLÉCHARGER » étaient des… ?', ['pub','annonce','piege','arnaque'], 'Ils portaient le fameux badge dans le coin…')
-      ]},
-    {kind:'mission',label:'Mission 3',emoji:'⚙️',title:'Le fichier dangereux',
-      intro:'Un .exe « miracle » pour PC lent. Spoiler : c\'est louche.',
-      seed:{tabs:['goupil.start']},
-      objectives:[
-        {t:'Va sur <b>www.logiciels-turbo.com</b> (vois le ⚠️…)', goal:G.visited('www.logiciels-turbo.com')},
-        {t:'Tente le téléchargement, puis choisis <b>🗑️ Supprimer</b>', goal:G.inSet('dlDeleted','turbo-boost.exe','Goupil détecte le .exe suspect : choisis Supprimer !','viewport')},
-        quizObj('Réponds dans le carnet 📝', 'extDanger', 'Quelle extension signale un programme ?', ['exe'], 'Trois lettres — celles du fichier supprimé.')
-      ]},
-    {kind:'jalon',label:'Examen',emoji:'🧹',title:'Le grand ménage',
-      intro:'Supprime les 3 fichiers suspects du panneau — et seulement eux !',
-      guardSafeDl:true,
-      seed:{tabs:['goupil.start'], downloads:[
-        {name:'expose-volcans.pdf', size:'1,8 Mo', safe:true, preview:'Exposé SVT — Les volcans, par Sam (5e B).'},
-        {name:'super-cheat-gratuit.exe', size:'4,4 Mo', danger:true},
-        {name:'photo-sortie-musee.jpg', size:'3,1 Mo', safe:true, preview:'Photo de classe devant la fusée du musée 🚀'},
-        {name:'pack-skins-gratuit.exe', size:'12,6 Mo', danger:true},
-        {name:'mise-a-jour-urgente.bat', size:'12 Ko', danger:true}
-      ]},
-      objectives:[
-        {t:'Ouvre le panneau <b>⬇️ Téléchargements</b>', goal:G.flag('openedDlPanel','Bouton ⬇️ en haut à droite, ou menu ☰ → Téléchargements.','dlbtn')},
-        {t:'Supprime les <b>3 fichiers dangereux</b>, eux seuls !', goal:G.setAll('dlDeleted',['super-cheat-gratuit.exe','pack-skins-gratuit.exe','mise-a-jour-urgente.bat'],'Les .exe et .bat « gratuits » ou « urgents » : poubelle ! Les .pdf et .jpg de ta classe sont sûrs.','sidebar')},
-        quizObj('Réponds dans le carnet 📝', 'pdfExe', '« devoir-maths.pdf.exe » est-il vraiment un PDF ? (oui/non)', ['non'], 'Seule la DERNIÈRE extension compte !')
-      ]}
+    {kind:'game',label:'Mission 3',emoji:'🪤',title:'Le vrai bouton',
+      intro:'4 sites de téléchargement piégés : le vrai lien est petit et discret.',
+      goal:'Trouve le VRAI lien de chaque site !',
+      hint:'Les boutons énormes portent un badge « Annonce ». Le vrai lien est discret, dans le texte.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ vraiBoutonRun(done); }},
+    {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'Pare-feu ultime',
+      intro:'Vagues rapides + pop-ups en pleine défense. Tiens bon !',
+      goal:'Bloque les dangereux ET ferme les pop-ups !',
+      hint:'Priorité aux fichiers dangereux ; entre deux, croix ✕ sur les pop-ups.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ pareFeuRun({goal:'Examen : défense totale du PC !', popups:true, waves:[{safe:4,danger:5,speed:13,gap:1000},{safe:5,danger:6,speed:17,gap:750}]}, done); }}
   ]},
 
 /* ===== NIVEAU 8 — Les mots de passe ===== */
 { n:8, title:'Les mots de passe', subtitle:'mots de passe',
   intro:{ emoji:'🔑',
-    lead:'Ton mot de passe est la clé de tes comptes : trop simple, il casse en 2 secondes. À la forge, agent !',
+    lead:'Ton mot de passe est la clé de tes comptes : trop simple, il casse en 1 seconde. À la forge, agent !',
     teach:'Recette : <b>12 caractères mini</b>, majuscules + chiffres + symboles, ni prénom ni « azerty ». Astuce : 3 mots assemblés, genre <i>Fusee!Panda#2026</i>.',
     tools:[{g:'📏',n:'12 caractères minimum'},{g:'🎲',n:'Majuscules, chiffres, symboles'},{g:'🧩',n:'3 mots assemblés'},{g:'🤫',n:'Secret, unique par site'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'⚖️',title:'Robuste ou fragile ?',
-      intro:'Mets le testeur à l\'épreuve : un mot de passe nul, puis ta création.',
-      seed:{tabs:['www.teste-ton-mdp.fr']},
-      objectives:[
-        {t:'Tape <b>azerty123</b> dans le testeur : admire le désastre', goal:G.flag('testedAzerty','Clique le champ du testeur et tape exactement azerty123.','form')},
-        {t:'Efface, puis forge un mot de passe <b>Fort 🟢</b>', goal:G.flag('testedStrong','12 caractères mini, majuscules, chiffres, symboles : Fusee!Panda#2026','form')},
-        quizObj('Réponds dans le carnet 📝', 'minChars', 'Combien de caractères minimum ?', ['12','douze'], 'Le testeur te le rappelle quand il en manque…')
-      ]},
-    {kind:'mission',label:'Mission 2',emoji:'📧',title:'Crée ton compte',
-      intro:'Crée le compte Pixmail de Sam — les mots de passe fragiles seront refusés.',
-      seed:{tabs:['www.pixmail.fr']},
-      objectives:[
-        {t:'Ouvre <b>S\'inscrire</b> (menu du site)', goal:G.atUrl('www.pixmail.fr/inscription')},
-        {t:'Crée le compte avec un mot de passe <b>Fort 🟢</b>', goal:G.flag('createdStrong','Un mot de passe Fort, sans « sam » dedans, puis « Créer mon compte ».','form')},
-        quizObj('Réponds dans le carnet 📝', 'memeMdp', 'Le même mot de passe partout ? (oui/non)', ['non'], 'Un site piraté = tous tes comptes tombent…')
-      ]},
+    {kind:'game',label:'Mission 1',emoji:'🔨',title:'Bris de coffre',
+      intro:'5 mots de passe face au robot-pirate. Parie AVANT le crackage !',
+      goal:'Parie : il résiste ou il casse ?',
+      hint:'Suite clavier, prénom + année, mot du dico : ça casse. Long + varié : ça résiste.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ brisCoffreRun(done); }},
+    {kind:'game',label:'Mission 2',emoji:'⚒️',title:'La forge',
+      intro:'Assemble des blocs (mots, chiffres, symboles) et vise la jauge verte !',
+      goal:'3 commandes : Fort, Ultra, Ultra sans prénom !',
+      hint:'Mélange : mot avec majuscule + chiffres + symboles. Ultra = 16 caractères et plus. Et « sam »… évite.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ forgeMdpRun(done); }},
     {kind:'mission',label:'Mission 3',emoji:'🆘',title:'Mot de passe perdu',
-      intro:'Impossible de te connecter ! Suis la procédure officielle, étape par étape.',
+      intro:'Plus moyen de te connecter ! Suis la procédure officielle.',
       seed:{tabs:['www.pixmail.fr/connexion']},
       objectives:[
         {t:'Clique <b>« Mot de passe oublié ? »</b>', goal:G.atUrl('www.pixmail.fr/recuperation')},
         {t:'Demande un code, lis le <b>SMS 📱</b>, entre-le', goal:G.flag('codeEntered','Le code à 4 chiffres est dans le pop-up SMS.','form')},
         {t:'Enregistre un <b>nouveau mot de passe fort</b>', goal:G.flag('resetDone','12+ caractères, majuscules, chiffres, symboles → Enregistrer.','form')}
       ]},
-    {kind:'jalon',label:'Examen',emoji:'🏦',title:'Le coffre-fort',
-      intro:'Gagne le duel, forge une clé Ultra 💪, réponds à LA question.',
-      seed:{tabs:['www.teste-ton-mdp.fr/duel']},
-      objectives:[
-        {t:'Au <b>duel</b>, clique le mot de passe le plus robuste', goal:G.flag('pickedStrongest','Élimine : suite clavier, prénom + année, mot archi-connu…','links')},
-        {t:'Sur <b>le testeur</b>, forge un mot de passe <b>Ultra 💪</b>', goal:G.flag('testedUltra','16 caractères ou plus : Goupil!Mange#2Pommes','form')},
-        quizObj('Dernière question 📝', 'quiMdp', 'À qui donner ton mot de passe ?', ['personne','parents'], 'Même pas à ton meilleur ami !')
-      ]}
+    {kind:'game',exam:true,label:'Examen',emoji:'🏦',title:'Duel + forge finale',
+      intro:'8 duels chrono : clique le plus fort. Puis forge la clé Ultra du coffre !',
+      goal:'8 duels, puis la clé Ultra !',
+      hint:'Élimine : suites clavier, prénoms + années, mots archi-connus. Le fort est long ET varié.',
+      seed:{tabs:['goupil.jeu']},
+      run:function(done){ duelForgeRun(done); }}
   ]},
 
 /* ===== NIVEAU 9 — BOSS : INFOX, le semeur de rumeurs ===== */
@@ -3629,36 +4513,6 @@ function bossHudHtml(html){ const h=document.getElementById('bossHud'); if(h){ h
 function stormPopupDef(){
   const mk=[popupPrize, popupVirus, popupPromo, popupVbucks, function(){ return popupNotif('jeuxmax.fr'); }];
   return mk[Math.floor(Math.random()*mk.length)]();
-}
-function stormHud(){
-  const S=B.storm; if(!S) return;
-  const closed=B.evt.popupsClosed||0;
-  bossHudHtml('<span class="bh-ic">🪟</span><b>Attaque de pop-ups !</b>'
-    +'<span class="bh-stat">Fermés : '+Math.min(closed,S.target)+' / '+S.target+'</span>'
-    +'<div class="bh-bar"><i style="width:'+Math.min(100, B.popups.length/S.max*100)+'%"></i></div>'
-    +'<span class="bh-stat">Écran : '+B.popups.length+' / '+S.max+'</span>');
-}
-function startPopupStorm(){
-  B.storm={target:15, max:9};
-  stormHud();
-  every(1250, ()=>{
-    if(_missionDone || !B.storm) return;
-    if(B.popups.length<B.storm.max) spawnPopup(stormPopupDef());
-    stormFailCheck();
-  });
-  every(300, ()=>{ if(!_missionDone && B.storm){ stormHud(); stormFailCheck(); } });
-}
-function stormFailCheck(){
-  if(_missionDone || !B.storm) return;
-  if(B.popups.length>=B.storm.max){
-    _missionDone=true; clearTimers(); beep('alarm');
-    modal.className='modal warn';
-    modal.innerHTML='<span class="m-emoji">🪟</span><h2>L\'écran est envahi !</h2>'
-      +'<p>Les pop-ups ont pris le contrôle… Rappelle-toi : on les ferme <b>uniquement</b> avec leur croix <b>✕</b> — chaque gros bouton coloré en fait apparaître un de plus !</p>'
-      +'<div class="m-actions"><button class="m-btn primary boss" id="failRetry">↺ Retenter le combat</button></div>';
-    openOverlay();
-    document.getElementById('failRetry').onclick=()=>{ closeOverlay(); startStep(playIdx); };
-  }
 }
 function infoxHud(){
   const S=B.boss; if(!S) return;
@@ -3736,7 +4590,7 @@ function dlGuardFail(d){
    --------------------------------------------------------- */
 function reviewing(){ return playIdx<progressIdx; }
 function startStep(idx){
-  clearSpots(); clearTimers();
+  clearSpots(); clearTimers(); pzCleanup();
   ARC.on=false; ARC.over=false; ARC.onAction=null; ARC.screenHtml='';
   clearTimeout(ARC.comboT); arcHudRender();
   playIdx=idx; currentStep=STEPS[idx]; _missionDone=false;
@@ -3816,9 +4670,11 @@ function openRoundPopup(){
     +(s.intro?'<p>'+s.intro+'</p>':'')
     +(list?'<ul class="tasklist">'+list+'</ul>':'')
     +'</div>'
+    +(s.bossmode?bossModesHtml():'')
     +'<div class="m-actions"><button class="m-btn primary'+(boss?' boss':(exam?' test':''))+'" id="goBtn">'
     +(boss?'À l\'attaque ! ⚔️':(game?(s._launched?'Reprendre 🎮':'GO ! 🎮'):'C\'est parti ! 🚀'))+'</button></div>';
   openOverlay();
+  if(s.bossmode) bindBossModes();
   document.getElementById('goBtn').onclick=()=>{
     closeOverlay(); audioCtx();
     if(currentStep && currentStep.kind==='game'){
