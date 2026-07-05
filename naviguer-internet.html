@@ -762,6 +762,88 @@
   .pz-phase-card .pc-ic{font-size:3rem;line-height:1;animation:pzIdle 2s ease-in-out infinite;}
   .pz-phase-card .pc-t{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:800;font-size:1.5rem;}
   .pz-phase-card .pc-s{font-weight:700;font-size:.95rem;color:#e9d5ff;max-width:420px;}
+  /* ---- tutoriel interactif de phase (1re fois : le joueur FAIT l'action pour lancer) ---- */
+  .pz-tuto{position:absolute;inset:0;z-index:130;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+    background:radial-gradient(circle at center,rgba(76,29,149,.86),rgba(2,6,23,.94));color:#fff;text-align:center;padding:14px;overflow:hidden;animation:pzCardIn .35s ease;}
+  .pz-tuto.out{animation:pzCardOut .4s ease forwards;}
+  .pz-tuto .pt-ic{font-size:2rem;line-height:1;animation:pzIdle 2s ease-in-out infinite;}
+  .pz-tuto .pt-t{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:800;font-size:1.25rem;}
+  .pz-tuto .pt-s{font-weight:700;font-size:.82rem;color:#e9d5ff;max-width:470px;line-height:1.32;}
+  .pz-tuto .pt-hint{font-weight:800;font-size:.86rem;color:#fde047;background:rgba(0,0,0,.42);border-radius:999px;padding:5px 15px;max-width:94%;min-height:1.1em;}
+  .pz-tuto .pt-hint b{color:#fff;}
+  .pz-tuto .pt-stage{position:relative;width:min(520px,94%);height:clamp(170px,40vh,250px);border:2px dashed rgba(196,181,253,.6);
+    border-radius:16px;background:rgba(0,0,0,.32);overflow:hidden;transition:border-color .25s,box-shadow .25s;}
+  .pz-tuto .pt-stage.done{border-color:#22c55e;box-shadow:0 0 26px rgba(34,197,94,.5);background:rgba(20,60,30,.4);}
+  /* mini pop-ups du tuto (phase 1) */
+  .pt-popup{position:absolute;width:186px;background:#fff;border:1px solid #cbd5e1;border-radius:9px;overflow:hidden;
+    box-shadow:0 12px 30px rgba(2,6,23,.5);animation:popIn .22s ease;}
+  .pt-popup.expire{animation:ppExpireK .38s ease forwards;}
+  .pt-popup .pp-bar{display:flex;align-items:center;gap:6px;padding:5px 6px 5px 9px;font-size:.62rem;color:#fff;font-weight:800;background:linear-gradient(90deg,#7c3aed,#db2777);}
+  .pt-popup .pp-bar.sys{background:linear-gradient(90deg,#334155,#64748b);}
+  .pt-popup .pp-bar.scam{background:linear-gradient(90deg,#ea580c,#dc2626);}
+  .pt-popup .pp-title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pt-popup .pp-x{flex:none;width:16px;height:16px;border:none;border-radius:4px;background:rgba(255,255,255,.28);color:#fff;font-size:.56rem;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+  .pt-popup .pp-x:hover{background:rgba(255,255,255,.55);}
+  .pt-popup .pp-body{padding:8px 9px;font-size:.64rem;font-weight:700;text-align:center;color:#1f2937;line-height:1.3;}
+  .pt-popup .pp-btn{display:inline-block;margin:5px 2px 0;border:none;border-radius:7px;padding:5px 9px;font-weight:800;cursor:pointer;font-size:.6rem;font-family:inherit;}
+  .pt-popup .pp-btn.big{background:linear-gradient(90deg,#f59e0b,#ef4444);color:#fff;animation:ppPulse 1.1s infinite;}
+  .pt-popup .pp-btn.ok{background:#2563eb;color:#fff;}
+  .pt-popup .pp-btn.ghost{background:#eef1f6;color:#1f2937;}
+  /* mini-navigateur du tuto (phases 2, 3, 5) */
+  .pt-browser{position:absolute;inset:0;display:flex;flex-direction:column;background:#0f172a;}
+  .pt-tabstrip{flex:none;display:flex;gap:4px;padding:6px 6px 0;background:#1e293b;overflow-x:auto;}
+  .pt-tab{display:flex;align-items:center;gap:5px;flex:none;max-width:132px;background:#334155;color:#e2e8f0;border-radius:7px 7px 0 0;padding:5px 8px;font-size:.66rem;font-weight:700;cursor:pointer;border:none;font-family:inherit;}
+  .pt-tab.active{background:#f1f5f9;color:#1e293b;}
+  .pt-tab .ptt-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:82px;}
+  .pt-tab .ptt-x{flex:none;width:15px;height:15px;border:none;border-radius:4px;background:rgba(0,0,0,.2);color:inherit;font-size:.52rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+  .pt-tab .ptt-x:hover{background:#ef4444;color:#fff;}
+  .pt-tab.closing{animation:ppExpireK .34s ease forwards;}
+  .pt-toolbar{flex:none;display:flex;align-items:center;gap:6px;padding:6px 8px;background:#1e293b;}
+  .pt-toolbar .pt-url{flex:1;background:#0f172a;color:#cbd5e1;border-radius:999px;padding:4px 10px;font-size:.66rem;font-weight:700;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pt-menu-btn{flex:none;border:none;border-radius:7px;background:#334155;color:#fff;font-size:1rem;padding:3px 10px;cursor:pointer;line-height:1;}
+  .pt-menu-btn:hover{background:#475569;}
+  .pt-view{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;padding:10px;overflow:auto;}
+  .pt-view.blank{background:#f1f5f9;color:#475569;}
+  .pt-view.pz{background:radial-gradient(circle at 50% 40%,#7c3aed,#4c1d95);color:#fff;}
+  .pt-view .ptv-ic{font-size:2.1rem;line-height:1;}
+  .pt-view .ptv-t{font-weight:800;font-size:.82rem;}
+  .pt-view .ptv-s{font-weight:700;font-size:.68rem;opacity:.9;}
+  .pt-menu{background:#fff;border-radius:10px;box-shadow:0 12px 30px rgba(2,6,23,.5);padding:6px;display:flex;flex-direction:column;gap:3px;min-width:172px;}
+  .pt-mi{border:none;background:#f1f5f9;border-radius:7px;padding:8px 12px;font-weight:800;font-size:.74rem;text-align:left;cursor:pointer;color:#1e293b;font-family:inherit;}
+  .pt-mi:hover{background:#e0e7ff;}
+  .pt-mi.dim{opacity:.55;}
+  .pt-fav-panel{background:#fff;border-radius:10px;box-shadow:0 12px 30px rgba(2,6,23,.4);padding:8px;min-width:230px;text-align:left;}
+  .pt-fav-h{font-weight:800;font-size:.74rem;color:#1e293b;margin:0 0 6px;padding:0 2px;}
+  .pt-fav-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fef2f2;border:1px dashed #ef4444;border-radius:8px;padding:6px 9px;margin:0 0 5px;font-weight:800;font-size:.72rem;color:#991b1b;}
+  .pt-fav-row.safe{background:#f0fdf4;border:1px solid #86efac;color:#166534;}
+  .pt-fav-row.closing{animation:ppExpireK .34s ease forwards;}
+  .pt-fav-row.wrong{animation:pzWrongK .5s ease;}
+  .pt-fav-ok{font-size:.62rem;font-weight:800;color:#16a34a;}
+  .pt-fav-del{flex:none;border:none;border-radius:6px;background:#fee2e2;font-size:.82rem;padding:3px 8px;cursor:pointer;}
+  .pt-fav-del:hover{background:#ef4444;}
+  /* mini-SERP du tuto (phase 4) */
+  .pt-serp{position:absolute;inset:0;background:#e8eef7;padding:8px;display:flex;flex-direction:column;gap:6px;overflow:auto;}
+  .pt-res{border:2px solid #e2e8f0;border-radius:10px;background:#fff;padding:7px 10px;text-align:left;cursor:crosshair;font-family:inherit;}
+  .pt-res:hover{box-shadow:0 4px 12px rgba(2,6,23,.12);}
+  .pt-res .pr-u{font-size:.66rem;color:#15803d;font-weight:700;display:flex;align-items:center;gap:5px;}
+  .pt-res .pr-ad{background:#fde68a;color:#92400e;font-size:.54rem;font-weight:800;border-radius:4px;padding:0 5px;}
+  .pt-res .pr-t{font-weight:800;color:#1d3a8a;font-size:.8rem;}
+  .pt-res.boom{animation:pzBoomK .4s ease forwards;pointer-events:none;}
+  .pt-res.wrong{animation:pzWrongK .5s ease;}
+  /* mini-fuite du tuto (phase 5) */
+  .pt-addr{flex:1;min-width:0;border:2px solid #7c3aed;border-radius:999px;padding:5px 12px;font-size:.72rem;font-weight:700;font-family:inherit;outline:none;background:#fff;color:#1e293b;}
+  .pt-addr:disabled{opacity:.7;}
+  .pt-addr.shake{animation:pzWrongK .5s ease;}
+  .pt-go{flex:none;border:none;border-radius:999px;background:#7c3aed;color:#fff;font-weight:800;font-size:.7rem;padding:5px 13px;cursor:pointer;font-family:inherit;}
+  .pt-go:hover{filter:brightness(1.08);}
+  .pt-links-h{font-weight:800;font-size:.72rem;color:#e9d5ff;margin:2px 0 4px;max-width:96%;line-height:1.3;}
+  .pt-link{display:block;width:92%;margin:4px auto;border:none;border-radius:10px;padding:9px 12px;font-weight:900;font-size:.8rem;cursor:pointer;color:#fff;font-family:inherit;}
+  .pt-link.e0{background:linear-gradient(120deg,#fca5a5,#ef4444);}
+  .pt-link.e1{background:linear-gradient(120deg,#93c5fd,#3b82f6);}
+  .pt-link.e2{background:linear-gradient(120deg,#c4b5fd,#8b5cf6);}
+  .pt-link:hover{filter:brightness(1.08);transform:translateY(-1px);}
+  .pt-status{flex:none;height:20px;background:#1e293b;color:#7dd3fc;font-size:.64rem;font-weight:700;display:flex;align-items:center;padding:0 10px;opacity:0;transition:opacity .12s;white-space:nowrap;overflow:hidden;}
+  .pt-status.on{opacity:1;}
   /* consigne-tuto flottante (1ère fois : « fais l'action pour lancer ») */
   .pz-teach{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;background:#fff;border:3px solid #7c3aed;border-radius:14px;
     padding:9px 16px;font-weight:800;font-size:.86rem;color:#3b0764;box-shadow:0 12px 34px rgba(2,6,23,.4);max-width:88%;text-align:center;animation:pzTeachK 1.6s ease-in-out infinite;}
@@ -1215,6 +1297,10 @@ function removeBookmark(url){
   const i=B.bookmarks.findIndex(b=>b.url===url);
   if(i<0) return;
   const wasBad=!!B.bookmarks[i].pzbad;
+  /* pendant le combat POPZILLA (phase des favoris) : impossible de jeter un VRAI favori */
+  if(PZ && !PZ.over && PZ.curPhase==='favoris' && !wasBad){
+    pzHurtPlayer(1,'Ne supprime pas un VRAI favori !'); return;
+  }
   B.bookmarks.splice(i,1);
   (B.evt.bmRemoved=B.evt.bmRemoved||new Set()).add(url);
   (B.evt.bmRemovedTrash=B.evt.bmRemovedTrash||new Set()).add(url);
@@ -3742,6 +3828,14 @@ const FAKE_FAVS=[
   {icon:'💎', title:'Skins offerts',   url:'www.super-promo-choc.net'},
   {icon:'📢', title:'Pub-Facile',      url:'www.pub-facile-gratuite.com'}
 ];
+/* vrais favoris légitimes — à NE PAS supprimer pendant la phase des favoris vérolés */
+const GOOD_FAVS=[
+  {icon:'📚', title:'Vikidia',     url:'www.vikidia.org'},
+  {icon:'🦊', title:'Wikipédia',   url:'fr.wikipedia.org'},
+  {icon:'📖', title:'Larousse',    url:'www.larousse.fr'},
+  {icon:'🏫', title:'Mon collège', url:'ent.college-curie.fr'},
+  {icon:'🌦️', title:'Météo-France', url:'www.meteofrance.com'}
+];
 const SERP_GOOD=[
   {u:'fr.wikipedia.org',      t:'Wikipédia — l\'encyclopédie libre',        s:'Des millions d\'articles vérifiés et sourcés.'},
   {u:'www.larousse.fr',       t:'Larousse — dictionnaire et encyclopédie',  s:'Définitions, traductions et encyclopédie de référence.'},
@@ -3796,6 +3890,14 @@ function pzMusicStart(){
   }catch(e){}
 }
 function pzMusicStop(){ if(pzAudio){ try{ pzAudio.pause(); pzAudio.currentTime=0; }catch(e){} } }
+function pzMusicPause(){ if(pzAudio){ try{ pzAudio.pause(); }catch(e){} } }
+function pzMusicResume(){ if(pzAudio&&soundOn){ try{ const p=pzAudio.play(); if(p&&p.catch) p.catch(function(){}); }catch(e){} } }
+/* ---- pause du boss (astuce / overlay ouvert) : gèle timers, pop-ups et musique, comme les autres boss ---- */
+function pzSetPaused(on){
+  if(!PZ||PZ.over) return;
+  PZ.paused=!!on;
+  if(on) pzMusicPause(); else pzMusicResume();
+}
 function pzFsEl(){ return document.fullscreenElement||document.webkitFullscreenElement||null; }
 function pzFsSetup(){
   const btn=document.getElementById('pzFsBtn'), wrap=scr(), br=document.getElementById('browser');
@@ -3836,7 +3938,7 @@ function pzFsTeardown(){
   }
   if(pzFsEl()){ try{ const ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex){ const pr=ex.call(document); if(pr&&pr.catch) pr.catch(function(){}); } }catch(e){} }
 }
-function pzCleanup(){ pzMusicStop(); pzFsTeardown(); if(PZ){ PZ.over=true; pzGTimerStop(); pzTeachHide(); PZ=null; } }
+function pzCleanup(){ pzMusicStop(); pzFsTeardown(); pzTutoHide(); if(PZ){ PZ.over=true; pzGTimerStop(); pzTeachHide(); PZ=null; } }
 /* minuteries scopées à une phase (nettoyées à la fin de la phase) */
 function pzTimers(){
   const ids=[];
@@ -3890,6 +3992,7 @@ function pzGTimerStart(secs, onEmpty){
   PZ._gt={left:secs, max:secs, onEmpty:onEmpty};
   PZ._gtIv=setInterval(function(){
     if(!PZ||PZ.over){ pzGTimerStop(); return; }
+    if(PZ.paused) return;   /* boss en pause (astuce/overlay) : le temps ne s'écoule pas */
     PZ._gt.left-=0.1;
     const f=Math.max(0,PZ._gt.left/PZ._gt.max);
     const b=document.getElementById('pzGTimer'); if(b){ const fill=b.querySelector('i'); if(fill) fill.style.width=(f*100)+'%'; b.className='pz-gtimer'+(f<=.3?' low':''); }
@@ -3936,7 +4039,7 @@ function pzTrapXDef(){
   return def;
 }
 function pzTickPopups(){
-  if(!PZ||PZ.over) return;
+  if(!PZ||PZ.over||PZ.paused) return;   /* pause : les pop-ups n'expirent pas pendant l'astuce */
   const dt=0.22;
   B.popups.slice().forEach(function(p){
     if(p.life==null||p.expired) return;
@@ -4000,6 +4103,233 @@ function pzAnnouncePhase(name, cb){
   s.appendChild(c); beep('alarm');
   after(1500, function(){ c.classList.add('out'); after(400, function(){ try{c.remove();}catch(e){} cb&&cb(); }); });
 }
+/* ---- tutoriels interactifs de phase (1er cycle) : le joueur FAIT l'action pour lancer ---- */
+function pzTutoHide(){ const c=document.getElementById('pzTuto'); if(c) c.remove(); }
+function pzTutorial(name, cb){
+  const s=scr(); if(!s){ cb&&cb(); return; }
+  pzTutoHide();
+  const meta=PZ_PHASE_META[name], info=PZ_TUTOS[name];
+  if(!info){ pzPhaseCard(meta.tut.title, meta.tut.sub, cb); return; }   /* repli : ancienne carte */
+  const ov=document.createElement('div'); ov.className='pz-tuto'; ov.id='pzTuto';
+  ov.innerHTML='<div class="pt-ic">'+meta.ic+'</div>'
+    +'<div class="pt-t">'+meta.tut.title+'</div>'
+    +'<div class="pt-s">'+info.intro+'</div>'
+    +'<div class="pt-hint" id="ptHint"></div>'
+    +'<div class="pt-stage" id="ptStage"></div>';
+  s.appendChild(ov); beep('open');
+  const t={ov:ov, hint:ov.querySelector('#ptHint'), stage:ov.querySelector('#ptStage'), _done:false};
+  info.build(t, cb);
+}
+function pzTutoWin(t, cb){
+  if(t._done) return; t._done=true;
+  t.hint.innerHTML='✅ <b>Tu as compris ! La phase commence…</b>';
+  t.stage.classList.add('done'); beep('win');
+  after(850, function(){ try{t.ov.classList.add('out');}catch(e){}
+    after(380, function(){ try{t.ov.remove();}catch(e){} cb&&cb(); }); });
+}
+/* PHASE 1 — fermer 3 pop-ups néfastes avec leur vraie croix ✕ */
+function pzTutoBase(t, cb){
+  const NEED=3; let closed=0;
+  const defs=[popupPrize(), popupVirus(), popupPromo()];
+  const slots=[{l:'4%',tp:'5%'},{l:'46%',tp:'24%'},{l:'18%',tp:'52%'}];
+  function refresh(){ t.hint.innerHTML='🖱️ Ferme les 3 pop-ups avec leur croix <b>✕</b> (en haut à droite) — <b>'+closed+' / '+NEED+'</b>'; }
+  refresh();
+  defs.forEach(function(d,i){
+    const el=document.createElement('div'); el.className='pt-popup';
+    el.style.left=slots[i].l; el.style.top=slots[i].tp;
+    const btns=(d.buttons||[]).map(function(b){ return '<button class="pp-btn '+(b.cls||'ghost')+'">'+b.label+'</button>'; }).join('');
+    el.innerHTML='<div class="pp-bar '+(d.bar||'')+'"><span class="pp-title">'+d.title+'</span><button class="pp-x" title="Fermer">✕</button></div>'
+      +'<div class="pp-body">'+d.body+(btns?'<div>'+btns+'</div>':'')+'</div>';
+    t.stage.appendChild(el);
+    el.querySelector('.pp-x').onclick=function(){
+      if(t._done||el._gone) return; el._gone=true; beep('delete'); el.classList.add('expire');
+      after(340, function(){ try{el.remove();}catch(e){} });
+      closed++; if(closed>=NEED){ pzTutoWin(t, cb); } else refresh();
+    };
+    el.querySelectorAll('.pp-btn').forEach(function(b){ b.onclick=function(){ if(t._done) return; beep('bad');
+      toast('⚠️ Piège ! Ferme le pop-up avec sa croix ✕, jamais le gros bouton coloré.'); }; });
+  });
+}
+/* PHASE 2 — fermer 2 onglets piégés, puis explorer 3 onglets pour débusquer POPZILLA */
+function pzTutoTabs(t, cb){
+  const br=document.createElement('div'); br.className='pt-browser'; t.stage.appendChild(br);
+  const strip=document.createElement('div'); strip.className='pt-tabstrip';
+  const view=document.createElement('div'); view.className='pt-view blank';
+  view.innerHTML='<span class="ptv-ic">🗂️</span><span class="ptv-t">Ferme les onglets piégés</span>';
+  br.appendChild(strip); br.appendChild(view);
+  const CLOSE_NEED=2; let closedA=0;
+  const fraud=[{ic:'📱',t:'iPhone GRATUIT'},{ic:'💰',t:'Argent facile'},{ic:'⚠️',t:'Virus détecté'}];
+  function hintA(){ t.hint.innerHTML='🖱️ Ferme <b>2 onglets</b> piégés avec leur croix <b>✕</b> — <b>'+closedA+' / '+CLOSE_NEED+'</b>'; }
+  hintA();
+  fraud.forEach(function(f){
+    const tab=document.createElement('div'); tab.className='pt-tab';
+    tab.innerHTML='<span>'+f.ic+'</span><span class="ptt-t">'+f.t+'</span><button class="ptt-x" title="Fermer l\'onglet">✕</button>';
+    strip.appendChild(tab);
+    tab.querySelector('.ptt-x').onclick=function(e){ e.stopPropagation();
+      if(t._done||tab._closing) return; tab._closing=true; beep('delete'); tab.classList.add('closing');
+      after(320, function(){ try{tab.remove();}catch(e){} });
+      closedA++; if(closedA>=CLOSE_NEED){ after(480, startHunt); } else hintA();
+    };
+  });
+  function startHunt(){
+    if(t._done) return;
+    strip.innerHTML='';
+    view.className='pt-view blank';
+    view.innerHTML='<span class="ptv-ic">🕵️</span><span class="ptv-t">Où se cache POPZILLA ?</span><span class="ptv-s">Clique un onglet 🦊 pour l\'ouvrir</span>';
+    t.hint.innerHTML='🖱️ Explore les 3 onglets 🦊 pour débusquer <b>POPZILLA</b>, puis ferme le SIEN ✕';
+    const pzIdx=Math.floor(Math.random()*3);
+    for(let i=0;i<3;i++){
+      const isPz=(i===pzIdx);
+      const tab=document.createElement('div'); tab.className='pt-tab';
+      tab.innerHTML='<span>🦊</span><span class="ptt-t">Nouvel onglet</span><button class="ptt-x" title="Fermer l\'onglet">✕</button>';
+      strip.appendChild(tab);
+      tab.onclick=function(){ if(t._done) return; select(tab, isPz); };
+      tab.querySelector('.ptt-x').onclick=function(e){ e.stopPropagation();
+        if(t._done) return;
+        if(isPz){ beep('good'); banner('🎯 Trouvé !','good'); pzTutoWin(t, cb); }
+        else { beep('bad'); toast('❌ Ce n\'était pas POPZILLA ! Ouvre d\'abord les onglets pour le repérer.'); }
+      };
+    }
+    function select(tab, isPz){
+      strip.querySelectorAll('.pt-tab').forEach(function(x){ x.classList.remove('active'); });
+      tab.classList.add('active'); beep('click');
+      if(isPz){
+        view.className='pt-view pz';
+        view.innerHTML='<span class="ptv-ic">👾</span><span class="ptv-t">Coucou, c\'est moi POPZILLA ! 😈</span><span class="ptv-s">Vite, ferme cet onglet avec sa croix ✕ !</span>';
+        t.hint.innerHTML='✅ Trouvé ! Ferme maintenant l\'onglet de <b>POPZILLA</b> avec sa croix ✕';
+      } else {
+        view.className='pt-view blank';
+        view.innerHTML='<span class="ptv-ic">🌫️</span><span class="ptv-t">Onglet vide…</span><span class="ptv-s">Ce n\'est pas POPZILLA — cherche ailleurs !</span>';
+      }
+    }
+  }
+}
+/* PHASE 3 — ouvrir le menu ☰, aller dans Favoris, supprimer 1 faux favori */
+function pzTutoFavoris(t, cb){
+  const br=document.createElement('div'); br.className='pt-browser'; t.stage.appendChild(br);
+  const bar=document.createElement('div'); bar.className='pt-toolbar';
+  bar.innerHTML='<span class="pt-url">🌐 www.mon-navigateur.fr</span><button class="pt-menu-btn" id="ptMenuBtn" title="Menu">☰</button>';
+  const view=document.createElement('div'); view.className='pt-view blank';
+  view.innerHTML='<span class="ptv-ic">☰</span><span class="ptv-t">Ouvre le menu du navigateur</span>';
+  br.appendChild(bar); br.appendChild(view);
+  t.hint.innerHTML='🖱️ Clique le bouton menu <b>☰</b> (en haut à droite)';
+  let step=0;
+  bar.querySelector('#ptMenuBtn').onclick=function(){
+    if(t._done||step>0) return; step=1; beep('click');
+    view.className='pt-view';
+    view.innerHTML='<div class="pt-menu"><button class="pt-mi" id="ptFavItem">⭐ Favoris</button><button class="pt-mi dim">🕘 Historique</button><button class="pt-mi dim">⬇️ Téléchargements</button></div>';
+    t.hint.innerHTML='🖱️ Clique <b>⭐ Favoris</b> dans le menu';
+    view.querySelector('#ptFavItem').onclick=function(){ if(t._done||step>1) return; step=2; beep('click'); showFavs(); };
+    view.querySelectorAll('.pt-mi.dim').forEach(function(b){ b.onclick=function(){ toast('👉 Pour les faux favoris, ouvre ⭐ Favoris.'); }; });
+  };
+  function showFavs(){
+    view.className='pt-view';
+    const rows=[
+      {fake:true,  label:'💰 Argent facile'},
+      {fake:false, label:'📚 Vikidia'},
+      {fake:true,  label:'🎁 CADEAU !!!'},
+      {fake:false, label:'🏫 Mon collège'}
+    ];
+    let html='<div class="pt-fav-panel"><div class="pt-fav-h">⭐ Tes favoris</div>';
+    rows.forEach(function(r,i){
+      html+='<div class="pt-fav-row'+(r.fake?'':' safe')+'" data-i="'+i+'"><span>'+r.label+'</span>'
+        +'<button class="pt-fav-del" title="Supprimer">🗑️</button></div>';
+    });
+    view.innerHTML=html+'</div>';
+    const NEED=rows.filter(function(r){return r.fake;}).length; let removed=0;
+    function refresh(){ t.hint.innerHTML='🖱️ Jette les <b>faux favoris</b> 🗑️, mais garde les VRAIS — <b>'+removed+' / '+NEED+'</b>'; }
+    refresh();
+    view.querySelectorAll('.pt-fav-row').forEach(function(row){
+      const r=rows[+row.getAttribute('data-i')];
+      row.querySelector('.pt-fav-del').onclick=function(){
+        if(t._done||row._done) return;
+        if(r.fake){ row._done=true; beep('delete'); row.classList.add('closing');
+          after(340, function(){ try{row.remove();}catch(e){} });
+          removed++; if(removed>=NEED){ pzTutoWin(t, cb); } else refresh();
+        } else { beep('bad'); toast('🚫 C\'est un VRAI favori ('+r.label+') ! Ne le supprime pas.');
+          row.classList.remove('wrong'); void row.offsetWidth; row.classList.add('wrong'); }
+      };
+    });
+  }
+}
+/* PHASE 4 — détruire 2 annonces piégées dans la SERP (sans toucher un vrai site) */
+function pzTutoSerp(t, cb){
+  const NEED=2; let killed=0;
+  const list=document.createElement('div'); list.className='pt-serp'; t.stage.appendChild(list);
+  const items=[
+    {ad:true,  u:'www.smartphone-gratuit-2024.com', t:'📱 GAGNE un iPhone GRATUIT !!!'},
+    {ad:false, u:'fr.wikipedia.org',                 t:'Wikipédia — l\'encyclopédie libre'},
+    {ad:true,  u:'www.antivirus-urgent.net',         t:'⚠️ 3 VIRUS sur ton appareil !'}
+  ];
+  function refresh(){ t.hint.innerHTML='🎯 Détruis 💥 les <b>2 annonces</b> piégées — <b>'+killed+' / '+NEED+'</b>'; }
+  refresh();
+  items.forEach(function(it){
+    const el=document.createElement('button'); el.className='pt-res';
+    el.innerHTML='<div class="pr-u">'+(it.ad?'<span class="pr-ad">Annonce</span>':'')+'🌐 '+it.u+'</div><div class="pr-t">'+it.t+'</div>';
+    list.appendChild(el);
+    el.onclick=function(){
+      if(t._done||el._dead) return;
+      if(it.ad){ el._dead=true; beep('good'); el.classList.add('boom'); arcBurst(el);
+        after(400, function(){ try{el.remove();}catch(e){} });
+        killed++; if(killed>=NEED){ pzTutoWin(t, cb); } else refresh();
+      } else { beep('bad'); el.classList.remove('wrong'); void el.offsetWidth; el.classList.add('wrong');
+        toast('🚫 C\'est un VRAI site fiable (Wikipédia) ! Ne tire jamais dessus.'); }
+    };
+  });
+}
+/* PHASE 5 — taper l'adresse de la cachette, puis survoler pour trouver le bon lien */
+function pzTutoEscape(t, cb){
+  const TARGET='www.cachette-popzilla.com'; let step=0;
+  const br=document.createElement('div'); br.className='pt-browser'; t.stage.appendChild(br);
+  const bar=document.createElement('div'); bar.className='pt-toolbar';
+  bar.innerHTML='<input class="pt-addr" id="ptAddr" placeholder="Tape une adresse…" autocomplete="off" spellcheck="false">'
+    +'<button class="pt-go" id="ptGo">Aller ➜</button>';
+  const view=document.createElement('div'); view.className='pt-view blank';
+  view.innerHTML='<span class="ptv-ic">🏃👾</span><span class="ptv-t">POPZILLA s\'est enfui !</span><span class="ptv-s">Tape l\'adresse de sa cachette dans la barre ↑</span>';
+  const status=document.createElement('div'); status.className='pt-status'; status.id='ptStatus';
+  br.appendChild(bar); br.appendChild(view); br.appendChild(status);
+  t.hint.innerHTML='⌨️ Tape <b>'+TARGET+'</b> puis appuie sur Entrée';
+  const inp=bar.querySelector('#ptAddr');
+  after(220, function(){ try{ inp.focus(); }catch(e){} });
+  function tryGo(){
+    if(t._done||step>0) return;
+    const v=(inp.value||'').trim().toLowerCase().replace(/\s/g,'');
+    if(v.indexOf('cachette-popzilla.com')>=0){ step=1; beep('good'); showLinks(); }
+    else { beep('bad'); toast('❌ Tape bien '+TARGET); inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); }
+  }
+  bar.querySelector('#ptGo').onclick=tryGo;
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); tryGo(); } });
+  function showLinks(){
+    inp.disabled=true;
+    view.className='pt-view pz'; view.style.justifyContent='flex-start';
+    const links=[
+      {label:'⚡ RACCOURCI vers POPZILLA', dest:'www.pub-facile-gratuite.com'},
+      {label:'👉 POPZILLA c\'est par ICI !', dest:'www.cachette-popzilla.com'},
+      {label:'🎁 Entrée secrète de POPZILLA', dest:'www.mega-cadeau-surprise.com'}
+    ];
+    let html='<div class="pt-links-h">Un seul lien mène VRAIMENT à POPZILLA. Survole-les : l\'adresse s\'affiche en bas ↓</div>';
+    links.forEach(function(l,i){ html+='<button class="pt-link e'+i+'" data-dest="'+l.dest+'">'+l.label+'</button>'; });
+    view.innerHTML=html;
+    t.hint.innerHTML='🖱️ Survole les liens, puis clique celui qui mène à <b>…popzilla.com</b>';
+    view.querySelectorAll('.pt-link').forEach(function(b){
+      const dest=b.getAttribute('data-dest');
+      b.addEventListener('mouseenter', function(){ status.textContent='🔗 '+dest; status.classList.add('on'); });
+      b.addEventListener('mouseleave', function(){ status.classList.remove('on'); });
+      b.onclick=function(){
+        if(t._done) return;
+        if(dest.indexOf('popzilla.com')>=0){ beep('good'); status.textContent='🔗 '+dest; status.classList.add('on'); pzTutoWin(t, cb); }
+        else { beep('bad'); toast('❌ Ce lien mène à '+dest+' — pas à POPZILLA ! Regarde l\'adresse en bas.'); }
+      };
+    });
+  }
+}
+const PZ_TUTOS={
+  base:   {intro:'POPZILLA t\'inonde de pop-ups ! La seule bonne façon d\'en fermer un, c\'est sa vraie croix ✕ — jamais les gros boutons colorés (ce sont des pièges).', build:pzTutoBase},
+  tabs:   {intro:'POPZILLA ouvre des onglets piégés puis se cache dans l\'un d\'eux. Ferme les onglets avec leur croix ✕, puis explore pour le débusquer.', build:pzTutoTabs},
+  favoris:{intro:'POPZILLA a glissé de faux favoris parmi les tiens. Ouvre le menu ☰ → ⭐ Favoris, jette les FAUX avec la 🗑️… mais garde tes VRAIS favoris (Vikidia, ton collège…) !', build:pzTutoFavoris},
+  serp:   {intro:'Dans les résultats de recherche, POPZILLA cache des annonces piégées. Détruis-les — mais jamais un vrai site fiable !', build:pzTutoSerp},
+  escape: {intro:'POPZILLA s\'enfuit ! Tape l\'adresse de sa cachette, puis survole les liens : l\'adresse en bas révèle où ils mènent vraiment.', build:pzTutoEscape}
+};
 /* ---- machine à états ---- */
 function pzNextPhase(){
   if(!PZ||PZ.over) return;
@@ -4009,7 +4339,7 @@ function pzNextPhase(){
   PZ.curPhase=name;
   PZ.accel=(PZ.cycle===1)?1:Math.max(0.62, 1-(PZ.cycle-1)*0.14);
   pzPhaseChip(PZ.cycle+'/'+PZ.md.cycles+' · '+PZ_PHASE_META[name].chip);
-  if(PZ.cycle===1){ pzPhaseCard(PZ_PHASE_META[name].tut.title, PZ_PHASE_META[name].tut.sub, function(){ pzRunPhase(name); }); }
+  if(PZ.cycle===1){ pzTutorial(name, function(){ pzRunPhase(name); }); }
   else { pzAnnouncePhase(name, function(){ pzRunPhase(name); }); }
 }
 function pzRunPhase(name){
@@ -4069,6 +4399,7 @@ function pzPhaseBase(done){
   function gap(){ return [900,760,620][sub]*PZ.md.spd*PZ.accel; }
   function spawnOne(){
     if(!PZ||PZ.over||!spawning) return;
+    if(PZ.paused){ T.after(300, spawnOne); return; }   /* en pause : on ne fait pas grossir la pile de pop-ups */
     if(B.popups.filter(function(p){return !p.expired;}).length < PZ.md.maxPop){
       const def=pzPopupDef();   /* fenêtre piégée (pzTrapXDef) retirée d'ici — gardée pour réemploi ailleurs */
       def.moving=(sub>=1); def.life=pzPopupLife(); def.lifeMax=def.life;
@@ -4133,7 +4464,7 @@ function pzPhaseTabs(done){
     const other=blanks.find(function(x){return x!==chosen;})||chosen; B.active=B.tabs.indexOf(other);
     renderBrowser();
     if(tut) pzTeachShow('👉 Clique un onglet pour l\'ouvrir. Si tu vois POPZILLA, ferme-le ✕ ! (mauvais onglet = −1 cœur)');
-    pzGTimerStart((n*1.4)*PZ.md.spd, function(){
+    pzGTimerStart((n*1.05)*PZ.md.spd, function(){
       if(!PZ||PZ.over) return;
       pzHurtPlayer(1,'POPZILLA s\'est échappé !'); hunts++; nextHuntOrFinish();
     });
@@ -4151,15 +4482,21 @@ function pzPhaseTabs(done){
     T.clear(); after(500, done);
   }
 }
-/* ======= PHASE 3 — favoris vérolés ======= */
+/* ======= PHASE 3 — favoris vérolés (+ quelques VRAIS favoris à préserver) ======= */
 function pzPhaseFavoris(done){
   const T=pzTimers(); const tut=(PZ.cycle===1);
-  pzSetAllow({}); pzSetFace('😜'); pzTipSet('Ouvre ☰ → Favoris et jette les faux favoris à la 🗑️ !'); ARC.screenHtml=pzArenaHtml();
+  pzSetAllow({}); pzSetFace('😜'); pzTipSet('Ouvre ☰ → Favoris : jette les FAUX favoris, garde les VRAIS !'); ARC.screenHtml=pzArenaHtml();
   const n=tut?6:Math.min(FAKE_FAVS.length,8+PZ.cycle);
+  /* on retire d'éventuels favoris déjà marqués par un cycle précédent, puis on (ré)injecte */
+  B.bookmarks=B.bookmarks.filter(function(b){ return !b.pzbad && !b.pzgood; });
   shuffle(FAKE_FAVS.slice()).slice(0,n).forEach(function(f){ B.bookmarks.push({url:f.url, title:f.title, icon:f.icon, pzbad:true}); });
+  /* quelques VRAIS favoris légitimes glissés parmi les faux : à NE PAS supprimer */
+  const nGood=tut?2:3;
+  shuffle(GOOD_FAVS.slice()).slice(0,nGood).forEach(function(f){ B.bookmarks.push({url:f.url, title:f.title, icon:f.icon, pzgood:true}); });
+  B.bookmarks=shuffle(B.bookmarks);
   renderBrowser(); beep('open');
   banner('⭐ POPZILLA salit tes favoris !','bad');
-  if(tut) pzTeachShow('👉 Clique le menu ☰ (en haut à droite) → ⭐ Favoris, puis la 🗑️ à côté de chaque faux favori.');
+  if(tut) pzTeachShow('👉 ☰ → ⭐ Favoris : jette les FAUX (🗑️), mais garde tes VRAIS favoris (Wikipédia, ton collège…) !');
   function favTimer(){
     const remaining=B.bookmarks.filter(function(b){return b.pzbad;}).length;
     if(remaining<=0) return;
@@ -4169,7 +4506,11 @@ function pzPhaseFavoris(done){
   PZ.onFavRemove=function(){
     if(!PZ||PZ.over) return;
     pzDamageBoss(1); toast('🧹 Faux favori supprimé !');
-    if(!B.bookmarks.some(function(b){return b.pzbad;})){ pzGTimerStop(); pzTeachHide(); PZ.onFavRemove=null; T.clear(); after(500, done); }
+    if(!B.bookmarks.some(function(b){return b.pzbad;})){
+      pzGTimerStop(); pzTeachHide(); PZ.onFavRemove=null;
+      B.bookmarks=B.bookmarks.filter(function(b){ return !b.pzgood; });   /* on retire les décors légitimes ajoutés */
+      renderBrowser(); T.clear(); after(500, done);
+    }
   };
 }
 /* ======= PHASE 4 — SERP piégée (tir au viseur) ======= */
@@ -4232,7 +4573,7 @@ function pzPhaseEscape(done){
   const nAv=tut?6:8;
   for(let i=0;i<nAv;i++){ spawnPopup(escPopup()); }
   /* POPZILLA continue de balancer quelques pop-ups (à timer) tout au long de la fuite */
-  T.every(Math.round(3800*PZ.md.spd), function(){ if(!PZ||PZ.over) return; if(B.popups.filter(function(p){return !p.expired;}).length<3) spawnPopup(escPopup()); });
+  T.every(Math.round(3800*PZ.md.spd), function(){ if(!PZ||PZ.over||PZ.paused) return; if(B.popups.filter(function(p){return !p.expired;}).length<3) spawnPopup(escPopup()); });
   if(tut) pzTeachShow('👉 Ferme les pop-ups, puis tape www.cachette-popzilla.com dans la barre d\'adresse ↑.');
   function gtimer(){ pzGTimerStart((tut?26:20)*PZ.md.spd, function(){ if(!PZ||PZ.over) return; pzHurtPlayer(1,'Trop lent ! POPZILLA ricane.'); gtimer(); }); }
   gtimer();
@@ -5937,8 +6278,20 @@ function loadLevel(n, stepIdx, showIntro){
 /* ---------------------------------------------------------
    8. OVERLAY, TOAST, CONFETTI
    --------------------------------------------------------- */
-function openOverlay(){ overlay.classList.add('open'); }
-function closeOverlay(){ overlay.classList.remove('open'); }
+let _ovHome=null;
+function openOverlay(){
+  pzSetPaused(true);
+  /* en plein écran (combat POPZILLA), seuls les descendants de l'élément plein écran s'affichent :
+     on déplace l'overlay dedans pour que l'astuce reste visible sans quitter le plein écran */
+  const fs=pzFsEl();
+  if(fs){ if(!_ovHome) _ovHome=overlay.parentNode; if(overlay.parentNode!==fs) fs.appendChild(overlay); }
+  overlay.classList.add('open');
+}
+function closeOverlay(){
+  overlay.classList.remove('open');
+  if(_ovHome && overlay.parentNode!==_ovHome){ _ovHome.appendChild(overlay); _ovHome=null; }
+  pzSetPaused(false);
+}
 let _toastT=null;
 function toast(msg){ const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove('show'),6000); }
 function confetti(){
@@ -5993,13 +6346,19 @@ function onHint(){
   s._hints=(s._hints||0)+1;
   const game=s.kind==='game';
   const ao=activeObj();
-  const hintTxt=game
-    ? (s.hint||'Suis la consigne affichée sur l\'écran !')
-    : ((ao && ao.goal && ao.goal.hint) ? ao.goal.hint : stripTags((ao&&ao.t)||''));
+  /* pendant le combat POPZILLA : astuce propre à la phase en cours (le boss est mis en pause par openOverlay) */
+  const pzOn=(PZ && !PZ.over && PZ.curPhase && PZ_PHASE_META[PZ.curPhase]);
+  const hintTxt=pzOn
+    ? PZ_PHASE_META[PZ.curPhase].tut.sub
+    : (game
+      ? (s.hint||'Suis la consigne affichée sur l\'écran !')
+      : ((ao && ao.goal && ao.goal.hint) ? ao.goal.hint : stripTags((ao&&ao.t)||'')));
+  const hintTitle=pzOn ? ('👾 '+PZ_PHASE_META[PZ.curPhase].tut.title) : (s.title||'Astuce');
   modal.className='modal test-modal';
   modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker" style="color:var(--amber-d)">Astuce</div>'
-    +'<h2>'+(s.title||'Astuce')+'</h2>'
+    +'<h2>'+hintTitle+'</h2>'
     +'<div class="howto test"><p class="h-head">👉 Comment faire :</p><p>'+hintTxt+'</p></div>'
+    +(pzOn?'<p style="font-size:.9rem;color:var(--muted)">⏸️ POPZILLA est <b>en pause</b> le temps de lire l\'astuce.</p>':'')
     +(game?'':'<p style="font-size:.95rem;color:var(--muted)">Les éléments importants vont <b>briller en jaune</b> ✨ sur l\'écran.</p>')
     +'<div class="m-actions"><button class="m-btn primary test" id="hintGo">'+(game?'Compris !':'Montre-moi ✨')+'</button></div>';
   openOverlay();
