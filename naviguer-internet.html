@@ -241,6 +241,8 @@
   .wp-btnlink{display:inline-flex;align-items:center;gap:8px;background:var(--site);color:#fff;border:none;
     border-radius:11px;padding:11px 18px;font-weight:800;font-size:.95rem;cursor:pointer;margin:6px 4px 6px 0;}
   .wp-btnlink:hover{filter:brightness(1.12);}
+  .wp-doorgrid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0;}
+  .wp-doorgrid .wp-btnlink{margin:0;padding:12px 8px;min-width:52px;justify-content:center;font-size:.85rem;}
   .wp-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.9rem;}
   .wp-table th{background:var(--site);color:#fff;font-weight:800;padding:8px 10px;text-align:left;}
   .wp-table td{border:1px solid var(--line);padding:7px 10px;font-weight:700;color:#33424f;}
@@ -248,6 +250,11 @@
   .wp-footer{margin-top:26px;padding:14px 26px;border-top:2px solid var(--line-2);color:#8d9cab;
     font-weight:600;font-size:.76rem;text-align:center;}
   .wp-center{text-align:center;}
+  /* infos cliquables — actives UNIQUEMENT pendant la Course contre Pixel (N3M2) */
+  .course-info [data-info]{cursor:pointer;border-radius:8px;outline:2px dashed transparent;
+    transition:outline-color .12s ease, background .12s ease;}
+  .course-info [data-info]:hover{outline-color:var(--site);background:var(--site-soft);}
+  .course-info td[data-info]:hover{box-shadow:inset 0 0 0 2px var(--site);}
 
   /* page d'accueil Goupil */
   .start-page{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -465,7 +472,7 @@
   .pw-verdict{font-weight:800;font-size:.9rem;}
   .pw-missing{margin:6px 0 0;padding-left:18px;font-size:.8rem;color:#b45309;font-weight:700;}
 
-  /* ---------- Messagerie Pixmail ---------- */
+  /* ---------- Messagerie Foximail ---------- */
   .mail-item{display:flex;align-items:center;gap:10px;border:2px solid var(--line);border-radius:12px;
     padding:11px 14px;margin:8px 0;cursor:pointer;font-weight:700;background:#fff;}
   .mail-item:hover{border-color:var(--site);}
@@ -561,6 +568,7 @@
     box-shadow:0 16px 40px -18px rgba(15,23,42,.75);}
   .ord-card .oc-ic{font-size:1.7rem;line-height:1;}
   .ord-card .oc-n{font-size:.78rem;color:var(--muted);align-self:flex-start;}
+  .ord-card .oc-sub{display:block;font-size:.82rem;color:var(--blue);font-weight:700;margin-top:2px;}
   .ord-card.pop{animation:ordPopK .3s ease;}
   @keyframes ordPopK{0%{transform:translateX(-50%) scale(.7);}70%{transform:translateX(-50%) scale(1.06);}100%{transform:translateX(-50%) scale(1);}}
   .px-bar{width:230px;height:12px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin:7px auto 3px;}
@@ -1097,6 +1105,7 @@ function toggleBookmark(){
   if(i>=0){
     B.bookmarks.splice(i,1);
     (B.evt.bmRemoved=B.evt.bmRemoved||new Set()).add(url);
+    (B.evt.bmRemovedStar=B.evt.bmRemovedStar||new Set()).add(url);
     beep('delete'); toast('☆ Favori retiré');
   } else {
     B.bookmarks.push({url:url, title:page.bm||page.title, icon:page.icon||'🌐'});
@@ -1110,6 +1119,7 @@ function removeBookmark(url){
   if(i<0) return;
   B.bookmarks.splice(i,1);
   (B.evt.bmRemoved=B.evt.bmRemoved||new Set()).add(url);
+  (B.evt.bmRemovedTrash=B.evt.bmRemovedTrash||new Set()).add(url);
   beep('delete'); toast('☆ Favori retiré');
   renderBrowser(); checkMission();
 }
@@ -1275,6 +1285,7 @@ function renderViewport(){
   const vp=document.getElementById('viewport'); if(!vp) return;
   const url=curUrl();
   vp.innerHTML=renderPage(url);
+  vp.classList.toggle('course-info', !!(ARC.on && ARC.courseInfo));
   vp.scrollTop=0;
   /* champs de recherche internes aux pages */
   vp.querySelectorAll('.ct-btn').forEach(b=>b.onclick=()=>{
@@ -1290,6 +1301,11 @@ function renderBrowser(){
 
 /* ----- interactions dans les pages ----- */
 function onViewportClick(e){
+  /* « bonne info » à cliquer — actif SEULEMENT pendant la Course contre Pixel (N3M2) */
+  if(ARC.on && ARC.courseInfo){
+    const info=e.target.closest('[data-info]');
+    if(info){ e.preventDefault(); if(ARC.onInfoClick) ARC.onInfoClick(info.getAttribute('data-info'), info); return; }
+  }
   const go=e.target.closest('[data-go]');
   if(go){
     e.preventDefault();
@@ -1483,7 +1499,7 @@ function popupNotif(site){ return {kind:'notif', bar:'sys', title:'🔔 '+site,
   buttons:[{label:'Autoriser', cls:'ghost', act:'trap'},{label:'Bloquer', cls:'ok', act:'block'}],
   trapMsg:'⚠️ En autorisant, tu recevrais des pubs en continu ! Choisis « Bloquer ».'}; }
 function popupSms(code){ return {kind:'sms', bar:'sys', title:'📱 Nouveau message', x:44, y:10,
-  body:'<b>Pixmail</b> — ton code de récupération :<br><span style="font-size:1.4rem;letter-spacing:.25em"><b>'+code+'</b></span>',
+  body:'<b>Foximail</b> — ton code de récupération :<br><span style="font-size:1.4rem;letter-spacing:.25em"><b>'+code+'</b></span>',
   buttons:[{label:'OK', cls:'ok', act:'close'}]}; }
 function dangerPopup(d){ return {kind:'dlwarn', bar:'sys', title:'⚠️ Fichier potentiellement dangereux', x:26, y:16,
   body:'« <b>'+d.name+'</b> » est un fichier <b>.'+d.ext+'</b> : il peut installer n\'importe quoi sur ton ordinateur. Que veux-tu faire ?',
@@ -1608,9 +1624,9 @@ const SITES={
   superjeux:{ base:'www.super-jeux-cadeaux.com', name:'Super Jeux Cadeaux', icon:'🎁', color:'#e11d48', soft:'#fde8ec', nav:[] },
   blogtom:{ base:'www.blog-de-tom.fr', name:'Le blog de Tom', icon:'🛹', color:'#0891b2', soft:'#e3f6fb', nav:[] },
   zanimfake:{ base:'www.zanim0.fr', name:'Zanimo', icon:'🐾', color:'#0e9f6e', soft:'#e6f7ef', nav:[] },
-  pixmail:{ base:'www.pixmail.fr', name:'Pixmail', icon:'📧', color:'#2563eb', soft:'#e8f0fe',
-    nav:[['Boîte de réception','www.pixmail.fr'],['Se connecter','www.pixmail.fr/connexion'],['S\'inscrire','www.pixmail.fr/inscription']] },
-  pixfake:{ base:'www.pixmail-secure-verif.com', name:'Pixmail', icon:'📧', color:'#2563eb', soft:'#e8f0fe', nav:[] },
+  foximail:{ base:'www.foximail.fr', name:'Foximail', icon:'📧', color:'#2563eb', soft:'#e8f0fe',
+    nav:[['Boîte de réception','www.foximail.fr'],['Se connecter','www.foximail.fr/connexion'],['S\'inscrire','www.foximail.fr/inscription']] },
+  pixfake:{ base:'www.foximail-secure-verif.com', name:'Foximail', icon:'📧', color:'#2563eb', soft:'#e8f0fe', nav:[] },
   blockcraft:{ base:'www.blockcraft.fr', name:'Blockcraft', icon:'🧱', color:'#16a34a', soft:'#e8f8ee', nav:[] },
   blockfake1:{ base:'www.blockcraft-gratuit.com', name:'Blockcraft GRATUIT', icon:'🧱', color:'#dc2626', soft:'#fdeaea', nav:[] },
   blockfake2:{ base:'www.b1ockcraft.fr', name:'Blockcraft', icon:'🧱', color:'#16a34a', soft:'#e8f8ee', nav:[] },
@@ -1831,9 +1847,9 @@ WEB['www.zanimo.fr/chouette']=pg('zanimo','La chouette effraie — Zanimo', func
 WEB['www.zanimo.fr/kangourou']=pg('zanimo','Le kangourou — Zanimo', function(){
   return '<h1>🦘 Le kangourou roux</h1>'
     +'<div class="wp-img">🦘🏜️</div>'
-    +'<p>Le kangourou vit en <b>Australie</b>. La maman transporte son bébé, appelé « joey », dans sa <b>poche ventrale</b> pendant plusieurs mois.</p>'
+    +'<p>Le kangourou vit en <b data-info="kangourou-pays">Australie</b>. La maman transporte son bébé, appelé « joey », dans sa <b data-info="kangourou-poche">poche ventrale</b> pendant plusieurs mois.</p>'
     +'<h2>Champion olympique</h2>'
-    +'<div class="wp-fact">🏅 D\'un seul bond, un kangourou peut sauter jusqu\'à <b>9 mètres</b> de long !</div>'
+    +'<div class="wp-fact">🏅 D\'un seul bond, un kangourou peut sauter jusqu\'à <b data-info="kangourou-saut">9 mètres</b> de long !</div>'
     +'<p>À lire ensuite : <a class="lk" data-go="www.zanimo.fr/panda">la fiche du panda</a> 🐼.</p>';
 });
 WEB['www.zanimo.fr/jeu-des-liens']=pg('zanimo','Le jeu des liens — Zanimo', function(){
@@ -1873,18 +1889,18 @@ WEB['www.college-curie.fr/cantine']=pg('ecole','Les menus de la cantine — Coll
   return '<h1>🍽️ Les menus de la semaine</h1>'
     +'<p>Voici ce que le chef Roberto a préparé cette semaine. Bon appétit !</p>'
     +'<table class="wp-table"><tr><th>Jour</th><th>Plat</th><th>Dessert</th></tr>'
-    +'<tr><td><b>Lundi</b></td><td>Gratin de pâtes au fromage</td><td>Yaourt à la fraise</td></tr>'
-    +'<tr><td><b>Mardi</b></td><td>Poisson pané et riz</td><td>Banane</td></tr>'
-    +'<tr><td><b>Jeudi</b></td><td>Poulet rôti et haricots verts</td><td><b>Compote de pommes</b></td></tr>'
-    +'<tr><td><b>Vendredi</b></td><td>Pizza aux légumes</td><td>Gâteau au yaourt</td></tr>'
+    +'<tr><td><b>Lundi</b></td><td>Gratin de pâtes au fromage</td><td data-info="dessert-lundi">Yaourt à la fraise</td></tr>'
+    +'<tr><td><b>Mardi</b></td><td>Poisson pané et riz</td><td data-info="dessert-mardi">Banane</td></tr>'
+    +'<tr><td><b>Jeudi</b></td><td>Poulet rôti et haricots verts</td><td data-info="dessert-jeudi"><b>Compote de pommes</b></td></tr>'
+    +'<tr><td><b>Vendredi</b></td><td>Pizza aux légumes</td><td data-info="dessert-vendredi">Gâteau au yaourt</td></tr>'
     +'</table>'
     +'<p style="font-size:.85rem;color:#8d9cab;">Le week-end, il n\'y a pas cours — donc pas de cantine !</p>';
 });
 WEB['www.college-curie.fr/sorties']=pg('ecole','Les sorties scolaires — Collège Marie-Curie', function(){
   return '<h1>🚌 Les sorties scolaires</h1>'
-    +'<h2>Prochaine sortie : le Musée de l\'Espace</h2>'
+    +'<h2 data-info="sortie-musee">Prochaine sortie : le Musée de l\'Espace</h2>'
     +'<div class="wp-img">🚀🪐</div>'
-    +'<p>Le <b>12 mai</b>, la classe de 5<sup>e</sup> B visitera le <a class="lk" data-go="www.musee-espace.fr">Musée de l\'Espace</a>. Les élèves pourront toucher une vraie météorite !</p>'
+    +'<p><span data-info="sortie-date">Le <b>12 mai</b>, la classe de 5<sup>e</sup> B visitera le </span><a class="lk" data-go="www.musee-espace.fr">Musée de l\'Espace</a>. Les élèves pourront toucher une vraie météorite !</p>'
     +'<p>Pense à apporter un pique-nique et une casquette. 🧢</p>';
 });
 
@@ -1958,8 +1974,8 @@ WEB['www.musee-espace.fr']=pg('musee','Musée de l\'Espace — fusées et planè
 WEB['www.musee-espace.fr/horaires']=pg('musee','Horaires & tarifs — Musée de l\'Espace', function(){
   return '<h1>🕐 Horaires & tarifs</h1>'
     +'<h2>Nos horaires</h2>'
-    +'<div class="wp-fact">📅 Ouvert du <b>mardi au dimanche</b>, de <b>10h à 18h</b>.</div>'
-    +'<div class="wp-fact">🚫 Le musée est <b>fermé le lundi</b>.</div>'
+    +'<div class="wp-fact" data-info="horaires-ouvert">📅 Ouvert du <b>mardi au dimanche</b>, de <b>10h à 18h</b>.</div>'
+    +'<div class="wp-fact" data-info="horaires-ferme">🚫 Le musée est <b>fermé le lundi</b>.</div>'
     +'<h2>Nos tarifs</h2>'
     +'<table class="wp-table"><tr><th>Billet</th><th>Prix</th></tr>'
     +'<tr><td>Enfant (moins de 12 ans)</td><td><b>4 €</b></td></tr>'
@@ -2137,19 +2153,19 @@ WEB['www.presse-jeunes.fr']=pg('presse','Presse-Jeunes — l\'info vérifiée', 
   return '<div class="wp-hero"><span class="h-ic">📰</span><div class="h-tx">'
     +'<h1>Presse-Jeunes</h1><p>Un vrai journal pour les collégiens : chaque article est signé, daté et vérifié.</p></div></div>'
     +'<h2>✅ Vérification des rumeurs</h2>'
-    +'<div class="wp-fact">📵 <b>NON, aucun « portique confisque-téléphones » n\'existe.</b> La rumeur venue des réseaux est fausse : interrogée, la direction dément, et ce portique magique… n\'existe dans aucun catalogue. <i>— Nadia B., 2 juin</i></div>'
-    +'<div class="wp-fact">🚀 <b>OUI, le Musée de l\'Espace ouvrira une salle Mars en 2027.</b> Confirmé par le musée lui-même. <i>— Karim T., 28 mai</i></div>'
+    +'<div class="wp-fact" data-info="presse-portique">📵 <b>NON, aucun « portique confisque-téléphones » n\'existe.</b> La rumeur venue des réseaux est fausse : interrogée, la direction dément, et ce portique magique… n\'existe dans aucun catalogue. <i>— Nadia B., 2 juin</i></div>'
+    +'<div class="wp-fact" data-info="presse-mars">🚀 <b>OUI, le Musée de l\'Espace ouvrira une salle Mars en 2027.</b> Confirmé par le musée lui-même. <i>— Karim T., 28 mai</i></div>'
     +'<div class="wp-fact">💡 Notre règle d\'or : une info sans auteur, sans date et sans source n\'est pas une info.</div>';
 });
 
 /* ----- Wikimini, l'encyclopédie junior ----- */
 WEB['www.wikimini-fr.org']=pg('wikimini','Wikimini — l\'encyclopédie junior', function(){
-  return '<div class="wp-hero"><span class="h-ic">📚</span><div class="h-tx">'
+  return '<div class="wp-hero" data-info="wiki-encyclo"><span class="h-ic">📚</span><div class="h-tx">'
     +'<h1>Wikimini</h1><p>L\'encyclopédie écrite par des élèves et relue par des profs. 12 408 articles.</p></div></div>'
     +'<div class="wp-cards">'
-    +'<div class="wp-card"><span class="c-ic">🌋</span><span class="c-t">Les volcans</span><div class="c-s">Article de la semaine</div></div>'
-    +'<div class="wp-card"><span class="c-ic">🌐</span><span class="c-t">Internet</span><div class="c-s">Comment ça marche ?</div></div>'
-    +'<div class="wp-card"><span class="c-ic">🐼</span><span class="c-t">Le panda</span><div class="c-s">Relu par 2 professeurs</div></div>'
+    +'<div class="wp-card" data-info="wiki-volcans"><span class="c-ic">🌋</span><span class="c-t">Les volcans</span><div class="c-s">Article de la semaine</div></div>'
+    +'<div class="wp-card" data-info="wiki-internet"><span class="c-ic">🌐</span><span class="c-t">Internet</span><div class="c-s">Comment ça marche ?</div></div>'
+    +'<div class="wp-card" data-info="wiki-panda"><span class="c-ic">🐼</span><span class="c-t">Le panda</span><div class="c-s">Relu par 2 professeurs</div></div>'
     +'</div>'
     +'<div class="wp-fact">💡 Parfait pour démarrer un exposé — et chaque article cite ses sources.</div>';
 });
@@ -2167,12 +2183,21 @@ function buildMaze(rooms, winSlug, winPage){
     const nextUrl=base+'/'+(i+1<rooms.length?rooms[i+1].slug:winSlug);
     WEB[base+'/'+r.slug]=pg('tresor', r.t+' — La Chasse au Trésor', function(){
       let doors='';
-      r.doors.forEach(function(d){
-        doors+='<button class="wp-btnlink" data-go="'+(d[1]?nextUrl:(base+'/xperdu'))+'">'+d[0]+'</button>';
-      });
+      if(r.manyDoors){
+        const good=1+Math.floor(Math.random()*r.manyDoors);
+        for(let n=1;n<=r.manyDoors;n++){
+          doors+='<button class="wp-btnlink" data-go="'+(n===good?nextUrl:(base+'/xperdu'))+'">🚪 '+n+'</button>';
+        }
+        doors='<div class="wp-doorgrid">'+doors+'</div>';
+      } else {
+        r.doors.forEach(function(d){
+          doors+='<button class="wp-btnlink" data-go="'+(d[1]?nextUrl:(base+'/xperdu'))+'">'+d[0]+'</button>';
+        });
+        doors='<p>'+doors+'</p>';
+      }
       return '<div class="wp-center"><h1>'+r.ic+' '+r.t+' <span style="font-size:.55em;color:#8d9cab">salle '+(i+1)+' / '+rooms.length+'</span></h1>'
         +'<div class="wp-fact" style="text-align:left">'+r.q+'</div>'
-        +'<p>'+doors+'</p></div>';
+        +doors+'</div>';
     });
   });
   WEB[base+'/'+winSlug]=pg('tresor', winPage+' — La Chasse au Trésor', function(){
@@ -2190,14 +2215,14 @@ const MAZE1=[
     doors:[['➕ ouvrir un nouvel onglet',true],['🖨️ imprimer la page',false],['📞 appeler Goupil',false]]},
   {slug:'x4', ic:'👆', t:'Le pont des liens', q:'Comment savoir où mène un lien <b>sans cliquer</b> ?',
     doors:[['🍀 cliquer en croisant les doigts',false],['👆 le survoler et lire en bas à gauche',true],['🔮 demander à une boule de cristal',false]]},
-  {slug:'x5', ic:'🚪', t:'La salle du trésor', q:'Trois portes identiques… <b>Survole-les</b> et lis l\'adresse en bas à gauche : une seule mène à <b>/xfin</b> !',
-    doors:[['🚪 Porte de gauche',false],['🚪 Porte du milieu',true],['🚪 Porte de droite',false]]}
+  {slug:'x5', ic:'🚪', t:'La salle du trésor', q:'30 portes identiques… <b>Survole-les</b> et lis l\'adresse en bas à gauche : une seule mène à <b>/xfin</b> !',
+    manyDoors:30}
 ];
 const MAZE2=[
   {slug:'y1', ic:'🧱', t:'La porte Blockcraft', q:'Quelle porte mène au <b>VRAI site</b> de Blockcraft ?',
     doors:[['www.b1ockcraft.fr',false],['www.blockcraft.fr',true],['www.blockcraft-gratuit.com',false]]},
-  {slug:'y2', ic:'📧', t:'La porte Pixmail', q:'Le <b>vrai</b> Pixmail, c\'est…',
-    doors:[['www.pixmail-secure-verif.com',false],['www.pixmail.connexion.fr',false],['www.pixmail.fr',true]]},
+  {slug:'y2', ic:'📧', t:'La porte Foximail', q:'Le <b>vrai</b> Foximail, c\'est…',
+    doors:[['www.foximail-secure-verif.com',false],['www.foximail.connexion.fr',false],['www.foximail.fr',true]]},
   {slug:'y3', ic:'🏫', t:'La porte du collège', q:'Le site <b>officiel</b> du collège Marie-Curie ?',
     doors:[['www.college-curie.fr',true],['www.colege-curie.fr',false],['www.college-curie-eleves.com',false]]},
   {slug:'y4', ic:'🐾', t:'La dernière porte', q:'Le <b>vrai</b> Zanimo — lis chaque lettre !',
@@ -2277,73 +2302,73 @@ WEB['www.zanim0.fr']=pg('zanimfake','Zanimo — l\'encyclopédie des animaux', f
   return '<div class="wp-hero"><span class="h-ic">🐾</span><div class="h-tx">'
     +'<h1>Bienvenue sur Zanimo !</h1><p>L\'encyclopédie des animaux, faite pour les curieux.</p></div></div>'
     +'<div class="wp-fact" style="border-left-color:#e11d48">🎁 <b>OFFRE EXCEPTIONELLE :</b> abonement Premium GRATUIT à vie pour les 50 prochains inscrits !</div>'
-    +'<div class="wp-form"><span class="wp-label">Ton adresse e-mail</span><input class="wp-input" placeholder="prenom.nom@pixmail.fr">'
-    +'<span class="wp-label">Ton mot de passe Pixmail</span><input class="wp-input" placeholder="Ton mot de passe">'
+    +'<div class="wp-form"><span class="wp-label">Ton adresse e-mail</span><input class="wp-input" placeholder="prenom.nom@foximail.fr">'
+    +'<span class="wp-label">Ton mot de passe Foximail</span><input class="wp-input" placeholder="Ton mot de passe">'
     +'<p style="margin-top:12px"><button class="wp-btnlink" data-act="phish" data-arg="zanim0">🎁 Je profite de l\'offre</button></p></div>'
     +'<div class="wp-cards">'
     +'<div class="wp-card"><span class="c-ic">🐼</span><span class="c-t">Le panda</span><div class="c-s">(page en maintenance)</div></div>'
     +'<div class="wp-card"><span class="c-ic">🐬</span><span class="c-t">Le dauphin</span><div class="c-s">(page en maintenance)</div></div>'
     +'</div>';
 });
-WEB['www.pixmail.fr']=pg('pixmail','Pixmail — Boîte de réception', function(){
-  return '<h1>📧 Boîte de réception <span style="font-size:.7em;color:#8d9cab">— sam.martin@pixmail.fr</span></h1>'
-    +'<div class="mail-item" data-go="www.pixmail.fr/message-urgent"><span class="mail-from">Pixmail Sécurité</span><span class="mail-sub">⚠️ URGENT : ton compte sera supprimé demain !</span><span class="mail-badge">URGENT</span></div>'
-    +'<div class="mail-item" data-go="www.pixmail.fr/message-college"><span class="mail-from">Collège Marie-Curie</span><span class="mail-sub">Sortie au Musée de l\'Espace — informations</span></div>'
-    +'<div class="mail-item" data-go="www.pixmail.fr/message-de-sam"><span class="mail-from">Sam</span><span class="mail-sub">C\'est quoi le vrai site de Blockcraft ?</span></div>'
-    +'<div class="mail-item" data-go="www.pixmail.fr/message-zanimo"><span class="mail-from">Zanimo</span><span class="mail-sub">Newsletter — le retour du colibri 🐦</span></div>';
+WEB['www.foximail.fr']=pg('foximail','Foximail — Boîte de réception', function(){
+  return '<h1>📧 Boîte de réception <span style="font-size:.7em;color:#8d9cab">— sam.martin@foximail.fr</span></h1>'
+    +'<div class="mail-item" data-go="www.foximail.fr/message-urgent"><span class="mail-from">Foximail Sécurité</span><span class="mail-sub">⚠️ URGENT : ton compte sera supprimé demain !</span><span class="mail-badge">URGENT</span></div>'
+    +'<div class="mail-item" data-go="www.foximail.fr/message-college"><span class="mail-from">Collège Marie-Curie</span><span class="mail-sub">Sortie au Musée de l\'Espace — informations</span></div>'
+    +'<div class="mail-item" data-go="www.foximail.fr/message-de-sam"><span class="mail-from">Sam</span><span class="mail-sub">C\'est quoi le vrai site de Blockcraft ?</span></div>'
+    +'<div class="mail-item" data-go="www.foximail.fr/message-zanimo"><span class="mail-from">Zanimo</span><span class="mail-sub">Newsletter — le retour du colibri 🐦</span></div>';
 });
-WEB['www.pixmail.fr/message-urgent']=pg('pixmail','⚠️ URGENT : ton compte sera supprimé — Pixmail', function(){
+WEB['www.foximail.fr/message-urgent']=pg('foximail','⚠️ URGENT : ton compte sera supprimé — Foximail', function(){
   if(B.evt.reportedPhishing){
     return '<h1>📧 Message signalé</h1>'
-      +'<div class="wp-fact" style="border-left-color:var(--green)">✅ <b>Merci !</b> Ce message a été signalé comme hameçonnage (phishing) et déplacé dans les indésirables. Grâce à toi, Pixmail protégera d\'autres utilisateurs.</div>'
-      +'<p><a class="lk" data-go="www.pixmail.fr">← Retour à la boîte de réception</a></p>';
+      +'<div class="wp-fact" style="border-left-color:var(--green)">✅ <b>Merci !</b> Ce message a été signalé comme hameçonnage (phishing) et déplacé dans les indésirables. Grâce à toi, Foximail protégera d\'autres utilisateurs.</div>'
+      +'<p><a class="lk" data-go="www.foximail.fr">← Retour à la boîte de réception</a></p>';
   }
   return '<h1>📧 Lecture du message</h1>'
     +'<div class="mail-view">'
-    +'<div class="mail-head">De : <b>securite@pixmail-secure-verif.com</b> · À : sam.martin@pixmail.fr</div>'
+    +'<div class="mail-head">De : <b>securite@foximail-secure-verif.com</b> · À : sam.martin@foximail.fr</div>'
     +'<p><b>⚠️ ALERTE DE SÉCURITÉE URGENT !!!</b></p>'
     +'<p>Cher utilisateur, une activité suspecte a était détectée. Ton compte sera <b>SUPPRIMÉ DÉFINITIVEMENT sous 24 h</b> si tu ne vérifie pas ton identité immédiatement.</p>'
-    +'<p class="wp-center"><button class="wp-btnlink" style="--site:#dc2626" data-go="www.pixmail-secure-verif.com">🔓 VÉRIFIER MON COMPTE MAINTENANT</button></p>'
+    +'<p class="wp-center"><button class="wp-btnlink" style="--site:#dc2626" data-go="www.foximail-secure-verif.com">🔓 VÉRIFIER MON COMPTE MAINTENANT</button></p>'
     +'</div>'
     +'<p class="wp-center"><button class="wp-btnlink" style="--site:#5a6b7b" data-act="report-phish">🚩 Signaler comme phishing</button>'
-    +'<a class="lk" data-go="www.pixmail.fr" style="margin-left:12px">← Retour</a></p>';
+    +'<a class="lk" data-go="www.foximail.fr" style="margin-left:12px">← Retour</a></p>';
 });
-WEB['www.pixmail.fr/message-college']=pg('pixmail','Sortie au Musée de l\'Espace — Pixmail', function(){
+WEB['www.foximail.fr/message-college']=pg('foximail','Sortie au Musée de l\'Espace — Foximail', function(){
   return '<h1>📧 Lecture du message</h1>'
     +'<div class="mail-view">'
-    +'<div class="mail-head">De : <b>secretariat@college-curie.fr</b> · À : sam.martin@pixmail.fr</div>'
+    +'<div class="mail-head">De : <b>secretariat@college-curie.fr</b> · À : sam.martin@foximail.fr</div>'
     +'<p>Bonjour,</p><p>La sortie de la 5<sup>e</sup> B au <b>Musée de l\'Espace</b> aura bien lieu le 12 mai. Rendez-vous à 8 h 15 devant le collège, prévoir un pique-nique.</p>'
     +'<p>Toutes les infos sont sur <a class="lk" data-go="www.college-curie.fr/sorties">la page des sorties</a>.</p>'
     +'<p>Le secrétariat</p></div>'
-    +'<p><a class="lk" data-go="www.pixmail.fr">← Retour à la boîte de réception</a></p>';
+    +'<p><a class="lk" data-go="www.foximail.fr">← Retour à la boîte de réception</a></p>';
 });
-WEB['www.pixmail.fr/message-zanimo']=pg('pixmail','Newsletter Zanimo — Pixmail', function(){
+WEB['www.foximail.fr/message-zanimo']=pg('foximail','Newsletter Zanimo — Foximail', function(){
   return '<h1>📧 Lecture du message</h1>'
     +'<div class="mail-view">'
-    +'<div class="mail-head">De : <b>newsletter@zanimo.fr</b> · À : sam.martin@pixmail.fr</div>'
+    +'<div class="mail-head">De : <b>newsletter@zanimo.fr</b> · À : sam.martin@foximail.fr</div>'
     +'<p>🐦 Le <b>colibri</b> arrive sur Zanimo le mois prochain : le seul oiseau capable de voler en marche arrière !</p>'
     +'<p><a class="lk" data-go="www.zanimo.fr">Découvrir Zanimo</a></p></div>'
-    +'<p><a class="lk" data-go="www.pixmail.fr">← Retour à la boîte de réception</a></p>';
+    +'<p><a class="lk" data-go="www.foximail.fr">← Retour à la boîte de réception</a></p>';
 });
-WEB['www.pixmail.fr/message-de-sam']=pg('pixmail','Message de Sam — Pixmail', function(){
+WEB['www.foximail.fr/message-de-sam']=pg('foximail','Message de Sam — Foximail', function(){
   return '<h1>📧 Lecture du message</h1>'
     +'<div class="mail-view">'
-    +'<div class="mail-head">De : <b>sam.dubois@pixmail.fr</b> · À : sam.martin@pixmail.fr</div>'
+    +'<div class="mail-head">De : <b>sam.dubois@foximail.fr</b> · À : sam.martin@foximail.fr</div>'
     +'<p>Salut ! Je veux installer <b>Blockcraft</b> mais on m\'a envoyé 3 liens différents… 😅 C\'est lequel le vrai site officiel ? <b>Survole-les</b> pour vérifier avant de cliquer !</p>'
     +'<p class="wp-center">'
     +'<button class="wp-btnlink" style="--site:#16a34a" data-go="www.blockcraft-gratuit.com">🧱 Blockcraft — site du jeu</button><br>'
     +'<button class="wp-btnlink" style="--site:#16a34a" data-go="www.blockcraft.fr">🧱 Blockcraft — site du jeu</button><br>'
     +'<button class="wp-btnlink" style="--site:#16a34a" data-go="www.b1ockcraft.fr">🧱 Blockcraft — site du jeu</button>'
     +'</p></div>'
-    +'<p><a class="lk" data-go="www.pixmail.fr">← Retour à la boîte de réception</a></p>';
+    +'<p><a class="lk" data-go="www.foximail.fr">← Retour à la boîte de réception</a></p>';
 });
-WEB['www.pixmail-secure-verif.com']=pg('pixfake','Pixmail — Vérification de compte', function(){
+WEB['www.foximail-secure-verif.com']=pg('pixfake','Foximail — Vérification de compte', function(){
   return '<div class="wp-center"><h1>🔓 Vérification de ton compte</h1></div>'
     +'<div class="wp-fact" style="border-left-color:#e11d48">⏳ Il te reste <b>23 h 59</b> avant la suppression de ton compte !</div>'
-    +'<div class="wp-form"><span class="wp-label">Adresse Pixmail</span><input class="wp-input" placeholder="prenom.nom@pixmail.fr">'
+    +'<div class="wp-form"><span class="wp-label">Adresse Foximail</span><input class="wp-input" placeholder="prenom.nom@foximail.fr">'
     +'<span class="wp-label">Mot de passe</span><input class="wp-input" placeholder="Ton mot de passe">'
     +'<p style="margin-top:12px"><button class="wp-btnlink" style="--site:#dc2626" data-act="phish" data-arg="pixfake">Vérifier mon compte</button></p></div>'
-    +'<p class="wp-center" style="color:#8d9cab;font-size:.82rem">Regarde bien l\'<b>adresse</b> de cette page… et son symbole dans la barre d\'adresse. Le vrai Pixmail, c\'est <b>www.pixmail.fr</b> !</p>';
+    +'<p class="wp-center" style="color:#8d9cab;font-size:.82rem">Regarde bien l\'<b>adresse</b> de cette page… et son symbole dans la barre d\'adresse. Le vrai Foximail, c\'est <b>www.foximail.fr</b> !</p>';
 }, {secure:false});
 WEB['www.blockcraft.fr']=pg('blockcraft','Blockcraft — site officiel', function(){
   return '<div class="wp-hero"><span class="h-ic">🧱</span><div class="h-tx">'
@@ -2417,13 +2442,13 @@ WEB['www.teste-ton-mdp.fr/duel']=pg('testmdp','Le duel des mots de passe', funct
     +'<div class="wp-card" data-act="pw-duel" data-arg="3"><span class="c-ic">🐯</span><span class="c-t">T!gre#Vert_2026</span></div>'
     +'</div>';
 });
-WEB['www.pixmail.fr/inscription']=pg('pixmail','Créer un compte — Pixmail', function(){
+WEB['www.foximail.fr/inscription']=pg('foximail','Créer un compte — Foximail', function(){
   if(B.evt.pmAccount){
     return '<div class="wp-center"><h1>✅ Compte créé !</h1>'
       +'<div class="wp-img">📧🎉</div>'
-      +'<p>Bienvenue sur Pixmail, <b>sam.martin</b> ! Ton mot de passe est <b>fort</b> : garde-le secret, et n\'utilise <b>jamais le même</b> sur un autre site.</p></div>';
+      +'<p>Bienvenue sur Foximail, <b>sam.martin</b> ! Ton mot de passe est <b>fort</b> : garde-le secret, et n\'utilise <b>jamais le même</b> sur un autre site.</p></div>';
   }
-  return '<h1>📧 Crée ton compte Pixmail</h1>'
+  return '<h1>📧 Crée ton compte Foximail</h1>'
     +'<div class="wp-form">'
     +'<span class="wp-label">Nom d\'utilisateur</span><input class="wp-input" value="sam.martin" disabled>'
     +'<span class="wp-label">Choisis ton mot de passe</span>'
@@ -2434,17 +2459,17 @@ WEB['www.pixmail.fr/inscription']=pg('pixmail','Créer un compte — Pixmail', f
     +'</div>'
     +'<p class="wp-center" style="color:#8d9cab;font-size:.82rem">Le mot de passe s\'affiche en clair ici pour l\'exercice — en vrai, il serait masqué par des •••</p>';
 });
-WEB['www.pixmail.fr/connexion']=pg('pixmail','Connexion — Pixmail', function(){
-  return '<h1>📧 Connexion à Pixmail</h1>'
+WEB['www.foximail.fr/connexion']=pg('foximail','Connexion — Foximail', function(){
+  return '<h1>📧 Connexion à Foximail</h1>'
     +'<div class="wp-form">'
     +'<span class="wp-label">Nom d\'utilisateur</span><input class="wp-input" value="sam.martin" disabled>'
     +'<span class="wp-label">Mot de passe</span><input class="wp-input" type="password" placeholder="••••••••••••">'
     +'<div class="wp-err" id="pmLoginErr"></div>'
     +'<p style="margin-top:12px"><button class="wp-btnlink" data-act="pm-login">Se connecter</button></p>'
-    +'<p style="margin:8px 0 0"><a class="lk" data-go="www.pixmail.fr/recuperation">Mot de passe oublié ?</a></p>'
+    +'<p style="margin:8px 0 0"><a class="lk" data-go="www.foximail.fr/recuperation">Mot de passe oublié ?</a></p>'
     +'</div>';
 });
-WEB['www.pixmail.fr/recuperation']=pg('pixmail','Récupération de compte — Pixmail', function(){
+WEB['www.foximail.fr/recuperation']=pg('foximail','Récupération de compte — Foximail', function(){
   if(B.evt.resetDone){
     return '<div class="wp-center"><h1>✅ Mot de passe changé !</h1>'
       +'<div class="wp-img">🔑✨</div>'
@@ -2583,7 +2608,7 @@ WEB['www.cadeaux-1000euros.com']=pg('cadeaux1000','1 000 € OFFERTS aux collég
 /* ----- actions déclenchées par les pages ----- */
 const PHISH_MSGS={
   zanim0:'Tu as donné ton e-mail et ton mot de passe à un <b>faux site</b> ! « zanim0.fr » (avec un zéro) imite Zanimo pour voler des comptes.',
-  pixfake:'Tu as tapé ton mot de passe sur <b>pixmail-secure-verif.com</b>… qui n\'est PAS Pixmail ! Les pirates contrôleraient maintenant ta boîte mail.',
+  pixfake:'Tu as tapé ton mot de passe sur <b>foximail-secure-verif.com</b>… qui n\'est PAS Foximail ! Les pirates contrôleraient maintenant ta boîte mail.',
   cadeaux:'Tu allais envoyer des <b>coordonnées bancaires</b> à des inconnus ! Personne ne distribue 1 000 € : c\'était une arnaque évidente.'
 };
 const PAGE_ACTIONS={
@@ -2701,27 +2726,29 @@ function buildCtx(){
   return { url:curUrl(), tabs:B.tabs, evt:B.evt, bookmarks:B.bookmarks, history:B.history, answers:B.evt.answers };
 }
 const G={
-  clickedAddr:()=>({spot:'addr', hint:'Clique dans la grande barre blanche en haut du navigateur : c\'est la <b>barre d\'adresse</b>.', test:c=>c.evt.addrFocused}),
+  clickedAddr:()=>({spot:'addr', hint:'Clique dans la grande barre blanche en haut du navigateur : c\'est la <b>barre d\'adresse</b>.', test:c=>c.evt.addrFocused, prep:()=>{ delete B.evt.addrFocused; }}),
   typedUrl:(u)=>({spot:'addr', hint:'Clique dans la <b>barre d\'adresse</b>, tape <b>'+u+'</b> sans faute, puis appuie sur '+kbd('Entrée')+'.', test:c=>c.evt.addrNav.includes(u)}),
   atUrl:(u)=>({spot:'links', hint:'Trouve le bon <b>lien</b> sur la page et clique dessus pour arriver sur <b>'+u+'</b>.', test:c=>c.url===u}),
   visited:(u)=>({spot:'addr', hint:'Rends-toi sur <b>'+u+'</b> : tape l\'adresse dans la barre en haut, ou clique un lien qui y mène.', test:c=>c.evt.visits.has(u)}),
-  usedBack:()=>({spot:'back', hint:'Clique sur le bouton <b>◀</b> (en haut à gauche) pour revenir à la page précédente.', test:c=>c.evt.usedBack}),
-  usedFwd:()=>({spot:'fwd', hint:'Clique sur le bouton <b>▶</b> pour repartir en avant.', test:c=>c.evt.usedFwd}),
-  usedReload:()=>({spot:'reload', hint:'Clique sur le bouton <b>⟳</b> pour recharger la page.', test:c=>c.evt.usedReload}),
-  usedHome:()=>({spot:'home', hint:'Clique sur le bouton <b>🏠</b> pour retourner à la page d\'accueil du navigateur.', test:c=>c.evt.usedHome}),
-  newTab:()=>({spot:'newtab', hint:'Clique sur le bouton <b>+</b> à droite des onglets, tout en haut.', test:c=>c.evt.newTab}),
-  switchedTab:()=>({spot:'tabs', hint:'Clique sur l\'autre <b>onglet</b>, tout en haut de l\'écran.', test:c=>c.evt.tabSwitched}),
+  usedBack:()=>({spot:'back', hint:'Clique sur le bouton <b>◀</b> (en haut à gauche) pour revenir à la page précédente.', test:c=>c.evt.usedBack, prep:()=>{ delete B.evt.usedBack; }}),
+  usedFwd:()=>({spot:'fwd', hint:'Clique sur le bouton <b>▶</b> pour repartir en avant.', test:c=>c.evt.usedFwd, prep:()=>{ delete B.evt.usedFwd; }}),
+  usedReload:()=>({spot:'reload', hint:'Clique sur le bouton <b>⟳</b> pour recharger la page.', test:c=>c.evt.usedReload, prep:()=>{ delete B.evt.usedReload; }}),
+  usedHome:()=>({spot:'home', hint:'Clique sur le bouton <b>🏠</b> pour retourner à la page d\'accueil du navigateur.', test:c=>c.evt.usedHome, prep:()=>{ delete B.evt.usedHome; }}),
+  newTab:()=>({spot:'newtab', hint:'Clique sur le bouton <b>+</b> à droite des onglets, tout en haut.', test:c=>c.evt.newTab, prep:()=>{ delete B.evt.newTab; }}),
+  switchedTab:()=>({spot:'tabs', hint:'Clique sur l\'autre <b>onglet</b>, tout en haut de l\'écran.', test:c=>c.evt.tabSwitched, prep:()=>{ delete B.evt.tabSwitched; }}),
   closedTabUrl:(u)=>({spot:'tabs', hint:'Clique sur la croix <b>✕</b> de l\'onglet pour le fermer.', test:c=>c.evt.closedTabs && c.evt.closedTabs.has(u)}),
   tabsCount:(n)=>({spot:'tabs', hint:'Ouvre (ou ferme) des onglets pour en avoir le bon nombre.', test:c=>c.tabs.length===n}),
-  linkHovered:()=>({spot:'links', hint:'Déplace ta souris sur la page <b>sans cliquer</b> : quand elle survole un lien, l\'adresse s\'affiche en bas à gauche.', test:c=>c.evt.linkHovered}),
-  clickedLogoHome:(u)=>({spot:'logo', hint:'Clique sur le <b>logo</b> du site, tout en haut à gauche de la page : il ramène toujours à l\'accueil.', test:c=>c.evt.clickedLogo && c.url===u}),
+  linkHovered:()=>({spot:'links', hint:'Déplace ta souris sur la page <b>sans cliquer</b> : quand elle survole un lien, l\'adresse s\'affiche en bas à gauche.', test:c=>c.evt.linkHovered, prep:()=>{ delete B.evt.linkHovered; }}),
+  clickedLogoHome:(u)=>({spot:'logo', hint:'Clique sur le <b>logo</b> du site, tout en haut à gauche de la page : il ramène toujours à l\'accueil.', test:c=>c.evt.clickedLogo && c.url===u, prep:()=>{ delete B.evt.clickedLogo; }}),
   searched:(words)=>({spot:'search', hint:'Tape tes <b>mots-clés</b> dans la barre de recherche ('+words.join(', ')+'), puis appuie sur '+kbd('Entrée')+'.', test:c=>c.evt.searches.some(q=>words.every(w=>q.includes(w)))}),
   openedResult:(u)=>({spot:'links', hint:'Lis bien la liste des résultats : le <b>titre</b>, l\'<b>adresse verte</b> et le texte de description t\'aident à choisir. Clique le titre du bon résultat.', test:c=>c.evt.results && c.evt.results.has(u)}),
   bookmarked:(u)=>({spot:'star', hint:'Va sur la page, puis clique sur l\'<b>étoile ☆</b> au bout de la barre d\'adresse.', test:c=>c.evt.bmAdded && c.evt.bmAdded.has(u)}),
   removedBookmark:(u)=>({spot:'sidebar', hint:'Dans le panneau <b>Favoris</b> (menu ☰), clique le <b>🗑️</b> du favori à supprimer. Tu peux aussi re-cliquer l\'étoile ★ quand tu es sur la page.', test:c=>c.evt.bmRemoved && c.evt.bmRemoved.has(u)}),
+  removedBmTrash:(u)=>({spot:'sidebar', hint:'Dans le panneau <b>Favoris</b>, clique la <b>🗑️ corbeille</b> à droite du favori à supprimer.', test:c=>c.evt.bmRemovedTrash && c.evt.bmRemovedTrash.has(u)}),
+  removedBmStar:(u)=>({spot:'star', hint:'Va sur la page, puis clique à nouveau sur l\'<b>étoile ★</b> (bout de la barre d\'adresse) pour retirer le favori.', test:c=>c.evt.bmRemovedStar && c.evt.bmRemovedStar.has(u)}),
   openedBookmark:(u)=>({spot:'bmbar', hint:'Clique sur le favori dans la <b>barre de favoris</b>, juste sous la barre d\'adresse.', test:c=>c.evt.openedBookmark && c.evt.openedBookmark.has(u)}),
-  openedBmPanel:()=>({spot:'menu', hint:'Clique sur le bouton <b>☰</b> (en haut à droite), puis choisis <b>⭐ Favoris</b>.', test:c=>c.evt.openedBmPanel}),
-  openedHistory:()=>({spot:'menu', hint:'Clique sur le bouton <b>☰</b> (en haut à droite), puis choisis <b>🕘 Historique</b>.', test:c=>c.evt.openedHistoryPanel}),
+  openedBmPanel:()=>({spot:'menu', hint:'Clique sur le bouton <b>☰</b> (en haut à droite), puis choisis <b>⭐ Favoris</b>.', test:c=>c.evt.openedBmPanel, prep:()=>{ delete B.evt.openedBmPanel; }}),
+  openedHistory:()=>({spot:'menu', hint:'Clique sur le bouton <b>☰</b> (en haut à droite), puis choisis <b>🕘 Historique</b>.', test:c=>c.evt.openedHistoryPanel, prep:()=>{ delete B.evt.openedHistoryPanel; }}),
   openedFromHistory:(u)=>({spot:'sidebar', hint:'Dans le panneau Historique, lis la liste et <b>clique</b> sur la bonne page pour la rouvrir.', test:c=>c.evt.openedFromHistory && c.evt.openedFromHistory.has(u)}),
   /* objectifs génériques (niveaux 5 à 9) */
   flag:(key,hint,spot)=>({spot:spot||'viewport', hint:hint, test:c=>!!c.evt[key]}),
@@ -2746,6 +2773,7 @@ function checkMission(){
 function renderJalonObjective(enter){
   const sub=document.getElementById('bSub'); if(!sub) return;
   const s=currentStep, objs=s.objectives||[], i=s._jalonIdx, n=objs.length;
+  if(objs[i] && objs[i].goal && objs[i].goal.prep) objs[i].goal.prep();
   const blue = s.kind!=='jalon';   /* missions normales = bleu ; défis = orange */
   sub.innerHTML='<div class="jalon-head"><span class="b-goal-label">Objectif '+(Math.min(i+1,n))+' / '+n+'</span></div>'
     +'<div class="jalon-wrap"><div class="jalon-obj'+(blue?' blue':'')+(enter?' entering':'')+'"><span class="jo-check">'+(i+1)+'</span><span class="jo-text">'+(objs[i]&&objs[i].t||'')+'</span></div></div>';
@@ -2817,7 +2845,7 @@ function renderQuizDock(){
    --------------------------------------------------------- */
 const ARC={ on:false, over:false, score:0, combo:0, comboT:null, misses:0,
   shields:3, maxShields:3, timer:null, left:0, bonus:null, t0:0,
-  goalTxt:'', screenHtml:'', onAction:null };
+  goalTxt:'', screenHtml:'', onAction:null, onInfoClick:null, courseInfo:false };
 
 /* ----- étoiles persistées (nv_stars, on garde le max) ----- */
 function getStarsMap(){ try{ return JSON.parse(store.get('nv_stars')||'{}')||{}; }catch(e){ return {}; } }
@@ -2987,7 +3015,7 @@ function arcFail(msg){
 }
 function arcRestart(){
   clearTimers(); clearTimeout(ARC.comboT); clearSpots();
-  ARC.on=false; ARC.over=false; ARC.onAction=null; ARC.screenHtml='';
+  ARC.on=false; ARC.over=false; ARC.onAction=null; ARC.onInfoClick=null; ARC.courseInfo=false; ARC.screenHtml='';
   buildScreen();
   seedBrowser(currentStep.seed||{});
   arcLaunch();
@@ -3133,8 +3161,8 @@ const VP1=[
   {u:'www.college-curie-officiel.com', site:'Collège Marie-Curie', ok:false, bad:'-officiel.com'},
   {u:'www.blockcraft.fr', site:'Blockcraft', ok:true},
   {u:'www.blockcraft-promo.fr', site:'Blockcraft', ok:false, bad:'-promo'},
-  {u:'www.pixmail.fr', site:'Pixmail', ok:true},
-  {u:'www.pixmail-connexion.fr', site:'Pixmail', ok:false, bad:'-connexion'}
+  {u:'www.foximail.fr', site:'Foximail', ok:true},
+  {u:'www.foximail-connexion.fr', site:'Foximail', ok:false, bad:'-connexion'}
 ];
 function vraiPiegeRun(done){
   arcStart({shields:3, goalText:'10 adresses : vraie ✅ ou piège ❌ ?'});
@@ -3256,32 +3284,40 @@ function courseRun(manches, secs, done){
     const m=manches[i];
     arcGoal('🤖 Manche '+(i+1)+' / '+manches.length+' — bats Pixel de vitesse !');
     showOrder('<span class="oc-ic">🔎</span><span>Trouve : <b>'+m.t+'</b>'
+      +'<br><span class="oc-sub">👉 Ouvre la page, puis '+m.click+'</span>'
       +'<div class="px-bar"><i id="pxBar"></i></div><span class="px-lbl">🤖 Pixel cherche aussi…</span></span>');
   }
+  /* clic sur la « bonne info » de la page ouverte : ne s'active QUE pendant cette mission */
+  ARC.courseInfo=true;
+  ARC.onInfoClick=function(val, el){
+    if(!ARC.on||ARC.over) return;
+    const m=manches[i]; if(!m || curUrl()!==m.u) return;
+    if(val===m.info){
+      arcHit(30, el); banner('🏁 Battu, Pixel !','good');
+      i++;
+      if(i>=manches.length){ done(); } else show();
+    } else {
+      arcMiss('Ce n\'est pas la bonne info !');
+    }
+  };
   every(250, function(){
     if(!ARC.on||ARC.over) return;
     const m=manches[i]; if(!m) return;
     g+=100*0.25/secs;
     const bar=document.getElementById('pxBar'); if(bar) bar.style.width=Math.min(100,g)+'%';
-    if(curUrl()===m.u){
-      arcHit(30, orderEl()); banner('🏁 Battu, Pixel !','good');
-      i++;
-      if(i>=manches.length){ done(); } else show();
-      return;
-    }
     if(g>=100){ arcMiss('Pixel a trouvé avant toi !'); show(); }
   });
   show();
 }
 const COURSE1=[
-  {t:'le dessert du jeudi à la cantine', u:'www.college-curie.fr/cantine'},
-  {t:'le jour de fermeture du Musée de l\'Espace', u:'www.musee-espace.fr/horaires'},
-  {t:'le pays du kangourou (sa fiche Zanimo)', u:'www.zanimo.fr/kangourou'}
+  {t:'le dessert du jeudi à la cantine', u:'www.college-curie.fr/cantine', info:'dessert-jeudi', click:'clique le dessert du <b>jeudi</b> dans le menu'},
+  {t:'le jour de fermeture du Musée de l\'Espace', u:'www.musee-espace.fr/horaires', info:'horaires-ferme', click:'clique la ligne du <b>jour de fermeture</b>'},
+  {t:'le pays du kangourou (sa fiche Zanimo)', u:'www.zanimo.fr/kangourou', info:'kangourou-pays', click:'clique le <b>pays</b> où vit le kangourou'}
 ];
 const COURSE2=[
-  {t:'l\'article FIABLE sur le « portique à téléphones »', u:'www.presse-jeunes.fr'},
-  {t:'l\'encyclopédie junior Wikimini', u:'www.wikimini-fr.org'},
-  {t:'la page des sorties scolaires du collège', u:'www.college-curie.fr/sorties'}
+  {t:'l\'article FIABLE sur le « portique à téléphones »', u:'www.presse-jeunes.fr', info:'presse-portique', click:'clique l\'<b>article sur le portique</b>'},
+  {t:'l\'encyclopédie junior Wikimini', u:'www.wikimini-fr.org', info:'wiki-encyclo', click:'clique le <b>bandeau Wikimini</b>'},
+  {t:'la page des sorties scolaires du collège', u:'www.college-curie.fr/sorties', info:'sortie-date', click:'clique la <b>date de la sortie</b>'}
 ];
 /* ----- N3 M3 : Nettoie la SERP ----- */
 const SERPCLEAN=[
@@ -3775,8 +3811,8 @@ function popzillaRun(done){
 const VP2=[
   {u:'www.zanimo.fr', site:'Zanimo', ok:true},
   {u:'www.zanim0.fr', site:'Zanimo', ok:false, bad:'0'},
-  {u:'www.pixmail.fr.secure-verif.com', site:'Pixmail', ok:false, bad:'.secure-verif.com'},
-  {u:'www.pixmail.fr', site:'Pixmail', ok:true},
+  {u:'www.foximail.fr.secure-verif.com', site:'Foximail', ok:false, bad:'.secure-verif.com'},
+  {u:'www.foximail.fr', site:'Foximail', ok:true},
   {u:'www.b1ockcraft.fr', site:'Blockcraft', ok:false, bad:'1'},
   {u:'ent.college-curie.fr', site:'l\'ENT du collège', ok:true},
   {u:'ent-college-curie.secure-login.com', site:'l\'ENT du collège', ok:false, bad:'.secure-login.com'},
@@ -3784,7 +3820,7 @@ const VP2=[
   {u:'www.wikimini-fr.org', site:'Wikimini', ok:true},
   {u:'www.col1ege-curie.fr', site:'le collège', ok:false, bad:'1'},
   {u:'www.blog-de-tom.fr', pw:true, http:true, ok:false},
-  {u:'www.pixmail.fr', pw:true, http:false, ok:true}
+  {u:'www.foximail.fr', pw:true, http:false, ok:true}
 ];
 function vraiPiege2Run(done){
   arcStart({shields:3, timer:110, bonus:30, goalText:'12 adresses expertes : vraie ✅ ou piège ❌ ?'});
@@ -3852,13 +3888,13 @@ const DET=[
       ['<br>La direction.',0]
     ]},
   {t:'🎁 « Tu as gagné une console »',
-    from:'cadeaux@pixmail-loterie.win', fromTag:'Expéditeur louche',
+    from:'cadeaux@foximail-loterie.win', fromTag:'Expéditeur louche',
     parts:[
       ['Félicitation ! Tu a gagner',1,'Fautes d\'orthographe'],
       [' une console dernier cri au tirage au sort. ',0],
       ['Plus que 10 MINUTES pour la réclamer !!!',1,'Fausse urgence'],
       ['<br>👉 Réclamer : ',0],
-      ['pixmail.fr/cadeau ➜ pointe en vrai vers www.arnaque-cadeaux.biz',1,'Lien déguisé'],
+      ['foximail.fr/cadeau ➜ pointe en vrai vers www.arnaque-cadeaux.biz',1,'Lien déguisé'],
       ['<br>Le service des cadeaux.',0]
     ]}
 ];
@@ -3883,7 +3919,7 @@ function detectiveRun(done){
     ARC.screenHtml='<div class="arcpage" style="justify-content:flex-start">'
       +'<p class="ap-k">🕵️ Mail '+(m+1)+' / '+DET.length+' — indices : '+nFound()+' / 4</p>'
       +'<p class="ap-q">'+mail.t+' — clique les 4 indices louches !</p>'
-      +'<div class="det-mail"><div class="dm-h">De : '+fromHtml+' · À : sam.martin@pixmail.fr</div>'
+      +'<div class="det-mail"><div class="dm-h">De : '+fromHtml+' · À : sam.martin@foximail.fr</div>'
       +body+'</div></div>';
     renderViewport();
   }
@@ -3906,9 +3942,9 @@ function detectiveRun(done){
 /* ----- N6 Examen : le tri de la boîte mail ----- */
 const MTRI=[
   {from:'secretariat@college-curie.fr', sub:'Sortie au Musée de l\'Espace', snip:'Rendez-vous 8 h 15, prévoir un pique-nique.', ok:true, why:'expéditeur officiel, ton normal'},
-  {from:'securite@pixmail-verif-urgence.com', sub:'⚠️ Compte supprimé sous 24 h !!!', snip:'Clique VITE pour vérifier ton identité.', ok:false, why:'urgence + faux domaine'},
+  {from:'securite@foximail-verif-urgence.com', sub:'⚠️ Compte supprimé sous 24 h !!!', snip:'Clique VITE pour vérifier ton identité.', ok:false, why:'urgence + faux domaine'},
   {from:'newsletter@zanimo.fr', sub:'Le colibri arrive sur Zanimo 🐦', snip:'Le seul oiseau qui vole en marche arrière !', ok:true, why:'newsletter connue, rien de demandé'},
-  {from:'sam.dubois@pixmail.fr', sub:'On se voit au tournoi vendredi ?', snip:'Castor_Pro dit qu\'on peut encore s\'inscrire.', ok:true, why:'un copain, rien de louche'},
+  {from:'sam.dubois@foximail.fr', sub:'On se voit au tournoi vendredi ?', snip:'Castor_Pro dit qu\'on peut encore s\'inscrire.', ok:true, why:'un copain, rien de louche'},
   {from:'gagnant@super-loterie.win', sub:'🎉 Tu as gagné 1 000 € !!!', snip:'Envoie ton RIB avant ce soir pour recevoir.', ok:false, why:'cadeau + RIB = arnaque'},
   {from:'ent@ent-college-curie.secure-login.com', sub:'Tes notes ont été modifiées', snip:'Connecte-toi ICI immédiatement.', ok:false, why:'sous-domaine trompeur'}
 ];
@@ -4853,7 +4889,8 @@ const LEVELS=[
         {t:'<b>Survole</b> la page : trouve un lien (regarde en bas à gauche)', goal:G.linkHovered()},
         {t:'Clique le <b>lien texte</b> « le mot caché »', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-texte')},
         {t:'Reviens avec <b>◀</b>, clique l\'<b>image-lien</b> 📷', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-image')},
-        {t:'Reviens avec <b>◀</b>, clique le <b>bouton</b>', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-bouton')}
+        {t:'Reviens avec <b>◀</b> (flèche arrière)', goal:G.usedBack()},
+        {t:'Clique sur le <b>bouton</b> avec la porte 🚪', goal:G.atUrl('www.zanimo.fr/jeu-des-liens/lien-bouton')}
       ]},
     {kind:'game',label:'Mission 2',emoji:'🎣',title:'Vrai ou piège',
       intro:'10 adresses en grand : vraie ✅ ou piège ❌ ? Lis chaque lettre !',
@@ -4925,7 +4962,12 @@ const LEVELS=[
         {t:'Retourne à l\'accueil avec <b>🏠</b>', goal:G.usedHome()},
         {t:'Rouvre <b>Météo Mini</b> depuis la <b>barre de favoris</b>', goal:G.openedBookmark('www.meteo-mini.fr')},
         {t:'Ouvre le menu <b>☰</b> puis <b>🕘 Historique</b>', goal:G.openedHistory()},
-        {t:'Dans l\'historique, <b>rouvre</b> la page météo', goal:G.openedFromHistory('www.meteo-mini.fr')}
+        {t:'Dans l\'historique, <b>rouvre</b> la page météo', goal:G.openedFromHistory('www.meteo-mini.fr')},
+        {t:'Ouvre le menu <b>☰</b> puis <b>⭐ Favoris</b>', goal:G.openedBmPanel()},
+        {t:'Supprime <b>Météo Mini</b> : clique la <b>🗑️ corbeille</b> à côté du favori', goal:G.removedBmTrash('www.meteo-mini.fr')},
+        {t:'Va sur <b>www.zanimo.fr</b>', goal:G.visited('www.zanimo.fr')},
+        {t:'Ajoute <b>Zanimo</b> aux favoris avec l\'<b>étoile ☆</b>', goal:G.bookmarked('www.zanimo.fr')},
+        {t:'Retire ce favori en <b>recliquant l\'étoile ★</b> en haut de la page', goal:G.removedBmStar('www.zanimo.fr')}
       ]},
     {kind:'game',label:'Mission 2',emoji:'📚',title:'Bibliothécaire speed',
       intro:'Le bibliothécaire dicte : étoile, rouvre, supprime… à toute vitesse !',
@@ -4998,7 +5040,7 @@ const LEVELS=[
     {kind:'game',label:'Mission 1',emoji:'🎣',title:'Vrai ou piège v2',
       intro:'Retour du jeu du niveau 2… version experte : 0/o, 1/l, faux sous-domaines.',
       goal:'12 adresses expertes : vraie ✅ ou piège ❌ ?',
-      hint:'Lis la FIN de l\'adresse : « pixmail.fr.secure-verif.com » se termine par secure-verif.com, pas pixmail.fr ! Et http = jamais de mot de passe.',
+      hint:'Lis la FIN de l\'adresse : « foximail.fr.secure-verif.com » se termine par secure-verif.com, pas foximail.fr ! Et http = jamais de mot de passe.',
       seed:{tabs:['goupil.jeu']},
       run:function(done){ vraiPiege2Run(done); }},
     {kind:'game',label:'Mission 2',emoji:'🕵️',title:'La loupe du détective',
@@ -5007,12 +5049,12 @@ const LEVELS=[
       hint:'Les 4 indices : expéditeur louche, faute d\'orthographe, fausse urgence, lien déguisé.',
       seed:{tabs:['goupil.jeu']},
       run:function(done){ detectiveRun(done); }},
-    {kind:'mission',label:'Mission 3',emoji:'🚩',title:'Infiltration Pixmail',
+    {kind:'mission',label:'Mission 3',emoji:'🚩',title:'Infiltration Foximail',
       intro:'Un faux mail « URGENT » traîne dans la boîte. Signale-le sans mordre à l\'hameçon.',
-      seed:{tabs:['www.pixmail.fr']},
+      seed:{tabs:['www.foximail.fr']},
       objectives:[
-        {t:'Ouvre le message <b>« ⚠️ URGENT »</b>', goal:G.atUrl('www.pixmail.fr/message-urgent')},
-        {t:'<b>Survole</b> le gros bouton : lis sa vraie destination', goal:G.inSet('hoveredUrls','www.pixmail-secure-verif.com','Survole le bouton rouge SANS cliquer : l\'adresse en bas à gauche n\'est PAS pixmail.fr.','links')},
+        {t:'Ouvre le message <b>« ⚠️ URGENT »</b>', goal:G.atUrl('www.foximail.fr/message-urgent')},
+        {t:'<b>Survole</b> le gros bouton : lis sa vraie destination', goal:G.inSet('hoveredUrls','www.foximail-secure-verif.com','Survole le bouton rouge SANS cliquer : l\'adresse en bas à gauche n\'est PAS foximail.fr.','links')},
         {t:'Arnaque ! Clique <b>🚩 Signaler comme phishing</b>', goal:G.flag('reportedPhishing','Le bouton 🚩 est sous le message.','links')}
       ]},
     {kind:'game',exam:true,label:'Examen',emoji:'📥',title:'Le tri de la boîte mail',
@@ -5080,9 +5122,9 @@ const LEVELS=[
       run:function(done){ forgeMdpRun(done); }},
     {kind:'mission',label:'Mission 3',emoji:'🆘',title:'Mot de passe perdu',
       intro:'Plus moyen de te connecter ! Suis la procédure officielle.',
-      seed:{tabs:['www.pixmail.fr/connexion']},
+      seed:{tabs:['www.foximail.fr/connexion']},
       objectives:[
-        {t:'Clique <b>« Mot de passe oublié ? »</b>', goal:G.atUrl('www.pixmail.fr/recuperation')},
+        {t:'Clique <b>« Mot de passe oublié ? »</b>', goal:G.atUrl('www.foximail.fr/recuperation')},
         {t:'Demande un code, lis le <b>SMS 📱</b>, entre-le', goal:G.flag('codeEntered','Le code à 4 chiffres est dans le pop-up SMS.','form')},
         {t:'Enregistre un <b>nouveau mot de passe fort</b>', goal:G.flag('resetDone','12+ caractères, majuscules, chiffres, symboles → Enregistrer.','form')}
       ]},
@@ -5146,7 +5188,7 @@ function dlGuardFail(d){
 function reviewing(){ return playIdx<progressIdx; }
 function startStep(idx){
   clearSpots(); clearTimers(); pzCleanup(); ixCleanup();
-  ARC.on=false; ARC.over=false; ARC.onAction=null; ARC.screenHtml='';
+  ARC.on=false; ARC.over=false; ARC.onAction=null; ARC.onInfoClick=null; ARC.courseInfo=false; ARC.screenHtml='';
   clearTimeout(ARC.comboT); arcHudRender();
   playIdx=idx; currentStep=STEPS[idx]; _missionDone=false;
   currentStep._booted=false; currentStep._launched=false; currentStep._hints=0;
