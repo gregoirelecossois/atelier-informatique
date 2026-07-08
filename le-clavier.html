@@ -558,11 +558,35 @@
   .tuto-card .tc-skip{background:none;border:none;color:#93c5fd;font-weight:700;cursor:pointer;font-size:.92rem;
     text-decoration:underline;padding:4px;}
 
+  /* ---------- Carte de score (Niveaux 6 & 7, hors boss) ---------- */
+  .scorecard{margin:2px 0 4px;}
+  .sc-stars{display:flex;justify-content:center;gap:6px;margin:2px 0 12px;}
+  .sc-star{position:relative;display:inline-block;font-size:2.5rem;line-height:1;
+    transform:translateY(16px);opacity:0;transition:transform .38s cubic-bezier(.34,1.56,.64,1),opacity .3s ease;}
+  .sc-star .s-bg{font-style:normal;color:#e3e9f1;text-shadow:0 1px 0 #cdd6e2;}
+  .sc-star .s-fg{position:absolute;inset:0;font-style:normal;color:#facc15;
+    text-shadow:0 0 10px rgba(250,204,21,.65);
+    clip-path:inset(100% 0 0 0);transition:clip-path .45s ease .18s;}
+  .sc-star.up{transform:translateY(0);opacity:1;}
+  .sc-star.filled .s-fg{clip-path:inset(0 0 0 0);}
+  .sc-star.filled{animation:scPop .42s ease .3s;}
+  @keyframes scPop{0%{transform:translateY(0) scale(1);}40%{transform:translateY(-6px) scale(1.28);}100%{transform:translateY(0) scale(1);}}
+
+  .sc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .sc-tile{background:var(--sky);border:2px solid var(--line);border-radius:12px;padding:8px 6px;text-align:center;
+    opacity:0;transform:translateY(8px);transition:opacity .3s ease,transform .3s ease;}
+  .sc-tile.in{opacity:1;transform:translateY(0);}
+  .sc-tile .sc-ic{font-size:1.3rem;line-height:1;}
+  .sc-tile .sc-val{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.18rem;color:var(--blue-d);}
+  .sc-tile .sc-lab{font-size:.74rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
+  @media (max-width:400px){ .sc-star{font-size:2rem;} .sc-tile .sc-val{font-size:1rem;} }
+
   @media (max-width:560px){
     .newtools{grid-template-columns:1fr;}
     .btn{flex:1;justify-content:center;}
   }
   @media (prefers-reduced-motion: reduce){
+    .sc-star,.sc-star.filled,.sc-tile{animation:none!important;transition:none!important;}
     .confetti i{animation:none;display:none;}
     .modal{animation:none;}
     .lock-burst,.lock-glow,.lock-star{animation:none;}
@@ -653,7 +677,8 @@ const SYMTIP={
   '#':'Garde '+kbd('AltGr')+' enfoncé et appuie sur '+kbd('"')+' (la touche du 3).',
   '€':'Garde '+kbd('AltGr')+' enfoncé et appuie sur '+kbd('E')+'.',
   '+':'Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur '+kbd('=')+' (tout en haut à droite).',
-  '-':'Appuie sur la touche '+kbd('-')+' (la touche du 6).'
+  '-':'Appuie sur la touche '+kbd('-')+' (la touche du 6).',
+  '_':'Appuie sur la touche '+kbd('_')+' (la touche du 8).'
 };
 // Accents : é è à ç ù sont des touches DIRECTES sur AZERTY ; ê/ë… passent par une touche morte
 const ACCENT_TIP={
@@ -680,6 +705,10 @@ function tipFor(ch){
   return SYMTIP[ch] || ('Appuie sur la touche '+kbd(ch)+'.');
 }
 function niceChar(ch){ return ch===' ' ? 'espace' : ch; }
+// Rappel de position des mains, martelé sur les niveaux 1 à 4 (dans les popups de mission + l'astuce)
+function fjReminderHTML(){
+  return 'Rappel : replace toujours tes index sur '+kbd('f')+' et '+kbd('j')+'.';
+}
 
 /* Astuce IMAGE : pour un caractère, quelles touches surligner sur le mini-clavier + une légende très courte.
    Renvoie { hl:{keys:Set, maj, altgr}, cap:'…' } à donner à buildKeyboard(). */
@@ -690,7 +719,7 @@ const SYM_HINT={
   ';':{keys:[';']},  ':':{keys:[':']},
   '(':{keys:['(']},  ')':{keys:[')']},  '=':{keys:['=']},  '"':{keys:['"']},
   '@':{keys:['à'],altgr:true},  '#':{keys:['"'],altgr:true},  '€':{keys:['e'],altgr:true},
-  '+':{keys:['='],maj:true},  '-':{keys:['-']}
+  '+':{keys:['='],maj:true},  '-':{keys:['-']},  '_':{keys:['_']}
 };
 function keyHint(ch){
   const S=a=>new Set(a);
@@ -762,8 +791,7 @@ const LEVELS=[
   { n:1, title:'Le parachute — les lettres', subtitle:'le parachute · les lettres', game:'parachute',
     intro:{ emoji:'🪂',
       lead:'Des lettres descendent en parachute ! Appuie sur la bonne touche pour les faire éclater <b>avant qu\'elles touchent l\'herbe</b>.',
-      teach:'Pose tes mains sur le clavier. Quand une lettre descend, appuie simplement sur <b>la même lettre</b>. Pas besoin d\'appuyer fort : un petit tap suffit !',
-      kb:{letters:true},
+      teach:'Pose tes deux <b>index</b> sur les touches '+kbd('f')+' et '+kbd('j')+' : tu sens une petite bosse sous le doigt, c\'est fait pour les retrouver sans regarder ! Cette position est ta <b>position de départ</b> — après chaque lettre tapée, ramène tes index dessus.',
       tools:[{g:'⌨️',n:'Trouver les lettres'},{g:'🪂',n:'Taper avant le sol'}] },
     rounds:[
       {kind:'mission',label:'Mission 1',emoji:'🟢',title:'Les touches du milieu',
@@ -840,28 +868,26 @@ const LEVELS=[
        pool:'0123456789'.split(''),target:24,lives:6,speed:60,spawnMs:1600},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Lettres et chiffres en rafale',
        desc:'Cette fois, des <b>lettres</b> (majuscules et minuscules, sans accent) se mélangent aux chiffres, et ça fonce vite ! Reste concentré.',
-       pool:('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789').split(''),target:30,lives:5,speed:90,spawnMs:1080}
+       pool:('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789').split(''),target:50,lives:5,speed:90,spawnMs:1080}
     ]},
 
   { n:5, title:'Piratage alien — les symboles', subtitle:'piratage alien · les symboles', game:'hackterm',
     intro:{ emoji:'🛰️',
       lead:'Le <b>Vaisseau-Mère</b> alien se cache quelque part dans la galaxie… Pour le <b>localiser</b>, infiltre son réseau : tape les <b>codes secrets</b> qui s\'affichent sur le terminal alien. Ces codes sont faits de <b>symboles</b> — exactement ceux qui rendent un mot de passe super solide !',
-      teach:'Le code s\'affiche à l\'écran : tape chaque caractère <b>dans l\'ordre</b>. Le caractère à taper est <b>encadré en jaune</b>.<br>Touches <b>bleues</b> : appuie directement. Avec '+kbd('Maj ⇧')+' ou '+kbd('AltGr')+' (en orange) : garde la touche enfoncée en même temps que l\'autre.<br>Tu te trompes ? Rien de grave : réessaie ! Et clique sur 💡 si tu cherches une touche.',
-      kb:{maj:true, altgr:true, keys:new Set([';',',','!',':','(',')','=','"','à','e'])},
       tools:[{g:'⌨️',n:'Codes en symboles'},{g:'🛰️',n:'Triangulation du signal'}] },
     rounds:[
       {kind:'mission',label:'Mission 1',emoji:'📡',title:'Intercepter le canal — la ponctuation',
        desc:'Infiltre le canal alien en tapant des codes faits de '+kbd('.')+' '+kbd(',')+' '+kbd('?')+' '+kbd('!')+' '+kbd(';')+' '+kbd(':')+'. Prends ton temps, personne ne t\'a repéré. Clique sur 💡 si tu cherches une touche.',
        pool:['.',',','?','!',';',':'],codes:[3,3,4,4,5],showTips:true},
       {kind:'mission',label:'Mission 2',emoji:'🔓',title:'Percer le blindage — parenthèses et signes',
-       desc:'Des codes un peu plus longs, avec les touches directes '+kbd('(')+' '+kbd(')')+' '+kbd('=')+', le tiret '+kbd('-')+' et les guillemets '+kbd('"')+'.',
-       pool:['(',')','=','"','-'],codes:[4,4,5,5,6],showTips:true},
+       desc:'Des codes un peu plus longs, avec les touches directes '+kbd('(')+' '+kbd(')')+' '+kbd('=')+', le tiret '+kbd('-')+', l\'underscore '+kbd('_')+' et les guillemets '+kbd('"')+'.',
+       pool:['(',')','=','"','-','_'],codes:[4,4,5,5,6],showTips:true},
       {kind:'mission',label:'Mission 3',emoji:'🔑',title:'Forcer la serrure — les symboles spéciaux',
        desc:'Les caractères de mot de passe fort : '+kbd('@')+' '+kbd('#')+' '+kbd('€')+' '+kbd('+')+' avec '+kbd('AltGr')+' ou '+kbd('Maj ⇧')+'.',
        pool:['@','#','€','+'],codes:[4,5,5,6,6],showTips:true},
       {kind:'jalon',label:'Défi',emoji:'🚨',title:'Localiser le Vaisseau-Mère !',
        desc:'Tu es repéré ! Le Vaisseau-Mère tente de te <b>déconnecter</b> : finis chaque code avant que la barre rouge de <b>traçage</b> soit pleine. Tu as <b>3 connexions</b> 📡 — tiens bon et localise-le !',
-       pool:['.',',','?','!',';',':','(',')','=','"','-','@','#','€','+'],codes:[5,6,6,7,8],energies:3,traceBase:4200,tracePerChar:1300,showTips:true},
+       pool:['.',',','?','!',';',':','(',')','=','"','-','_','@','#','€','+'],codes:[5,6,6,7,8],energies:3,traceBase:4200,tracePerChar:1300,showTips:true},
       {kind:'jalon',mode:'boss',label:'Combat de Boss',emoji:'🛸',title:'le Vaisseau-Mère',
        desc:'Tu l\'as localisé… mais il envoie son <b>essaim</b> ! Déplace ton vaisseau avec '+kbd('F')+' et '+kbd('J')+', <b>aligne-toi</b> sous un alien puis tape <b>sa lettre</b> pour tirer au laser. Essaim détruit ? Le Vaisseau-Mère devient <b>vulnérable</b> : mitraille-le avec les <b>symboles et chiffres</b> — mais son bouclier se recharge à chaque nouvel essaim !',
        diff:true, swarm:true,
@@ -952,6 +978,19 @@ function beep(kind){
   else if(kind==='bad'){ tone(150,.16,'square',.12); }
   else if(kind==='ding'){ tone(880,.12,'sine',.12); tone(1320,.16,'sine',.1,.08); }
   else if(kind==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.12,i*.09)); }
+}
+// carillon d'une étoile de score : le ton monte à chaque étoile gagnée (1re = grave, 5e = aiguë)
+const STAR_NOTES=[523,659,784,988,1319];
+function beepStar(i){
+  if(!soundOn) return; const a=audioCtx(); if(!a) return;
+  const f=STAR_NOTES[Math.min(i,STAR_NOTES.length-1)], now=a.currentTime;
+  [[f,.18,.12,0],[f*2,.22,.06,.03]].forEach(([freq,dur,vol,delay])=>{
+    const o=a.createOscillator(),g=a.createGain();
+    o.type='triangle'; o.frequency.value=freq; o.connect(g); g.connect(a.destination);
+    const t=now+delay; g.gain.setValueAtTime(vol,t);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.start(t); o.stop(t+dur);
+  });
 }
 // son réel de tir laser (boss essaim, Niveau 5) : remplace le bip synthétique de base
 function playLaserShot(){
@@ -1584,15 +1623,20 @@ function startDactylo(step){
     + '<div class="type-stats"><span id="stProg">0 %</span>'+(pursuit?'<span id="stChase">🔥 reste devant la lave !</span>':'<span id="stErr">0 erreur</span>')+'</div>'
     + '</div>';
   Object.assign(D,{
-    step, text:step.text, i:0, errors:0, running:true,
-    pursuit, chaser:-(step.lead||4), startTs:0, lastTs:0, started:false, grace:step.grace||0, raf:0
+    step, text:step.text, i:0, errors:0, hits:0, running:true,
+    pursuit, chaser:-(step.lead||4), startTs:0, lastTs:0, started:false, grace:step.grace||0, raf:0,
+    typeMs:0, typeTs:0   // chrono de frappe : démarre à la 1re lettre, se met en pause si le jeu est mis en pause
   });
   renderType();
   activeGame={ onKey:onKeyD, stop:stopD,
-    pause(){ if(D.running){ D.running=false; cancelAnimationFrame(D.raf); } },
-    resume(){ if(!D.running){ D.running=true; D.lastTs=0; if(D.pursuit) D.raf=requestAnimationFrame(loopD); } } };
+    pause(){ if(D.running){ D.running=false; dClockPause(); cancelAnimationFrame(D.raf); } },
+    resume(){ if(!D.running){ D.running=true; D.lastTs=0; if(D.hits>0) dClockStart(); if(D.pursuit) D.raf=requestAnimationFrame(loopD); } } };
   if(pursuit) D.raf=requestAnimationFrame(loopD);
 }
+/* Chrono de frappe : cumulé, en pause pendant les popups d'astuce. */
+function dClockStart(){ if(!D.typeTs) D.typeTs=performance.now(); }
+function dClockPause(){ if(D.typeTs){ D.typeMs+=performance.now()-D.typeTs; D.typeTs=0; } }
+function dElapsedMs(){ return D.typeMs + (D.typeTs?performance.now()-D.typeTs:0); }
 function renderType(){
   const c=document.getElementById('typeText'); let html='';
   const lavaIdx=D.pursuit?Math.max(0,Math.floor(D.chaser)):-1;
@@ -1627,13 +1671,14 @@ function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function onKeyD(e){
   const ignore=['Shift','Control','Alt','AltGraph','Meta','CapsLock','Dead','Tab','Escape','Enter','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'];
   if(ignore.includes(e.key)) return;
-  if(e.key==='Backspace'){ e.preventDefault(); if(D.i>0){ D.i--; renderType(); } return; }
+  if(e.key==='Backspace'){ e.preventDefault(); if(D.i>0){ D.i--; D.hits=Math.max(0,D.hits-1); renderType(); } return; }
   if(e.key.length!==1) return;
   e.preventDefault();
   const expected=D.text[D.i];
   if(e.key===expected){
     if(D.pursuit && !D.started){ D.started=true; D.startTs=performance.now(); }
-    D.i++; beep('key'); renderType();
+    dClockStart();
+    D.i++; D.hits++; beep('key'); renderType();
     if(D.i>=D.text.length) winD();
   } else {
     D.errors++; beep('bad');
@@ -1653,12 +1698,68 @@ function loopD(ts){
   if(D.chaser>=D.i && D.i<D.text.length){ caughtD(); return; }
   D.raf=requestAnimationFrame(loopD);
 }
-function stopD(){ D.running=false; cancelAnimationFrame(D.raf); }
+function stopD(){ D.running=false; dClockPause(); cancelAnimationFrame(D.raf); }
 function winD(){
   stopD(); beep('win');
-  if(D.pursuit){ onWin(); return; }
-  const secs=D.startTs?0:0; // pas de chrono affiché en mode expédition
-  onWin();
+  onWin(buildScore());
+}
+
+/* ---- Score de fin de mission (Niveaux 6 & 7, hors boss) ----
+   Trois mesures : temps de frappe, précision, mots par minute (norme : 1 mot = 5 caractères).
+   Elles se résument en une note sur 5 étoiles : la précision pèse 3 étoiles, la vitesse 2. */
+function buildScore(){
+  const ms=Math.max(400, dElapsedMs());
+  const secs=ms/1000;
+  const chars=D.text.length;
+  const acc=Math.round(D.hits/Math.max(1,D.hits+D.errors)*100);
+  const wpm=Math.round((chars/5)/(secs/60));
+
+  const accPts = acc>=98?3 : acc>=94?2.5 : acc>=88?2 : acc>=80?1.5 : acc>=70?1 : .5;
+  const spdPts = wpm>=25?2 : wpm>=20?1.5 : wpm>=15?1 : wpm>=10?.5 : 0;
+  const stars=Math.max(1, Math.min(5, Math.round(accPts+spdPts)));
+
+  const PRAISE=[null,
+    {emoji:'🙂', msg:'Tu y es arrivé !',        sub:'Bravo, le texte est fini. Vise la précision : chaque lettre bien tapée compte double.'},
+    {emoji:'👍', msg:'Bien joué !',             sub:'Tu progresses ! Regarde l\'écran plutôt que tes doigts pour faire moins d\'erreurs.'},
+    {emoji:'🌟', msg:'Très bien joué !',        sub:'Belle frappe ! Encore un peu de régularité et tu décroches les 5 étoiles.'},
+    {emoji:'🎉', msg:'Excellent !',             sub:'Tes doigts trouvent les touches tout seuls. Tu es presque un pro !'},
+    {emoji:'🏆', msg:'Parfait, champion du clavier !', sub:'Rapide ET précis : c\'est la frappe d\'un vrai expert. Chapeau !'}
+  ][stars];
+
+  return {stars, acc, wpm, secs, emoji:PRAISE.emoji, msg:PRAISE.msg, sub:PRAISE.sub};
+}
+function fmtSecs(s){
+  const t=Math.round(s);
+  return t<60 ? t+' s' : Math.floor(t/60)+' min '+String(t%60).padStart(2,'0')+' s';
+}
+function scoreCardHTML(sc){
+  let stars='';
+  for(let i=0;i<5;i++) stars+='<span class="sc-star" data-i="'+i+'"><i class="s-bg">★</i><i class="s-fg">★</i></span>';
+  return '<div class="scorecard">'
+    + '<div class="sc-stars" id="scStars">'+stars+'</div>'
+    + '<p style="margin:0 0 12px">'+sc.sub+'</p>'
+    + '<div class="sc-stats">'
+    +   '<div class="sc-tile" data-d="0"><div class="sc-ic">⏱️</div><div class="sc-val">'+fmtSecs(sc.secs)+'</div><div class="sc-lab">Temps</div></div>'
+    +   '<div class="sc-tile" data-d="1"><div class="sc-ic">🎯</div><div class="sc-val">'+sc.acc+' %</div><div class="sc-lab">Précision</div></div>'
+    +   '<div class="sc-tile" data-d="2"><div class="sc-ic">⚡</div><div class="sc-val">'+sc.wpm+'</div><div class="sc-lab">Mots / min</div></div>'
+    + '</div></div>';
+}
+/* Les étoiles montent puis se remplissent une à une, avec un « ding » qui monte dans les aigus. */
+function animateScore(sc){
+  const wrap=document.getElementById('scStars'); if(!wrap) return;
+  const stars=[...wrap.querySelectorAll('.sc-star')];
+  stars.forEach((el,i)=>{
+    const won=i<sc.stars;
+    setTimeout(()=>{
+      el.classList.add('up');
+      if(won){ el.classList.add('filled'); beepStar(i); }
+    }, 260 + i*300);
+  });
+  const after=260 + 5*300;
+  document.querySelectorAll('.sc-tile').forEach(t=>{
+    setTimeout(()=>t.classList.add('in'), after + parseInt(t.getAttribute('data-d'),10)*140);
+  });
+  if(sc.stars>=4) setTimeout(confetti, after);
 }
 function caughtD(){
   stopD();
@@ -1668,7 +1769,7 @@ function caughtD(){
 /* ---- Combat de Boss : « le Dragon des Touches » ---- */
 const BOSS_POOL=('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789').split('')
   .concat(['.',',','?','!',';',':','(',')','=','"','-','@','#','€','+','é','è','à','ç','ù']);
-const BOSS_COMPLEX=['@','#','€','+','=','"','(',')','?',':',';'];
+const BOSS_COMPLEX=['@','#','€','+','=','"','(',')','?',':',';','_'];
 const ATTACK_MS=7000;
 const B={};
 let bossAudio=null;
@@ -1754,7 +1855,7 @@ function startBoss(step){
     spells:[], attackTargets:[],
     wordMode:!!step.wordMode, defenseWords:step.defenseWords||[], attackWords:step.attackWords||[], attackWord:null,
     swarm:!!step.swarm, lane:Math.floor(SWARM_LANES/2),
-    atkPool: step.swarm ? BOSS_COMPLEX.concat('0123456789'.split('')) : BOSS_COMPLEX,
+    atkPool: step.swarm ? BOSS_COMPLEX.concat(BOSS_COMPLEX).concat('0123456789'.split('')) : BOSS_COMPLEX,
     lives, maxLives:lives, penalizeWrong:!!step.penalizeWrong,
     hp, maxHp:hp,
     shield:enh.shield?(md.shieldHits||0):0, maxShield:enh.shield?(md.shieldHits||0):0,
@@ -2463,10 +2564,12 @@ function openRoundPopup(){
   const lvl=LEVELS[currentLevel-1];
   // Briefing image-first : pour les missions à astuces, on montre les touches sur le clavier
   let kbimg='';
-  if((lvl.game==='parachute' || lvl.game==='invaders' || lvl.game==='hackterm') && s.showTips && s.pool){
+  if((lvl.game==='parachute' || lvl.game==='invaders' || lvl.game==='hackterm') && (s.showTips || lvl.n<=4) && s.pool){
     const c=comboHint(s.pool);
     kbimg=buildKeyboard({keys:c.keys, maj:c.maj, altgr:c.altgr});
   }
+  // Niveaux 1 à 4 : on martèle le repère F/J à chaque début de mission
+  const fjBox=(lvl.n<=4)?('<div class="howto" style="margin-top:10px"><p class="h-head">✋ Position des mains</p><p>'+fjReminderHTML()+'</p></div>'):'';
   modal.className='modal'+(jalon?' test-modal':'');
   modal.innerHTML=
     '<span class="m-emoji">'+s.emoji+'</span>'
@@ -2474,6 +2577,7 @@ function openRoundPopup(){
     + '<h2>'+s.title+'</h2>'
     + '<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta mission :')+'</p><p>'+s.desc+'</p></div>'
     + kbimg
+    + fjBox
     + '<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
   openOverlay();
   document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
@@ -2485,26 +2589,42 @@ function launchGame(){
   if(LEVELS[currentLevel-1].game==='parachute') startParachute(currentStep);
   else startDactylo(currentStep);
 }
-function onWin(){
+/* sc (optionnel) : carte de score renvoyée par buildScore(), affichée à la place du texte de félicitation. */
+function onWin(sc){
+  const head=(emoji,title,text)=>
+    sc ? '<span class="m-emoji">'+sc.emoji+'</span><h2>'+sc.msg+'</h2>'+scoreCardHTML(sc)
+       : '<span class="m-emoji">'+emoji+'</span><h2>'+title+'</h2><p>'+text+'</p>';
+  const reveal=()=>{ if(sc) animateScore(sc); };
+
   if(reviewing()){
     modal.className='modal good';
-    modal.innerHTML='<span class="m-emoji">💪</span><h2>Bien joué !</h2>'
-      +'<p>Tu as refait cette mission. On revient à <b>ta mission en cours</b>, ta progression est gardée.</p>'
+    modal.innerHTML=head('💪','Bien joué !','Tu as refait cette mission. On revient à <b>ta mission en cours</b>, ta progression est gardée.')
       +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma mission</button></div>';
-    openOverlay();
+    openOverlay(); reveal();
     document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
     return;
   }
   const last = playIdx===STEPS.length-1;
-  if(last){ progressIdx=STEPS.length; saveProgress(); return levelComplete(); }
+  if(last){
+    progressIdx=STEPS.length; saveProgress();
+    if(!sc) return levelComplete();
+    // Dernière mission avec score : on montre les étoiles avant l'écran de déblocage du niveau.
+    modal.className='modal good';
+    modal.innerHTML=head('','','')
+      +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
+    openOverlay(); reveal();
+    document.getElementById('next').onclick=()=>{ closeOverlay(); levelComplete(); };
+    return;
+  }
   progressIdx=Math.max(progressIdx, playIdx+1); saveProgress();
   const jalon=currentStep.kind==='jalon';
   modal.className='modal good';
-  modal.innerHTML='<span class="m-emoji">'+(jalon?'🏆':'✅')+'</span>'
-    +'<h2>'+(jalon?'Défi réussi !':'Mission réussie !')+'</h2>'
-    +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la mission suivante !')+'</p>'
+  modal.innerHTML=head(jalon?'🏆':'✅',
+      jalon?'Défi réussi !':'Mission réussie !',
+      jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la mission suivante !')
     +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
-  openOverlay(); if(jalon) confetti();
+  openOverlay(); if(jalon && !sc) confetti();
+  reveal();
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
 }
 function onFail(reason, tip){
@@ -2520,6 +2640,7 @@ function onFail(reason, tip){
 function openGameTip(ch){
   pauseActive();
   const {hl,cap}=keyHint(ch);
+  const fjBox=(currentLevel<=4)?('<p class="tip-cap" style="font-size:.92rem;color:var(--muted)">'+fjReminderHTML()+'</p>'):'';
   modal.className='modal';
   modal.innerHTML=
     '<span class="m-emoji">💡</span>'
@@ -2527,6 +2648,7 @@ function openGameTip(ch){
     + '<h2 class="tip-char">'+niceChar(ch)+'</h2>'
     + '<p class="tip-cap">'+cap+'</p>'
     + buildKeyboard(hl)
+    + fjBox
     + '<div class="m-actions"><button class="m-btn primary green" id="tipResume">On continue ! ▶</button></div>';
   openOverlay();
   document.getElementById('tipResume').onclick=()=>{ closeOverlay(); resumeActive(); };
@@ -2563,7 +2685,7 @@ function openLevelIntro(n, cont){
     + '<div class="kicker">Niveau '+n+'</div>'
     + '<h2>'+lvl.title+'</h2>'
     + '<p>'+it.lead+'</p>'
-    + '<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p>'+extra+'</div>'
+    + (it.teach?('<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p>'+extra+'</div>'):'')
     + (tools?'<ul class="newtools">'+tools+'</ul>':'')
     + '<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
   openOverlay();
@@ -2742,10 +2864,19 @@ document.getElementById('hintBtn').onclick=()=>{
   }
   // Autres niveaux : courte consigne + image du clavier, jeu en pause
   pauseActive();
-  const kb=lvl.intro.kb?buildKeyboard(lvl.intro.kb):'';
+  let kb, tipTxt;
+  if(lvl.n<=4 && currentStep && currentStep.pool){
+    // Niveaux 1, 2 et 4 : ne parler que des touches de LA mission en cours (+ rappel F/J)
+    const c=comboHint(currentStep.pool);
+    kb=buildKeyboard({keys:c.keys, maj:c.maj, altgr:c.altgr});
+    tipTxt='Les touches de cette mission sont surlignées ci-dessous.<br>'+fjReminderHTML();
+  } else {
+    kb=lvl.intro.kb?buildKeyboard(lvl.intro.kb):'';
+    tipTxt=lvl.intro.teach;
+  }
   modal.className='modal';
   modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker">Astuce</div>'
-    +'<p class="tip-cap">'+lvl.intro.teach+'</p>'+kb
+    +'<p class="tip-cap">'+tipTxt+'</p>'+kb
     +'<div class="m-actions"><button class="m-btn primary green" id="okHint">J\'ai compris ▶</button></div>';
   openOverlay();
   document.getElementById('okHint').onclick=()=>{ closeOverlay(); resumeActive(); };
