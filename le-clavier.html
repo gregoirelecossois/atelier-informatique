@@ -796,19 +796,19 @@ const LEVELS=[
     rounds:[
       {kind:'mission',label:'Mission 1',emoji:'🟢',title:'Les touches du milieu',
        desc:'Fais éclater les lettres '+kbd('f')+' '+kbd('j')+' '+kbd('d')+' '+kbd('k')+' '+kbd('s')+' '+kbd('l')+'. Ce sont les touches du milieu, là où on pose les doigts.',
-       pool:['f','j','d','k','s','l'],target:15,lives:6,speed:58,spawnMs:1550},
+       pool:['f','j','d','k','s','l'],target:30,lives:6,speed:58,spawnMs:1550},
       {kind:'mission',label:'Mission 2',emoji:'🅰️',title:'Les voyelles',
        desc:'Les voyelles '+kbd('a')+' '+kbd('e')+' '+kbd('i')+' '+kbd('o')+' '+kbd('u')+' '+kbd('y')+'. On les trouve dans presque tous les mots !',
-       pool:['a','e','i','o','u','y'],target:15,lives:6,speed:64,spawnMs:1480},
+       pool:['a','e','i','o','u','y'],target:30,lives:6,speed:64,spawnMs:1480},
       {kind:'mission',label:'Mission 3',emoji:'🤚',title:'Le bord du clavier',
        desc:'Les lettres un peu plus loin des doigts : '+kbd('a')+' '+kbd('z')+' '+kbd('p')+' '+kbd('q')+' '+kbd('m')+' '+kbd('w')+' '+kbd('x')+' '+kbd('c')+'. Va les chercher !',
-       pool:['a','z','p','q','m','w','x','c'],target:18,lives:6,speed:70,spawnMs:1420},
+       pool:['a','z','p','q','m','w','x','c'],target:30,lives:6,speed:70,spawnMs:1420},
       {kind:'mission',label:'Mission 4',emoji:'🔤',title:'Les consonnes restantes',
        desc:'On termine l\'alphabet avec '+kbd('b')+' '+kbd('g')+' '+kbd('h')+' '+kbd('n')+' '+kbd('r')+' '+kbd('t')+' '+kbd('v')+'.',
-       pool:['b','g','h','n','r','t','v'],target:16,lives:6,speed:74,spawnMs:1360},
+       pool:['b','g','h','n','r','t','v'],target:30,lives:6,speed:74,spawnMs:1360},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Toutes les lettres !',
        desc:'Le grand défi : <b>toutes les lettres</b> de l\'alphabet tombent, un peu plus vite. Montre que tu les connais !',
-       pool:'abcdefghijklmnopqrstuvwxyz'.split(''),target:40,lives:6,speed:90,spawnMs:1100}
+       pool:'abcdefghijklmnopqrstuvwxyz'.split(''),target:50,lives:6,speed:90,spawnMs:1100}
     ]},
 
   { n:2, title:'Le parachute — les majuscules', subtitle:'le parachute · les majuscules', game:'parachute',
@@ -820,16 +820,16 @@ const LEVELS=[
     rounds:[
       {kind:'mission',label:'Mission 1',emoji:'🔠',title:'Les majuscules des prénoms',
        desc:'Comme au début d\'un prénom : '+kbd('A')+' '+kbd('E')+' '+kbd('L')+' '+kbd('M')+' '+kbd('N')+' '+kbd('S')+' '+kbd('T')+'. Souviens-toi : '+kbd('Maj ⇧')+' enfoncé + la lettre.',
-       pool:['A','E','L','M','N','S','T'],target:16,lives:7,speed:52,spawnMs:1750},
+       pool:['A','E','L','M','N','S','T'],target:30,lives:7,speed:52,spawnMs:1750},
       {kind:'mission',label:'Mission 2',emoji:'🔠',title:'D\'autres majuscules',
        desc:'On continue avec '+kbd('B')+' '+kbd('C')+' '+kbd('D')+' '+kbd('F')+' '+kbd('G')+' '+kbd('J')+' '+kbd('P')+' '+kbd('R')+' '+kbd('V')+'.',
-       pool:['B','C','D','F','G','J','P','R','V'],target:20,lives:7,speed:56,spawnMs:1620},
+       pool:['B','C','D','F','G','J','P','R','V'],target:30,lives:7,speed:56,spawnMs:1620},
       {kind:'mission',label:'Mission 3',emoji:'🔡',title:'Majuscules et minuscules mélangées',
        desc:'Attention : des majuscules <b>et</b> des minuscules tombent ensemble ! Lis bien chaque lettre avant de taper.',
-       pool:['A','a','Z','z','E','e','R','r','T','t','I','i','O','o','N','n'],target:24,lives:6,speed:66,spawnMs:1500},
+       pool:['A','a','Z','z','E','e','R','r','T','t','I','i','O','o','N','n'],target:30,lives:6,speed:66,spawnMs:1500},
       {kind:'jalon',label:'Défi',emoji:'🏆',title:'Grand mélange — de A à Z',
        desc:'Toutes les lettres tombent : majuscules <b>et</b> minuscules mélangées. Sois rapide et précis !',
-       pool:('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz').split(''),target:46,lives:6,speed:84,spawnMs:1150}
+       pool:('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz').split(''),target:50,lives:6,speed:84,spawnMs:1150}
     ]},
 
   { n:3, title:'L\'invasion spatiale — les accents', subtitle:'l\'invasion spatiale · les accents', game:'invaders',
