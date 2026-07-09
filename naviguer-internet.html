@@ -177,8 +177,12 @@
   .menu-item .mi-soon{margin-left:auto;font-size:.65rem;font-weight:800;background:#fdebc4;color:#8a6d12;
     border-radius:999px;padding:2px 7px;}
   /* panneau latéral (historique / favoris) */
-  .sidebar{width:238px;flex:none;border-right:1px solid var(--br-line);background:#fafbfd;
+  .sidebar{width:300px;flex:none;border-right:1px solid var(--br-line);background:#fafbfd;
     display:flex;flex-direction:column;min-height:0;}
+  .sb-resize{width:8px;flex:none;cursor:ew-resize;position:relative;background:transparent;touch-action:none;}
+  .sb-resize::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:3px;height:36px;border-radius:3px;background:#c7cfdb;transition:background .12s;}
+  .sb-resize:hover::after,.sb-resize.dragging::after{background:#7f97c7;}
   .sb-head{display:flex;align-items:center;gap:8px;padding:9px 8px 9px 13px;border-bottom:1px solid var(--br-line);
     font-weight:800;font-size:.86rem;}
   .sb-head .sb-close{margin-left:auto;width:24px;height:24px;border:none;background:transparent;border-radius:6px;
@@ -189,9 +193,9 @@
     border-radius:8px;padding:7px 8px;text-align:left;font-size:.78rem;color:var(--ink);}
   .sb-item:hover{background:#eef1f6;}
   .sb-item .si-ic{flex:none;font-size:1rem;}
-  .sb-item .si-tx{flex:1;min-width:0;}
-  .sb-item .si-t{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .sb-item .si-u{color:#7b8b9b;font-weight:600;font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-item .si-tx{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .sb-item .si-t{display:block;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-item .si-u{display:block;color:#7b8b9b;font-weight:600;font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sb-item .si-when{flex:none;color:#9aa9b8;font-weight:700;font-size:.68rem;}
   .sb-item .si-del{flex:none;width:22px;height:22px;border:none;background:transparent;border-radius:6px;
     font-size:.78rem;display:flex;align-items:center;justify-content:center;padding:0;}
@@ -1019,6 +1023,7 @@ const B={
   tabs:[], active:0, seq:0,
   bookmarks:[], history:[],
   panel:null, menuOpen:false,
+  panelW:Math.max(220, Math.min(440, parseInt(store.get('nv_panelw')||'300',10)||300)),
   homepage:'goupil.start',
   popups:[], downloads:[],
   boss:null, storm:null,
@@ -1086,6 +1091,7 @@ function buildScreen(){
     + '<div class="bmbar" id="bmBar"></div>'
     + '<div class="main" id="brMain">'
     +   '<div class="sidebar" id="sidebar" hidden></div>'
+    +   '<div class="sb-resize" id="sbResize" hidden title="Fais glisser pour agrandir ou réduire le panneau"></div>'
     +   '<div class="viewport" id="viewport"></div>'
     +   '<div class="popup-layer" id="popupLayer"></div>'
     +   '<div class="statusbar" id="statusbar"></div>'
@@ -1130,6 +1136,38 @@ function buildScreen(){
 
   document.getElementById('menuPop').addEventListener('mousedown', e=>e.stopPropagation());
   document.getElementById('browser').addEventListener('mousedown', ()=>{ closeMenu(); closeLockPop(); });
+
+  setupSidebarResize();
+}
+
+/* ----- redimensionnement du panneau (historique / favoris / téléchargements) ----- */
+function setupSidebarResize(){
+  const rs=document.getElementById('sbResize'), sb=document.getElementById('sidebar'), main=document.getElementById('brMain');
+  if(!rs || !sb || !main) return;
+  const MIN=220, DEFAULT=300;
+  let dragging=false, startX=0, startW=0;
+  function maxW(){ return Math.max(MIN, Math.min(440, main.getBoundingClientRect().width-260)); }
+  rs.addEventListener('pointerdown', e=>{
+    e.preventDefault();
+    dragging=true; startX=e.clientX; startW=sb.getBoundingClientRect().width;
+    rs.classList.add('dragging');
+    rs.setPointerCapture(e.pointerId);
+  });
+  rs.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const w=Math.round(Math.max(MIN, Math.min(maxW(), startW+(e.clientX-startX))));
+    sb.style.width=w+'px'; B.panelW=w;
+  });
+  function stopDrag(){
+    if(!dragging) return;
+    dragging=false; rs.classList.remove('dragging');
+    store.set('nv_panelw', String(B.panelW));
+  }
+  rs.addEventListener('pointerup', stopDrag);
+  rs.addEventListener('pointercancel', stopDrag);
+  rs.addEventListener('dblclick', ()=>{
+    B.panelW=DEFAULT; sb.style.width=DEFAULT+'px'; store.set('nv_panelw', String(DEFAULT));
+  });
 }
 
 /* ----- onglets ----- */
@@ -1435,8 +1473,10 @@ function renderBmBar(){
 }
 function renderSidebar(){
   const sb=document.getElementById('sidebar'); if(!sb) return;
-  if(!B.panel){ sb.hidden=true; return; }
-  sb.hidden=false;
+  const rs=document.getElementById('sbResize');
+  if(!B.panel){ sb.hidden=true; if(rs) rs.hidden=true; return; }
+  sb.hidden=false; if(rs) rs.hidden=false;
+  sb.style.width=B.panelW+'px';
   if(B.panel==='downloads'){ renderDlPanel(sb); return; }
   const isH=B.panel==='history';
   let html='<div class="sb-head"><span>'+(isH?'🕘 Historique':'⭐ Favoris')+'</span>'
