@@ -715,6 +715,24 @@
   <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
   <div class="toast" id="toast"></div>
 
+<!-- Synthèse vocale (voix Denise, pré-générée). Chargé AVANT le script du jeu :
+     la toute première popup (intro auto-affichée au chargement) a besoin que
+     ttsDecorateModal et TTS_CLIPS existent dès le premier openOverlay(). -->
+<script type="application/json" id="tts-static">
+{
+  "win_mission": "Mission réussie ! Super, tu progresses bien. En route pour la mission suivante !",
+  "win_jalon": "Défi réussi ! Bravo, tu maîtrises ! Passe à la suite.",
+  "win_review": "Bien joué ! Tu as refait cette mission. On revient à ta mission en cours, ta progression est gardée.",
+  "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau jeu s'ouvre.",
+  "course_finish": "Parcours terminé ! Incroyable, tu as fini les huit niveaux de dossiers et fichiers et tu as vaincu le virus. Tu sais ouvrir, naviguer avec le volet, créer, ranger, supprimer, restaurer, rechercher, trier et gérer les extensions. Un vrai champion de l'ordinateur !",
+  "boss_briefing": "Combat de boss, cinq phases. CORRUPTUS, le Virus Fantôme. En haut, la jauge de contamination monte sans cesse : si elle atteint cent pour cent, c'est le crash système ! Détruis CORRUPTUS avant qu'il ne prenne le contrôle. Choisis ta difficulté.",
+  "boss_alert": "Alerte système. Intrusion détectée. CORRUPTUS point EXE s'est échappé dans vos fichiers. Il se déplace, contamine et se reproduit. Mission : le traquer en cinq phases et l'éliminer. Surveille la jauge de contamination en haut !",
+  "boss_win": "Système restauré. CORRUPTUS éliminé !"
+}
+</script>
+<script src="tts/tts-atelier.js"></script>
+<script src="tts/dossiers-fichiers.clips.js"></script>
+
 <script>
 /* =========================================================
    DOSSIERS ET FICHIERS — explorateur Windows simulé & gamifié
@@ -2095,6 +2113,7 @@ function missionFail(type){
     +' Pas de souci : on <b>recommence la mission</b> depuis le début, et on refait les objectifs <b>un par un</b>.</p>'
     +'<p style="font-size:.95rem;color:var(--muted)">Besoin d\'aide ? Le bouton <b>💡 Astuce</b> te montre quoi faire.</p>'
     +'<div class="m-actions"><button class="m-btn primary test" id="failRetry">↺ Recommencer la mission</button></div>';
+  modal.dataset.ttsText = (map[type]||"Tu as fait autre chose que l'objectif affiché en haut.");
   openOverlay();
   document.getElementById('failRetry').onclick=()=>{ closeOverlay(); startStep(playIdx); };
 }
@@ -2106,6 +2125,7 @@ function wrongMethodFail(goal){
   modal.innerHTML='<span class="m-emoji">🧭</span><h2>Pas par là !</h2>'
     +'<p>'+(goal.hint||'Il faut utiliser la méthode demandée par l\'objectif.')+'</p>'
     +'<div class="m-actions"><button class="m-btn primary test" id="failRetry">↺ Réessayer</button></div>';
+  modal.dataset.ttsText = goal.hint || "Il faut utiliser la méthode demandée par l'objectif.";
   openOverlay();
   document.getElementById('failRetry').onclick=()=>{ closeOverlay(); retryObjective(); };
 }
@@ -2885,6 +2905,7 @@ function openLevelIntro(n, cont){
     +(it.teach?'<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p></div>':'')
     +(tools?'<ul class="newtools">'+tools+'</ul>':'')
     +'<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
+  modal.dataset.ttsText = lvl.title + '. ' + (it.lead||'') + (it.teach ? ' ' + it.teach : '');
   openOverlay();
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
 }
@@ -2897,6 +2918,7 @@ function openRoundPopup(){
     +'<p>'+(s.intro||s.desc||'')+'</p>'
     +'</div>'
     +'<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
+  modal.dataset.ttsText = s.title + '. ' + (s.intro||s.desc||'');
   openOverlay();
   document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); };
 }
@@ -2907,6 +2929,7 @@ function onMissionWin(){
     modal.innerHTML='<span class="m-emoji">💪</span><h2>Bien joué !</h2>'
       +'<p>Tu as refait cette mission. On revient à <b>ta mission en cours</b>, ta progression est gardée.</p>'
       +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma mission</button></div>';
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).win_review || '';
     openOverlay(); document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
     return;
   }
@@ -2919,6 +2942,7 @@ function onMissionWin(){
     +'<h2>'+(jalon?'Défi réussi !':'Mission réussie !')+'</h2>'
     +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la mission suivante !')+'</p>'
     +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{})[jalon?'win_jalon':'win_mission'] || '';
   openOverlay(); if(jalon) confetti();
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
 }
@@ -2937,6 +2961,7 @@ function levelComplete(){
     +'<div class="m-actions">'
     +'<a class="m-btn ghost" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a>'
     +'<button class="m-btn primary green" id="goNextLvl">Aller au Niveau '+nextN+' →</button></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).unlocked || '';
   openOverlay();
   document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
 }
@@ -2947,6 +2972,7 @@ function courseFinish(){
     +'<p>Incroyable ! Tu as fini les <b>8 niveaux</b> de <b>Dossiers et fichiers</b> et tu as vaincu le <b>virus 🦠</b> ! Tu sais ouvrir, naviguer avec le volet, créer, ranger, supprimer, restaurer, rechercher, trier et gérer les extensions. Un vrai pro de l\'ordinateur ! 👏</p>'
     +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
   document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
 }
@@ -3115,6 +3141,7 @@ function openBossBriefing(){
           +'<span class="db-tx"><span class="db-name">'+m.label+'</span><span class="db-sub">'+m.sub+'</span></span>'
           +'<span class="db-tag">'+m.tag+'</span></button>'; }).join('')
     +'</div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).boss_briefing || '';
   openOverlay();
   modal.querySelectorAll('.diff-btn').forEach(b=>b.onclick=()=>{ closeOverlay(); audioCtx(); startBoss(b.getAttribute('data-k')); });
 }
@@ -3207,6 +3234,7 @@ function bossAlert(cb){
       +'<h2>Intrusion détectée</h2>'
       +'<div class="term-report" id="alertTerm"></div>'
       +'<div class="m-actions"><button class="m-btn primary" style="display:none;background:#eab308;border-color:#ca9a00;color:#1c1917" id="alertGo">🔍 Scanner les fichiers pour trouver Corruptus.exe</button></div>';
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).boss_alert || '';
     openOverlay();
     typeTerminal(document.getElementById('alertTerm'),[
       {cls:'tr-head',text:'C:\\> antivirus --scan'},
@@ -3387,6 +3415,7 @@ function showPhaseBriefing(def, start){
     +'<h2>'+def.title+'</h2>'
     +'<div class="howto boss"><p>'+def.how+'</p></div>'
     +'<div class="btuto" id="btuto"></div>';
+  modal.dataset.ttsText = def.title + '. ' + def.how;
   openOverlay();
   const launch=()=>{ closeOverlay(); EX.boss.busy=false; start(); };
   const builder=BOSS_TUTOS[def.tuto];
@@ -4077,6 +4106,7 @@ function bossWin(){
       +'<h2>CORRUPTUS éliminé ! 🎉</h2>'
       +'<div class="term-report" id="winTerm"></div>'
       +'<div class="m-actions"><button class="m-btn primary green" id="bossNext" style="display:none">Continuer →</button></div>';
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).boss_win || '';
     openOverlay();
     const lines=[
       {cls:'tr-head',text:'C:\\> rapport_de_mission'},
@@ -4097,8 +4127,8 @@ function bossWin(){
 /* ---------------------------------------------------------
    15. OVERLAY / TOAST / CONFETTI
    --------------------------------------------------------- */
-function openOverlay(){ overlay.classList.add('open'); }
-function closeOverlay(){ overlay.classList.remove('open'); }
+function openOverlay(){ overlay.classList.add('open'); if(window.ttsDecorateModal) ttsDecorateModal(modal); }
+function closeOverlay(){ overlay.classList.remove('open'); if(window.ttsStopCurrent) ttsStopCurrent(); }
 let _toastT=null;
 function toast(msg){ const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove('show'),8000); }
 function confetti(){
@@ -4231,6 +4261,7 @@ function onHint(){
     +'<div class="howto test"><p class="h-head">👉 Comment faire :</p><p>'+hintTxt+'</p></div>'
     +'<p style="font-size:.95rem;color:var(--muted)">Les éléments importants vont <b>briller en jaune</b> ✨ sur l\'écran.</p>'
     +'<div class="m-actions"><button class="m-btn primary test" id="hintGo">Montre-moi ✨</button></div>';
+  modal.dataset.ttsText = (s.title||'Astuce') + '. ' + stripTags(hintTxt);
   openOverlay();
   document.getElementById('hintGo').onclick=()=>{ closeOverlay(); highlightForStep(); };
 }

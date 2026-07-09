@@ -656,6 +656,24 @@
   <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
   <div class="toast" id="toast"></div>
 
+<!-- Synthèse vocale (voix Denise, pré-générée). Chargé AVANT le script du jeu :
+     la toute première popup (intro auto-affichée au chargement) a besoin que
+     ttsDecorateModal et TTS_CLIPS existent dès le premier openOverlay(). -->
+<script type="application/json" id="tts-static">
+{
+  "win_mission": "Mission réussie ! Super, tu progresses bien. En route pour la mission suivante !",
+  "win_jalon": "Défi réussi ! Bravo, tu maîtrises ! Passe à la suite.",
+  "win_review": "Bien joué ! Tu as refait cette mission. On revient à ta mission en cours, ta progression est gardée.",
+  "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau jeu s'ouvre.",
+  "course_finish": "Parcours terminé ! Incroyable, tu as fini les six niveaux de la souris et vaincu le Démon Gardien. Le clic, le glisser-déposer, le double-clic, le clic droit, la sélection et la molette n'ont plus de secret pour toi. Tu es un vrai champion de la souris !",
+  "boss_fail": "Le démon t'a vaincu. Tu as perdu tous tes cœurs. Recommence le combat, tu vas y arriver !",
+  "boss_gate": "Boss final. Gruk, le Démon Gardien. Te voilà au sommet de la tour : Gruk, le Démon Gardien t'attend ! Clique sur les flammes pour te protéger. Suis les consignes pour chaque phase du boss. Quand tu as besoin, clic droit sur la potion de vie, en bas à gauche, pour récupérer deux cœurs !",
+  "boss_difficulty": "Boss final. Choisis ta difficulté. Relance le combat contre Gruk en choisissant un nouveau mode."
+}
+</script>
+<script src="tts/tts-atelier.js"></script>
+<script src="tts/la-souris.clips.js"></script>
+
 <script>
 /* =========================================================
    LA SOURIS — jeux de souris à validation automatique
@@ -2262,6 +2280,7 @@ function bossFail(){
   modal.innerHTML='<span class="m-emoji">💀</span><h2>Le démon t\'a vaincu…</h2>'
     +'<div class="howto test" style="margin-top:4px"><p class="h-head">💡 Courage !</p><p>Tu as perdu tous tes cœurs. Recommence le combat — tu vas y arriver, sorcier !</p></div>'
     +'<div class="m-actions"><button class="m-btn primary" id="retryBoss">↺ Reprendre le combat</button></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).boss_fail || '';
   openOverlay();
   document.getElementById('retryBoss').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }
@@ -2813,6 +2832,7 @@ function openRoundPopup(){
     + '<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta mission :')+'</p><p>'+s.desc+'</p></div>'
     + '<div class="demo"><span class="mouse-emoji">🖱️</span><span>'+gameHintLine()+'</span></div>'
     + '<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
+  modal.dataset.ttsText = s.title + '. ' + s.desc;   // 🔊 lit le titre + la consigne de la mission
   openOverlay();
   // si une partie est déjà en cours (popup rouvert via « Revoir la consigne »), on reprend
   // simplement la pause ; sinon (premier lancement) on démarre le jeu.
@@ -2842,6 +2862,7 @@ function openBossGate(){
   }
   modal.className='modal test-modal';
   modal.innerHTML=html;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).boss_gate || '';
   openOverlay();
   if(resume){
     document.getElementById('bossResume').onclick=()=>{ closeOverlay(); audioCtx(); resumeActive(); };
@@ -2874,6 +2895,7 @@ function openBossDifficulty(){
     + '<h2>Choisis ta difficulté</h2>'
     + '<p>Relance le combat contre <b>Gruk</b> en choisissant un nouveau mode :</p>'
     + bossModeChooserHTML();
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).boss_difficulty || '';
   openOverlay();
   bindBossModeChoice();
 }
@@ -2905,6 +2927,7 @@ function onWin(){
     modal.innerHTML='<span class="m-emoji">💪</span><h2>Bien joué !</h2>'
       +'<p>Tu as refait cette mission. On revient à <b>ta mission en cours</b>, ta progression est gardée.</p>'
       +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma mission</button></div>';
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).win_review || '';
     openOverlay();
     document.getElementById('bk').onclick=()=>{ closeOverlay(); if(progressIdx>=STEPS.length) courseFinish(); else startStep(progressIdx); };
     return;
@@ -2918,6 +2941,7 @@ function onWin(){
     +'<h2>'+(jalon?'Défi réussi !':'Mission réussie !')+'</h2>'
     +'<p>'+(jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la mission suivante !')+'</p>'
     +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{})[jalon?'win_jalon':'win_mission'] || '';
   openOverlay(); if(jalon) confetti();
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
 }
@@ -2926,6 +2950,7 @@ function onFail(reason, tip){
   modal.innerHTML='<span class="m-emoji">🙈</span><h2>'+reason+'</h2>'
     +'<div class="howto test" style="margin-top:4px"><p class="h-head">💡 Astuce</p><p>'+tip+'</p></div>'
     +'<div class="m-actions"><button class="m-btn primary" id="retry">↺ Je réessaie</button></div>';
+  modal.dataset.ttsText = reason + '. ' + tip;   // 🔊 lit le message d'échec + l'astuce (couvre tous les appels)
   openOverlay();
   document.getElementById('retry').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }
@@ -2960,6 +2985,7 @@ function openLevelIntro(n, cont){
     + '<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p></div>'
     + (tools?'<ul class="newtools">'+tools+'</ul>':'')
     + '<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
+  modal.dataset.ttsText = lvl.title + '. ' + (it.lead||'') + (it.teach ? ' ' + it.teach : '');   // 🔊 lit l'intro du niveau
   openOverlay();
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
 }
@@ -2984,6 +3010,7 @@ function openLevelUnlockedModal(nextN){
     +'<div class="m-actions">'
     +'<a class="m-btn ghost" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a>'
     +'<button class="m-btn primary green" id="goNextLvl">Aller au Niveau '+nextN+' →</button></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).unlocked || '';
   openOverlay();
   document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
 }
@@ -2994,6 +3021,7 @@ function courseFinish(){
     +'<p>Incroyable ! Tu as fini les <b>6 niveaux</b> de <b>La souris</b> <b>et vaincu le Démon Gardien</b> 🐲 ! Le clic, le glisser-déposer, le double-clic, le clic droit, la sélection et la molette n\'ont plus de secret pour toi. Tu es un vrai pro de la souris ! 👏</p>'
     +'<div class="m-actions"><button class="m-btn ghost" id="replayBoss">⚔️ Rejouer le Boss</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
   // « Rejouer le Boss » : on recharge le niveau du boss (et non la dernière mission du niveau courant).
   document.getElementById('replayBoss').onclick=()=>{ closeOverlay(); audioCtx(); const bossLvl=LEVELS.findIndex(l=>l.game==='boss')+1; loadLevel(bossLvl>0?bossLvl:LEVELS.length, 0, false); };
@@ -3095,12 +3123,14 @@ document.getElementById('hintBtn').onclick=()=>{
       +'<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+(ph.brief||ph.sub||'')+'</p></div>'
       +'<div class="howto" style="margin-top:6px"><p>'+POTION_TIP+'</p></div>'
       +'<div class="m-actions"><button class="m-btn primary green" id="okHint">J\'ai compris ▶</button></div>';
+    modal.dataset.ttsText = ph.banner + '. ' + (ph.brief||ph.sub||'');
   } else {
     modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker">Astuce</div>'
       +'<h2>'+currentStep.title+'</h2>'
       +'<div class="howto"><p class="h-head">👉 Ta mission :</p><p>'+currentStep.desc+'</p></div>'
       +'<div class="demo"><span class="mouse-emoji">🖱️</span><span>'+gameHintLine()+'</span></div>'
       +'<div class="m-actions"><button class="m-btn primary green" id="okHint">J\'ai compris ▶</button></div>';
+    modal.dataset.ttsText = currentStep.title + '. ' + currentStep.desc;
   }
   openOverlay();
   document.getElementById('okHint').onclick=()=>{ closeOverlay(); resumeActive(); };
@@ -3118,9 +3148,11 @@ function openOverlay(){
   if(fs && overlay.parentNode!==fs) fs.appendChild(overlay);
   else if(!fs && overlay.parentNode!==document.body) document.body.appendChild(overlay);
   overlay.classList.add('open');
+  if(window.ttsDecorateModal) ttsDecorateModal(modal);
 }
 function closeOverlay(){
   overlay.classList.remove('open');
+  if(window.ttsStopCurrent) ttsStopCurrent();
   // on remet l'overlay à sa place normale une fois refermé
   if(overlay.parentNode!==document.body) document.body.appendChild(overlay);
 }

@@ -1,1 +1,5 @@
 .claude/
+
+# Synthèse vocale : cache mp3 intermédiaire (les clips finaux .clips.js sont versionnés)
+tts/.tts-cache/
+tts/*.tts-manifest.json

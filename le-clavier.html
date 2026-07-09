@@ -659,6 +659,24 @@
   <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
   <div class="toast" id="toast"></div>
 
+<!-- Synthèse vocale (voix Denise, pré-générée). Chargé AVANT le script du jeu :
+     la toute première popup (intro auto-affichée par init()) a besoin que
+     ttsDecorateModal et TTS_CLIPS existent dès le premier openOverlay(). -->
+<script type="application/json" id="tts-static">
+{
+  "win_mission": "Mission réussie ! Super, tu progresses bien. En route pour la mission suivante !",
+  "win_jalon": "Défi réussi ! Bravo, tu maîtrises. Passe à la suite.",
+  "win_review": "Bien joué ! Tu as refait cette mission. On revient à ta mission en cours, ta progression est gardée.",
+  "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau jeu s'ouvre.",
+  "course_finish": "Parcours terminé ! Incroyable, tu as fini les sept niveaux du clavier. Tu tapes comme un pro !",
+  "boss_hint_word": "Pendant l'esquive, tape vite le mot qui descend, lettre par lettre. Pendant l'attaque, tape le mot d'arme affiché devant le dragon. Attention aux majuscules et aux fautes : chaque erreur coûte une vie !",
+  "boss_hint_swarm": "Déplace ton vaisseau avec les touches F et J. Aligne-toi juste sous un alien, puis tape sa lettre pour tirer au laser. Quand le vaisseau-mère est vulnérable, tape les symboles et les chiffres affichés.",
+  "boss_hint_spell": "Pendant l'esquive, lis bien la touche dans la boule violette et tape-la vite, attention aux majuscules. Pendant l'attaque, frappe les symboles affichés devant le dragon."
+}
+</script>
+<script src="tts/tts-atelier.js"></script>
+<script src="tts/le-clavier.clips.js"></script>
+
 <script>
 /* =========================================================
    1. CLAVIER AZERTY — pédagogie (astuces + mini-clavier)
@@ -2523,6 +2541,7 @@ function openBossBriefing(s){
     + '</ul>'
     + ((s.diff && !resuming)?('<p style="font-weight:800;color:var(--red-d);margin:6px 0 0">Choisis ta difficulté :</p>'+bossModeChooserHTML()):'')
     + ((s.diff && !resuming)?'':'<div class="m-actions"><button class="m-btn primary test" id="goBtn">'+(resuming?'⚔️ Reprendre le combat ▶':'⚔️ Au combat ! 🚀')+'</button></div>');
+  modal.dataset.ttsText = s.title + '. ' + s.desc;   // 🔊 lit la consigne du boss
   openOverlay();
   if(s.diff && !resuming){ bindBossModeChoice(); return; }
   document.getElementById('goBtn').onclick=resuming
@@ -2579,6 +2598,7 @@ function openRoundPopup(){
     + kbimg
     + fjBox
     + '<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
+  modal.dataset.ttsText = s.title + '. ' + s.desc;   // 🔊 lit le titre + la consigne de la mission
   openOverlay();
   document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }
@@ -2600,6 +2620,7 @@ function onWin(sc){
     modal.className='modal good';
     modal.innerHTML=head('💪','Bien joué !','Tu as refait cette mission. On revient à <b>ta mission en cours</b>, ta progression est gardée.')
       +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma mission</button></div>';
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).win_review || '';
     openOverlay(); reveal();
     document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
     return;
@@ -2623,6 +2644,7 @@ function onWin(sc){
       jalon?'Défi réussi !':'Mission réussie !',
       jalon?'Bravo, tu maîtrises ! Passe à la suite.':'Super, tu progresses bien. En route pour la mission suivante !')
     +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{})[jalon?'win_jalon':'win_mission'] || '';
   openOverlay(); if(jalon && !sc) confetti();
   reveal();
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
@@ -2650,6 +2672,7 @@ function openGameTip(ch){
     + buildKeyboard(hl)
     + fjBox
     + '<div class="m-actions"><button class="m-btn primary green" id="tipResume">On continue ! ▶</button></div>';
+  modal.dataset.ttsText = tipFor(ch);   // 🔊 lit l'astuce (comment taper la touche)
   openOverlay();
   document.getElementById('tipResume').onclick=()=>{ closeOverlay(); resumeActive(); };
 }
@@ -2688,6 +2711,7 @@ function openLevelIntro(n, cont){
     + (it.teach?('<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p>'+extra+'</div>'):'')
     + (tools?'<ul class="newtools">'+tools+'</ul>':'')
     + '<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
+  modal.dataset.ttsText = lvl.title + '. ' + (it.lead||'') + (it.teach ? ' ' + it.teach : '');   // 🔊 lit l'intro du niveau
   openOverlay();
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
 }
@@ -2712,6 +2736,7 @@ function openLevelUnlockedModal(nextN){
     +'<div class="m-actions">'
     +'<a class="m-btn ghost" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a>'
     +'<button class="m-btn primary green" id="goNextLvl">Aller au Niveau '+nextN+' →</button></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).unlocked || '';
   openOverlay();
   document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
 }
@@ -2722,6 +2747,7 @@ function courseFinish(){
     +'<p>Incroyable ! Tu as fini les <b>7 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les accents, les chiffres, le piratage alien, la frappe libre et la chasse à la lave. Tu tapes comme un pro ! 👏</p>'
     +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
   document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
 }
@@ -2858,6 +2884,7 @@ document.getElementById('hintBtn').onclick=()=>{
     modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker">Astuce — Combat de Boss</div>'
       +'<p class="tip-cap">'+tip+'</p>'
       +'<div class="m-actions"><button class="m-btn primary green" id="okHint">J\'ai compris ▶</button></div>';
+    modal.dataset.ttsText = (window.TTS_STATIC||{})[currentStep.wordMode?'boss_hint_word':currentStep.swarm?'boss_hint_swarm':'boss_hint_spell'] || '';
     openOverlay();
     document.getElementById('okHint').onclick=()=>{ closeOverlay(); resumeActive(); };
     return;
@@ -2878,6 +2905,7 @@ document.getElementById('hintBtn').onclick=()=>{
   modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker">Astuce</div>'
     +'<p class="tip-cap">'+tipTxt+'</p>'+kb
     +'<div class="m-actions"><button class="m-btn primary green" id="okHint">J\'ai compris ▶</button></div>';
+  modal.dataset.ttsText = tipTxt;   // 🔊 lit l'astuce (touches surlignées / consigne dactylo)
   openOverlay();
   document.getElementById('okHint').onclick=()=>{ closeOverlay(); resumeActive(); };
 };
@@ -2885,8 +2913,8 @@ document.getElementById('hintBtn').onclick=()=>{
 /* =========================================================
    8. OVERLAY / TOAST / CONFETTI
    ========================================================= */
-function openOverlay(){ pauseActive(); overlay.classList.add('open'); }   // tout panneau gèle l'exercice
-function closeOverlay(){ overlay.classList.remove('open'); }
+function openOverlay(){ pauseActive(); overlay.classList.add('open'); if(window.ttsDecorateModal) ttsDecorateModal(modal); }   // tout panneau gèle l'exercice + 🔊 lecture
+function closeOverlay(){ overlay.classList.remove('open'); if(window.ttsStopCurrent) ttsStopCurrent(); }   // coupe l'audio en cours si la popup se ferme
 let toastTimer=null;
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),8000); }
