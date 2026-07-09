@@ -707,6 +707,32 @@
   </div>
   <div class="toast" id="toast"></div>
 
+<!-- Synthèse vocale (voix Denise, pré-générée). Chargé AVANT le script du jeu :
+     la toute première popup (intro auto-affichée au chargement) a besoin que
+     ttsDecorateModal et TTS_CLIPS existent dès le premier openOverlay(). -->
+<script type="application/json" id="tts-static">
+{
+  "win_review": "Bien joué ! Tu as réussi cette révision. Tu retrouves ton travail là où tu l'avais laissé.",
+  "win_test": "Défi réussi ! Super, tu as réussi à combiner plusieurs choses en même temps. Tu deviens un vrai pro de la mise en page !",
+  "win_mission": "Bravo ! Mission réussie. Tu peux passer à la suite.",
+  "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un tout nouveau niveau s'ouvre à toi, avec de nouveaux boutons à découvrir !",
+  "course_finish": "Parcours terminé ! Incroyable, tu as fini tous les niveaux du traitement de texte : la mise en forme, les paragraphes, les listes, le clavier, l'écriture, les tableaux et les images. Tu es devenu un vrai champion de l'ordinateur !",
+  "fail_pasencore_content": "Pas encore… Tu n'y es pas encore tout à fait, continue, ton travail est gardé. Vérifie où tu places ton curseur avant d'appuyer. Besoin d'aide ? Clique sur Indice.",
+  "fail_pasencore_table": "Pas encore… Il te manque encore quelque chose, continue, ton tableau est gardé. Regarde bien chaque consigne : la bonne case, la bonne couleur, la bonne taille. Besoin d'aide ? Clique sur Indice.",
+  "fail_pasencore_obj": "Pas encore… Il te manque encore quelque chose, continue, ton travail est gardé. Vérifie bien chaque consigne : la bonne image, le bon habillage, l'ordre. Besoin d'aide ? Clique sur Indice.",
+  "fail_pasencore_generic": "Pas encore… Tu n'y es pas encore tout à fait, continue, ton travail est gardé. Besoin d'aide ? Clique sur Indice.",
+  "fail_presque": "Presque ! Tu as bien réussi la mission, mais tu as aussi modifié quelque chose qui n'était pas demandé, ou plus que demandé. La règle d'or : on fait seulement ce que la mission demande. On recommence cette mission, tu vas y arriver !",
+  "fail_ohoh_content": "Oh oh, tu as modifié autre chose ! Tu as changé des choses qui n'étaient pas demandées, et la mission n'est pas finie. Il faut faire seulement ce qui est demandé dans la mission. Besoin d'aide ? Clique sur Indice.",
+  "fail_ohoh_obj": "Oh oh, tu as fait autre chose ! Tu as ajouté ou changé des choses qui n'étaient pas demandées, et la mission n'est pas finie. Il faut faire seulement ce qui est demandé. Besoin d'aide ? Clique sur Indice.",
+  "fail_ohoh_generic": "Oh oh, tu as modifié autre chose ! Tu as changé des choses qui n'étaient pas demandées. Il faut faire seulement ce qui est demandé dans la mission. Besoin d'aide ? Clique sur Indice.",
+  "hint_save": "Enregistre ton devoir. Clique sur le menu Fichier en haut, puis sur Enregistrer sous. Ensuite, range ton devoir dans Ce PC, Ma Classe, Restitution de devoirs.",
+  "hint_generic": "L'indice. Relis bien chaque consigne, une par une. Fais seulement ce qui est demandé, dans l'ordre.",
+  "replay_intro": "Tu veux t'entraîner ? Choisis un exercice à refaire pour te rappeler comment faire. Tu reviendras ensuite au test, sans rien perdre."
+}
+</script>
+<script src="tts/tts-atelier.js"></script>
+<script src="tts/traitement-texte.clips.js"></script>
+
 <script>
 /* =========================================================
    1. DOCUMENT MODEL  (verified logic)
@@ -2951,6 +2977,7 @@ function openMissionPopup(){
       </div>
       <p style="font-size:.95rem;color:var(--muted)">Astuce : si tu as oublié comment faire, clique sur <b>💡 Indice</b> : tu pourras refaire un exercice de ton choix.</p>
       <div class="m-actions"><button class="m-btn primary test" id="goBtn">Je me lance ! 🚀</button></div>`;
+    modal.dataset.ttsText = s.title + '. ' + s.intro + ' ' + s.tasks.join(' ');
   }else{
     modal.className='modal';
     modal.innerHTML=`
@@ -2963,6 +2990,7 @@ function openMissionPopup(){
         <ol>${s.how.map(h=>`<li>${h}</li>`).join('')}</ol>
       </div>
       <div class="m-actions"><button class="m-btn primary" id="goBtn">C'est parti ! 🚀</button></div>`;
+    modal.dataset.ttsText = s.title + '. ' + s.intro + ' ' + s.how.join(' ');
   }
   openOverlay();
   document.getElementById('goBtn').onclick=closeOverlay;
@@ -3070,6 +3098,7 @@ function onContentPasEncore(){
     <h2>Pas encore…</h2>
     <p>Ta mission : <b>${currentStep.expect}</b>. Tu n'y es pas encore tout à fait — <b>continue, ton travail est gardé</b>. Vérifie <b>où tu places ton curseur</b> avant d'appuyer. Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
     <div class="m-actions"><button class="m-btn primary" id="keep">Je continue</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_pasencore_content || '';
   openOverlay();
   document.getElementById('keep').onclick=closeOverlay;
 }
@@ -3081,6 +3110,7 @@ function onContentPresque(){
     <p>Tu as bien réussi la mission… mais tu as aussi modifié <b>quelque chose qui n'était pas demandé</b> (ou plus que demandé).</p>
     <p>La règle d'or : <b>on fait seulement ce que la mission demande</b>. On recommence cette mission, tu vas y arriver !</p>
     <div class="m-actions"><button class="m-btn primary test" id="redo">Je recommence</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_presque || '';
   openOverlay();
   document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
@@ -3092,6 +3122,7 @@ function onContentOhoh(){
     <p>Tu as changé des choses qui n'étaient <b>pas demandées</b>, et la mission n'est pas finie. Il faut faire <b>seulement</b> ce qui est demandé dans la mission.</p>
     <p>Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
     <div class="m-actions"><button class="m-btn primary test" id="retry">↺ Je réessaie</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_ohoh_content || '';
   openOverlay();
   document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
@@ -3102,6 +3133,7 @@ function onTablePasEncore(){
     <h2>Pas encore…</h2>
     <p>Ta mission : <b>${currentStep.expect}</b>. Il te manque encore quelque chose — <b>continue, ton tableau est gardé</b>. Regarde bien chaque consigne (la bonne case, la bonne couleur, la bonne taille). Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
     <div class="m-actions"><button class="m-btn primary" id="keep">Je continue</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_pasencore_table || '';
   openOverlay();
   document.getElementById('keep').onclick=closeOverlay;
 }
@@ -3113,6 +3145,7 @@ function onTablePresque(){
     <p>Tu as bien réussi la mission… mais tu as aussi modifié <b>quelque chose qui n'était pas demandé</b> (ou plus que demandé).</p>
     <p>La règle d'or : <b>on fait seulement ce que la mission demande</b>. On recommence cette mission, tu vas y arriver !</p>
     <div class="m-actions"><button class="m-btn primary test" id="redo">Je recommence</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_presque || '';
   openOverlay();
   document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
@@ -3124,6 +3157,7 @@ function onTableOhoh(){
     <p>Tu as changé des choses qui n'étaient <b>pas demandées</b>, et la mission n'est pas finie. Il faut faire <b>seulement</b> ce qui est demandé dans la mission.</p>
     <p>Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
     <div class="m-actions"><button class="m-btn primary test" id="retry">↺ Je réessaie</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_ohoh_content || '';
   openOverlay();
   document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
@@ -3134,6 +3168,7 @@ function onObjPasEncore(){
     <h2>Pas encore…</h2>
     <p>Ta mission : <b>${currentStep.expect}</b>. Il te manque encore quelque chose — <b>continue, ton travail est gardé</b>. Vérifie bien chaque consigne (la bonne image, le bon habillage, l'ordre…). Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
     <div class="m-actions"><button class="m-btn primary" id="keep">Je continue</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_pasencore_obj || '';
   openOverlay();
   document.getElementById('keep').onclick=closeOverlay;
 }
@@ -3145,6 +3180,7 @@ function onObjPresque(){
     <p>Tu as bien réussi la mission… mais tu as aussi ajouté ou modifié <b>quelque chose qui n'était pas demandé</b>.</p>
     <p>La règle d'or : <b>on fait seulement ce que la mission demande</b>. On recommence cette mission, tu vas y arriver !</p>
     <div class="m-actions"><button class="m-btn primary test" id="redo">Je recommence</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_presque || '';
   openOverlay();
   document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
@@ -3156,6 +3192,7 @@ function onObjOhoh(){
     <p>Tu as ajouté ou changé des choses qui n'étaient <b>pas demandées</b>, et la mission n'est pas finie. Il faut faire <b>seulement</b> ce qui est demandé.</p>
     <p>Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
     <div class="m-actions"><button class="m-btn primary test" id="retry">↺ Je réessaie</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_ohoh_obj || '';
   openOverlay();
   document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
@@ -3173,6 +3210,7 @@ function onError(res){
       <p>Tu as changé des choses qui n'étaient <b>pas demandées</b>. Il faut faire <b>seulement</b> ce qui est demandé dans la mission.</p>
       <p>Besoin d'aide ? Clique sur <b>💡 Indice</b>.</p>
       <div class="m-actions"><button class="m-btn primary test" id="retry">↺ Je réessaie</button></div>`;
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_ohoh_generic || '';
     openOverlay();
     document.getElementById('retry').onclick=()=>{ closeOverlay(); restartCurrent(); };
     return;
@@ -3188,6 +3226,7 @@ function onError(res){
     <h2>Pas encore…</h2>
     <p>${body}</p>
     <div class="m-actions"><button class="m-btn primary" id="keep">Je continue</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_pasencore_generic || '';
   openOverlay();
   document.getElementById('keep').onclick=closeOverlay;
 }
@@ -3200,6 +3239,7 @@ function onExtra(res){
     <p>Tu as bien réussi la mission… mais tu as aussi modifié <b>quelque chose qui n'était pas demandé</b>.</p>
     <p>La règle d'or : <b>on fait seulement ce que la mission demande</b>. On recommence cette mission, tu vas y arriver !</p>
     <div class="m-actions"><button class="m-btn primary test" id="redo">Je recommence</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).fail_presque || '';
   openOverlay();
   document.getElementById('redo').onclick=()=>{ closeOverlay(); restartCurrent(); };
 }
@@ -3220,6 +3260,7 @@ function onSuccess(){
       <h2>Bien joué !</h2>
       <p>Tu as réussi cette révision. On revient ${where} : tu retrouves ton travail <b>là où tu l'avais laissé</b>.</p>
       <div class="m-actions"><button class="m-btn primary green" id="back">Revenir ${where}</button></div>`;
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).win_review || '';
     openOverlay();
     document.getElementById('back').onclick=()=>{ closeOverlay(); exitReplay(); };
     return;
@@ -3235,12 +3276,14 @@ function onSuccess(){
       <h2>Défi réussi !</h2>
       <p>Super ! Tu as réussi à <b>combiner plusieurs choses</b> en même temps. Tu deviens un vrai pro de la mise en page !</p>
       <div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>`;
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).win_test || '';
   }else{
     modal.innerHTML=`
       <span class="m-emoji">✅</span>
       <h2>Bravo !</h2>
       <p>Mission réussie. Tu peux passer à la suite.</p>
       <div class="m-actions"><button class="m-btn primary green" id="next">Mission suivante →</button></div>`;
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).win_mission || '';
   }
   openOverlay();
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(stepIndex+1); };
@@ -3272,6 +3315,7 @@ function openLevelUnlockedModal(nextN){
       <a class="m-btn ghost" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a>
       <button class="m-btn primary green" id="goNextLvl">Aller au Niveau ${nextN} →</button>
     </div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).unlocked || '';
   openOverlay();
   document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN, 0, true); };
 }
@@ -3286,6 +3330,7 @@ function onCourseFinish(){
       <button class="m-btn ghost" id="again">↺ Tout recommencer</button>
       <a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Retour à l'accueil</a>
     </div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
   document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1, 0, true); };
 }
@@ -3312,6 +3357,7 @@ function onHint(){
     modal.innerHTML=`<span class="m-emoji">💡</span><h2>Enregistre ton devoir</h2>
       <div class="howto" style="margin-top:4px"><p>Clique sur le menu <b>Fichier</b> 📂 en haut, puis sur <b>Enregistrer sous</b> 💾.<br>Ensuite, range ton devoir dans <b>Ce PC › Ma Classe › Restitution de devoirs</b>.</p></div>
       <div class="m-actions"><button class="m-btn primary" id="okHint">Montre-moi ✨</button></div>`;
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).hint_save || '';
     openOverlay();
     document.getElementById('okHint').onclick=()=>{ closeOverlay(); highlightSavePath(); };
     return;
@@ -3323,6 +3369,7 @@ function onHint(){
     modal.innerHTML=`<span class="m-emoji">💡</span><h2>L'indice</h2>
       <p>Relis bien chaque consigne, une par une. Fais <b>seulement</b> ce qui est demandé, dans l'ordre.</p>
       <div class="m-actions"><button class="m-btn primary" id="okHint">J'ai compris</button></div>`;
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).hint_generic || '';
     openOverlay(); document.getElementById('okHint').onclick=closeOverlay; return;
   }
   const target=document.getElementById(h.target);
@@ -3334,6 +3381,7 @@ function onHint(){
     <p>${h.text}</p>
     <p style="font-size:.95rem;color:var(--muted)">${inTable?'Les bonnes cases vont <b>clignoter</b> ✨.':'Regarde la barre d\'outils : le bon bouton <b>brille en orange</b> ✨.'}</p>
     <div class="m-actions"><button class="m-btn primary" id="okHint">J'ai compris</button></div>`;
+  modal.dataset.ttsText = h.text;
   openOverlay();
   document.getElementById('okHint').onclick=()=>{
     closeOverlay();
@@ -3350,6 +3398,7 @@ function openReplayPanel(){
     <p>Choisis un exercice à <b>refaire</b> pour te rappeler comment faire. Tu reviendras ensuite au test, sans rien perdre.</p>
     <div class="replay-grid" id="replayGrid"></div>
     <div class="m-actions"><button class="m-btn ghost" id="closeHint">Non merci, je continue le test</button></div>`;
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).replay_intro || '';
   openOverlay();
   const grid=document.getElementById('replayGrid');
   refs.forEach(m=>{
@@ -3403,8 +3452,8 @@ document.getElementById('seeMission').onclick=openMissionPopup;
 /* =========================================================
    9. OVERLAY / TOAST / CONFETTI
    ========================================================= */
-function openOverlay(){ overlay.classList.add('open'); }
-function closeOverlay(){ overlay.classList.remove('open'); }
+function openOverlay(){ overlay.classList.add('open'); if(window.ttsDecorateModal) ttsDecorateModal(modal); }
+function closeOverlay(){ overlay.classList.remove('open'); if(window.ttsStopCurrent) ttsStopCurrent(); }
 
 let toastTimer=null;
 function toast(msg){
@@ -3465,6 +3514,8 @@ function openLevelIntro(n, cont){
     <ul class="newtools">${tools}</ul>
     ${lvl.note?`<p style="font-size:.97rem;background:#fff6e6;border:2px solid #f6d68a;border-radius:12px;padding:10px 12px;">${lvl.note}</p>`:`<p style="font-size:.95rem;color:var(--muted)">Ils sont apparus dans ta barre d'outils, tout en haut. À toi de jouer !</p>`}
     <div class="m-actions"><button class="m-btn primary green" id="lvlGo">C'est parti ! 🚀</button></div>`;
+  modal.dataset.ttsText = lvl.title + ". Bienvenue ! Voici les nouveaux pouvoirs que tu viens de débloquer. "
+    + (lvl.note || "Ils sont apparus dans ta barre d'outils, tout en haut. À toi de jouer !");
   openOverlay();
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); cont&&cont(); };
 }

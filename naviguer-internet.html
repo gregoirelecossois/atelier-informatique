@@ -985,6 +985,22 @@
   <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
   <div class="toast" id="toast"></div>
 
+<!-- Synthèse vocale (voix Denise, pré-générée). Chargé AVANT le script du jeu :
+     la toute première popup (intro auto-affichée au chargement) a besoin que
+     ttsDecorateModal et TTS_CLIPS existent dès le premier openOverlay(). -->
+<script type="application/json" id="tts-static">
+{
+  "win_review": "Bien joué ! Tu as refait cette mission. On revient à ta mission en cours, ta progression est gardée.",
+  "win_jalon": "Défi réussi ! Nickel, agent. Mission suivante !",
+  "win_mission": "Mission réussie ! Nickel, agent. Mission suivante !",
+  "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau niveau s'ouvre à toi.",
+  "course_finish": "Permis d'agent du web ! Neuf niveaux, POPZILLA écrasé, INFOX au tapis. Le web n'a plus de pièges pour toi, agent !",
+  "hint_game_fallback": "Suis la consigne affichée sur l'écran !"
+}
+</script>
+<script src="tts/tts-atelier.js"></script>
+<script src="tts/naviguer-internet.clips.js"></script>
+
 <script>
 /* =========================================================
    NAVIGUER SUR INTERNET — navigateur « Goupil » simulé
@@ -6188,6 +6204,7 @@ function openLevelIntro(n, cont){
     +'<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p></div>'
     +(tools?'<ul class="newtools">'+tools+'</ul>':'')
     +'<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
+  modal.dataset.ttsText = lvl.title + '. ' + (it.lead||'') + (it.teach ? ' ' + it.teach : '');
   openOverlay();
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
 }
@@ -6206,6 +6223,7 @@ function openRoundPopup(){
     +(s.bossmode?bossModesHtml():'')
     +'<div class="m-actions"><button class="m-btn primary'+(boss?' boss':(exam?' test':''))+'" id="goBtn">'
     +(boss?'À l\'attaque ! ⚔️':(game?(s._launched?'Reprendre 🎮':'GO ! 🎮'):'C\'est parti ! 🚀'))+'</button></div>';
+  modal.dataset.ttsText = s.title + '. ' + (s.intro||'') + ' ' + (s.objectives||[]).map(o=>o.t||'').join(' ');
   openOverlay();
   if(s.bossmode) bindBossModes();
   document.getElementById('goBtn').onclick=()=>{
@@ -6225,6 +6243,7 @@ function onMissionWin(){
     modal.innerHTML='<span class="m-emoji">💪</span><h2>Bien joué !</h2>'
       +'<p>Tu as refait cette mission. On revient à <b>ta mission en cours</b>, ta progression est gardée.</p>'
       +'<div class="m-actions"><button class="m-btn primary green" id="bk">Revenir à ma mission</button></div>';
+    modal.dataset.ttsText = (window.TTS_STATIC||{}).win_review || '';
     openOverlay(); document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
     return;
   }
@@ -6240,6 +6259,7 @@ function onMissionWin(){
     +starLineHtml(guidedStars)
     +'<p>'+(guidedStars<3?'Sans l\'astuce 💡, c\'est ⭐⭐⭐ !':'Nickel, agent. Mission suivante !')+'</p>'
     +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{})[jalon?'win_jalon':'win_mission'] || '';
   openOverlay(); if(jalon) confetti();
   popStars(guidedStars);
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
@@ -6259,6 +6279,7 @@ function levelComplete(){
     +'<div class="m-actions">'
     +'<a class="m-btn ghost" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a>'
     +'<button class="m-btn primary green" id="goNextLvl">Aller au Niveau '+nextN+' →</button></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).unlocked || '';
   openOverlay();
   document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
 }
@@ -6278,6 +6299,7 @@ function courseFinish(){
       :'<p style="font-size:.9rem;color:var(--muted)">Récolte PARFAITE. Chapeau bas, agent. 🎩</p>')
     +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
     +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+  modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
   document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
 }
@@ -6326,9 +6348,11 @@ function openOverlay(){
   const fs=pzFsEl();
   if(fs){ if(!_ovHome) _ovHome=overlay.parentNode; if(overlay.parentNode!==fs) fs.appendChild(overlay); }
   overlay.classList.add('open');
+  if(window.ttsDecorateModal) ttsDecorateModal(modal);
 }
 function closeOverlay(){
   overlay.classList.remove('open');
+  if(window.ttsStopCurrent) ttsStopCurrent();
   if(_ovHome && overlay.parentNode!==_ovHome){ _ovHome.appendChild(overlay); _ovHome=null; }
   pzSetPaused(false);
 }
@@ -6401,6 +6425,7 @@ function onHint(){
     +(pzOn?'<p style="font-size:.9rem;color:var(--muted)">⏸️ POPZILLA est <b>en pause</b> le temps de lire l\'astuce.</p>':'')
     +(game?'':'<p style="font-size:.95rem;color:var(--muted)">Les éléments importants vont <b>briller en jaune</b> ✨ sur l\'écran.</p>')
     +'<div class="m-actions"><button class="m-btn primary test" id="hintGo">'+(game?'Compris !':'Montre-moi ✨')+'</button></div>';
+  modal.dataset.ttsText = hintTitle + '. ' + stripTags(hintTxt);
   openOverlay();
   document.getElementById('hintGo').onclick=()=>{ closeOverlay(); if(!game) highlightForStep(); };
 }
