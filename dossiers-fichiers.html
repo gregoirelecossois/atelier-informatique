@@ -1457,6 +1457,7 @@ function doRestore(nodes){
 function inTree(root, node){ let f=false; walk(root, n=>{ if(n===node) f=true; }); return f; }
 function emptyBin(){
   if(!BIN.kids.length){ toast('La corbeille est déjà vide'); return; }
+  BIN.kids.forEach(n=>(EX.evt.permaDels=EX.evt.permaDels||[]).push({name:n.name, display:displayName(n)}));
   EX.evt.binEmptied=true; BIN.kids=[]; beep('delete'); toast('Corbeille vidée 🧹'); renderAll(); checkMission();
 }
 function newFolder(dest){
@@ -1787,7 +1788,10 @@ function onItemContext(e, node, box){
   if(inBin){
     items.push({ic:'♻️',txt:'Restaurer',fn:()=>doRestore(sel)});
     items.push('sep');
-    items.push({ic:'🗑️',txt:'Supprimer définitivement',danger:true,fn:()=>{ BIN.kids=BIN.kids.filter(x=>sel.indexOf(x)<0); beep('delete'); renderAll(); checkMission(); }});
+    items.push({ic:'🗑️',txt:'Supprimer définitivement',danger:true,fn:()=>{
+      sel.forEach(n=>(EX.evt.permaDels=EX.evt.permaDels||[]).push({name:n.name, display:displayName(n)}));
+      BIN.kids=BIN.kids.filter(x=>sel.indexOf(x)<0); beep('delete'); renderAll(); checkMission();
+    }});
     showCtx(e.clientX, e.clientY, items); return;
   }
   items.push({ic:node.type==='folder'?'📂':'👁️',txt:'Ouvrir',k:'double-clic',fn:()=>openNode(node, box!=='desktop'?EX.windows.find(x=>x.id===box):null)});
@@ -2017,6 +2021,7 @@ const G={
   usedNavPane:()=>({hint:'Dans le volet de gauche, clique sur un dossier pour t\'y rendre.', test:c=>c.evt.usedNavPane}),
   expandedTree:()=>({hint:'Dans le volet de gauche, clique le chevron ▸ devant un dossier pour le déplier.', test:c=>c.evt.navExpanded}),
   atFolder:(name)=>({hint:'Entre dans le bon dossier en double-cliquant dessus.', test:c=>c.win && c.win.cur.name===name}),
+  atFolderVia:(name,method,hint)=>({hint, viaTarget:name, viaMethod:method, test:c=>c.win && c.win.cur.name===name && c.evt[method]}),
   usedBack:()=>({test:c=>c.evt.usedBack}),
   usedFwd:()=>({test:c=>c.evt.usedFwd}),
   usedUp:()=>({test:c=>c.evt.usedUp}),
@@ -2028,7 +2033,7 @@ const G={
   movedInto:(item,dest)=>({hint:'Glisse le fichier sur le dossier, ou utilise Couper puis Coller.', test:c=>c.inFolder(dest,item)}),
   copiedInto:(item,dest)=>({hint:'Copier (Ctrl+C) puis Coller (Ctrl+V) : la copie reste à sa place ET arrive dans le dossier.', test:c=>c.inFolder(dest,item) && c.countNamed(item)>=2}),
   deleted:(name)=>({hint:'Sélectionne le fichier puis appuie sur Suppr (ou clic droit → Supprimer).', test:c=>c.bin.some(n=>n.name===name||displayName(n)===name)}),
-  restored:(name)=>({hint:'Ouvre la Corbeille, clic droit sur le fichier → Restaurer.', test:c=> !!c.find(name).length && !c.bin.some(n=>n.name===name)}),
+  restored:(name)=>({hint:'Ouvre la Corbeille, clic droit sur le fichier → Restaurer.', restoreTarget:name, test:c=> !!c.find(name).length && !c.bin.some(n=>n.name===name)}),
   binEmpty:()=>({hint:'Ouvre la Corbeille puis clic droit dans le vide → Vider la corbeille.', test:c=>c.evt.binEmptied}),
   vanished:(name)=>({hint:'Supprime le fichier puis vide la corbeille pour le faire disparaître pour de bon.', test:c=> !c.find(name).length && !c.bin.some(n=>n.name===name||displayName(n)===name) && c.evt.everDeleted}),
   sortedBy:(by)=>({hint:'Clic droit dans le vide → Trier par…', test:c=>c.win && c.win.sortBy===by}),
@@ -2051,25 +2056,29 @@ const G={
 
 /* construit, à partir des objectifs, la liste des actions destructives autorisées */
 function buildGuard(step){
-  const g={del:[], ren:[], mov:[]};
+  const g={del:[], ren:[], mov:[], restoreTargets:[]};
   (step.objectives||[]).forEach(o=>{
     if(o.del) g.del=g.del.concat(o.del);
     if(o.ren) g.ren=g.ren.concat(o.ren);
     if(o.mov) g.mov=g.mov.concat(o.mov);
     // deletedTogether / lassoDeleted : les noms sont dans le goal lui-même
     if(o.goal && o.goal.togetherNames) g.del=g.del.concat(o.goal.togetherNames);
+    if(o.goal && o.goal.restoreTarget) g.restoreTargets.push(o.goal.restoreTarget);
   });
   return g;
 }
 function _allowed(rec, list){ return list.some(a=>a===rec.name || a===rec.display); }
 /* détecte une action « hors objectif » : suppression / renommage / déplacement
-   d'un élément du décor (seeded) qui n'était pas demandé. Renvoie le type ou null. */
+   d'un élément du décor (seeded) qui n'était pas demandé, ou suppression définitive
+   (corbeille vidée / « Supprimer définitivement ») d'un fichier qu'il fallait restaurer.
+   Renvoie le type ou null. */
 function missionViolation(){
   if(!currentStep || currentStep.mode==='boss' || reviewing() || _missionDone) return null;
   const g=currentStep._guard; if(!g) return null;
   for(const r of (EX.evt.dels||[])){ if(r.seeded && !_allowed(r, g.del)) return 'delete'; }
   for(const r of (EX.evt.rens||[])){ if(r.seeded && !_allowed({name:r.from, display:r.from}, g.ren)) return 'rename'; }
   for(const r of (EX.evt.movs||[])){ if(r.seeded && !_allowed(r, g.mov)) return 'move'; }
+  for(const r of (EX.evt.permaDels||[])){ if(_allowed(r, g.restoreTargets)) return 'permaDelete'; }
   return null;
 }
 function missionFail(type){
@@ -2077,7 +2086,8 @@ function missionFail(type){
   const map={
     delete:'Tu as <b>supprimé</b> un élément qui n\'était pas demandé.',
     rename:'Tu as <b>renommé</b> un élément que tu ne devais pas toucher.',
-    move:'Tu as <b>déplacé</b> un élément qui n\'était pas dans l\'objectif.'
+    move:'Tu as <b>déplacé</b> un élément qui n\'était pas dans l\'objectif.',
+    permaDelete:'Tu as supprimé <b>définitivement</b> un fichier qu\'il fallait restaurer.'
   };
   modal.className='modal warn';
   modal.innerHTML='<span class="m-emoji">🧭</span><h2>Ce n\'était pas l\'objectif !</h2>'
@@ -2087,6 +2097,27 @@ function missionFail(type){
     +'<div class="m-actions"><button class="m-btn primary test" id="failRetry">↺ Recommencer la mission</button></div>';
   openOverlay();
   document.getElementById('failRetry').onclick=()=>{ closeOverlay(); startStep(playIdx); };
+}
+/* mauvaise méthode utilisée pour atteindre le dossier cible d'un objectif (ex: fil d'Ariane au lieu de ⬆) :
+   on ne recommence pas toute la mission, on relance juste cet objectif */
+function wrongMethodFail(goal){
+  beep('bad');
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">🧭</span><h2>Pas par là !</h2>'
+    +'<p>'+(goal.hint||'Il faut utiliser la méthode demandée par l\'objectif.')+'</p>'
+    +'<div class="m-actions"><button class="m-btn primary test" id="failRetry">↺ Réessayer</button></div>';
+  openOverlay();
+  document.getElementById('failRetry').onclick=()=>{ closeOverlay(); retryObjective(); };
+}
+function captureObjStart(){
+  const ctx=buildCtx();
+  currentStep._objStartNode = ctx.win ? ctx.win.cur : null;
+}
+function retryObjective(){
+  const ctx=buildCtx();
+  if(ctx.win && currentStep._objStartNode) navTo(ctx.win, currentStep._objStartNode);
+  ['usedUp','usedBack','usedFwd','usedCrumb','usedNavPane'].forEach(k=>{ delete EX.evt[k]; });
+  _missionDone=false;
 }
 function checkMission(){
   if(_seeding) return;
@@ -2125,6 +2156,9 @@ function checkMission(){
     }
     if(goal.test(ctx)){
       currentStep._objDone[i]=true; beep('good'); jalonAdvanceDF();
+    } else if(goal.viaMethod && ctx.win && ctx.win.cur.name===goal.viaTarget && !ctx.evt[goal.viaMethod]){
+      _missionDone=true;
+      setTimeout(()=>wrongMethodFail(goal), 200);
     }
   }
 }
@@ -2146,6 +2180,7 @@ function jalonAdvanceDF(){
     currentStep._jalonAnim=false;
     const objs=currentStep.objectives||[];
     if(currentStep._jalonIdx>=objs.length){ _missionDone=true; onMissionWin(); return; }
+    captureObjStart();
     renderJalonObjective(true);
     // cascade : si l'objectif révélé est déjà rempli (action faite en avance), on enchaîne
     setTimeout(checkMission, 260);
@@ -2175,7 +2210,6 @@ const LEVELS=[
 { n:1, title:'Le Bureau et les fenêtres', subtitle:'le bureau',
   intro:{ emoji:'🖥️',
     lead:'Voici le <b>Bureau</b> de l\'ordinateur, avec ses <b>icônes</b> et, en bas, la <b>barre des tâches</b>. On va apprendre à ouvrir et fermer des <b>fenêtres</b>.',
-    teach:'Pour <b>ouvrir</b> un dossier : <b>double-clique</b> dessus (deux clics rapides). Une <b>fenêtre</b> s\'ouvre. En haut à droite : le bouton <b>▁</b> la <b>réduit</b> dans la barre des tâches, le bouton <b>▢</b> l\'<b>agrandit</b> en plein écran (clique encore pour la <b>rétablir</b>), et la croix <b>✕</b> la <b>ferme</b>.',
     tools:[{g:'🖱️',n:'Double-clic pour ouvrir'},{g:'▁',n:'Réduire dans la barre des tâches'},{g:'▢',n:'Agrandir / rétablir la fenêtre'},{g:'✕',n:'Fermer une fenêtre'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'📂',title:'Ouvre, agrandis, ferme',
@@ -2197,7 +2231,6 @@ const LEVELS=[
         {t:'<b>Ferme</b> la dernière fenêtre', goal:G.noWindows()}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'▁',title:'Réduire et menu Démarrer',
-      intro:'Le bouton <b>▁</b> <b>réduit</b> la fenêtre dans la barre des tâches — elle n\'est pas fermée, juste rangée ! Clique son bouton en bas pour la <b>ré-afficher</b>. Ensuite tu ouvriras le <b>⊞ menu Démarrer</b> (en bas à gauche) pour lancer la <b>Calculatrice 🧮</b>.',
       seed:{desktop:homeTree(), open:'Documents'},
       objectives:[
         {t:'<b>Réduis</b> la fenêtre avec le bouton <b>▁</b>', goal:G.minimized()},
@@ -2220,7 +2253,6 @@ const LEVELS=[
 { n:2, title:'Naviguer dans les dossiers', subtitle:'naviguer',
   intro:{ emoji:'🧭',
     lead:'Les dossiers contiennent d\'autres dossiers ! On va apprendre à <b>entrer</b> dedans, à <b>revenir en arrière</b>, et à utiliser le <b>volet de gauche</b> pour se déplacer sans se perdre.',
-    teach:'<b>Double-clique</b> un dossier pour <b>entrer</b> dedans. En haut : <b>◀</b> revient en arrière, <b>▶</b> va en avant, <b>⬆</b> remonte au dossier parent. Le <b>fil d\'Ariane</b> (🖥️ Bureau ▸ … ) montre où tu es. À <b>gauche</b>, le <b>volet de navigation</b> montre l\'arbre des dossiers : clique le <b>chevron ▸</b> pour déplier un dossier, et clique son nom pour t\'y rendre d\'un coup.',
     tools:[{g:'◀ ▶',n:'Précédent / Suivant'},{g:'⬆',n:'Dossier parent'},{g:'🍞',n:'Le fil d\'Ariane'},{g:'▸',n:'Volet de gauche : déplier'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'📂',title:'Entrer, revenir, avancer',
@@ -2237,9 +2269,9 @@ const LEVELS=[
       seed:{desktop:homeTree(), open:'Images'},
       objectives:[
         {t:'Va jusqu\'à <b>Images ▸ Vacances ▸ Plage</b>', goal:G.atFolder('Plage')},
-        {t:'<b>Remonte</b> jusqu\'à <b>Vacances</b> avec <b>⬆</b>', goal:G.atFolder('Vacances')},
+        {t:'<b>Remonte</b> jusqu\'à <b>Vacances</b> avec <b>⬆</b>', goal:G.atFolderVia('Vacances','usedUp','Utilise le bouton <b>⬆</b> (dossier parent), en haut de la fenêtre — pas un autre moyen.')},
         {t:'Ouvre <b>Été</b> et trouve la photo de <b>glace 🍦</b>', goal:G.atFolder('Été')},
-        {t:'Reviens au <b>🖥️ Bureau</b> par le fil d\'Ariane', goal:G.atFolder('Bureau')}
+        {t:'Reviens au <b>🖥️ Bureau</b> par le fil d\'Ariane', goal:G.atFolderVia('Bureau','usedCrumb','Utilise le <b>fil d\'Ariane</b>, en haut de la fenêtre : clique sur <b>🖥️ Bureau</b> dans le chemin affiché.')}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'🗂️',title:'Le volet de gauche',
       intro:'Le <b>volet de gauche</b> donne accès à <b>tous les dossiers</b> — même ceux qui ne s\'affichent pas dans la fenêtre principale. C\'est ton raccourci de navigation !',
@@ -2298,13 +2330,15 @@ const LEVELS=[
         {t:'Crée le dossier <b>Souvenirs</b>', goal:G.created('Souvenirs','Documents')}
       ]},
     {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le calendrier',
-      intro:'Dans le dossier <b>Mois</b>, crée les <b>4 premiers mois</b> de l\'année.',
-      seed:{desktop:[ folder('Documents',[ folder('Mois',[]) ]) ], open:'Documents', go:['Mois']},
+      intro:'Range tes dossiers par <b>année</b> : crée <b>2025</b> et <b>2026</b>, puis range des <b>mois</b> à l\'intérieur de chacun.',
+      seed:{desktop:[ folder('Documents',[]) ], open:'Documents'},
       objectives:[
-        {t:'Crée <b>Janvier</b>', goal:G.created('Janvier','Mois')},
-        {t:'Crée <b>Février</b>', goal:G.created('Février','Mois')},
-        {t:'Crée <b>Mars</b>', goal:G.created('Mars','Mois')},
-        {t:'Crée <b>Avril</b>', goal:G.created('Avril','Mois')}
+        {t:'Crée le dossier <b>2025</b>', goal:G.created('2025','Documents')},
+        {t:'Crée le dossier <b>2026</b>', goal:G.created('2026','Documents')},
+        {t:'Dans <b>2025</b>, crée le dossier <b>Janvier</b>', goal:G.created('Janvier','2025')},
+        {t:'Dans <b>2025</b>, crée le dossier <b>Février</b>', goal:G.created('Février','2025')},
+        {t:'Dans <b>2026</b>, crée le dossier <b>Janvier</b>', goal:G.created('Janvier','2026')},
+        {t:'Dans <b>2026</b>, crée le dossier <b>Février</b>', goal:G.created('Février','2026')}
       ]}
   ]},
 
@@ -2312,8 +2346,8 @@ const LEVELS=[
 { n:4, title:'Ranger : déplacer et copier', subtitle:'déplacer & copier',
   intro:{ emoji:'📦',
     lead:'Le grand rangement ! On apprend à <b>déplacer</b> des fichiers dans le bon dossier, et à les <b>copier</b>.',
-    teach:'<b>Glisse-dépose</b> : clique sur un fichier, garde le doigt appuyé et fais-le glisser <b>sur un dossier</b>, puis lâche. Autre façon : <b>Couper</b> ('+kbd('Ctrl+X')+') puis entrer dans le dossier et <b>Coller</b> ('+kbd('Ctrl+V')+'). Pour <b>copier</b> (garder l\'original) : '+kbd('Ctrl+C')+' puis '+kbd('Ctrl+V')+'.',
-    tools:[{g:'🖐️',n:'Glisser-déposer'},{g:'✂️',n:'Couper / Coller (déplacer)'},{g:'📋',n:'Copier / Coller'}] },
+    teach:'<b>Glisse-dépose</b> : clique sur un fichier, garde le doigt appuyé et fais-le glisser <b>sur un dossier</b>, puis lâche.',
+    tools:[{g:'🖐️',n:'Glisser-déposer'},{g:'✂️',n:'Couper ('+kbd('Ctrl+X')+') / Coller ('+kbd('Ctrl+V')+') — déplacer'},{g:'📋',n:'Copier ('+kbd('Ctrl+C')+') / Coller ('+kbd('Ctrl+V')+')'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'🖐️',title:'Glisse au bon endroit',
       intro:'<b>Glisse-dépose</b> chaque fichier sur le bon dossier. Ne range <b>que</b> ceux demandés !',
@@ -2467,12 +2501,20 @@ const LEVELS=[
         {t:'Sélectionne <b>spam1</b>, <b>spam2</b> et <b>spam3</b> en même temps et supprime-les d\'un seul coup', goal:G.deletedTogether(['spam1.txt','spam2.txt','spam3.txt'])}
       ]},
     {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand ménage',
-      intro:'Fais disparaître les <b>3 fichiers poubelle</b> pour de bon (supprime-les puis vide la corbeille), et garde le reste !',
-      seed:{desktop:[ folder('Documents',[ file('vieux1','txt'), file('vieux2','txt'), file('vieux3','txt'), file('photo-famille','jpg',{icon:'📷'}), file('important','doc') ]) ], open:'Documents'},
+      intro:'Un <b>grand ménage</b> en 4 étapes : supprime des <b>fichiers ensemble</b> sans toucher à l\'important, supprime des <b>dossiers</b>, fais un <b>coup de lasso</b> ailleurs, puis <b>récupère</b> 2 fichiers importants dans la Corbeille avant de la <b>vider</b> !',
+      seed:{desktop:[
+        folder('Documents',[ file('vieux1','txt'), file('photo-famille','jpg',{icon:'📷'}), file('vieux2','txt'), file('important','doc'), file('vieux3','txt') ]),
+        folder('Projets',[ folder('Brouillon-A',[]), folder('Brouillon-B',[]), folder('Vieux-projet',[]) ]),
+        folder('Classeur',[ file('spam1','txt',{icon:'📧'}), file('spam2','txt',{icon:'📧'}), file('pub1','txt',{icon:'📭'}), file('pub2','txt',{icon:'📭'}), file('carnet-de-notes','pdf',{icon:'📔'}), file('attestation-sport','pdf',{icon:'🏅'}) ])
+      ], open:'Documents'},
       objectives:[
-        {t:'Fais disparaître <b>vieux1</b>', goal:G.vanished('vieux1.txt'), del:'vieux1.txt'},
-        {t:'Fais disparaître <b>vieux2</b>', goal:G.vanished('vieux2.txt'), del:'vieux2.txt'},
-        {t:'Fais disparaître <b>vieux3</b>', goal:G.vanished('vieux3.txt'), del:'vieux3.txt'}
+        {t:'Dans <b>Documents</b>, supprime <b>vieux1</b>, <b>vieux2</b> et <b>vieux3</b> en même temps — ils sont mélangés avec les fichiers importants, le <b>lasso</b> ne marche pas ici : utilise <b>Ctrl+clic</b> !',
+          goal:Object.assign(G.deletedTogether(['vieux1.txt','vieux2.txt','vieux3.txt']), {hint:'Ils sont mélangés avec les fichiers importants : impossible de les entourer au lasso. Fais <b>Ctrl+clic</b> sur chacun des 3 fichiers à supprimer, puis '+kbd('Suppr')+' une seule fois.'})},
+        {t:'Ouvre <b>Projets</b> et supprime les <b>3 dossiers</b> inutiles en même temps', goal:G.deletedTogether(['Brouillon-A','Brouillon-B','Vieux-projet'])},
+        {t:'Ouvre <b>Classeur</b>, <b>entoure tout au lasso</b> (y compris les 2 fichiers importants, tu les récupéreras juste après !) et supprime d\'un coup', goal:G.lassoDeleted(['spam1.txt','spam2.txt','pub1.txt','pub2.txt','carnet-de-notes.pdf','attestation-sport.pdf'])},
+        {t:'Ouvre la <b>Corbeille</b> et restaure <b>carnet-de-notes</b>', goal:G.restored('carnet-de-notes.pdf')},
+        {t:'Restaure aussi <b>attestation-sport</b>', goal:G.restored('attestation-sport.pdf')},
+        {t:'<b>Vide</b> la corbeille pour finir le grand ménage', goal:G.binEmpty()}
       ]}
   ]},
 
@@ -2799,6 +2841,7 @@ function startStep(idx){
   if(currentStep.mode==='boss'){ seedWorld(bossSeed()); updateProgress(); updateBanner(); openBossBriefing(); return; }
   const seed=currentStep.seed && currentStep.seed.custom ? makeSeed(currentStep.seed.custom) : (currentStep.seed||{desktop:homeTree()});
   seedWorld(seed);
+  captureObjStart();
   updateProgress(); updateBanner();
   openRoundPopup();
 }
@@ -2839,7 +2882,7 @@ function openLevelIntro(n, cont){
   modal.innerHTML='<span class="m-emoji">'+it.emoji+'</span>'
     +'<div class="kicker">Niveau '+n+'</div><h2>'+lvl.title+'</h2>'
     +'<p>'+it.lead+'</p>'
-    +'<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p></div>'
+    +(it.teach?'<div class="howto"><p class="h-head">👉 Comment faire :</p><p>'+it.teach+'</p></div>':'')
     +(tools?'<ul class="newtools">'+tools+'</ul>':'')
     +'<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
   openOverlay();
@@ -2847,13 +2890,11 @@ function openLevelIntro(n, cont){
 }
 function openRoundPopup(){
   const s=currentStep, jalon=s.kind==='jalon';
-  const list=(s.objectives||[]).map(o=>'<li><span>'+o.t+'</span></li>').join('');
   modal.className='modal'+(jalon?' test-modal':'');
   modal.innerHTML='<span class="m-emoji">'+s.emoji+'</span>'
     +'<div class="kicker">'+(reviewing()?'Entraînement':s.label)+'</div><h2>'+s.title+'</h2>'
     +'<div class="howto'+(jalon?' test':'')+'"><p class="h-head">'+(jalon?'🏆 Le défi :':'👉 Ta mission :')+'</p>'
-    +(s.intro?'<p>'+s.intro+'</p>':'')
-    +(list?'<ul class="tasklist">'+list+'</ul>':'<p>'+(s.desc||'')+'</p>')
+    +'<p>'+(s.intro||s.desc||'')+'</p>'
     +'</div>'
     +'<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
   openOverlay();
