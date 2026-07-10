@@ -221,6 +221,27 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </span>
       </a>
+
+      <a class="card active" href="la-messagerie.html">
+        <span class="num">06</span>
+        <span class="emoji">&#x2709;&#xFE0F;</span>
+        <h2>La messagerie</h2>
+        <p>Pilote Cui-Cui, ta messagerie&#160;: &#233;cris, r&#233;ponds, range, pi&#232;ces jointes, agenda&#8230; et d&#233;masque LE PHISHER&#160;!</p>
+        <div class="levels" id="mlLevels">
+          <span class="lvl-chip" data-n="1"><span class="ic">&#x2022;</span>Niv. 1</span>
+          <span class="lvl-chip" data-n="2"><span class="ic">&#x2022;</span>Niv. 2</span>
+          <span class="lvl-chip" data-n="3"><span class="ic">&#x2022;</span>Niv. 3</span>
+          <span class="lvl-chip" data-n="4"><span class="ic">&#x2022;</span>Niv. 4</span>
+          <span class="lvl-chip" data-n="5"><span class="ic">&#x2022;</span>Niv. 5</span>
+          <span class="lvl-chip" data-n="6"><span class="ic">&#x2022;</span>Niv. 6</span>
+          <span class="lvl-chip" data-n="7"><span class="ic">&#x2022;</span>Niv. 7</span>
+          <span class="lvl-chip" data-n="8"><span class="ic">&#x2022;</span>Niv. 8</span>
+          <span class="lvl-chip" data-n="9"><span class="ic">&#x1F3A3;</span> Boss</span>
+        </div>
+        <span class="go">Commencer
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
     </main>
 
     <footer>Atelier informatique &middot; clique sur un jeu pour d&#233;marrer</footer>
@@ -247,6 +268,7 @@
     paint('#ttLevels','tt_unlocked','tt_curlevel');
     paint('#dfLevels','df_unlocked','df_curlevel');
     paint('#nvLevels','nv_unlocked','nv_curlevel');
+    paint('#mlLevels','ml_unlocked','ml_curlevel');
   })();
 
   /* ===== Acc&#232;s d&#233;veloppeur (raccourcis vers chaque niveau) ===== */
@@ -261,7 +283,9 @@
       {file:'dossiers-fichiers.html', name:'🗂️ Dossiers et fichiers', unlock:'df_unlocked', cur:'df_curlevel', stepN:8,
        levels:['Le Bureau et les fenêtres','Naviguer dans les dossiers','Créer et nommer','Ranger : déplacer et copier','Supprimer et la corbeille','Rechercher et trier','Les extensions de fichiers','🦠 Le Virus (Boss)']},
       {file:'naviguer-internet.html', name:'🌐 Naviguer sur internet', unlock:'nv_unlocked', cur:'nv_curlevel', stepN:9,
-       levels:['Ton navigateur','Les liens et les adresses','Chercher sur internet','Favoris et historique','Pubs et pop-ups (🪟 POPZILLA)','Sécurité et fiabilité','Les téléchargements','Les mots de passe','👾 INFOX (Boss final)']}
+       levels:['Ton navigateur','Les liens et les adresses','Chercher sur internet','Favoris et historique','Pubs et pop-ups (🪟 POPZILLA)','Sécurité et fiabilité','Les téléchargements','Les mots de passe','👾 INFOX (Boss final)']},
+      {file:'la-messagerie.html', name:'✉️ La messagerie', unlock:'ml_unlocked', cur:'ml_curlevel', stepN:9,
+       levels:['Ton premier mail','À, Cc et Cci','Le carnet d\'adresses','Les pièces jointes','Mise en forme & signature','Range ta boîte !','Retrouve tes mails','L\'agenda','🎣 LE PHISHER (Boss final)']}
     ];
     const css=`
     #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;}
