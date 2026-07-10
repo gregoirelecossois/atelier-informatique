@@ -866,7 +866,7 @@ document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('m
 const ME='toi@cuicui.fr';
 const WHO={
   'toi@cuicui.fr':{name:'Toi',av:'🧑'},
-  'm.leco@ecole.fr':{name:'M. Leco (professeur)',av:'👨‍🏫'},
+  'm.leco@erea.fr':{name:'M. Leco (professeur)',av:'👨‍🏫'},
   'papi.marcel@cuicui.fr':{name:'Papi Marcel',av:'👴'},
   'maman@cuicui.fr':{name:'Maman',av:'👩'},
   'valentin@cuicui.fr':{name:'Valentin',av:'🧑‍🎤'},
@@ -942,7 +942,7 @@ function seedMail(seed){
   M.mails=[]; M.seq=1; _mailK=1000; M.sel=null;
   (seed.mails||[]).forEach(o=>M.mails.push(mkMail(o)));
   M.contacts=(seed.contacts||[
-    {addr:'m.leco@ecole.fr'},{addr:'papi.marcel@cuicui.fr'},{addr:'maman@cuicui.fr'},
+    {addr:'m.leco@erea.fr'},{addr:'papi.marcel@cuicui.fr'},{addr:'maman@cuicui.fr'},
     {addr:'leonce@cuicui.fr'},{addr:'zoe@cuicui.fr'}
   ]).map(c=>({addr:c.addr, name:c.name||whoName(c.addr), av:c.av||who(c.addr).av}));
   M.lists=(seed.lists||[]).map(l=>({name:l.name, members:l.members.slice()}));
@@ -2236,7 +2236,7 @@ function quizRun(cfg, done){
    --------------------------------------------------------- */
 /* graine commune : le courrier « de base » de la boîte */
 function mailLecoBienvenue(){
-  return { from:'m.leco@ecole.fr', subject:'Bienvenue dans Cui-Cui !', date:'Auj. 8:12',
+  return { from:'m.leco@erea.fr', subject:'Bienvenue dans Cui-Cui !', date:'Auj. 8:12',
     body:'<p>Bonjour !</p><p>Bienvenue dans <b>Cui-Cui</b>, ta nouvelle messagerie. Ici tu peux lire tes mails, y répondre et en écrire.</p>'
       +'<p>Pour vérifier que tu lis bien jusqu\'au bout, voici le mot secret du jour : <b>HIBOU</b> 🦉.</p>'
       +'<p>À demain en classe,<br>M. Leco</p>' };
@@ -2340,7 +2340,7 @@ const LEVELS=[
     {kind:'mission',label:'Mission 1',emoji:'🎯',title:'Écrire à plusieurs (À)',
       intro:'Un même message pour DEUX camarades : on met les deux adresses dans « À » !',
       seed:{ mails:[
-        { from:'m.leco@ecole.fr', subject:'Cours de sport déplacé', date:'Auj. 8:10',
+        { from:'m.leco@erea.fr', subject:'Cours de sport déplacé', date:'Auj. 8:10',
           body:'<p>Bonjour,</p><p>Le cours de sport de demain est déplacé à <b>14h au gymnase</b>.</p>'
             +'<p>Peux-tu prévenir <b>Léonce</b> (leonce@cuicui.fr) <b>et</b> <b>Zoé</b> (zoe@cuicui.fr) ? Un seul mail pour les deux suffit !</p><p>M. Leco</p>' }
       ]},
@@ -2512,10 +2512,10 @@ const LEVELS=[
           {n:'Zoé 🐢', a:'zoe@cuicui.fr'},
           {n:'Nina 🦊', a:'nina.dubois@cuicui.fr'},
           {n:'Papi Marcel 👴', a:'papi.marcel@cuicui.fr'},
-          {n:'M. Leco 👨‍🏫', a:'m.leco@ecole.fr'},
+          {n:'M. Leco 👨‍🏫', a:'m.leco@erea.fr'},
           {n:'La bibliothèque 📚', a:'bibliotheque@ville.fr'}
         ];
-        const decoys=['nina-dubois@cuicui.biz','papi.marcel@cuicuii.fr','m.leco@ecole.com'];
+        const decoys=['nina-dubois@cuicui.biz','papi.marcel@cuicuii.fr','m.leco@erea.com'];
         arcStart({shields:3, timer:120, bonus:40, goalText:'Associe les 6 copains à leur adresse !'});
         const addrs=pairs.map(p=>p.a).concat(decoys).sort(()=>Math.random()-.5);
         let selName=null, found=0;
@@ -2571,7 +2571,7 @@ const LEVELS=[
     {kind:'mission',label:'Mission 2',emoji:'📄',title:'Rendre son devoir',
       intro:'M. Leco attend ta poésie en pièce jointe… et gare aux fichiers trop lourds !',
       seed:{ mails:[
-        { from:'m.leco@ecole.fr', subject:'Devoir : ta poésie d\'automne', date:'Auj. 7:58',
+        { from:'m.leco@erea.fr', subject:'Devoir : ta poésie d\'automne', date:'Auj. 7:58',
           body:'<p>Bonjour !</p><p>Envoie-moi ta <b>poésie d\'automne</b> en pièce jointe (le fichier <b>poesie-automne.pdf</b> dans tes documents).</p><p>Objet du mail : <b>Ma poésie</b>. Merci !<br>M. Leco</p>' }
       ]},
       objectives:[
@@ -2580,9 +2580,9 @@ const LEVELS=[
           goal:G.inSet('attAdded','poesie-automne.pdf','Dans la fenêtre du message, le bouton <b>📎 Joindre un fichier</b> est en bas. Choisis <b>poesie-automne.pdf</b>.','compose')},
         {t:'Expérience 🧪 : essaie d\'ajouter AUSSI <b>video-vacances.mp4</b> (48 Mo)… que se passe-t-il ?',
           goal:G.flag('tooBigTried','Re-clique <b>📎 Joindre un fichier</b> et clique la grosse vidéo : Cui-Cui va refuser, c\'est normal — c\'est la leçon !','compose')},
-        {t:'Envoie ta poésie à <b>m.leco@ecole.fr</b> · objet « <b>Ma poésie</b> »',
-          goal:G.sent({to:['m.leco@ecole.fr'], subjIncl:'poesie', att:'poesie-automne'},
-            'À : <b>m.leco@ecole.fr</b> (ou 📇), objet <b>Ma poésie</b>, la pièce jointe est déjà accrochée → 📨 !')}
+        {t:'Envoie ta poésie à <b>m.leco@erea.fr</b> · objet « <b>Ma poésie</b> »',
+          goal:G.sent({to:['m.leco@erea.fr'], subjIncl:'poesie', att:'poesie-automne'},
+            'À : <b>m.leco@erea.fr</b> (ou 📇), objet <b>Ma poésie</b>, la pièce jointe est déjà accrochée → 📨 !')}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'✂️',title:'Trop de pièces jointes !',
       intro:'Zoé veut UNE seule photo. Ajoute plusieurs fichiers pour t\'entraîner… puis retire-les pour n\'en garder qu\'une !',
@@ -2636,8 +2636,8 @@ const LEVELS=[
               test:c=>c.evt.sent.some(r=>r.to.includes('arsene@cuicui.fr')&&r.atts.some(a=>a.includes('caramel')))},
             {ic:'🖼️', ord:'Envoie ton <b>dessin d\'oiseau</b> DANS le texte à <b>Nina</b>', sub:'Bouton 🖼️ → dessin-oiseau.png · À : nina.dubois@cuicui.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('nina.dubois@cuicui.fr')&&r.img)},
-            {ic:'📄', ord:'Envoie <b>expose-volcans.docx</b> à <b>M. Leco</b> · objet « <b>Exposé</b> »', sub:'À : m.leco@ecole.fr',
-              test:c=>c.evt.sent.some(r=>r.to.includes('m.leco@ecole.fr')&&r.atts.some(a=>a.includes('expose'))&&normText(r.subject).includes('expose'))}
+            {ic:'📄', ord:'Envoie <b>expose-volcans.docx</b> à <b>M. Leco</b> · objet « <b>Exposé</b> »', sub:'À : m.leco@erea.fr',
+              test:c=>c.evt.sent.some(r=>r.to.includes('m.leco@erea.fr')&&r.atts.some(a=>a.includes('expose'))&&normText(r.subject).includes('expose'))}
           ]}, done);
       }}
   ]},
@@ -2673,7 +2673,7 @@ const LEVELS=[
     {kind:'mission',label:'Mission 2',emoji:'🪧',title:'L\'affiche du spectacle',
       intro:'Le professeur veut une belle invitation au spectacle : texte centré et police rigolote !',
       seed:{ mails:[
-        { from:'m.leco@ecole.fr', subject:'Invitation au spectacle 🎭', date:'Auj. 8:15',
+        { from:'m.leco@erea.fr', subject:'Invitation au spectacle 🎭', date:'Auj. 8:15',
           body:'<p>Bonjour !</p><p>Peux-tu préparer l\'invitation au <b>spectacle de la classe</b> pour tes parents ?</p>'
             +'<p>Pour que ce soit joli comme une affiche : <b>centre</b> le texte (bouton ↔️) et choisis la police <b>Fredoka</b> (la ronde). Envoie-la à <b>maman@cuicui.fr</b>, objet « Spectacle ».</p><p>Merci ! M. Leco</p>' }
       ]},
@@ -2730,11 +2730,11 @@ const LEVELS=[
     {kind:'mission',label:'Mission 1',emoji:'📁',title:'Opération grand rangement',
       intro:'Ta boîte déborde ! Crée un dossier « Collège » et range-y les mails du professeur.',
       seed:{ mails:[
-        { from:'m.leco@ecole.fr', subject:'Sortie au musée jeudi', date:'Lun. 9:00', read:true,
+        { from:'m.leco@erea.fr', subject:'Sortie au musée jeudi', date:'Lun. 9:00', read:true,
           body:'<p>Rappel : sortie au <b>musée des sciences</b> jeudi. Pensez au pique-nique !</p><p>M. Leco</p>' },
         { from:'leonce@cuicui.fr', subject:'Trop bien le foot hier', date:'Lun. 18:22', read:true,
           body:'<p>On a gagné 3 à 2 !! ⚽</p>' },
-        { from:'m.leco@ecole.fr', subject:'Poésie pour vendredi', date:'Mar. 8:30', read:true,
+        { from:'m.leco@erea.fr', subject:'Poésie pour vendredi', date:'Mar. 8:30', read:true,
           body:'<p>N\'oubliez pas d\'apprendre la poésie <b>« L\'automne »</b> pour vendredi !</p><p>M. Leco</p>' },
         { from:'papi.marcel@cuicui.fr', subject:'Recette de crêpes', date:'Mar. 16:45', read:true,
           body:'<p>La fameuse recette de Mamie, garde-la précieusement ! 🥞</p>' }
@@ -2795,11 +2795,11 @@ const LEVELS=[
       hint:'📁 Déplacer pour classer · 🚫 pour les arnaques · 🗑️ pour la poubelle.',
       seed:{ customFolders:['Collège','Famille'],
         mails:[
-        { from:'m.leco@ecole.fr', subject:'Devoirs de la semaine', date:'Auj. 8:01', read:true, body:'<p>Maths p.34 et poésie !</p>' },
+        { from:'m.leco@erea.fr', subject:'Devoirs de la semaine', date:'Auj. 8:01', read:true, body:'<p>Maths p.34 et poésie !</p>' },
         { from:'promo@super-jeux.biz', subject:'💰 ARGENT FACILE, clique ici !!', date:'Auj. 6:03', read:true, body:'<p>Deviens riche en 2 minutes !!!</p>' },
         { from:'papi.marcel@cuicui.fr', subject:'Photos de dimanche', date:'Auj. 9:14', read:true, body:'<p>Les photos du déjeuner ! 🍰</p>' },
         { from:'maman@cuicui.fr', subject:'Dentiste mercredi', date:'Auj. 7:45', read:true, body:'<p>RDV dentiste mercredi à 14h.</p>' },
-        { from:'m.leco@ecole.fr', subject:'Bibliothèque annulée', date:'Auj. 8:55', read:true, body:'<p>La séance bibliothèque est annulée demain.</p>' },
+        { from:'m.leco@erea.fr', subject:'Bibliothèque annulée', date:'Auj. 8:55', read:true, body:'<p>La séance bibliothèque est annulée demain.</p>' },
         { from:'info@meteo-mini.fr', subject:'Vieille alerte météo de mardi dernier', date:'Mar. 5:00', read:true, body:'<p>Alerte pluie (périmée depuis longtemps).</p>' }
       ]},
       run:function(done){
@@ -2954,7 +2954,7 @@ const LEVELS=[
     {kind:'mission',label:'Mission 2',emoji:'📚',title:'Devoirs et anniversaires',
       intro:'Une poésie pour le 19 juin, et l\'anniversaire de Papi le 12 août : l\'agenda retient tout !',
       seed:{ mails:[
-        { from:'m.leco@ecole.fr', subject:'Poésie à réciter le 19 juin', date:'Auj. 8:10',
+        { from:'m.leco@erea.fr', subject:'Poésie à réciter le 19 juin', date:'Auj. 8:10',
           body:'<p>Vous réciterez la poésie <b>« L\'été »</b> le <b>vendredi 19 juin</b>. Notez-le pour réviser à temps !</p><p>M. Leco</p>' },
         { from:'maman@cuicui.fr', subject:'L\'anniversaire de Papi', date:'Auj. 8:30',
           body:'<p>Au fait : l\'anniversaire de <b>Papi Marcel</b>, c\'est le <b>12 août</b> ! Note-le dans ton agenda en « anniversaire » : comme ça il reviendra <b>tous les ans</b> tout seul. 🎂</p><p>Maman</p>' }
@@ -3099,7 +3099,7 @@ function phPool(){
     { phish:false, from:'bibliotheque@ville.fr', name:'La bibliothèque', sub:'Votre réservation est arrivée',
       body:'<p>Bonjour,</p><p>Le livre <b>« Le club des inventeurs »</b> que vous avez réservé est disponible à l\'accueil jusqu\'au 24 juin.</p><p>À bientôt !</p>',
       why:'La bibliothèque de la ville, un message calme et normal : rien à signaler.' },
-    { phish:false, from:'m.leco@ecole.fr', name:'M. Leco', sub:'Rappel : sortie au musée jeudi',
+    { phish:false, from:'m.leco@erea.fr', name:'M. Leco', sub:'Rappel : sortie au musée jeudi',
       body:'<p>Bonjour,</p><p>Petit rappel : <b>sortie au musée jeudi</b>. Prévoir un pique-nique et une casquette.</p><p>M. Leco</p>',
       why:'Le professeur, son adresse habituelle, une info du collège toute simple.' },
     { phish:false, from:'cantine@ecole.fr', name:'La cantine', sub:'Menu de la semaine',
@@ -3142,7 +3142,7 @@ function phPool(){
       body:'<p>Bonjour ! Voici les photos de ta classe, comme promis. Ouvre vite la pièce jointe !</p>',
       atts:[{n:'photos-classe.zip.exe', s:2400, ic:'📦', trap:true}],
       why:'Le fichier finit en <b>.exe</b> : un programme déguisé en photos ! Ton scanner l\'a vu.' },
-    { phish:false, req:'scan', from:'m.leco@ecole.fr', name:'M. Leco', sub:'Les paroles de la chanson',
+    { phish:false, req:'scan', from:'m.leco@erea.fr', name:'M. Leco', sub:'Les paroles de la chanson',
       body:'<p>Bonjour, voici les paroles de la chanson du spectacle à apprendre. Bonne répétition !</p>',
       atts:[{n:'chanson-spectacle.pdf', s:140, ic:'📄', trap:false}],
       why:'Un PDF sain envoyé par le professeur : le scanner confirme.' },
