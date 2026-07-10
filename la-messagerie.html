@@ -114,6 +114,8 @@
     border:3px solid #cdd9e8;box-shadow:0 18px 40px -24px rgba(34,48,63,.55);
     background:var(--cc-bar);user-select:none;-webkit-user-select:none;}
   .screen input,.screen textarea,.screen [contenteditable]{user-select:text;-webkit-user-select:text;}
+  /* le contenu d'un mail reçu (expéditeur, objet, corps) est sélectionnable : on peut copier une adresse */
+  .screen .cc-read,.screen .rd-body,.screen .rd-head,.screen .rw-addr,.screen .ph-mb,.screen .ph-mh{user-select:text;-webkit-user-select:text;cursor:text;}
   .screen.shake{animation:scrShake .4s;}
   @keyframes scrShake{0%,100%{transform:translate(0,0);}15%{transform:translate(-9px,4px);}30%{transform:translate(8px,-5px);}
     45%{transform:translate(-7px,-3px);}60%{transform:translate(6px,4px);}75%{transform:translate(-4px,2px);}90%{transform:translate(3px,-2px);}}
@@ -212,9 +214,19 @@
   @keyframes fall{to{transform:translateY(105vh) rotate(640deg);}}
 
   /* ===== MOTEUR ARCADE — HUD, juice, mini-jeux ===== */
-  .arc-hud{max-width:1000px;margin:10px auto 0;width:calc(100% - 36px);display:flex;align-items:center;gap:18px;
+  .arc-hud{max-width:1000px;margin:10px auto 0;width:calc(100% - 36px);display:flex;align-items:center;gap:18px;flex-wrap:wrap;
     background:#1f2a37;color:#fff;border-radius:13px;padding:9px 18px;
     font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.02rem;box-shadow:0 8px 22px -14px rgba(15,23,42,.8);}
+  /* la « carte d'ordre » de l'examen s'affiche ICI, dans la barre noire (avec le timer et
+     les boucliers), au lieu de flotter au-dessus des boutons de la messagerie */
+  .arc-hud .ah-order{flex-basis:100%;display:flex;align-items:center;gap:12px;margin-top:2px;
+    border-top:1px solid rgba(255,255,255,.16);padding-top:8px;line-height:1.25;}
+  .arc-hud .ah-order .oc-n{flex:none;font-size:.72rem;font-weight:700;color:#9fb0c4;background:rgba(255,255,255,.1);border-radius:7px;padding:2px 8px;}
+  .arc-hud .ah-order .oc-ic{flex:none;font-size:1.5rem;line-height:1;}
+  .arc-hud .ah-order .oc-txt{flex:1;font-size:.98rem;color:#fff;}
+  .arc-hud .ah-order .oc-sub{display:block;font-size:.8rem;color:#8fd3e8;font-weight:600;margin-top:2px;}
+  .arc-hud .ah-order.pop{animation:ordPopK2 .3s ease;}
+  @keyframes ordPopK2{0%{transform:scale(.85);opacity:.4;}70%{transform:scale(1.02);}100%{transform:scale(1);opacity:1;}}
   .arc-hud .ah-score{color:#fde047;letter-spacing:.03em;}
   .arc-hud .ah-combo{color:#fb923c;min-width:66px;transition:transform .15s;}
   .arc-hud .ah-combo.hot{transform:scale(1.22);animation:comboFlame .5s ease infinite alternate;}
@@ -271,7 +283,10 @@
   @keyframes starPopK{0%{transform:scale(.4);opacity:.4;}60%{transform:scale(1.5);opacity:1;}100%{transform:scale(1);opacity:1;}}
   .arc-score-line{font-family:"Fredoka","Fluent Emoji",sans-serif;color:var(--ink);}
   /* pages de mini-jeu (plein écran de la messagerie) */
-  .arcpage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  /* justify-content:safe center → si le contenu dépasse (ex. examen « carnet mélangé »
+     avec ses 2 colonnes d'adresses), il s'aligne en haut et reste défilable au lieu
+     d'être coupé et inaccessible en haut (bug d'affichage). */
+  .arcpage{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:safe center;
     padding:26px 22px;text-align:center;background:linear-gradient(155deg,#e0f2fe,#fef9ec 75%);cursor:default;overflow:auto;}
   .arcpage .ap-k{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:.76rem;color:var(--cc-brand);margin:0 0 8px;}
   .arcpage .ap-q{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.3rem;margin:0 0 16px;}
@@ -319,6 +334,12 @@
   .cc-body{flex:1;display:flex;min-height:0;}
   .cc-side{width:198px;flex:none;background:var(--cc-side);border-right:2px solid var(--cc-line);
     display:flex;flex-direction:column;min-height:0;padding:10px 8px 8px;gap:4px;}
+  /* poignées de redimensionnement entre les volets (dossiers | liste | lecture) */
+  .cc-resize{flex:none;width:7px;align-self:stretch;cursor:ew-resize;position:relative;background:transparent;
+    touch-action:none;z-index:4;margin:0 -3px;}
+  .cc-resize::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:3px;height:38px;border-radius:3px;background:var(--cc-line);transition:background .12s,height .12s;}
+  .cc-resize:hover::after,.cc-resize.dragging::after{background:var(--cc-brand);height:64px;}
   .cc-new{border:none;background:var(--cc-brand);color:#fff;font-weight:800;font-size:.88rem;
     border-radius:11px;padding:11px 10px;margin:0 2px 8px;box-shadow:0 4px 12px -6px rgba(14,116,144,.7);}
   .cc-new:hover{background:var(--cc-brand-d);}
@@ -779,6 +800,28 @@ const overlay=document.getElementById('overlay');
 const modal=document.getElementById('modal');
 let soundOn=(store.get('ml_sound')||'1')==='1';
 
+/* largeurs des volets (redimensionnables), gardées entre les missions */
+const SIDE_DEF=198, LIST_DEF=315;
+let sideW=parseInt(store.get('ml_sidew')||SIDE_DEF,10); if(isNaN(sideW)||sideW<120) sideW=SIDE_DEF;
+let listW=parseInt(store.get('ml_listw')||LIST_DEF,10); if(isNaN(listW)||listW<180) listW=LIST_DEF;
+function makeResizer(handle, pane, opts){
+  if(!handle||!pane) return;
+  let dragging=false, startX=0, startW=0;
+  handle.addEventListener('pointerdown', e=>{
+    e.preventDefault(); dragging=true; startX=e.clientX; startW=pane.getBoundingClientRect().width;
+    handle.classList.add('dragging'); try{ handle.setPointerCapture(e.pointerId); }catch(_){}
+  });
+  handle.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const w=Math.round(Math.max(opts.min, Math.min(opts.max(), startW+(e.clientX-startX))));
+    pane.style.width=w+'px'; opts.set(w);
+  });
+  function stop(){ if(!dragging) return; dragging=false; handle.classList.remove('dragging'); opts.save(); }
+  handle.addEventListener('pointerup', stop);
+  handle.addEventListener('pointercancel', stop);
+  handle.addEventListener('dblclick', ()=>{ pane.style.width=opts.def+'px'; opts.set(opts.def); opts.save(); });
+}
+
 /* minuteries de mission — toutes annulées à chaque startStep() */
 let _timers=[];
 function after(ms,fn){ const t=setTimeout(fn,ms); _timers.push(t); return t; }
@@ -822,17 +865,18 @@ document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('m
    --------------------------------------------------------- */
 const ME='toi@cuicui.fr';
 const WHO={
-  'toi@cuicui.fr':{name:'Toi',av:'🧒'},
-  'madame.plume@ecole.fr':{name:'Mme Plume (maîtresse)',av:'👩‍🏫'},
-  'papi.roger@cuicui.fr':{name:'Papi Roger',av:'👴'},
+  'toi@cuicui.fr':{name:'Toi',av:'🧑'},
+  'm.leco@ecole.fr':{name:'M. Leco (professeur)',av:'👨‍🏫'},
+  'papi.marcel@cuicui.fr':{name:'Papi Marcel',av:'👴'},
   'maman@cuicui.fr':{name:'Maman',av:'👩'},
-  'leo@cuicui.fr':{name:'Léo',av:'🦁'},
+  'valentin@cuicui.fr':{name:'Valentin',av:'🧑‍🎤'},
+  'leonce@cuicui.fr':{name:'Léonce',av:'🦁'},
   'zoe@cuicui.fr':{name:'Zoé',av:'🐢'},
   'nina.dubois@cuicui.fr':{name:'Nina',av:'🦊'},
-  'tom@cuicui.fr':{name:'Tom',av:'🐸'},
+  'arsene@cuicui.fr':{name:'Arsène',av:'🐸'},
   'bibliotheque@ville.fr':{name:'La bibliothèque',av:'📚'},
   'club.nature@asso.fr':{name:'Le Club Nature',av:'🌿'},
-  'gazette@ecole.fr':{name:'La Gazette de l\'école',av:'📰'},
+  'gazette@ecole.fr':{name:'La Gazette du collège',av:'📰'},
   'cantine@ecole.fr':{name:'La cantine',av:'🍽️'},
   'promo@super-jeux.biz':{name:'SUPER-JEUX',av:'🎰'},
   'info@meteo-mini.fr':{name:'Météo-Mini',av:'⛅'}
@@ -850,7 +894,7 @@ const MYFILES=[
   {n:'photo-classe.jpg', s:1200, ic:'🖼️', img:true, emoji:'📸'},
   {n:'dessin-oiseau.png', s:280, ic:'🖼️', img:true, emoji:'🐦'},
   {n:'chanson-ecole.mp3', s:4200, ic:'🎵'},
-  {n:'video-anniversaire.mp4', s:48000, ic:'🎬'}
+  {n:'video-vacances.mp4', s:48000, ic:'🎬'}
 ];
 const MAX_ATT_KO=25000; /* 25 Mo, comme les vraies messageries */
 
@@ -898,8 +942,8 @@ function seedMail(seed){
   M.mails=[]; M.seq=1; _mailK=1000; M.sel=null;
   (seed.mails||[]).forEach(o=>M.mails.push(mkMail(o)));
   M.contacts=(seed.contacts||[
-    {addr:'madame.plume@ecole.fr'},{addr:'papi.roger@cuicui.fr'},{addr:'maman@cuicui.fr'},
-    {addr:'leo@cuicui.fr'},{addr:'zoe@cuicui.fr'}
+    {addr:'m.leco@ecole.fr'},{addr:'papi.marcel@cuicui.fr'},{addr:'maman@cuicui.fr'},
+    {addr:'leonce@cuicui.fr'},{addr:'zoe@cuicui.fr'}
   ]).map(c=>({addr:c.addr, name:c.name||whoName(c.addr), av:c.av||who(c.addr).av}));
   M.lists=(seed.lists||[]).map(l=>({name:l.name, members:l.members.slice()}));
   M.events=(seed.events||[]).map((e,i)=>Object.assign({id:'e'+i},e));
@@ -932,10 +976,10 @@ function buildScreen(){
     +  '<button class="cc-hbtn" id="btnFilter" title="Filtrer les mails affichés">🔽 Filtrer</button>'
     +  '<button class="cc-hbtn" id="btnSort" title="Changer l\'ordre de tri">↕️ Trier</button>'
     +  '<button class="cc-hbtn" id="btnSettings" title="Réglages de Cui-Cui">⚙️</button>'
-    +  '<span class="cc-me">🧒 '+ME+'</span>'
+    +  '<span class="cc-me">🧑 '+ME+'</span>'
     +'</div>'
-    +'<div class="cc-body">'
-    +  '<div class="cc-side">'
+    +'<div class="cc-body" id="ccBody">'
+    +  '<div class="cc-side" id="ccSide" style="width:'+sideW+'px">'
     +    '<button class="cc-new" id="btnNew">✏️ Nouveau message</button>'
     +    '<div class="cc-folders" id="ccFolders"></div>'
     +    '<button class="cc-addfolder" id="btnAddFolder">➕ Nouveau dossier</button>'
@@ -945,6 +989,7 @@ function buildScreen(){
     +      '<button data-view="agenda">📅 Agenda</button>'
     +    '</div>'
     +  '</div>'
+    +  '<div class="cc-resize" id="sideResize" title="Fais glisser pour redimensionner · double-clic pour réinitialiser"></div>'
     +  '<div class="cc-main" id="ccMain"></div>'
     +'</div>'
     +'<div class="cc-status" id="ccStatus"></div>'
@@ -967,6 +1012,12 @@ function buildScreen(){
   document.getElementById('btnSort').onclick=(e)=>{ e.stopPropagation(); menuSort(e.currentTarget); };
   document.getElementById('btnSettings').onclick=(e)=>{ e.stopPropagation(); menuSettings(e.currentTarget); };
   app.addEventListener('pointerdown',e=>{ if(!e.target.closest('.cc-menu')) closeMenus(); });
+  /* volet des dossiers redimensionnable */
+  makeResizer(document.getElementById('sideResize'), document.getElementById('ccSide'), {
+    def:SIDE_DEF, min:140,
+    max:()=>{ const b=document.getElementById('ccBody'); return b?Math.max(140, Math.min(360, b.getBoundingClientRect().width-320)):360; },
+    set:w=>{ sideW=w; }, save:()=>store.set('ml_sidew', String(sideW))
+  });
   renderAll();
 }
 function refreshSearchX(){ const x=document.getElementById('ccSearchX'); if(x) x.classList.toggle('on', !!M.search); }
@@ -1035,11 +1086,18 @@ function renderMailView(main){
         +'</span></button>';
     }).join('');
   }
-  main.innerHTML='<div class="cc-list" id="mailList">'+listHtml+'</div>'
+  main.innerHTML='<div class="cc-list" id="mailList" style="width:'+listW+'px">'+listHtml+'</div>'
+    +'<div class="cc-resize" id="listResize" title="Fais glisser pour redimensionner · double-clic pour réinitialiser"></div>'
     +'<div class="cc-read" id="reader">'+readerHtml()+'</div>';
   main.querySelectorAll('.mailrow').forEach(b=>b.onclick=()=>openMail(b.getAttribute('data-id')));
   const et=document.getElementById('btnEmptyTrash');
   if(et) et.onclick=(e)=>{ e.stopPropagation(); dlgEmptyTrash(); };
+  /* volet de la liste des mails redimensionnable (recréé à chaque rendu de la vue) */
+  makeResizer(document.getElementById('listResize'), document.getElementById('mailList'), {
+    def:LIST_DEF, min:210,
+    max:()=>{ const m=document.getElementById('ccMain'); return m?Math.max(210, m.getBoundingClientRect().width-260):460; },
+    set:w=>{ listW=w; }, save:()=>store.set('ml_listw', String(listW))
+  });
   bindReader();
 }
 function openMail(id){
@@ -1216,7 +1274,7 @@ function dlgNewFolder(){
   beep('click');
   openDlg('➕ Nouveau dossier',
     '<p>Les dossiers t\'aident à <b>ranger</b> tes mails, comme des classeurs.</p>'
-    +'<label>Nom du dossier</label><input class="d-in" id="nfName" placeholder="Par exemple : École" autocomplete="off">',
+    +'<label>Nom du dossier</label><input class="d-in" id="nfName" placeholder="Par exemple : Collège" autocomplete="off">',
     '<button class="d-btn" id="nfCancel">Annuler</button><button class="d-btn pri" id="nfOk">Créer le dossier</button>');
   const inp=document.getElementById('nfName'); inp.focus();
   document.getElementById('nfCancel').onclick=()=>{ winsBox().innerHTML=''; };
@@ -1257,7 +1315,7 @@ function dlgSignature(){
   openDlg('✍️ Ma signature',
     '<p>La signature est ajoutée <b>automatiquement</b> à la fin de tous tes nouveaux mails.</p>'
     +'<label>Texte de la signature</label>'
-    +'<input class="d-in" id="sigIn" placeholder="Par exemple : À bientôt ! Camille, CM1" value="'+esc(M.signature)+'" autocomplete="off">',
+    +'<input class="d-in" id="sigIn" placeholder="Par exemple : À bientôt ! Camille, 6e B" value="'+esc(M.signature)+'" autocomplete="off">',
     '<button class="d-btn" id="sigCancel">Annuler</button><button class="d-btn grn" id="sigOk">Enregistrer</button>');
   document.getElementById('sigCancel').onclick=()=>{ winsBox().innerHTML=''; };
   document.getElementById('sigOk').onclick=()=>{
@@ -1448,25 +1506,28 @@ function renderChips(k){
   }
   c[k].forEach((a,i)=>{ addChip(esc(a===ME?'Toi':whoName(a)),'',()=>c[k].splice(i,1)); });
   zone.insertBefore(frag, inp);
-  /* saisie */
-  function commit(){
+  /* saisie — on ne reconstruit QUE les chips du champ (pas toute la fenêtre),
+     sinon l'animation d'ouverture de la fenêtre se rejoue (effet « la fenêtre
+     se réduit puis se rouvre ») quand on quitte le champ pour l'objet/le corps. */
+  function commit(refocus){
     const v=inp.value; if(!v.trim()) return true;
     const r=parseAddr(v);
     if(!r) return true;
     if(r.bad){
       beep('bad'); inp.value='';
-      toast('🤔 « '+esc(r.bad)+' » n\'est pas une adresse mail. Il faut un <b>@</b> et un point, comme <b>papi.roger@cuicui.fr</b>.');
+      toast('🤔 « '+esc(r.bad)+' » n\'est pas une adresse mail. Il faut un <b>@</b> et un point, comme <b>papi.marcel@cuicui.fr</b>.');
       evtFlag('badAddrTried');
       return false;
     }
     if(r.list){ if(k==='to' && !c.lists.includes(r.list)) c.lists.push(r.list); }
     else if(!c[k].includes(r.addr)) c[k].push(r.addr);
-    inp.value=''; beep('click'); renderCompose(); document.getElementById('in_'+k).focus();
+    inp.value=''; beep('click'); renderChips(k);
+    if(refocus){ const ni=document.getElementById('in_'+k); if(ni) ni.focus(); }
     fireEvt();
     return true;
   }
-  inp.onkeydown=(e)=>{ if(e.key==='Enter'||e.key===','||e.key===';'||e.key==='Tab'){ e.preventDefault(); commit(); } };
-  inp.onblur=()=>{ commit(); };
+  inp.onkeydown=(e)=>{ if(e.key==='Enter'||e.key===','||e.key===';'||e.key==='Tab'){ e.preventDefault(); commit(true); } };
+  inp.onblur=()=>{ commit(false); };
   const lkCc=document.getElementById('lkCc'), lkBcc=document.getElementById('lkBcc');
   if(lkCc) lkCc.onclick=()=>{ c.showCc=true; evtFlag('openedCc'); renderCompose(); document.getElementById('in_cc').focus(); };
   if(lkBcc) lkBcc.onclick=()=>{ c.showBcc=true; evtFlag('openedBcc'); renderCompose(); document.getElementById('in_bcc').focus(); };
@@ -1491,7 +1552,10 @@ function renderCmpAtts(){
   const c=M.compose; const box=document.getElementById('cmpAtts'); if(!box) return;
   box.innerHTML=c.atts.map((a,i)=>'<span class="att-chip"><span class="ac-ic">'+a.ic+'</span>'+esc(a.n)
     +'<span class="ac-size">'+fmtSize(a.s)+'</span> <button class="ch-x" data-i="'+i+'" style="border:none;background:rgba(0,0,0,.08);border-radius:50%;width:16px;height:16px;font-size:.56rem;cursor:pointer">✕</button></span>').join('');
-  box.querySelectorAll('.ch-x').forEach(b=>b.onclick=()=>{ c.atts.splice(+b.getAttribute('data-i'),1); renderCmpAtts(); });
+  box.querySelectorAll('.ch-x').forEach(b=>b.onclick=()=>{
+    c.atts.splice(+b.getAttribute('data-i'),1); beep('delete');
+    renderCmpAtts(); evtFlag('attRemoved');
+  });
 }
 function dlgFilePicker(imageOnly){
   beep('click');
@@ -1527,6 +1591,7 @@ function dlgFilePicker(imageOnly){
       return;
     }
     if(!c.atts.some(x=>x.n===f.n)) c.atts.push({n:f.n,s:f.s,ic:f.ic,img:f.img,emoji:f.emoji});
+    M.evt.maxAtts=Math.max(M.evt.maxAtts||0, c.atts.length);
     dlg.remove(); beep('good'); renderCmpAtts();
     evtAdd('attAdded', f.n.toLowerCase()); fireEvt();
   });
@@ -1750,7 +1815,7 @@ function dlgNewEvent(d){
 /* ---------------------------------------------------------
    9. OBJECTIFS DE MISSION (bibliothèque G) + VÉRIFICATION
    --------------------------------------------------------- */
-function buildCtx(){ return { evt:M.evt, mails:M.mails, folders:M.folders, contacts:M.contacts, lists:M.lists, events:M.events }; }
+function buildCtx(){ return { evt:M.evt, mails:M.mails, folders:M.folders, contacts:M.contacts, lists:M.lists, events:M.events, compose:M.compose }; }
 const G={
   /* génériques */
   flag:(key,hint,spot)=>({spot:spot||'list', hint:hint, test:c=>!!c.evt[key]}),
@@ -1803,6 +1868,7 @@ function sentMatches(r, m){
   if(m.bodyIncl && !m.bodyIncl.some(w=>r.body.includes(normText(w)))) return false;
   if(m.att && !r.atts.some(a=>a.includes(m.att.toLowerCase()))) return false;
   if(m.attN!=null && r.atts.length<m.attN) return false;
+  if(m.attExact!=null && r.atts.length!==m.attExact) return false;
   if(m.img && !r.img) return false;
   if(m.sig && !r.sig) return false;
   if(m.reply && !r.replyOf) return false;
@@ -1894,7 +1960,7 @@ function renderQuizDock(){
    10. MOTEUR ARCADE (score, combo, boucliers, étoiles)
    --------------------------------------------------------- */
 const ARC={ on:false, over:false, score:0, combo:0, comboT:null, misses:0,
-  shields:3, maxShields:3, timer:null, left:0, bonus:null, t0:0, goalTxt:'', onEvt:null };
+  shields:3, maxShields:3, timer:null, left:0, bonus:null, t0:0, goalTxt:'', onEvt:null, orderHtml:'' };
 
 /* ----- étoiles persistées (ml_stars, on garde le max) ----- */
 function getStarsMap(){ try{ return JSON.parse(store.get('ml_stars')||'{}')||{}; }catch(e){ return {}; } }
@@ -1991,15 +2057,15 @@ function ghostClick(sel){
   after(2100, ()=>{ try{g.remove();}catch(e){} el.classList.remove('spot'); });
 }
 
-/* ----- carte d'ordre (consigne flottante en jeu) ----- */
+/* ----- carte d'ordre : affichée dans la barre noire (HUD), avec le timer et
+   les boucliers — plus AU-DESSUS des boutons de la messagerie (évite qu'elle
+   empiète sur « Nouveau message », « Répondre »…) ----- */
 function showOrder(html){
-  const s=scr(); if(!s) return;
-  let c=document.getElementById('ordCard');
-  if(!c){ c=document.createElement('div'); c.id='ordCard'; c.className='ord-card'; s.appendChild(c); }
-  c.innerHTML=html;
-  c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+  ARC.orderHtml=html; arcHudRender();
+  const c=document.getElementById('ahOrder');
+  if(c){ c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }
 }
-function hideOrder(){ const c=document.getElementById('ordCard'); if(c) c.remove(); }
+function hideOrder(){ ARC.orderHtml=''; arcHudRender(); }
 
 /* ----- HUD, consigne dynamique ----- */
 function fmtTime(sec){ sec=Math.max(0,Math.ceil(sec)); return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0'); }
@@ -2012,7 +2078,8 @@ function arcHudRender(){
   h.innerHTML='<span class="ah-score">SCORE '+ARC.score+'</span>'
     +'<span class="ah-combo'+(ARC.combo>=3?' hot':'')+'">'+(ARC.combo>=2?'🔥 x'+ARC.combo:'')+'</span>'
     +'<span class="ah-shields">'+sh+'</span>'
-    +(ARC.timer?'<span class="ah-timer'+(ARC.left<=10?' low':'')+'">⏱ '+fmtTime(ARC.left)+'</span>':'');
+    +(ARC.timer?'<span class="ah-timer'+(ARC.left<=10?' low':'')+'">⏱ '+fmtTime(ARC.left)+'</span>':'')
+    +(ARC.orderHtml?'<div class="ah-order" id="ahOrder">'+ARC.orderHtml+'</div>':'');
 }
 function arcGoal(txt){ const el=document.getElementById('arcGoalTxt'); if(el) el.innerHTML=txt; }
 
@@ -2024,7 +2091,7 @@ function arcStart(cfg){
   clearTimeout(ARC.comboT);
   ARC.shields=(cfg.shields!=null)?cfg.shields:3; ARC.maxShields=ARC.shields;
   ARC.timer=cfg.timer||null; ARC.left=ARC.timer||0; ARC.bonus=cfg.bonus||null;
-  ARC.goalTxt=cfg.goalText||'';
+  ARC.goalTxt=cfg.goalText||''; ARC.orderHtml='';
   if(ARC.timer){ ARC.t0=Date.now(); every(250, arcTick); }
   arcHudRender();
   if(ARC.goalTxt) arcGoal('🎯 '+ARC.goalTxt);
@@ -2122,7 +2189,7 @@ function serieRun(cfg, done){
     const st=cfg.steps[i];
     if(st.prep) st.prep();
     showOrder('<span class="oc-n">'+(i+1)+'/'+cfg.steps.length+'</span><span class="oc-ic">'+(st.ic||'📨')+'</span>'
-      +'<div>'+st.ord+(st.sub?'<span class="oc-sub">'+st.sub+'</span>':'')+'</div>');
+      +'<span class="oc-txt">'+st.ord+(st.sub?'<span class="oc-sub">'+st.sub+'</span>':'')+'</span>');
     beep('open');
     /* certains ordres sont peut-être déjà remplis (cascade) */
     after(120, check);
@@ -2133,7 +2200,11 @@ function serieRun(cfg, done){
     if(st.test(buildCtx())){
       checking=true;
       arcHit(st.pts||15);
-      after(160,()=>{ checking=false; next(); });
+      /* st.hold : petite pause pour laisser VOIR le résultat (ex. le mail parti)
+         avant de valider et de passer à l'ordre suivant */
+      const wait=st.hold||160;
+      if(st.hold) banner('✅ Bien joué !','good');
+      after(wait,()=>{ checking=false; next(); });
     }
   }
   ARC.onEvt=check;
@@ -2164,11 +2235,11 @@ function quizRun(cfg, done){
    12. LES NIVEAUX 1 → 4
    --------------------------------------------------------- */
 /* graine commune : le courrier « de base » de la boîte */
-function mailPlumeBienvenue(){
-  return { from:'madame.plume@ecole.fr', subject:'Bienvenue dans Cui-Cui !', date:'Auj. 8:12',
+function mailLecoBienvenue(){
+  return { from:'m.leco@ecole.fr', subject:'Bienvenue dans Cui-Cui !', date:'Auj. 8:12',
     body:'<p>Bonjour !</p><p>Bienvenue dans <b>Cui-Cui</b>, ta nouvelle messagerie. Ici tu peux lire tes mails, y répondre et en écrire.</p>'
       +'<p>Pour vérifier que tu lis bien jusqu\'au bout, voici le mot secret du jour : <b>HIBOU</b> 🦉.</p>'
-      +'<p>À demain en classe,<br>Mme Plume</p>' };
+      +'<p>À demain en classe,<br>M. Leco</p>' };
 }
 const LEVELS=[
 /* ===== NIVEAU 1 — Ton premier mail ===== */
@@ -2179,43 +2250,56 @@ const LEVELS=[
     tools:[{g:'📥',n:'La boîte de réception'},{g:'🔵',n:'Point bleu = mail non lu'},{g:'✏️',n:'Nouveau message : À, Objet, texte'},{g:'📤',n:'Tes mails partis sont dans « Envoyés »'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'📬',title:'Du courrier pour toi !',
-      intro:'3 mails t\'attendent. Lis-les, réponds à Papi, et trouve le mot secret de la maîtresse !',
+      intro:'3 mails t\'attendent. Lis-les, réponds à Papi, et trouve le mot secret du professeur !',
       seed:{ mails:[
-        mailPlumeBienvenue(),
-        { from:'papi.roger@cuicui.fr', subject:'Coucou de Papi', date:'Auj. 7:55',
-          body:'<p>Bonjour mon grand !</p><p>C\'est Papi. Je viens d\'apprendre à envoyer des mails, je suis très fier. 😄</p><p>Réponds-moi pour me dire si tu as bien reçu mon message !</p><p>Gros bisous, Papi Roger</p>' },
-        { from:'maman@cuicui.fr', subject:'Piscine mercredi', date:'Hier 19:02',
-          body:'<p>Coucou,</p><p>N\'oublie pas de chercher ton <b>maillot de bain</b> pour la piscine de mercredi !</p><p>Maman ❤️</p>' }
+        mailLecoBienvenue(),
+        { from:'papi.marcel@cuicui.fr', subject:'Coucou de Papi', date:'Auj. 7:55',
+          body:'<p>Bonjour mon grand !</p><p>C\'est Papi. Je viens d\'apprendre à envoyer des mails, je suis très fier. 😄</p><p>Réponds-moi pour me dire si tu as bien reçu mon message !</p><p>Gros bisous, Papi Marcel</p>' },
+        { from:'valentin@cuicui.fr', subject:'La piscine de mercredi', date:'Hier 19:02',
+          body:'<p>Salut,</p><p>C\'est Valentin, ton grand frère. N\'oublie pas de prendre ton <b>maillot de bain</b> pour la piscine de mercredi !</p><p>Valentin</p>' }
       ]},
       boot:function(){ ghostClick('#mailList .mailrow'); },
       objectives:[
-        {t:'Ouvre le mail de <b>Mme Plume</b> (clique-le dans la liste)', goal:G.openedMail('m1')},
-        {t:'Réponds à la question du <b>carnet de mission</b> 📝 (sous l\'écran)', goal:G.flag('quiz_code','La réponse est écrite en gras dans le mail de Mme Plume : le mot secret du jour.','quiz'),
-          quiz:{key:'code', q:'Quel est le mot secret du jour, caché dans le mail de Mme Plume ?', accepted:['hibou']}},
+        {t:'Ouvre le mail de <b>M. Leco</b> (clique-le dans la liste)', goal:G.openedMail('m1')},
+        {t:'Réponds à la question du <b>carnet de mission</b> 📝 (sous l\'écran)', goal:G.flag('quiz_code','La réponse est écrite en gras dans le mail de M. Leco : le mot secret du jour.','quiz'),
+          quiz:{key:'code', q:'Quel est le mot secret du jour, caché dans le mail de M. Leco ?', accepted:['hibou']}},
         {t:'Lis <b>tous</b> les mails : plus aucun point bleu 🔵 !', goal:G.allRead()},
         {t:'Ouvre le mail de <b>Papi</b> et clique <b>↩️ Répondre</b>, écris-lui un petit mot, puis <b>📨 Envoyer</b>',
-          goal:G.sent({to:['papi.roger@cuicui.fr'], reply:true}, 'Ouvre le mail de Papi, clique <b>↩️ Répondre</b> : l\'adresse et l\'objet se remplissent tout seuls ! Écris ton message puis <b>📨 Envoyer</b>.')},
+          goal:G.sent({to:['papi.marcel@cuicui.fr'], reply:true}, 'Ouvre le mail de Papi, clique <b>↩️ Répondre</b> : l\'adresse et l\'objet se remplissent tout seuls ! Écris ton message puis <b>📨 Envoyer</b>.')},
         {t:'Va voir ton mail parti dans le dossier <b>📤 Envoyés</b>',
-          goal:G.inSet('folderOpened','sent','Clique sur le dossier <b>📤 Envoyés</b> dans la colonne de gauche.','folders')}
+          goal:G.inSet('folderOpened','sent','Clique sur le dossier <b>📤 Envoyés</b> dans la colonne de gauche.','folders')},
+        {t:'Puis reviens dans ta <b>📥 Boîte de réception</b>',
+          goal:G.inSet('folderOpened','inbox','Clique sur le dossier <b>📥 Boîte de réception</b>, tout en haut de la colonne de gauche.','folders')}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'✏️',title:'À toi d\'écrire !',
-      intro:'Écris ton tout premier mail à Maman : dis-lui que le maillot est retrouvé !',
+      intro:'Écris ton tout premier mail à ton frère Valentin : dis-lui que le maillot est retrouvé !',
       seed:{ mails:[
-        { from:'maman@cuicui.fr', subject:'Piscine mercredi', date:'Hier 19:02', read:true,
-          body:'<p>Coucou,</p><p>N\'oublie pas de chercher ton <b>maillot de bain</b> pour la piscine de mercredi !</p><p>Maman ❤️</p>' }
+        { from:'valentin@cuicui.fr', subject:'La piscine de mercredi', date:'Hier 19:02', read:true,
+          body:'<p>Salut,</p><p>C\'est Valentin. N\'oublie pas de prendre ton <b>maillot de bain</b> pour la piscine de mercredi !</p><p>Valentin</p>' }
       ]},
       objectives:[
         {t:'Clique sur <b>✏️ Nouveau message</b>', goal:G.flag('openedCompose','Le grand bouton <b>✏️ Nouveau message</b> est en haut de la colonne de gauche.','compose')},
-        {t:'Envoie ton mail à <b>maman@cuicui.fr</b> · objet « <b>Maillot retrouvé</b> » · raconte-lui !',
-          goal:G.sent({to:['maman@cuicui.fr'], subjIncl:'maillot'},
-            'Dans <b>À :</b> tape <b>maman@cuicui.fr</b> puis '+kbd('Entrée')+'. Dans <b>Objet :</b> écris <b>Maillot retrouvé</b>. Écris ton message en dessous, puis <b>📨 Envoyer</b>.')},
-        {t:'Maman t\'a répondu ! Ouvre sa réponse 💌', goal:{spot:'list', hint:'Un nouveau mail vient d\'arriver dans ta <b>Boîte de réception</b> : clique-le !',
-          test:c=>c.evt.openedMail && [...c.evt.openedMail].some(id=>{const m=getMail(id); return m&&m.subject.indexOf('Bravo')>=0;})}}
+        {t:'Envoie ton mail à <b>valentin@cuicui.fr</b> · objet « <b>Maillot retrouvé</b> » · raconte-lui !',
+          goal:G.sent({to:['valentin@cuicui.fr'], subjIncl:'maillot'},
+            'Dans <b>À :</b> tape <b>valentin@cuicui.fr</b> puis '+kbd('Entrée')+'. Dans <b>Objet :</b> écris <b>Maillot retrouvé</b>. Écris ton message en dessous, puis <b>📨 Envoyer</b>.')},
+        {t:'Valentin t\'a répondu ! Ouvre sa réponse et <b>lis-la bien</b> 💬',
+          goal:{spot:'list', hint:'Un nouveau mail de Valentin vient d\'arriver dans ta <b>Boîte de réception</b> : clique-le et prends le temps de le lire.',
+            test:c=>!!c.evt._valentinReplyRead}}
       ],
+      /* on laisse ~6 s pour LIRE la réponse avant de valider la mission */
+      boot:function(){
+        const t=every(500,()=>{
+          const m=M.mails.find(x=>x.from==='valentin@cuicui.fr' && x.subject.indexOf('Bien reçu')>=0);
+          if(m && m.read && !M.evt._valentinReplyTimer){
+            M.evt._valentinReplyTimer=true; clearInterval(t);
+            after(6000,()=>{ M.evt._valentinReplyRead=true; checkMission(); });
+          }
+        });
+      },
       onSendHook:function(rec){
-        if(rec.to.includes('maman@cuicui.fr')){
-          after(1600,()=>deliverMail({from:'maman@cuicui.fr', subject:'Bravo pour ton premier mail !',
-            body:'<p>Quel beau premier mail ! 🎉 Je suis fière de toi.</p><p>À ce soir mon cœur,<br>Maman ❤️</p>'}));
+        if(rec.to.includes('valentin@cuicui.fr')){
+          after(1600,()=>deliverMail({from:'valentin@cuicui.fr', subject:'Bien reçu, merci !',
+            body:'<p>Super, merci de l\'avoir cherché ! 👍</p><p>On se retrouve à la piscine mercredi.</p><p>Valentin</p>'}));
         }
       }},
     {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'La tournée du facteur',
@@ -2225,18 +2309,18 @@ const LEVELS=[
       seed:{ mails:[
         { from:'zoe@cuicui.fr', subject:'Devine quoi !', date:'Auj. 9:01',
           body:'<p>J\'ai une tortue à la maison !! 🐢 Elle s\'appelle Caramel.</p><p>Zoé</p>' },
-        { from:'maman@cuicui.fr', subject:'Bisous', date:'Auj. 8:40', read:true, body:'<p>Bonne journée mon cœur ! ❤️</p>' }
+        { from:'maman@cuicui.fr', subject:'Bonne journée', date:'Auj. 8:40', read:true, body:'<p>Passe une bonne journée au collège ! 😊</p>' }
       ]},
       run:function(done){
         serieRun({ timer:180, bonus:60, goal:'Exécute les ordres du facteur !',
           steps:[
             {ic:'📬', ord:'Ouvre le mail de <b>Zoé</b>', test:c=>c.evt.openedMail && c.evt.openedMail.has('m1')},
-            {ic:'↩️', ord:'<b>Réponds</b> à Zoé', sub:'↩️ Répondre → un petit mot → 📨 Envoyer',
+            {ic:'↩️', ord:'<b>Réponds</b> à Zoé', sub:'↩️ Répondre → un petit mot → 📨 Envoyer', hold:6000,
               test:c=>c.evt.sent.some(r=>r.to.includes('zoe@cuicui.fr')&&r.replyOf)},
-            {ic:'✏️', ord:'Écris à <b>leo@cuicui.fr</b> · objet « <b>Foot</b> »', sub:'✏️ Nouveau message',
-              test:c=>c.evt.sent.some(r=>r.to.includes('leo@cuicui.fr')&&normText(r.subject).includes('foot'))},
+            {ic:'✏️', ord:'Écris à <b>leonce@cuicui.fr</b> · objet « <b>Foot</b> »', sub:'✏️ Nouveau message', hold:6000,
+              test:c=>c.evt.sent.some(r=>r.to.includes('leonce@cuicui.fr')&&normText(r.subject).includes('foot'))},
             {ic:'🔵', ord:'Du courrier ! Lis <b>tous</b> les mails non lus',
-              prep:function(){ deliverMail({from:'tom@cuicui.fr', subject:'Ma dent est tombée', body:'<p>Regarde le trou ! 🦷😁</p>'});
+              prep:function(){ deliverMail({from:'arsene@cuicui.fr', subject:'Ma dent est tombée', body:'<p>Regarde le trou ! 🦷😁</p>'});
                 deliverMail({from:'bibliotheque@ville.fr', subject:'Ton livre est arrivé', body:'<p>Le livre <b>« Les volcans »</b> que tu as réservé t\'attend à la bibliothèque !</p>'}); },
               test:c=>!c.mails.some(m=>m.folder==='inbox'&&!m.read)},
             {ic:'📤', ord:'Va vérifier tes mails partis dans <b>Envoyés</b>',
@@ -2250,43 +2334,93 @@ const LEVELS=[
 { n:2, title:'À, Cc et Cci', subtitle:'les destinataires',
   intro:{ emoji:'👥',
     lead:'Un mail peut partir chez <b>plusieurs personnes</b> à la fois ! Mais À, Cc et Cci, ce n\'est pas pareil…',
-    teach:'<b>À :</b> les destinataires principaux, c\'est à eux qu\'on parle. <b>Cc :</b> la « copie » — ils sont juste au courant, et <b>tout le monde voit</b> qu\'ils l\'ont reçue. <b>Cci :</b> la copie <b>cachée</b> — personne ne voit qu\'ils l\'ont reçue, ni leur adresse !',
-    tools:[{g:'🎯',n:'À : le destinataire principal'},{g:'👀',n:'Cc : copie visible par tous'},{g:'🕶️',n:'Cci : copie cachée, invisible'},{g:'↩️↩️',n:'Répondre à tous'}] },
+    teach:'Dans <b>À :</b> on peut mettre <b>plusieurs adresses</b>, séparées par un point-virgule <b>;</b> (ou en appuyant sur '+kbd('Entrée')+' après chacune). <b>Cc :</b> la « copie » — ils sont juste au courant, et <b>tout le monde voit</b> qu\'ils l\'ont reçue. <b>Cci :</b> la copie <b>cachée</b> — personne ne voit qu\'ils l\'ont reçue, ni leur adresse ! On va y aller <b>doucement</b>, un champ à la fois.',
+    tools:[{g:'🎯',n:'À : un ou plusieurs destinataires (séparés par ;)'},{g:'👀',n:'Cc : copie visible par tous'},{g:'🕶️',n:'Cci : copie cachée, invisible'},{g:'↩️↩️',n:'Répondre à tous'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'👀',title:'La copie (Cc)',
-      intro:'Organise le goûter avec Léo… en mettant Zoé au courant grâce au Cc !',
+    {kind:'mission',label:'Mission 1',emoji:'🎯',title:'Écrire à plusieurs (À)',
+      intro:'Un même message pour DEUX camarades : on met les deux adresses dans « À » !',
       seed:{ mails:[
-        { from:'leo@cuicui.fr', subject:'Goûter samedi ?', date:'Auj. 10:15',
-          body:'<p>Salut ! On fait un goûter samedi chez moi ? 🧁</p><p>Réponds-moi et mets Zoé <b>en copie</b> pour qu\'elle soit au courant !</p><p>Léo</p>' }
+        { from:'m.leco@ecole.fr', subject:'Cours de sport déplacé', date:'Auj. 8:10',
+          body:'<p>Bonjour,</p><p>Le cours de sport de demain est déplacé à <b>14h au gymnase</b>.</p>'
+            +'<p>Peux-tu prévenir <b>Léonce</b> (leonce@cuicui.fr) <b>et</b> <b>Zoé</b> (zoe@cuicui.fr) ? Un seul mail pour les deux suffit !</p><p>M. Leco</p>' }
       ]},
       objectives:[
-        {t:'Lis le mail de <b>Léo</b>', goal:G.openedMail('m1')},
+        {t:'Lis le mail de <b>M. Leco</b>', goal:G.openedMail('m1')},
+        {t:'Clique sur <b>✏️ Nouveau message</b>', goal:G.flag('openedCompose','Le grand bouton <b>✏️ Nouveau message</b> est en haut de la colonne de gauche.','compose')},
+        {t:'Dans <b>À :</b> mets <b>les DEUX adresses</b> · objet « <b>Sport déplacé</b> » · puis envoie',
+          goal:G.sent({to:['leonce@cuicui.fr','zoe@cuicui.fr'], subjIncl:'sport'},
+            'Dans <b>À :</b> tape <b>leonce@cuicui.fr</b> puis '+kbd('Entrée')+', puis <b>zoe@cuicui.fr</b> puis '+kbd('Entrée')+' (ou sépare-les par un point-virgule <b>;</b>). Objet : <b>Sport déplacé</b>, écris le message, puis <b>📨 Envoyer</b>.')},
+        {t:'Réponds à la question du <b>carnet de mission</b> 📝',
+          goal:G.flag('quiz_plusieurs','On peut mettre plusieurs adresses dans « À », séparées par un point-virgule ; ou par la touche Entrée.','quiz'),
+          quiz:{key:'plusieurs', q:'Quel signe sépare deux adresses dans « À » ? (tape-le)', accepted:[';','point virgule','point-virgule']}}
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'👀',title:'La copie (Cc)',
+      intro:'Réponds à Léonce pour l\'exposé… et mets Zoé « en copie » (Cc) pour qu\'elle soit au courant !',
+      seed:{ mails:[
+        { from:'leonce@cuicui.fr', subject:'Exposé d\'histoire', date:'Auj. 10:15',
+          body:'<p>Salut ! On prépare l\'exposé d\'histoire samedi après-midi ? 📚</p><p>Réponds-moi et mets <b>Zoé en copie (Cc)</b> pour qu\'elle soit au courant, elle est dans notre groupe.</p><p>Léonce</p>' }
+      ]},
+      objectives:[
+        {t:'Lis le mail de <b>Léonce</b>', goal:G.openedMail('m1')},
         {t:'Clique <b>↩️ Répondre</b>, puis ouvre le champ copie avec <b>+ Cc</b>',
           goal:G.flag('openedCc','Dans la fenêtre de réponse, clique le petit bouton <b>+ Cc</b> à droite du champ « À ».','compose')},
-        {t:'Ajoute <b>zoe@cuicui.fr</b> en <b>Cc</b> et envoie ta réponse à Léo',
-          goal:G.sent({to:['leo@cuicui.fr'], cc:['zoe@cuicui.fr']},
+        {t:'Ajoute <b>zoe@cuicui.fr</b> en <b>Cc</b> et envoie ta réponse à Léonce',
+          goal:G.sent({to:['leonce@cuicui.fr'], cc:['zoe@cuicui.fr']},
             'Dans le champ <b>Cc :</b> tape <b>zoe@cuicui.fr</b> puis '+kbd('Entrée')+'. Écris ta réponse et <b>📨 Envoyer</b>.')},
         {t:'Réponds à la question du <b>carnet de mission</b> 📝',
-          goal:G.flag('quiz_cc','Cc = copie VISIBLE : Léo voit que Zoé a reçu le mail.','quiz'),
-          quiz:{key:'cc', q:'Léo peut-il voir que Zoé a reçu ta réponse ? (oui / non)', accepted:['oui','yes']}}
+          goal:G.flag('quiz_cc','Cc = copie VISIBLE : Léonce voit que Zoé a reçu le mail.','quiz'),
+          quiz:{key:'cc', q:'Léonce peut-il voir que Zoé a reçu ta réponse ? (oui / non)', accepted:['oui','yes']}}
       ]},
-    {kind:'mission',label:'Mission 2',emoji:'🕶️',title:'La copie cachée (Cci)',
-      intro:'Invite 3 copains à ton anniversaire SURPRISE… sans montrer les adresses : mission Cci !',
+    {kind:'mission',label:'Mission 3',emoji:'👀',title:'Encore un Cc !',
+      intro:'On refait un Cc pour bien s\'entraîner : écris à Nina, et garde Arsène au courant en copie.',
       seed:{ mails:[
-        { from:'maman@cuicui.fr', subject:'Ton anniversaire 🎂', date:'Auj. 11:30',
-          body:'<p>Pour ton anniversaire samedi, tu peux inviter <b>Léo, Zoé et Tom</b> par mail !</p>'
-            +'<p>Petit conseil de grande : mets leurs adresses en <b>Cci</b> (copie cachée). Comme ça, personne ne voit les adresses des autres — c\'est plus poli et plus prudent. 😉</p><p>Maman</p>' }
+        { from:'nina.dubois@cuicui.fr', subject:'Le club théâtre', date:'Auj. 9:05',
+          body:'<p>Coucou ! Confirme-moi qu\'on se voit au <b>club théâtre</b> mercredi ? 🎭</p><p>Mets <b>Arsène en copie (Cc)</b>, il fait partie du club aussi.</p><p>Nina</p>' }
       ]},
       objectives:[
-        {t:'Lis le conseil de <b>Maman</b>', goal:G.openedMail('m1')},
+        {t:'Lis le mail de <b>Nina</b>', goal:G.openedMail('m1')},
+        {t:'<b>Réponds</b> à Nina, ouvre <b>+ Cc</b> et mets <b>arsene@cuicui.fr</b> en copie',
+          goal:G.sent({to:['nina.dubois@cuicui.fr'], cc:['arsene@cuicui.fr']},
+            'Clique <b>↩️ Répondre</b>, puis <b>+ Cc</b>. Dans <b>Cc :</b> tape <b>arsene@cuicui.fr</b> puis '+kbd('Entrée')+'. Écris ta réponse et <b>📨 Envoyer</b>.')},
+        {t:'Réponds à la question du <b>carnet de mission</b> 📝',
+          goal:G.flag('quiz_cc2','En Cc, tout le monde se voit : Nina voit qu\'Arsène a reçu le mail, et Arsène voit que Nina l\'a reçu.','quiz'),
+          quiz:{key:'cc2', q:'Arsène (en Cc) voit-il que Nina a reçu le mail ? (oui / non)', accepted:['oui','yes']}}
+      ]},
+    {kind:'mission',label:'Mission 4',emoji:'🕶️',title:'La copie cachée (Cci)',
+      intro:'Préviens 3 camarades du tournoi… sans montrer leurs adresses aux autres : c\'est le Cci !',
+      seed:{ mails:[
+        { from:'club.nature@asso.fr', subject:'Tournoi de foot samedi', date:'Auj. 11:30',
+          body:'<p>Bonjour !</p><p>Peux-tu prévenir <b>Léonce, Zoé et Arsène</b> pour le tournoi de foot de samedi ? ⚽</p>'
+            +'<p>Conseil : mets leurs adresses en <b>Cci</b> (copie cachée), comme ça <b>personne ne voit l\'adresse des autres</b> — c\'est plus poli et plus prudent. 😉</p>'
+            +'<p>Leurs adresses : <b>leonce@cuicui.fr</b> ; <b>zoe@cuicui.fr</b> ; <b>arsene@cuicui.fr</b></p><p>Le Club Nature</p>' }
+      ]},
+      objectives:[
+        {t:'Lis le mail (les 3 adresses y sont écrites !)', goal:G.openedMail('m1')},
         {t:'Nouveau message : ouvre la copie cachée avec <b>+ Cci</b>',
           goal:G.flag('openedBcc','Dans la fenêtre <b>✏️ Nouveau message</b>, clique le bouton <b>+ Cci</b> à droite du champ « À ».','compose')},
-        {t:'Mets <b>Léo, Zoé et Tom</b> en <b>Cci</b> · objet « <b>Anniversaire surprise</b> » · À : toi-même (<b>toi@cuicui.fr</b>) !',
-          goal:G.sent({bccN:3, subjIncl:'anniversaire'},
-            'Dans <b>Cci :</b> ajoute <b>leo@cuicui.fr</b>, <b>zoe@cuicui.fr</b> et <b>tom@cuicui.fr</b> (ou choisis-les avec 📇). Dans <b>À :</b> mets <b>toi@cuicui.fr</b>. Objet : <b>Anniversaire surprise</b>.')},
+        {t:'En <b>Cci</b> : <b>leonce@cuicui.fr</b> ; <b>zoe@cuicui.fr</b> ; <b>arsene@cuicui.fr</b> · À : <b>toi@cuicui.fr</b> · objet « <b>Tournoi de foot</b> »',
+          goal:G.sent({bccN:3, subjIncl:'tournoi'},
+            'Dans <b>Cci :</b> tape <b>leonce@cuicui.fr</b> '+kbd('Entrée')+', <b>zoe@cuicui.fr</b> '+kbd('Entrée')+', <b>arsene@cuicui.fr</b> '+kbd('Entrée')+' (tu peux copier-coller les adresses depuis le mail reçu !). Dans <b>À :</b> mets <b>toi@cuicui.fr</b>. Objet : <b>Tournoi de foot</b>.')},
         {t:'Réponds à la question du <b>carnet de mission</b> 📝',
-          goal:G.flag('quiz_cci','Cci = copie CACHÉE : Léo ne voit NI Zoé, ni Tom, ni leurs adresses.','quiz'),
-          quiz:{key:'cci', q:'Léo peut-il voir que Zoé et Tom sont invités ? (oui / non)', accepted:['non','no']}}
+          goal:G.flag('quiz_cci','Cci = copie CACHÉE : chacun reçoit le mail, mais ne voit NI les autres, NI leurs adresses.','quiz'),
+          quiz:{key:'cci', q:'Léonce (en Cci) peut-il voir que Zoé et Arsène ont reçu le mail ? (oui / non)', accepted:['non','no']}}
+      ]},
+    {kind:'mission',label:'Mission 5',emoji:'🧩',title:'Le bon champ au bon moment',
+      intro:'Le grand test : un seul mail, mais chaque personne dans le BON champ. Lis bien la consigne !',
+      seed:{ mails:[
+        { from:'zoe@cuicui.fr', subject:'La sortie ciné', date:'Auj. 13:20',
+          body:'<p>Organise la sortie ciné de vendredi ! 🎬</p>'
+            +'<p>Envoie l\'info <b>à Arsène</b> (arsene@cuicui.fr). Mets <b>moi (Zoé, zoe@cuicui.fr) en copie visible (Cc)</b> pour que je suive. '
+            +'Et mets <b>Léonce (leonce@cuicui.fr) en copie cachée (Cci)</b> : il vient en surprise, personne ne doit voir qu\'il est prévenu !</p><p>Zoé</p>' }
+      ]},
+      objectives:[
+        {t:'Lis bien la consigne de <b>Zoé</b>', goal:G.openedMail('m1')},
+        {t:'Nouveau message : <b>À</b> Arsène · <b>Cc</b> Zoé · <b>Cci</b> Léonce · objet « <b>Sortie ciné</b> »',
+          goal:G.sent({to:['arsene@cuicui.fr'], cc:['zoe@cuicui.fr'], bcc:['leonce@cuicui.fr'], subjIncl:'cine'},
+            'Dans <b>À :</b> arsene@cuicui.fr. Ouvre <b>+ Cc</b> → zoe@cuicui.fr. Ouvre <b>+ Cci</b> → leonce@cuicui.fr. Objet : <b>Sortie ciné</b>, puis <b>📨 Envoyer</b>.')},
+        {t:'Réponds à la question du <b>carnet de mission</b> 📝',
+          goal:G.flag('quiz_mix','Arsène (À) et Zoé (Cc) sont visibles de tous. Léonce (Cci) est caché : ni Arsène ni Zoé ne le voient.','quiz'),
+          quiz:{key:'mix', q:'Arsène voit-il que Léonce (en Cci) a reçu le mail ? (oui / non)', accepted:['non','no']}}
       ]},
     {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'Qui reçoit quoi ?',
       intro:'Un mail s\'affiche avec ses destinataires. À toi de dire qui voit quoi !',
@@ -2302,11 +2436,11 @@ const LEVELS=[
         }
         quizRun({ kicker:'✉️ Le mail part…', timer:150, bonus:45, goal:'Qui voit quoi ? Réponds juste !',
           questions:[
-            {card:card('Léo 🦁','Zoé 🐢',''), q:'Léo voit-il que Zoé a reçu le mail ?', why:'Cc = copie visible par tous.',
+            {card:card('Léonce 🦁','Zoé 🐢',''), q:'Léonce voit-il que Zoé a reçu le mail ?', why:'Cc = copie visible par tous.',
               opts:[{t:'OUI',ok:true},{t:'NON',cls:'no'}]},
-            {card:card('Léo 🦁','','Tom 🐸'), q:'Léo voit-il que Tom a reçu le mail ?', why:'Cci = caché : Léo ne voit pas Tom.',
+            {card:card('Léonce 🦁','','Arsène 🐸'), q:'Léonce voit-il que Arsène a reçu le mail ?', why:'Cci = caché : Léonce ne voit pas Arsène.',
               opts:[{t:'OUI',cls:'yes'},{t:'NON',ok:true,cls:'no'}]},
-            {card:card('Léo 🦁','','Tom 🐸'), q:'Tom voit-il que Léo a reçu le mail ?', why:'Tom voit le champ « À » : donc oui !',
+            {card:card('Léonce 🦁','','Arsène 🐸'), q:'Arsène voit-il que Léonce a reçu le mail ?', why:'Arsène voit le champ « À » : donc oui !',
               opts:[{t:'OUI',ok:true},{t:'NON',cls:'no'}]},
             {card:card('Zoé 🐢','Nina 🦊','Papi 👴'), q:'Nina voit-elle l\'adresse de Papi ?', why:'Papi est en Cci : invisible !',
               opts:[{t:'OUI',cls:'yes'},{t:'NON',ok:true,cls:'no'}]},
@@ -2314,9 +2448,9 @@ const LEVELS=[
               opts:[{t:'OUI',ok:true},{t:'NON',cls:'no'}]},
             {card:card('30 parents 👨‍👩‍👧',''), q:'Pour écrire à 30 parents sans montrer leurs adresses, on les met en…', why:'Cci : chacun reçoit, personne ne voit les autres.',
               opts:[{t:'Cci 🕶️',ok:true,cls:'yes'},{t:'Cc 👀',cls:'no'}]},
-            {card:card('Toi 🧒','Mme Plume 👩‍🏫',''), q:'Tu cliques « Répondre à tous » : Mme Plume reçoit-elle ta réponse ?', why:'« Répondre à tous » écrit à TOUT le monde (À + Cc).',
+            {card:card('Toi 🧑','M. Leco 👨‍🏫',''), q:'Tu cliques « Répondre à tous » : M. Leco reçoit-elle ta réponse ?', why:'« Répondre à tous » écrit à TOUT le monde (À + Cc).',
               opts:[{t:'OUI',ok:true},{t:'NON',cls:'no'}]},
-            {card:card('Léo 🦁','',''), q:'Tu cliques « Répondre » (tout court) : Zoé, qui était en Cci, reçoit-elle ta réponse ?', why:'La réponse ne va qu\'à l\'expéditeur : Léo.',
+            {card:card('Léonce 🦁','',''), q:'Tu cliques « Répondre » (tout court) : Zoé, qui était en Cci, reçoit-elle ta réponse ?', why:'La réponse ne va qu\'à l\'expéditeur : Léonce.',
               opts:[{t:'OUI',cls:'yes'},{t:'NON',ok:true,cls:'no'}]}
           ]}, done);
       }}
@@ -2341,20 +2475,23 @@ const LEVELS=[
           goal:G.flag('openedContacts','Le bouton <b>📇 Contacts</b> est tout en bas de la colonne de gauche.','contacts')},
         {t:'Enregistre <b>Nina</b> · adresse <b>nina.dubois@cuicui.fr</b>',
           goal:G.contactAdded('nina.dubois@cuicui.fr','Nina')},
-        {t:'Écris à Nina en la choisissant avec le bouton <b>📇</b> du message',
+        {t:'Écris à <b>Nina</b> (nina.dubois@cuicui.fr) en la choisissant avec le bouton <b>📇</b> du message',
           goal:G.sent({to:['nina.dubois@cuicui.fr']},
             'Clique <b>✏️ Nouveau message</b>, puis le petit bouton <b>📇</b> au bout du champ « À » : choisis <b>Nina</b> dans la liste ! Objet + message, puis 📨.')}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'📣',title:'La liste de diffusion',
-      intro:'Le Club Nature part en sortie ! Crée la liste « Club Nature » et préviens tout le monde d\'un seul mail.',
+      intro:'Le Club Nature part en sortie ! Ajoute Arsène au carnet, crée la liste « Club Nature » et préviens tout le monde d\'un seul mail.',
       seed:{ mails:[
         { from:'club.nature@asso.fr', subject:'Sortie forêt samedi !', date:'Auj. 8:05',
           body:'<p>Bonjour !</p><p>Grande sortie <b>forêt de Chantefeuille</b> samedi à 10h ! 🌳</p>'
-            +'<p>Peux-tu prévenir tes camarades du club ? Astuce : crée une <b>liste de diffusion</b> avec Léo, Zoé et Tom — un seul mail, trois messagers ! 📣</p><p>Le Club Nature</p>' }
+            +'<p>Peux-tu prévenir tes camarades du club ? Astuce : crée une <b>liste de diffusion</b> avec Léonce, Zoé et Arsène — un seul mail, trois messagers ! 📣</p>'
+            +'<p>Arsène vient d\'arriver au club, note bien son adresse : <b>arsene@cuicui.fr</b>.</p><p>Le Club Nature</p>' }
       ]},
       objectives:[
-        {t:'Lis le mail du <b>Club Nature</b>', goal:G.openedMail('m1')},
-        {t:'Dans <b>📇 Contacts</b>, crée la liste « <b>Club Nature</b> » avec <b>3 copains</b> (Léo, Zoé, Tom)',
+        {t:'Lis le mail du <b>Club Nature</b> (l\'adresse d\'Arsène y est écrite !)', goal:G.openedMail('m1')},
+        {t:'Ajoute <b>Arsène</b> au carnet · adresse <b>arsene@cuicui.fr</b> (Léonce et Zoé y sont déjà)',
+          goal:G.contactAdded('arsene@cuicui.fr','Arsène')},
+        {t:'Dans <b>📇 Contacts</b>, crée la liste « <b>Club Nature</b> » avec <b>3 copains</b> (Léonce, Zoé, Arsène)',
           goal:G.listCreated('Club Nature',3)},
         {t:'Écris <b>un seul mail</b> à la liste · objet « <b>Sortie forêt</b> »',
           goal:G.sent({list:'club nature', subjIncl:'sortie'},
@@ -2371,14 +2508,14 @@ const LEVELS=[
       seed:{},
       run:function(done){
         const pairs=[
-          {n:'Léo 🦁', a:'leo@cuicui.fr'},
+          {n:'Léonce 🦁', a:'leonce@cuicui.fr'},
           {n:'Zoé 🐢', a:'zoe@cuicui.fr'},
           {n:'Nina 🦊', a:'nina.dubois@cuicui.fr'},
-          {n:'Papi Roger 👴', a:'papi.roger@cuicui.fr'},
-          {n:'Mme Plume 👩‍🏫', a:'madame.plume@ecole.fr'},
+          {n:'Papi Marcel 👴', a:'papi.marcel@cuicui.fr'},
+          {n:'M. Leco 👨‍🏫', a:'m.leco@ecole.fr'},
           {n:'La bibliothèque 📚', a:'bibliotheque@ville.fr'}
         ];
-        const decoys=['nina-dubois@cuicui.biz','papi.roger@cuicuii.fr','madame.plume@ecole.com'];
+        const decoys=['nina-dubois@cuicui.biz','papi.marcel@cuicuii.fr','m.leco@ecole.com'];
         arcStart({shields:3, timer:120, bonus:40, goalText:'Associe les 6 copains à leur adresse !'});
         const addrs=pairs.map(p=>p.a).concat(decoys).sort(()=>Math.random()-.5);
         let selName=null, found=0;
@@ -2413,13 +2550,13 @@ const LEVELS=[
 { n:4, title:'Les pièces jointes', subtitle:'fichiers & images',
   intro:{ emoji:'📎',
     lead:'Un mail peut transporter des <b>fichiers</b> : photos, devoirs, dessins… accrochés au message par un trombone 📎 : ce sont les <b>pièces jointes</b>.',
-    teach:'Pour joindre : <b>📎 Joindre un fichier</b> dans la fenêtre du message. Pour mettre une image <b>dans</b> le texte : le bouton <b>🖼️</b>. Attention au poids : au-delà de <b>25 Mo</b>, ça ne passe pas !',
-    tools:[{g:'📎',n:'Joindre un fichier au mail'},{g:'🖼️',n:'Insérer une image dans le texte'},{g:'⚖️',n:'25 Mo maximum !'},{g:'➡️',n:'Transférer : renvoyer un mail reçu'}] },
+    teach:'Pour joindre : <b>📎 Joindre un fichier</b> dans la fenêtre du message. Tu peux en mettre <b>plusieurs</b>, et en <b>retirer</b> avec la petite croix <b>✕</b>. Pour mettre une image <b>dans</b> le texte : le bouton <b>🖼️</b>. Attention au poids : au-delà de <b>25 Mo</b>, ça ne passe pas !',
+    tools:[{g:'📎',n:'Joindre un ou plusieurs fichiers'},{g:'✕',n:'Retirer une pièce jointe'},{g:'🖼️',n:'Insérer une image dans le texte'},{g:'⚖️',n:'25 Mo maximum !'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'📬',title:'Un trombone dans le mail',
       intro:'Papi t\'envoie une photo de son jardin. Ouvre-la, puis transfère-la à Maman !',
       seed:{ mails:[
-        { from:'papi.roger@cuicui.fr', subject:'Mon potager en fleurs', date:'Auj. 8:44',
+        { from:'papi.marcel@cuicui.fr', subject:'Mon potager en fleurs', date:'Auj. 8:44',
           atts:[{n:'photo-jardin.jpg', s:850, ic:'🖼️', img:true, emoji:'🌻'}],
           body:'<p>Regarde comme mes tournesols ont poussé ! 🌻</p><p>J\'ai mis la photo <b>en pièce jointe</b>. Montre-la à ta maman !</p><p>Papi</p>' }
       ]},
@@ -2432,25 +2569,44 @@ const LEVELS=[
             'Le bouton <b>➡️ Transférer</b> renvoie le mail ET sa pièce jointe. Ajoute l\'adresse de Maman dans « À », un petit mot, puis 📨.')}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'📄',title:'Rendre son devoir',
-      intro:'Mme Plume attend ta poésie en pièce jointe… et gare aux fichiers trop lourds !',
+      intro:'M. Leco attend ta poésie en pièce jointe… et gare aux fichiers trop lourds !',
       seed:{ mails:[
-        { from:'madame.plume@ecole.fr', subject:'Devoir : ta poésie d\'automne', date:'Auj. 7:58',
-          body:'<p>Bonjour !</p><p>Envoie-moi ta <b>poésie d\'automne</b> en pièce jointe (le fichier <b>poesie-automne.pdf</b> dans tes documents).</p><p>Objet du mail : <b>Ma poésie</b>. Merci !<br>Mme Plume</p>' }
+        { from:'m.leco@ecole.fr', subject:'Devoir : ta poésie d\'automne', date:'Auj. 7:58',
+          body:'<p>Bonjour !</p><p>Envoie-moi ta <b>poésie d\'automne</b> en pièce jointe (le fichier <b>poesie-automne.pdf</b> dans tes documents).</p><p>Objet du mail : <b>Ma poésie</b>. Merci !<br>M. Leco</p>' }
       ]},
       objectives:[
-        {t:'Lis la consigne de <b>Mme Plume</b>', goal:G.openedMail('m1')},
+        {t:'Lis la consigne de <b>M. Leco</b>', goal:G.openedMail('m1')},
         {t:'Nouveau message : clique <b>📎 Joindre un fichier</b> et choisis <b>poesie-automne.pdf</b>',
           goal:G.inSet('attAdded','poesie-automne.pdf','Dans la fenêtre du message, le bouton <b>📎 Joindre un fichier</b> est en bas. Choisis <b>poesie-automne.pdf</b>.','compose')},
-        {t:'Expérience 🧪 : essaie d\'ajouter AUSSI <b>video-anniversaire.mp4</b> (48 Mo)… que se passe-t-il ?',
+        {t:'Expérience 🧪 : essaie d\'ajouter AUSSI <b>video-vacances.mp4</b> (48 Mo)… que se passe-t-il ?',
           goal:G.flag('tooBigTried','Re-clique <b>📎 Joindre un fichier</b> et clique la grosse vidéo : Cui-Cui va refuser, c\'est normal — c\'est la leçon !','compose')},
-        {t:'Envoie ta poésie à <b>madame.plume@ecole.fr</b> · objet « <b>Ma poésie</b> »',
-          goal:G.sent({to:['madame.plume@ecole.fr'], subjIncl:'poesie', att:'poesie-automne'},
-            'À : <b>madame.plume@ecole.fr</b> (ou 📇), objet <b>Ma poésie</b>, la pièce jointe est déjà accrochée → 📨 !')}
+        {t:'Envoie ta poésie à <b>m.leco@ecole.fr</b> · objet « <b>Ma poésie</b> »',
+          goal:G.sent({to:['m.leco@ecole.fr'], subjIncl:'poesie', att:'poesie-automne'},
+            'À : <b>m.leco@ecole.fr</b> (ou 📇), objet <b>Ma poésie</b>, la pièce jointe est déjà accrochée → 📨 !')}
       ]},
-    {kind:'mission',label:'Mission 3',emoji:'🖼️',title:'Une image dans le texte',
+    {kind:'mission',label:'Mission 3',emoji:'✂️',title:'Trop de pièces jointes !',
+      intro:'Zoé veut UNE seule photo. Ajoute plusieurs fichiers pour t\'entraîner… puis retire-les pour n\'en garder qu\'une !',
+      seed:{ mails:[
+        { from:'zoe@cuicui.fr', subject:'Une photo pour le journal', date:'Auj. 9:15',
+          body:'<p>Salut ! Pour le journal du collège, envoie-moi <b>juste UNE</b> photo : <b>photo-classe.jpg</b>. 📸</p>'
+            +'<p>Fais attention : <b>une seule</b> pièce jointe, sinon ça fait trop lourd !</p><p>Zoé</p>' }
+      ]},
+      objectives:[
+        {t:'Lis le mail de <b>Zoé</b>', goal:G.openedMail('m1')},
+        {t:'Nouveau message : joins <b>au moins 3 fichiers</b> (📎 Joindre un fichier, plusieurs fois)',
+          goal:{spot:'compose', hint:'Clique <b>✏️ Nouveau message</b>, puis <b>📎 Joindre un fichier</b> et choisis un fichier. Recommence pour en avoir <b>3 en tout</b> (par exemple photo-classe.jpg, dessin-oiseau.png, poesie-automne.pdf).',
+            test:c=>(c.evt.maxAtts||0)>=3}},
+        {t:'Oups, trop de fichiers ! <b>Retire</b> les pièces jointes pour ne garder que <b>photo-classe.jpg</b>',
+          goal:{spot:'compose', hint:'Sur chaque pièce jointe, la petite croix <b>✕</b> la retire. Retire-les jusqu\'à ne garder <b>que</b> photo-classe.jpg.',
+            test:c=>!!c.evt.attRemoved && c.compose && c.compose.atts.length===1 && c.compose.atts[0].n==='photo-classe.jpg'}},
+        {t:'Envoie à <b>Zoé</b> (zoe@cuicui.fr) · objet « <b>La photo</b> » · avec cette <b>seule</b> pièce jointe',
+          goal:G.sent({to:['zoe@cuicui.fr'], subjIncl:'photo', att:'photo-classe', attExact:1},
+            'À : <b>zoe@cuicui.fr</b>, objet <b>La photo</b>. Vérifie qu\'il ne reste QU\'UNE pièce jointe (photo-classe.jpg), puis <b>📨 Envoyer</b>.')}
+      ]},
+    {kind:'mission',label:'Mission 4',emoji:'🖼️',title:'Une image dans le texte',
       intro:'Papi ne sait pas ouvrir les pièces jointes… Mets ton dessin de fusée DIRECTEMENT dans le mail !',
       seed:{ mails:[
-        { from:'papi.roger@cuicui.fr', subject:'Ton dessin ?', date:'Auj. 10:02',
+        { from:'papi.marcel@cuicui.fr', subject:'Ton dessin ?', date:'Auj. 10:02',
           body:'<p>Mon grand, ta maman me dit que tu as dessiné une <b>fusée</b> magnifique ! 🚀</p>'
             +'<p>Tu peux me la montrer ? Mais mets-la <b>directement dans le message</b> : moi, les pièces jointes, je clique jamais dessus, j\'ai peur de tout casser. 😅</p><p>Papi</p>' }
       ]},
@@ -2458,9 +2614,9 @@ const LEVELS=[
         {t:'Lis la demande de <b>Papi</b>', goal:G.openedMail('m1')},
         {t:'Nouveau message : insère ton dessin avec le bouton <b>🖼️</b> (barre de mise en forme)',
           goal:G.inSet('imgInserted','dessin-fusee.png','Dans la fenêtre du message, clique le bouton <b>🖼️</b> (en haut à droite de la barre d\'outils) et choisis <b>dessin-fusee.png</b>.','toolbar')},
-        {t:'Envoie le tout à <b>papi.roger@cuicui.fr</b> · objet « <b>Ma fusée</b> »',
-          goal:G.sent({to:['papi.roger@cuicui.fr'], subjIncl:'fusee', img:true},
-            'À : <b>papi.roger@cuicui.fr</b>, objet <b>Ma fusée</b>, l\'image est dans le texte → 📨 !')}
+        {t:'Envoie le tout à <b>papi.marcel@cuicui.fr</b> · objet « <b>Ma fusée</b> »',
+          goal:G.sent({to:['papi.marcel@cuicui.fr'], subjIncl:'fusee', img:true},
+            'À : <b>papi.marcel@cuicui.fr</b>, objet <b>Ma fusée</b>, l\'image est dans le texte → 📨 !')}
       ]},
     {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'L\'expédition express',
       intro:'Examen chrono : pièces jointes, images, transferts… le centre de tri s\'emballe !',
@@ -2469,19 +2625,19 @@ const LEVELS=[
       seed:{ mails:[
         { from:'zoe@cuicui.fr', subject:'La photo de la tortue !', date:'Auj. 9:12',
           atts:[{n:'caramel-tortue.jpg', s:640, ic:'🖼️', img:true, emoji:'🐢'}],
-          body:'<p>Voilà Caramel ! Fais-la suivre à Tom, il voulait la voir 🐢</p>' }
+          body:'<p>Voilà Caramel ! Fais-la suivre à Arsène, il voulait la voir 🐢</p>' }
       ]},
       run:function(done){
         serieRun({ timer:200, bonus:60, goal:'Exécute les ordres du centre de tri !',
           steps:[
-            {ic:'📎', ord:'Envoie <b>recette-crepes.pdf</b> à <b>Zoé</b>', sub:'✏️ Nouveau message → 📎 Joindre',
+            {ic:'📎', ord:'Envoie <b>recette-crepes.pdf</b> à <b>Zoé</b>', sub:'✏️ Nouveau message → 📎 Joindre · À : zoe@cuicui.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('zoe@cuicui.fr')&&r.atts.some(a=>a.includes('recette')))},
-            {ic:'➡️', ord:'<b>Transfère</b> la photo de la tortue à <b>Tom</b>', sub:'Ouvre le mail de Zoé → ➡️ Transférer',
-              test:c=>c.evt.sent.some(r=>r.to.includes('tom@cuicui.fr')&&r.atts.some(a=>a.includes('caramel')))},
+            {ic:'➡️', ord:'<b>Transfère</b> la photo de la tortue à <b>Arsène</b>', sub:'Ouvre le mail de Zoé → ➡️ Transférer · À : arsene@cuicui.fr',
+              test:c=>c.evt.sent.some(r=>r.to.includes('arsene@cuicui.fr')&&r.atts.some(a=>a.includes('caramel')))},
             {ic:'🖼️', ord:'Envoie ton <b>dessin d\'oiseau</b> DANS le texte à <b>Nina</b>', sub:'Bouton 🖼️ → dessin-oiseau.png · À : nina.dubois@cuicui.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('nina.dubois@cuicui.fr')&&r.img)},
-            {ic:'📄', ord:'Envoie <b>expose-volcans.docx</b> à <b>Mme Plume</b> · objet « <b>Exposé</b> »',
-              test:c=>c.evt.sent.some(r=>r.to.includes('madame.plume@ecole.fr')&&r.atts.some(a=>a.includes('expose'))&&normText(r.subject).includes('expose'))}
+            {ic:'📄', ord:'Envoie <b>expose-volcans.docx</b> à <b>M. Leco</b> · objet « <b>Exposé</b> »', sub:'À : m.leco@ecole.fr',
+              test:c=>c.evt.sent.some(r=>r.to.includes('m.leco@ecole.fr')&&r.atts.some(a=>a.includes('expose'))&&normText(r.subject).includes('expose'))}
           ]}, done);
       }}
   ]},
@@ -2510,19 +2666,19 @@ const LEVELS=[
           goal:G.inSet('fmtUsed','underline','Sélectionne un mot, puis le bouton <b>S</b> le souligne.','toolbar')},
         {t:'Et <mark>surligne</mark> le plus important (bouton <b>🖍️</b>)',
           goal:G.inSet('fmtUsed','hilite','Sélectionne le passage important, puis clique le <b>🖍️</b> : il devient jaune fluo !','toolbar')},
-        {t:'Envoie ton chef-d\'œuvre à Zoé !',
+        {t:'Envoie ton chef-d\'œuvre à <b>Zoé</b> (zoe@cuicui.fr) !',
           goal:G.sent({to:['zoe@cuicui.fr'], fmt:['b','i','u','hl']},
             'Vérifie que ton mail contient bien du gras, de l\'italique, du souligné ET du surligné, puis <b>📨 Envoyer</b>.')}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'🪧',title:'L\'affiche du spectacle',
-      intro:'La maîtresse veut une belle invitation au spectacle : texte centré et police rigolote !',
+      intro:'Le professeur veut une belle invitation au spectacle : texte centré et police rigolote !',
       seed:{ mails:[
-        { from:'madame.plume@ecole.fr', subject:'Invitation au spectacle 🎭', date:'Auj. 8:15',
+        { from:'m.leco@ecole.fr', subject:'Invitation au spectacle 🎭', date:'Auj. 8:15',
           body:'<p>Bonjour !</p><p>Peux-tu préparer l\'invitation au <b>spectacle de la classe</b> pour tes parents ?</p>'
-            +'<p>Pour que ce soit joli comme une affiche : <b>centre</b> le texte (bouton ↔️) et choisis la police <b>Fredoka</b> (la ronde). Envoie-la à <b>maman@cuicui.fr</b>, objet « Spectacle ».</p><p>Merci ! Mme Plume</p>' }
+            +'<p>Pour que ce soit joli comme une affiche : <b>centre</b> le texte (bouton ↔️) et choisis la police <b>Fredoka</b> (la ronde). Envoie-la à <b>maman@cuicui.fr</b>, objet « Spectacle ».</p><p>Merci ! M. Leco</p>' }
       ]},
       objectives:[
-        {t:'Lis la demande de <b>Mme Plume</b>', goal:G.openedMail('m1')},
+        {t:'Lis la demande de <b>M. Leco</b>', goal:G.openedMail('m1')},
         {t:'Nouveau message : écris l\'invitation puis <b>centre</b> le texte (bouton <b>↔️</b>)',
           goal:G.inSet('fmtUsed','center','Écris ton invitation, clique dedans, puis le bouton <b>↔️</b> centre la ligne comme sur une affiche.','toolbar')},
         {t:'Choisis la police <b>Fredoka</b> (menu « Police » de la barre d\'outils)',
@@ -2534,7 +2690,7 @@ const LEVELS=[
     {kind:'mission',label:'Mission 3',emoji:'✍️',title:'Ta signature',
       intro:'Les grands signent leurs mails automatiquement. Crée TA signature !',
       seed:{ mails:[
-        { from:'papi.roger@cuicui.fr', subject:'C\'est qui ?', date:'Auj. 11:40',
+        { from:'papi.marcel@cuicui.fr', subject:'C\'est qui ?', date:'Auj. 11:40',
           body:'<p>J\'ai reçu un mail d\'un certain « toi@cuicui.fr »… mais c\'est QUI ? 🤔</p>'
             +'<p>Ajoute une <b>signature</b> à tes mails : ton prénom à la fin, automatiquement. Comme ça je sais que c\'est toi !</p><p>Papi</p>' }
       ]},
@@ -2542,9 +2698,9 @@ const LEVELS=[
         {t:'Lis le mail de <b>Papi</b>', goal:G.openedMail('m1')},
         {t:'Ouvre <b>⚙️</b> → <b>✍️ Ma signature</b> et écris ta signature',
           goal:G.signatureSet()},
-        {t:'Écris un mail à <b>Papi</b> : ta signature apparaît toute seule à la fin ! Envoie-le.',
-          goal:G.sent({to:['papi.roger@cuicui.fr'], sig:true},
-            'Clique <b>✏️ Nouveau message</b> : regarde en bas du texte, ta signature est déjà là ! À : <b>papi.roger@cuicui.fr</b>, objet, message → 📨.')}
+        {t:'Écris un mail à <b>Papi</b> (papi.marcel@cuicui.fr) : ta signature apparaît toute seule à la fin ! Envoie-le.',
+          goal:G.sent({to:['papi.marcel@cuicui.fr'], sig:true},
+            'Clique <b>✏️ Nouveau message</b> : regarde en bas du texte, ta signature est déjà là ! À : <b>papi.marcel@cuicui.fr</b>, objet, message → 📨.')}
       ]},
     {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'Le copieur de style',
       intro:'Reproduis les mails-modèles : même gras, même italique, même surligné… à l\'identique !',
@@ -2554,11 +2710,11 @@ const LEVELS=[
       run:function(done){
         serieRun({ timer:220, bonus:60, goal:'Reproduis les styles demandés !',
           steps:[
-            {ic:'🅶', ord:'Écris à <b>Léo</b> · objet « <b>Match</b> » · avec du <b>gras</b> et du <u>souligné</u>',
-              test:c=>c.evt.sent.some(r=>r.to.includes('leo@cuicui.fr')&&r.fmt.b&&r.fmt.u)},
-            {ic:'🖍️', ord:'Écris à <b>Zoé</b> · objet « <b>Secret</b> » · avec du <mark>surligné</mark> et de l\'<i>italique</i>',
+            {ic:'🅶', ord:'Écris à <b>Léonce</b> · objet « <b>Match</b> » · avec du <b>gras</b> et du <u>souligné</u>', sub:'À : leonce@cuicui.fr',
+              test:c=>c.evt.sent.some(r=>r.to.includes('leonce@cuicui.fr')&&r.fmt.b&&r.fmt.u)},
+            {ic:'🖍️', ord:'Écris à <b>Zoé</b> · objet « <b>Secret</b> » · avec du <mark>surligné</mark> et de l\'<i>italique</i>', sub:'À : zoe@cuicui.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('zoe@cuicui.fr')&&r.fmt.hl&&r.fmt.i)},
-            {ic:'🪧', ord:'Écris à <b>Maman</b> · objet « <b>Affiche</b> » · texte <b>centré</b> + police <b>Fredoka</b>',
+            {ic:'🪧', ord:'Écris à <b>Maman</b> · objet « <b>Affiche</b> » · texte <b>centré</b> + police <b>Fredoka</b>', sub:'À : maman@cuicui.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('maman@cuicui.fr')&&r.fmt.center&&r.fmt.font)}
           ]}, done);
       }}
@@ -2572,24 +2728,24 @@ const LEVELS=[
     tools:[{g:'📁',n:'Des dossiers pour classer'},{g:'💾',n:'Le brouillon : à finir plus tard'},{g:'🗑️',n:'La corbeille (récupérable !)'},{g:'🚫',n:'Les indésirables (spam)'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'📁',title:'Opération grand rangement',
-      intro:'Ta boîte déborde ! Crée un dossier « École » et range-y les mails de la maîtresse.',
+      intro:'Ta boîte déborde ! Crée un dossier « Collège » et range-y les mails du professeur.',
       seed:{ mails:[
-        { from:'madame.plume@ecole.fr', subject:'Sortie au musée jeudi', date:'Lun. 9:00', read:true,
-          body:'<p>Rappel : sortie au <b>musée des sciences</b> jeudi. Pensez au pique-nique !</p><p>Mme Plume</p>' },
-        { from:'leo@cuicui.fr', subject:'Trop bien le foot hier', date:'Lun. 18:22', read:true,
+        { from:'m.leco@ecole.fr', subject:'Sortie au musée jeudi', date:'Lun. 9:00', read:true,
+          body:'<p>Rappel : sortie au <b>musée des sciences</b> jeudi. Pensez au pique-nique !</p><p>M. Leco</p>' },
+        { from:'leonce@cuicui.fr', subject:'Trop bien le foot hier', date:'Lun. 18:22', read:true,
           body:'<p>On a gagné 3 à 2 !! ⚽</p>' },
-        { from:'madame.plume@ecole.fr', subject:'Poésie pour vendredi', date:'Mar. 8:30', read:true,
-          body:'<p>N\'oubliez pas d\'apprendre la poésie <b>« L\'automne »</b> pour vendredi !</p><p>Mme Plume</p>' },
-        { from:'papi.roger@cuicui.fr', subject:'Recette de crêpes', date:'Mar. 16:45', read:true,
+        { from:'m.leco@ecole.fr', subject:'Poésie pour vendredi', date:'Mar. 8:30', read:true,
+          body:'<p>N\'oubliez pas d\'apprendre la poésie <b>« L\'automne »</b> pour vendredi !</p><p>M. Leco</p>' },
+        { from:'papi.marcel@cuicui.fr', subject:'Recette de crêpes', date:'Mar. 16:45', read:true,
           body:'<p>La fameuse recette de Mamie, garde-la précieusement ! 🥞</p>' }
       ]},
       objectives:[
-        {t:'Crée un dossier « <b>École</b> » (bouton <b>➕ Nouveau dossier</b>)', goal:G.folderCreated('École')},
-        {t:'Range le mail « <b>Sortie au musée</b> » dedans (📁 Déplacer ▾)', goal:G.movedTo('m1','École')},
-        {t:'Range aussi « <b>Poésie pour vendredi</b> »', goal:G.movedTo('m3','École')},
+        {t:'Crée un dossier « <b>Collège</b> » (bouton <b>➕ Nouveau dossier</b>)', goal:G.folderCreated('Collège')},
+        {t:'Range le mail « <b>Sortie au musée</b> » dedans (📁 Déplacer ▾)', goal:G.movedTo('m1','Collège')},
+        {t:'Range aussi « <b>Poésie pour vendredi</b> »', goal:G.movedTo('m3','Collège')},
         {t:'Marque la <b>recette de Papi</b> d\'une ⭐ (pour la retrouver facilement)', goal:G.starred('m4')},
-        {t:'Ouvre ton dossier <b>📁 École</b> pour admirer le rangement !',
-          goal:{spot:'folders', hint:'Ton nouveau dossier <b>École</b> est apparu dans la colonne de gauche : clique-le.',
+        {t:'Ouvre ton dossier <b>📁 Collège</b> pour admirer le rangement !',
+          goal:{spot:'folders', hint:'Ton nouveau dossier <b>Collège</b> est apparu dans la colonne de gauche : clique-le.',
             test:c=>c.evt.folderOpened && [...c.evt.folderOpened].some(f=>f.startsWith('cf'))}}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'💾',title:'Brouillon & corbeille',
@@ -2613,21 +2769,21 @@ const LEVELS=[
         {t:'<b>Vide la corbeille</b> pour jeter la pub définitivement (bouton 🧹 Vider)', goal:G.trashEmptied()}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'🚫',title:'Les indésirables',
-      intro:'Deux drôles de mails se cachent dans ta boîte… et un mail de Tom s\'est perdu chez les indésirables !',
+      intro:'Deux drôles de mails se cachent dans ta boîte… et un mail de Arsène s\'est perdu chez les indésirables !',
       seed:{ mails:[
         { from:'promo@super-jeux.biz', subject:'🎁 Tu as GAGNÉ une console !!!', date:'Auj. 6:41',
           body:'<p>FÉLICITATIONS !!! Tu es le visiteur 1 000 000 !!! Clique VITE pour récupérer ta console GRATUITE !!!</p>' },
         { from:'maman@cuicui.fr', subject:'Récupération à 17h', date:'Auj. 8:20', read:true,
-          body:'<p>Je te récupère à 17h devant l\'école. 😘</p>' },
-        { from:'tom@cuicui.fr', subject:'Mon exposé sur les requins', date:'Auj. 7:33', folder:'spam',
-          body:'<p>Salut ! Tu peux relire mon exposé sur les requins ? 🦈 Merci !</p><p>Tom</p>' }
+          body:'<p>Je te récupère à 17h devant le collège. 😘</p>' },
+        { from:'arsene@cuicui.fr', subject:'Mon exposé sur les requins', date:'Auj. 7:33', folder:'spam',
+          body:'<p>Salut ! Tu peux relire mon exposé sur les requins ? 🦈 Merci !</p><p>Arsène</p>' }
       ]},
       objectives:[
         {t:'Un mail te promet une console <b>gratuite</b>… Méfiance ! Marque-le <b>🚫 Indésirable</b>',
           goal:G.markedSpam('m1')},
         {t:'Va inspecter le dossier <b>🚫 Indésirables</b>',
           goal:G.inSet('folderOpened','spam','Clique le dossier <b>🚫 Indésirables</b> dans la colonne de gauche.','folders')},
-        {t:'Le mail de <b>Tom</b> n\'a rien à faire là ! Clique <b>✅ Pas indésirable</b>',
+        {t:'Le mail de <b>Arsène</b> n\'a rien à faire là ! Clique <b>✅ Pas indésirable</b>',
           goal:G.unspammed('m3')},
         {t:'Réponds à la question du <b>carnet de mission</b> 📝',
           goal:G.flag('quiz_spam','Les cadeaux « gratuits » à gogo, les !!! partout : c\'est le costume des arnaques.','quiz'),
@@ -2637,23 +2793,23 @@ const LEVELS=[
       intro:'La boîte déborde ! Range chaque mail au bon endroit avant la fin du chrono.',
       goal:'Chaque mail à sa place, vite !',
       hint:'📁 Déplacer pour classer · 🚫 pour les arnaques · 🗑️ pour la poubelle.',
-      seed:{ customFolders:['École','Famille'],
+      seed:{ customFolders:['Collège','Famille'],
         mails:[
-        { from:'madame.plume@ecole.fr', subject:'Devoirs de la semaine', date:'Auj. 8:01', read:true, body:'<p>Maths p.34 et poésie !</p>' },
+        { from:'m.leco@ecole.fr', subject:'Devoirs de la semaine', date:'Auj. 8:01', read:true, body:'<p>Maths p.34 et poésie !</p>' },
         { from:'promo@super-jeux.biz', subject:'💰 ARGENT FACILE, clique ici !!', date:'Auj. 6:03', read:true, body:'<p>Deviens riche en 2 minutes !!!</p>' },
-        { from:'papi.roger@cuicui.fr', subject:'Photos de dimanche', date:'Auj. 9:14', read:true, body:'<p>Les photos du déjeuner ! 🍰</p>' },
+        { from:'papi.marcel@cuicui.fr', subject:'Photos de dimanche', date:'Auj. 9:14', read:true, body:'<p>Les photos du déjeuner ! 🍰</p>' },
         { from:'maman@cuicui.fr', subject:'Dentiste mercredi', date:'Auj. 7:45', read:true, body:'<p>RDV dentiste mercredi à 14h.</p>' },
-        { from:'madame.plume@ecole.fr', subject:'Bibliothèque annulée', date:'Auj. 8:55', read:true, body:'<p>La séance bibliothèque est annulée demain.</p>' },
+        { from:'m.leco@ecole.fr', subject:'Bibliothèque annulée', date:'Auj. 8:55', read:true, body:'<p>La séance bibliothèque est annulée demain.</p>' },
         { from:'info@meteo-mini.fr', subject:'Vieille alerte météo de mardi dernier', date:'Mar. 5:00', read:true, body:'<p>Alerte pluie (périmée depuis longtemps).</p>' }
       ]},
       run:function(done){
         serieRun({ timer:150, bonus:45, goal:'Range chaque mail au bon endroit !',
           steps:[
-            {ic:'📁', ord:'Range « <b>Devoirs de la semaine</b> » dans <b>École</b>', test:c=>c.evt.movedTo && c.evt.movedTo.has('m1:ecole')},
+            {ic:'📁', ord:'Range « <b>Devoirs de la semaine</b> » dans <b>Collège</b>', test:c=>c.evt.movedTo && c.evt.movedTo.has('m1:college')},
             {ic:'🚫', ord:'« <b>ARGENT FACILE</b> » → <b>Indésirables</b> !', test:c=>c.evt.markedSpam && c.evt.markedSpam.has('m2')},
             {ic:'📁', ord:'Range « <b>Photos de dimanche</b> » dans <b>Famille</b>', test:c=>c.evt.movedTo && c.evt.movedTo.has('m3:famille')},
             {ic:'📁', ord:'« <b>Dentiste mercredi</b> » → <b>Famille</b> aussi', test:c=>c.evt.movedTo && c.evt.movedTo.has('m4:famille')},
-            {ic:'📁', ord:'« <b>Bibliothèque annulée</b> » → <b>École</b>', test:c=>c.evt.movedTo && c.evt.movedTo.has('m5:ecole')},
+            {ic:'📁', ord:'« <b>Bibliothèque annulée</b> » → <b>Collège</b>', test:c=>c.evt.movedTo && c.evt.movedTo.has('m5:college')},
             {ic:'🗑️', ord:'La <b>vieille alerte météo</b> ne sert plus : supprime-la', test:c=>c.evt.trashed && c.evt.trashed.has('m6')},
             {ic:'🧹', ord:'Et <b>vide la corbeille</b> !', test:c=>!!c.evt.trashEmptied}
           ]}, done);
@@ -2671,11 +2827,11 @@ const LEVELS=[
       intro:'Le code du cadenas de piscine est dans UN mail… au milieu de plein d\'autres. Cherche !',
       seed:{ mails:[
         { from:'maman@cuicui.fr', subject:'Courses de samedi', date:'Lun. 10:00', read:true, body:'<p>Pain, lait, pommes… la liste habituelle !</p>' },
-        { from:'leo@cuicui.fr', subject:'Jeu de piste', date:'Lun. 15:30', read:true, body:'<p>On refait un jeu de piste mercredi ?</p>' },
+        { from:'leonce@cuicui.fr', subject:'Jeu de piste', date:'Lun. 15:30', read:true, body:'<p>On refait un jeu de piste mercredi ?</p>' },
         { from:'maman@cuicui.fr', subject:'Sac de piscine', date:'Mar. 7:50', read:true,
           body:'<p>Ton sac de <b>piscine</b> est prêt. Le code du cadenas est <b>4227</b> — retiens-le bien !</p><p>Maman</p>' },
-        { from:'papi.roger@cuicui.fr', subject:'Le potager', date:'Mar. 17:12', read:true, body:'<p>Les tomates rougissent ! 🍅</p>' },
-        { from:'gazette@ecole.fr', subject:'La gazette de juin', date:'Mer. 6:00', read:true, body:'<p>Au sommaire : la fête de l\'école, le concours de dessin…</p>' },
+        { from:'papi.marcel@cuicui.fr', subject:'Le potager', date:'Mar. 17:12', read:true, body:'<p>Les tomates rougissent ! 🍅</p>' },
+        { from:'gazette@ecole.fr', subject:'La gazette de juin', date:'Mer. 6:00', read:true, body:'<p>Au sommaire : la fête du collège, le concours de dessin…</p>' },
         { from:'zoe@cuicui.fr', subject:'Caramel a grandi', date:'Mer. 8:30', read:true, body:'<p>Ma tortue a pris 2 centimètres ! 🐢</p>' }
       ]},
       objectives:[
@@ -2693,11 +2849,11 @@ const LEVELS=[
     {kind:'mission',label:'Mission 2',emoji:'🔽',title:'Filtres et tri',
       intro:'Trop de mails ! Apprends à n\'afficher que ce qui t\'intéresse.',
       seed:{ mails:[
-        { from:'gazette@ecole.fr', subject:'Gazette : numéro spécial fête', date:'Auj. 6:00', body:'<p>Tout sur la fête de l\'école !</p>' },
-        { from:'leo@cuicui.fr', subject:'Photo du match', date:'Auj. 7:41', atts:[{n:'match-victoire.jpg',s:720,ic:'🖼️',img:true,emoji:'⚽'}], read:true, body:'<p>La photo de la victoire ! ⚽</p>' },
+        { from:'gazette@ecole.fr', subject:'Gazette : numéro spécial fête', date:'Auj. 6:00', body:'<p>Tout sur la fête du collège !</p>' },
+        { from:'leonce@cuicui.fr', subject:'Photo du match', date:'Auj. 7:41', atts:[{n:'match-victoire.jpg',s:720,ic:'🖼️',img:true,emoji:'⚽'}], read:true, body:'<p>La photo de la victoire ! ⚽</p>' },
         { from:'maman@cuicui.fr', subject:'Pense au dentiste', date:'Auj. 8:02', body:'<p>RDV à 14h mercredi !</p>' },
         { from:'zoe@cuicui.fr', subject:'Récré : on joue à quoi ?', date:'Auj. 8:44', read:true, body:'<p>Élastique ou billes ? 😄</p>' },
-        { from:'papi.roger@cuicui.fr', subject:'Concours de pétanque', date:'Auj. 9:10', body:'<p>J\'ai gagné le concours du club ! 🏆</p>' }
+        { from:'papi.marcel@cuicui.fr', subject:'Concours de pétanque', date:'Auj. 9:10', body:'<p>J\'ai gagné le concours du club ! 🏆</p>' }
       ]},
       objectives:[
         {t:'Affiche seulement les mails <b>non lus</b> (🔽 Filtrer → Non lus)',
@@ -2714,7 +2870,7 @@ const LEVELS=[
       intro:'La Gazette t\'écrit toutes les semaines… Crée un filtre AUTOMATIQUE qui la range tout seul !',
       seed:{ customFolders:['Gazette'],
         mails:[
-        { from:'gazette@ecole.fr', subject:'Gazette : les résultats du tournoi', date:'Lun. 6:00', read:true, body:'<p>Le CM1 en finale ! 🏆</p>' },
+        { from:'gazette@ecole.fr', subject:'Gazette : les résultats du tournoi', date:'Lun. 6:00', read:true, body:'<p>Les 6e en finale ! 🏆</p>' },
         { from:'gazette@ecole.fr', subject:'Gazette : recette de la cantine', date:'Mer. 6:00', read:true, body:'<p>Le fameux gratin dévoilé !</p>' }
       ]},
       objectives:[
@@ -2747,11 +2903,11 @@ const LEVELS=[
       goal:'Retrouve les mails-indices, vite !',
       hint:'🔍 pour un mot précis · 🔽 avec 📎 pour les pièces jointes · ⭐ pour les favoris.',
       seed:{ mails:[
-        { from:'leo@cuicui.fr', subject:'Trésor : premier indice', date:'Lun. 9:00', read:true, body:'<p>Le trésor est caché… là où poussent les <b>tomates</b> ! 🍅</p>' },
+        { from:'leonce@cuicui.fr', subject:'Trésor : premier indice', date:'Lun. 9:00', read:true, body:'<p>Le trésor est caché… là où poussent les <b>tomates</b> ! 🍅</p>' },
         { from:'maman@cuicui.fr', subject:'Courses', date:'Lun. 10:00', read:true, body:'<p>Pain, lait, pommes.</p>' },
         { from:'zoe@cuicui.fr', subject:'Photo mystère', date:'Lun. 11:30', atts:[{n:'indice-photo.jpg',s:480,ic:'🖼️',img:true,emoji:'🗝️'}], read:true, body:'<p>Le 2ᵉ indice est en pièce jointe : une clé ! 🗝️</p>' },
-        { from:'papi.roger@cuicui.fr', subject:'Pétanque dimanche ?', date:'Lun. 14:00', read:true, body:'<p>Une petite partie ?</p>' },
-        { from:'tom@cuicui.fr', subject:'IMPORTANT étoile', date:'Lun. 16:20', read:true, star:true, body:'<p>3ᵉ indice (je l\'ai mis en ⭐ pour toi) : compte <b>7 pas</b> depuis le cerisier !</p>' },
+        { from:'papi.marcel@cuicui.fr', subject:'Pétanque dimanche ?', date:'Lun. 14:00', read:true, body:'<p>Une petite partie ?</p>' },
+        { from:'arsene@cuicui.fr', subject:'IMPORTANT étoile', date:'Lun. 16:20', read:true, star:true, body:'<p>3ᵉ indice (je l\'ai mis en ⭐ pour toi) : compte <b>7 pas</b> depuis le cerisier !</p>' },
         { from:'gazette@ecole.fr', subject:'Gazette du lundi', date:'Lun. 6:00', read:true, body:'<p>La météo de la semaine.</p>' },
         { from:'nina.dubois@cuicui.fr', subject:'Dernier indice !', date:'Lun. 18:00', body:'<p>Creuse sous la <b>brouette</b> ! 🛞 Envoie-moi le mot « TROUVÉ » quand tu y es !</p>' }
       ]},
@@ -2766,7 +2922,7 @@ const LEVELS=[
               test:c=>c.evt.openedMail && c.evt.openedMail.has('m5')},
             {ic:'🔵', ord:'Lis le <b>dernier indice</b> (le mail non lu !)', sub:'🔽 Filtrer → Non lus',
               test:c=>c.evt.openedMail && c.evt.openedMail.has('m7')},
-            {ic:'🏆', ord:'Réponds « <b>TROUVÉ</b> » à Nina !',
+            {ic:'🏆', ord:'Réponds « <b>TROUVÉ</b> » à Nina !', sub:'↩️ Répondre (l\'adresse nina.dubois@cuicui.fr se remplit toute seule)',
               test:c=>c.evt.sent.some(r=>r.to.includes('nina.dubois@cuicui.fr')&&r.body.includes('trouve'))}
           ]}, done);
       }}
@@ -2798,10 +2954,10 @@ const LEVELS=[
     {kind:'mission',label:'Mission 2',emoji:'📚',title:'Devoirs et anniversaires',
       intro:'Une poésie pour le 19 juin, et l\'anniversaire de Papi le 12 août : l\'agenda retient tout !',
       seed:{ mails:[
-        { from:'madame.plume@ecole.fr', subject:'Poésie à réciter le 19 juin', date:'Auj. 8:10',
-          body:'<p>Vous réciterez la poésie <b>« L\'été »</b> le <b>vendredi 19 juin</b>. Notez-le pour réviser à temps !</p><p>Mme Plume</p>' },
+        { from:'m.leco@ecole.fr', subject:'Poésie à réciter le 19 juin', date:'Auj. 8:10',
+          body:'<p>Vous réciterez la poésie <b>« L\'été »</b> le <b>vendredi 19 juin</b>. Notez-le pour réviser à temps !</p><p>M. Leco</p>' },
         { from:'maman@cuicui.fr', subject:'L\'anniversaire de Papi', date:'Auj. 8:30',
-          body:'<p>Au fait : l\'anniversaire de <b>Papi Roger</b>, c\'est le <b>12 août</b> ! Note-le dans ton agenda en « anniversaire » : comme ça il reviendra <b>tous les ans</b> tout seul. 🎂</p><p>Maman</p>' }
+          body:'<p>Au fait : l\'anniversaire de <b>Papi Marcel</b>, c\'est le <b>12 août</b> ! Note-le dans ton agenda en « anniversaire » : comme ça il reviendra <b>tous les ans</b> tout seul. 🎂</p><p>Maman</p>' }
       ]},
       objectives:[
         {t:'Lis les deux mails 📬', goal:G.allRead()},
@@ -2829,7 +2985,7 @@ const LEVELS=[
               test:c=>(c.evt.eventAdded||[]).some(e=>eventMatches(e,{type:'devoir',d:18,m:5,titleIncl:['math']}))},
             {ic:'🎂', ord:'Anniversaire de « <b>Zoé</b> » le <b>3 juillet</b>',
               test:c=>(c.evt.eventAdded||[]).some(e=>eventMatches(e,{type:'anniv',d:3,m:6,titleIncl:['zoe']}))},
-            {ic:'🎈', ord:'« <b>Fête de l\'école</b> » le <b>27 juin</b> (événement)',
+            {ic:'🎈', ord:'« <b>Fête du collège</b> » le <b>27 juin</b> (événement)',
               test:c=>(c.evt.eventAdded||[]).some(e=>eventMatches(e,{type:'event',d:27,m:5,titleIncl:['fete','ecole']}))},
             {ic:'🎂', ord:'Anniversaire de « <b>Maman</b> » le <b>9 septembre</b>',
               test:c=>(c.evt.eventAdded||[]).some(e=>eventMatches(e,{type:'anniv',d:9,m:8,titleIncl:['maman']}))}
@@ -2844,7 +3000,7 @@ const LEVELS=[
     teach:'Sa technique, le <b>hameçonnage</b> : des mails déguisés (faux colis, faux gains, fausse gendarmerie…) pour te faire cliquer. Tes armes : lire l\'<b>adresse de l\'expéditeur</b>, te méfier de l\'<b>urgence</b> et des <b>cadeaux</b>, et ne JAMAIS donner un <b>mot de passe</b> par mail.',
     tools:[{g:'🧐',n:'Lis l\'adresse lettre par lettre'},{g:'⏰',n:'« Vite ! Urgent ! » = piège'},{g:'🎁',n:'Cadeau surprise = piège'},{g:'🔑',n:'Mot de passe demandé = piège, toujours'}] },
   rounds:[
-    {kind:'game',label:'Mission 1',emoji:'🧐',title:'L\'école du soupçon',
+    {kind:'game',label:'Mission 1',emoji:'🧐',title:'L\'collège du soupçon',
       intro:'Entraînement d\'inspecteur : 3 mails piégés. Trouve les 3 indices louches cachés dans chacun !',
       goal:'Clique les 3 indices louches de chaque mail !',
       hint:'Regarde : l\'adresse de l\'expéditeur, les demandes bizarres (argent, mot de passe), l\'urgence et les cadeaux.',
@@ -2888,7 +3044,7 @@ function soupconRun(done){
     if(mi>=MAILS.length){ done(); return; }
     const m=MAILS[mi];
     const old=scr().querySelector('.arcpage'); if(old) old.remove();
-    const p=arcPage('<p class="ap-k">🧐 L\'école du soupçon · mail '+(mi+1)+' / '+MAILS.length+' · <b id="scFound">0</b>/3 indices</p>'
+    const p=arcPage('<p class="ap-k">🧐 L\'collège du soupçon · mail '+(mi+1)+' / '+MAILS.length+' · <b id="scFound">0</b>/3 indices</p>'
       +'<div class="det-mail"><div class="dm-h">De : <b>'+m.name+'</b> &lt;'+m.from+'&gt;<br>Objet : <b>'+esc(m.sub)+'</b></div>'+m.html+'</div>'
       +'<p style="font-weight:800;color:var(--muted);font-size:.84rem;margin-top:12px">Clique les 3 passages louches !</p>');
     let found=0;
@@ -2943,13 +3099,13 @@ function phPool(){
     { phish:false, from:'bibliotheque@ville.fr', name:'La bibliothèque', sub:'Votre réservation est arrivée',
       body:'<p>Bonjour,</p><p>Le livre <b>« Le club des inventeurs »</b> que vous avez réservé est disponible à l\'accueil jusqu\'au 24 juin.</p><p>À bientôt !</p>',
       why:'La bibliothèque de la ville, un message calme et normal : rien à signaler.' },
-    { phish:false, from:'madame.plume@ecole.fr', name:'Mme Plume', sub:'Rappel : sortie au musée jeudi',
-      body:'<p>Bonjour,</p><p>Petit rappel : <b>sortie au musée jeudi</b>. Prévoir un pique-nique et une casquette.</p><p>Mme Plume</p>',
-      why:'La maîtresse, son adresse habituelle, une info d\'école toute simple.' },
+    { phish:false, from:'m.leco@ecole.fr', name:'M. Leco', sub:'Rappel : sortie au musée jeudi',
+      body:'<p>Bonjour,</p><p>Petit rappel : <b>sortie au musée jeudi</b>. Prévoir un pique-nique et une casquette.</p><p>M. Leco</p>',
+      why:'Le professeur, son adresse habituelle, une info du collège toute simple.' },
     { phish:false, from:'cantine@ecole.fr', name:'La cantine', sub:'Menu de la semaine',
       body:'<p>Au menu cette semaine : lundi gratin, mardi couscous, jeudi poisson-frites, vendredi pizza ! 🍕</p>',
       why:'Le menu de la cantine : ni lien louche, ni demande bizarre.' },
-    { phish:false, from:'papi.roger@cuicui.fr', name:'Papi Roger', sub:'Les photos de la pétanque',
+    { phish:false, from:'papi.marcel@cuicui.fr', name:'Papi Marcel', sub:'Les photos de la pétanque',
       body:'<p>Mon grand, voilà les photos du tournoi de pétanque. Quel triomphe ! 🏆</p><p>Papi</p>',
       atts:[{n:'petanque.jpg', s:900, ic:'🖼️', trap:false}],
       why:'Papi, sa vraie adresse, une photo en PJ toute simple.' },
@@ -2961,7 +3117,7 @@ function phPool(){
       why:'Une alerte météo d\'un service auquel on est abonné : honnête.' },
     { phish:false, from:'gazette@ecole.fr', name:'La Gazette', sub:'La gazette de la semaine',
       body:'<p>Au sommaire : le potager de la classe de CE2, les résultats du tournoi d\'échecs, et la recette du chef ! 📰</p>',
-      why:'La gazette habituelle de l\'école. Rien de louche.' },
+      why:'La gazette habituelle du collège. Rien de louche.' },
     /* ---- pièges (base) ---- */
     { phish:true, from:'loterie@grand-gagnant.biz', name:'LOTERIE NATIONALE', sub:'🎉 DERNIER RAPPEL : votre MILLION vous attend !!!',
       body:'<p>FÉLICITATIONS !!! Vous êtes notre GRAND GAGNANT !</p><p>Envoyez votre adresse et votre date de naissance <b>dans l\'heure</b> pour recevoir 1 000 000 € !!!</p>',
@@ -2986,10 +3142,10 @@ function phPool(){
       body:'<p>Bonjour ! Voici les photos de ta classe, comme promis. Ouvre vite la pièce jointe !</p>',
       atts:[{n:'photos-classe.zip.exe', s:2400, ic:'📦', trap:true}],
       why:'Le fichier finit en <b>.exe</b> : un programme déguisé en photos ! Ton scanner l\'a vu.' },
-    { phish:false, req:'scan', from:'madame.plume@ecole.fr', name:'Mme Plume', sub:'Les paroles de la chanson',
+    { phish:false, req:'scan', from:'m.leco@ecole.fr', name:'M. Leco', sub:'Les paroles de la chanson',
       body:'<p>Bonjour, voici les paroles de la chanson du spectacle à apprendre. Bonne répétition !</p>',
       atts:[{n:'chanson-spectacle.pdf', s:140, ic:'📄', trap:false}],
-      why:'Un PDF sain envoyé par la maîtresse : le scanner confirme.' },
+      why:'Un PDF sain envoyé par le professeur : le scanner confirme.' },
     { phish:true, req:'link', from:'cadeaux@cuicui-anniversaire.net', name:'Cui-Cui Cadeaux', sub:'Un cadeau pour ton anniversaire 🎁',
       body:'<p>Joyeux anniversaire en avance ! Cui-Cui t\'offre un cadeau.</p><p>Récupère-le ici : <a class="mlk" data-real="www.piege-du-phisher.biz/vole-tes-codes">www.cuicui.fr/cadeau</a></p>',
       why:'Le lien AFFICHE cuicui.fr… mais mène vers piege-du-phisher.biz ! Le Vérif-Liens l\'a démasqué.' },
@@ -3002,12 +3158,12 @@ function phPool(){
     { phish:false, req:'typo', from:'expedition@colissimo.fr', name:'Colissimo', sub:'Votre colis est en cours d\'acheminement',
       body:'<p>Bonjour,</p><p>Votre colis n° 6C 4471 0092 a quitté notre centre de tri et sera livré <b>jeudi</b>.</p><p>Merci de votre confiance.</p>',
       why:'Orthographe impeccable, adresse officielle colissimo.fr : le vrai.' },
-    { phish:true, req:'addr', from:'papi.roger@cuicuii.fr', name:'Papi Roger', sub:'Aide-moi vite mon grand',
+    { phish:true, req:'addr', from:'papi.marcel@cuicuii.fr', name:'Papi Marcel', sub:'Aide-moi vite mon grand',
       body:'<p>Mon grand, c\'est Papi. Je suis bloqué loin de la maison, envoie-moi vite le code de la carte de Maman, c\'est urgent !!</p>',
       why:'Regarde l\'adresse au radar : cuicu<b>ii</b>.fr avec DEUX i — un sosie de Papi ! Et le vrai Papi ne demanderait jamais ça.' },
-    { phish:false, req:'addr', from:'papi.roger@cuicui.fr', name:'Papi Roger', sub:'Dimanche prochain ?',
+    { phish:false, req:'addr', from:'papi.marcel@cuicui.fr', name:'Papi Marcel', sub:'Dimanche prochain ?',
       body:'<p>Mon grand, je passe dimanche avec une tarte aux pommes. Dis-moi si tu es là ! 🍎</p><p>Papi</p>',
-      why:'Le radar est formel : papi.roger@cuicui.fr, l\'adresse officielle de Papi. Et une tarte aux pommes, ça ne se refuse pas.' }
+      why:'Le radar est formel : papi.marcel@cuicui.fr, l\'adresse officielle de Papi. Et une tarte aux pommes, ça ne se refuse pas.' }
   ];
 }
 const PH_WAVES=[
