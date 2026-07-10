@@ -432,6 +432,8 @@
   .ccwin .w-x:hover{background:rgba(255,255,255,.45);}
   /* composer */
   .cmp{left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,94%);height:min(470px,92%);}
+  .cmp .w-bar{cursor:move;touch-action:none;}
+  .cmp .w-bar.dragging{cursor:grabbing;}
   .cmp-fields{flex:none;border-bottom:2px solid var(--line-2);}
   .cmp-row{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--line-2);}
   .cmp-row .cr-k{flex:none;width:46px;font-weight:800;font-size:.78rem;color:#5a6b7b;}
@@ -491,6 +493,7 @@
   .cc-mi.on{background:var(--cc-soft);color:var(--cc-brand-d);font-weight:800;}
   .cc-mi.danger{color:var(--red-d);}
   .cc-mi.danger:hover{background:#fef2f2;}
+  .cc-mi[disabled]{opacity:.4;pointer-events:none;}
   /* dialogue générique dans l'écran */
   .ccdlg{left:50%;top:50%;transform:translate(-50%,-50%);width:min(430px,92%);max-height:88%;}
   .ccdlg .d-body{padding:14px 16px;overflow:auto;}
@@ -821,6 +824,33 @@ function makeResizer(handle, pane, opts){
   handle.addEventListener('pointercancel', stop);
   handle.addEventListener('dblclick', ()=>{ pane.style.width=opts.def+'px'; opts.set(opts.def); opts.save(); });
 }
+/* déplacement d'une fenêtre (ccwin) par sa barre de titre, borné à son conteneur */
+function makeDraggable(handle, win, onMove){
+  if(!handle||!win) return;
+  let dragging=false, startX=0, startY=0, startL=0, startT=0;
+  handle.addEventListener('pointerdown', e=>{
+    if(e.target.closest('.w-x')) return;
+    e.preventDefault();
+    const parent=win.offsetParent||win.parentNode;
+    const wr=win.getBoundingClientRect(), pr=parent.getBoundingClientRect();
+    startL=wr.left-pr.left; startT=wr.top-pr.top;
+    win.style.left=startL+'px'; win.style.top=startT+'px'; win.style.transform='none';
+    dragging=true; startX=e.clientX; startY=e.clientY;
+    handle.classList.add('dragging'); try{ handle.setPointerCapture(e.pointerId); }catch(_){}
+  });
+  handle.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const parent=win.offsetParent||win.parentNode; const pr=parent.getBoundingClientRect();
+    let left=startL+(e.clientX-startX), top=startT+(e.clientY-startY);
+    left=Math.max(0, Math.min(left, pr.width-win.offsetWidth));
+    top=Math.max(0, Math.min(top, pr.height-win.offsetHeight));
+    win.style.left=left+'px'; win.style.top=top+'px';
+    if(onMove) onMove({left:left, top:top});
+  });
+  function stop(){ if(!dragging) return; dragging=false; handle.classList.remove('dragging'); }
+  handle.addEventListener('pointerup', stop);
+  handle.addEventListener('pointercancel', stop);
+}
 
 /* minuteries de mission — toutes annulées à chaque startStep() */
 let _timers=[];
@@ -872,7 +902,7 @@ const WHO={
   'valentin@cuicui.fr':{name:'Valentin',av:'🧑‍🎤'},
   'leonce@cuicui.fr':{name:'Léonce',av:'🦁'},
   'zoe@cuicui.fr':{name:'Zoé',av:'🐢'},
-  'nina.dubois@cuicui.fr':{name:'Nina',av:'🦊'},
+  'pauline.tricot@cuicui.fr':{name:'Pauline',av:'🦊'},
   'arsene@cuicui.fr':{name:'Arsène',av:'🐸'},
   'bibliotheque@ville.fr':{name:'La bibliothèque',av:'📚'},
   'club.nature@asso.fr':{name:'Le Club Nature',av:'🌿'},
@@ -1012,6 +1042,7 @@ function buildScreen(){
   document.getElementById('btnSort').onclick=(e)=>{ e.stopPropagation(); menuSort(e.currentTarget); };
   document.getElementById('btnSettings').onclick=(e)=>{ e.stopPropagation(); menuSettings(e.currentTarget); };
   app.addEventListener('pointerdown',e=>{ if(!e.target.closest('.cc-menu')) closeMenus(); });
+  app.addEventListener('contextmenu', onCtxMenu);
   /* volet des dossiers redimensionnable */
   makeResizer(document.getElementById('sideResize'), document.getElementById('ccSide'), {
     def:SIDE_DEF, min:140,
@@ -1212,6 +1243,74 @@ function openMenu(anchor, html){
   menu.style.left=left+'px'; menu.style.top=top+'px';
   menu.addEventListener('pointerdown',e=>e.stopPropagation());
   return menu;
+}
+/* ----- clic droit : copier / coller (comme un vrai logiciel) ----- */
+function ctxHasSelection(el){
+  if(el.tagName==='INPUT'||el.tagName==='TEXTAREA') return el.selectionStart!=null && el.selectionStart!==el.selectionEnd;
+  const sel=window.getSelection();
+  return !!(sel && sel.toString().length && el.contains(sel.anchorNode));
+}
+function ctxFireInput(el){ el.dispatchEvent(new Event('input',{bubbles:true})); }
+function ctxPasteInto(el){
+  el.focus();
+  function finish(text){
+    if(text==null || text==='') return;
+    if(!document.execCommand('insertText', false, text) && (el.tagName==='INPUT'||el.tagName==='TEXTAREA')){
+      const s=el.selectionStart||0, e2=el.selectionEnd||0, v=el.value;
+      el.value=v.slice(0,s)+text+v.slice(e2); el.selectionStart=el.selectionEnd=s+text.length;
+    }
+    ctxFireInput(el); beep('click');
+  }
+  function fallback(){
+    if(document.execCommand('paste')){ ctxFireInput(el); beep('click'); }
+    else toast('✋ Utilise <b>Ctrl+V</b> (ou Cmd+V) pour coller ici.');
+  }
+  if(navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(finish).catch(fallback);
+  else fallback();
+}
+function onCtxMenu(e){
+  const editable=e.target.closest('input,textarea,[contenteditable="true"]');
+  const readable=!editable && e.target.closest('.cc-read,.rd-body,.rd-head,.rw-addr,.ph-mb,.ph-mh');
+  const target=editable||readable;
+  if(!target) return; /* en dehors d'une zone de texte : menu du navigateur normal */
+  e.preventDefault();
+  closeMenus();
+  const hasSel=ctxHasSelection(target);
+  let html='';
+  if(editable){
+    html+='<button class="cc-mi" data-act="cut"'+(hasSel?'':' disabled')+'><span class="mi-ic">✂️</span>Couper</button>'
+      +'<button class="cc-mi" data-act="copy"'+(hasSel?'':' disabled')+'><span class="mi-ic">📋</span>Copier</button>'
+      +'<button class="cc-mi" data-act="paste"><span class="mi-ic">📌</span>Coller</button>';
+  } else {
+    html+='<button class="cc-mi" data-act="copy"'+(hasSel?'':' disabled')+'><span class="mi-ic">📋</span>Copier</button>';
+  }
+  const app=document.getElementById('ccapp'); if(!app) return;
+  const menu=document.createElement('div'); menu.className='cc-menu'; menu.innerHTML=html;
+  app.appendChild(menu);
+  const ar=app.getBoundingClientRect();
+  let left=e.clientX-ar.left, top=e.clientY-ar.top;
+  menu.style.left='0px'; menu.style.top='0px';
+  const mw=menu.offsetWidth, mh=menu.offsetHeight;
+  if(left+mw>ar.width-6) left=Math.max(4, ar.width-mw-6);
+  if(top+mh>ar.height-6) top=Math.max(4, ar.height-mh-6);
+  menu.style.left=left+'px'; menu.style.top=top+'px';
+  menu.addEventListener('pointerdown',ev=>ev.stopPropagation());
+  menu.querySelectorAll('.cc-mi').forEach(b=>{
+    b.onclick=()=>{
+      const act=b.getAttribute('data-act');
+      closeMenus();
+      if(editable) editable.focus();
+      if(act==='copy'){
+        if(!hasSel) return;
+        try{ document.execCommand('copy'); beep('click'); }catch(err){}
+      } else if(act==='cut'){
+        if(!hasSel) return;
+        try{ document.execCommand('cut'); beep('click'); ctxFireInput(editable); }catch(err){}
+      } else if(act==='paste'){
+        ctxPasteInto(editable);
+      }
+    };
+  });
 }
 function menuFilter(btn){
   const opts=[['all','📬','Tous les mails'],['unread','🔵','Non lus seulement'],['atts','📎','Avec pièce jointe'],['star','⭐','Favoris']];
@@ -1443,6 +1542,9 @@ function renderCompose(){
     +'</div></div>';
   renderChips('to'); if(c.showCc) renderChips('cc'); if(c.showBcc) renderChips('bcc');
   renderCmpAtts();
+  const cmpWin=document.getElementById('cmpWin');
+  if(c._pos){ cmpWin.style.left=c._pos.left+'px'; cmpWin.style.top=c._pos.top+'px'; cmpWin.style.transform='none'; }
+  makeDraggable(cmpWin.querySelector('.w-bar'), cmpWin, pos=>{ c._pos=pos; });
   document.getElementById('cmpX').onclick=()=>{ beep('click'); closeWins(); renderAll(); };
   document.getElementById('cmpSubj').addEventListener('input',e=>{ c.subject=e.target.value; });
   const body=document.getElementById('cmpBody');
@@ -1495,7 +1597,7 @@ function renderChips(k){
   function addChip(html, cls, onDel){
     const s=document.createElement('span'); s.className='chip'+(cls?' '+cls:''); s.innerHTML=html;
     const x=document.createElement('button'); x.className='ch-x'; x.textContent='✕';
-    x.onclick=()=>{ onDel(); renderCompose(); };
+    x.onclick=()=>{ onDel(); evtAdd('recipientRemoved', k); renderChips(k); };
     s.appendChild(x); frag.appendChild(s);
   }
   if(k==='to'){
@@ -1545,7 +1647,7 @@ function menuBook(btn, k){
     const c=M.compose; const a=b.getAttribute('data-a'), l=b.getAttribute('data-l');
     if(a && !c[k].includes(a)) c[k].push(a);
     if(l && !c.lists.includes(l)) c.lists.push(l);
-    closeMenus(); beep('click'); evtFlag('usedBookPicker'); renderCompose(); fireEvt();
+    closeMenus(); beep('click'); evtAdd('usedBookPicker', a||l); renderChips(k); fireEvt();
   });
 }
 function renderCmpAtts(){
@@ -1683,12 +1785,14 @@ function renderContacts(main){
     '<div class="ct-card"><span class="cc-av">'+c.av+'</span>'
     +'<span class="cc-tx"><span class="cc-n">'+esc(c.name)+'</span><span class="cc-a">'+esc(c.addr)+'</span></span>'
     +'<span class="cc-acts"><button class="cc-act" data-write="'+esc(c.addr)+'" title="Écrire à ce contact">✉️</button>'
+    +'<button class="cc-act" data-edit="'+i+'" title="Modifier ce contact">✏️</button>'
     +'<button class="cc-act" data-del="'+i+'" title="Supprimer ce contact">🗑️</button></span></div>').join('');
   const lists=M.lists.map((l,i)=>
     '<div class="ct-card listcard"><span class="cc-av">📣</span>'
     +'<span class="cc-tx"><span class="cc-n">'+esc(l.name)+'</span>'
     +'<span class="ct-members">'+l.members.length+' membre'+(l.members.length>1?'s':'')+' : '+l.members.map(a=>esc(whoName(a).split(' ')[0])).join(', ')+'</span></span>'
     +'<span class="cc-acts"><button class="cc-act" data-wlist="'+esc(l.name)+'" title="Écrire à toute la liste">✉️</button>'
+    +'<button class="cc-act" data-editlist="'+i+'" title="Modifier cette liste">✏️</button>'
     +'<button class="cc-act" data-dlist="'+i+'" title="Supprimer la liste">🗑️</button></span></div>').join('');
   main.innerHTML='<div class="cc-contacts"><div class="ct-head"><h3>📇 Carnet d\'adresses</h3>'
     +'<button class="cc-hbtn" id="btnAddContact">➕ Nouveau contact</button>'
@@ -1700,15 +1804,17 @@ function renderContacts(main){
   document.getElementById('btnAddList').onclick=()=>dlgNewList();
   main.querySelectorAll('[data-write]').forEach(b=>b.onclick=()=>{ beep('click'); openCompose({to:[b.getAttribute('data-write')]}); });
   main.querySelectorAll('[data-wlist]').forEach(b=>b.onclick=()=>{ beep('click'); openCompose({lists:[b.getAttribute('data-wlist')]}); });
+  main.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{ const i=+b.getAttribute('data-edit'); dlgNewContact(M.contacts[i], i); });
+  main.querySelectorAll('[data-editlist]').forEach(b=>b.onclick=()=>{ dlgNewList(+b.getAttribute('data-editlist')); });
   main.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ beep('delete'); M.contacts.splice(+b.getAttribute('data-del'),1); renderMain(); });
   main.querySelectorAll('[data-dlist]').forEach(b=>b.onclick=()=>{ beep('delete'); M.lists.splice(+b.getAttribute('data-dlist'),1); renderMain(); });
 }
-function dlgNewContact(preset){
-  beep('click'); preset=preset||{};
-  openDlg('➕ Nouveau contact',
+function dlgNewContact(preset, editIdx){
+  beep('click'); preset=preset||{}; const editing=editIdx!=null;
+  openDlg(editing?'✏️ Modifier le contact':'➕ Nouveau contact',
     '<p>Un contact enregistré = plus besoin de retaper son adresse !</p>'
-    +'<label>Prénom (ou nom)</label><input class="d-in" id="ncName" placeholder="Par exemple : Nina" value="'+esc(preset.name||'')+'" autocomplete="off">'
-    +'<label>Adresse mail</label><input class="d-in" id="ncAddr" placeholder="Par exemple : nina.dubois@cuicui.fr" value="'+esc(preset.addr||'')+'" autocomplete="off" spellcheck="false">',
+    +'<label>Prénom (ou nom)</label><input class="d-in" id="ncName" placeholder="Par exemple : Pauline" value="'+esc(preset.name||'')+'" autocomplete="off">'
+    +'<label>Adresse mail</label><input class="d-in" id="ncAddr" placeholder="Par exemple : pauline.tricot@cuicui.fr" value="'+esc(preset.addr||'')+'" autocomplete="off" spellcheck="false">',
     '<button class="d-btn" id="ncCancel">Annuler</button><button class="d-btn grn" id="ncOk">Enregistrer</button>');
   document.getElementById('ncCancel').onclick=()=>{ winsBox().innerHTML=''; };
   document.getElementById('ncOk').onclick=()=>{
@@ -1719,32 +1825,37 @@ function dlgNewContact(preset){
       beep('bad'); toast('🤔 Cette adresse ne ressemble pas à une adresse mail. Il faut un <b>@</b> et un point !');
       document.getElementById('ncAddr').focus(); return;
     }
-    if(!M.contacts.some(c=>c.addr===a)) M.contacts.push({addr:a, name:n, av:who(a).av});
+    if(M.contacts.some((c,i)=>c.addr===a && i!==editIdx)){
+      beep('bad'); toast('🤔 Un contact a déjà cette adresse !'); document.getElementById('ncAddr').focus(); return;
+    }
+    if(editing) M.contacts[editIdx]={addr:a, name:n, av:who(a).av};
+    else M.contacts.push({addr:a, name:n, av:who(a).av});
     winsBox().innerHTML=''; beep('good');
-    toast('📇 Contact <b>'+esc(n)+'</b> enregistré !');
+    toast(editing?('✏️ Contact <b>'+esc(n)+'</b> modifié !'):('📇 Contact <b>'+esc(n)+'</b> enregistré !'));
     evtAdd('contactAdded', a); renderMain();
   };
 }
-function dlgNewList(){
-  beep('click');
+function dlgNewList(editIdx){
+  beep('click'); const editing=editIdx!=null; const existing=editing?M.lists[editIdx]:null;
   if(!M.contacts.length){ toast('Ajoute d\'abord des contacts !'); return; }
-  openDlg('📣 Nouvelle liste de diffusion',
+  openDlg(editing?'✏️ Modifier la liste':'📣 Nouvelle liste de diffusion',
     '<p>Une liste = <b>plusieurs contacts</b> derrière un seul nom. Écris à la liste, tout le monde reçoit !</p>'
-    +'<label>Nom de la liste</label><input class="d-in" id="nlName" placeholder="Par exemple : Club Nature" autocomplete="off">'
+    +'<label>Nom de la liste</label><input class="d-in" id="nlName" placeholder="Par exemple : Club Nature" value="'+esc(existing?existing.name:'')+'" autocomplete="off">'
     +'<label>Qui met-on dedans ?</label>'
     +M.contacts.map((c,i)=>'<label style="display:flex;align-items:center;gap:8px;font-size:.84rem;margin:5px 0;cursor:pointer">'
-      +'<input type="checkbox" class="nl-m" value="'+esc(c.addr)+'" style="width:16px;height:16px;cursor:pointer"> '
+      +'<input type="checkbox" class="nl-m" value="'+esc(c.addr)+'"'+(existing&&existing.members.includes(c.addr)?' checked':'')+' style="width:16px;height:16px;cursor:pointer"> '
       +c.av+' '+esc(c.name)+'</label>').join(''),
-    '<button class="d-btn" id="nlCancel">Annuler</button><button class="d-btn grn" id="nlOk">Créer la liste</button>');
+    '<button class="d-btn" id="nlCancel">Annuler</button><button class="d-btn grn" id="nlOk">'+(editing?'Enregistrer':'Créer la liste')+'</button>');
   document.getElementById('nlCancel').onclick=()=>{ winsBox().innerHTML=''; };
   document.getElementById('nlOk').onclick=()=>{
     const n=document.getElementById('nlName').value.trim();
     const members=[...document.querySelectorAll('.nl-m:checked')].map(x=>x.value);
     if(!n){ document.getElementById('nlName').focus(); return; }
     if(members.length<2){ beep('bad'); toast('Une liste, c\'est au moins <b>2 contacts</b> !'); return; }
-    M.lists.push({name:n, members:members});
+    if(editing) M.lists[editIdx]={name:n, members:members};
+    else M.lists.push({name:n, members:members});
     winsBox().innerHTML=''; beep('good');
-    toast('📣 Liste <b>'+esc(n)+'</b> créée avec '+members.length+' membres !');
+    toast(editing?('📣 Liste <b>'+esc(n)+'</b> modifiée !'):('📣 Liste <b>'+esc(n)+'</b> créée avec '+members.length+' membres !'));
     evtAdd('listCreated', normText(n)+':'+members.length); renderMain();
   };
 }
@@ -1816,43 +1927,137 @@ function dlgNewEvent(d){
    9. OBJECTIFS DE MISSION (bibliothèque G) + VÉRIFICATION
    --------------------------------------------------------- */
 function buildCtx(){ return { evt:M.evt, mails:M.mails, folders:M.folders, contacts:M.contacts, lists:M.lists, events:M.events, compose:M.compose }; }
+
+/* ----- ciblage précis du bon bouton pour les astuces (surbrillance) ----- */
+function mailRowSel(id){ return function(){ return document.querySelector('#mailList [data-id="'+id+'"]'); }; }
+function folderBtnSel(fid){ return function(){ return document.querySelector('#ccFolders [data-f="'+fid+'"]'); }; }
+function mailActionSel(id,act){
+  return function(){
+    if(M.sel!==id){ const row=document.querySelector('#mailList [data-id="'+id+'"]'); if(row) return row; }
+    return document.querySelector('#reader [data-act="'+act+'"]');
+  };
+}
+function folderMailActionSel(folderId,id,act){
+  return function(){
+    if(M.folder!==folderId) return document.querySelector('#ccFolders [data-f="'+folderId+'"]');
+    if(M.sel!==id){ const row=document.querySelector('#mailList [data-id="'+id+'"]'); if(row) return row; }
+    return document.querySelector('#reader [data-act="'+act+'"]');
+  };
+}
+function moveToSel(id,folderName){
+  return function(){
+    if(M.sel!==id){ const row=document.querySelector('#mailList [data-id="'+id+'"]'); if(row) return row; }
+    const fld=M.folders.find(f=>normText(f.name)===normText(folderName));
+    if(fld){ const opt=document.querySelector('.cc-mi[data-v="'+fld.id+'"]'); if(opt) return opt; }
+    if(document.querySelector('.cc-mi[data-v]')) return document.querySelector('.cc-mi[data-v]');
+    return document.querySelector('#reader [data-act="move"]');
+  };
+}
+function contactsSel(btnId){
+  return function(){ if(M.view!=='contacts') return document.querySelector('#ccNav [data-view="contacts"]'); return document.getElementById(btnId); };
+}
+function filePickerSel(val,fallbackId){
+  return function(){
+    const i=MYFILES.findIndex(f=>f.n.toLowerCase()===val);
+    const chip=i>=0?document.querySelector('.fp-file[data-i="'+i+'"]'):null;
+    return chip || document.getElementById(fallbackId);
+  };
+}
+function attChipSel(val){
+  return function(){
+    const m=M.sel?getMail(M.sel):null;
+    if(m && m.folder===M.folder){ const i=m.atts.findIndex(a=>a.n.toLowerCase()===val); if(i>=0) return document.querySelector('.att-chip[data-att="'+i+'"]'); }
+    const mm=M.mails.find(x=>x.atts.some(a=>a.n.toLowerCase()===val));
+    return (mm && mm.folder===M.folder) ? document.querySelector('#mailList [data-id="'+mm.id+'"]') : null;
+  };
+}
+function draftRowSel(){
+  return function(){
+    if(M.folder!=='drafts') return document.querySelector('#ccFolders [data-f="drafts"]');
+    const d=M.mails.find(x=>x.folder==='drafts');
+    return d?document.querySelector('#mailList [data-id="'+d.id+'"]'):null;
+  };
+}
+function settingsMenuSel(v,fallbackIds){
+  return function(){
+    const mi=document.querySelector('.cc-mi[data-v="'+v+'"]'); if(mi) return mi;
+    for(const id of fallbackIds){ const el=document.getElementById(id); if(el && !(el.tagName==='INPUT' && el.value && el.value.trim())) return el; }
+    return document.getElementById('btnSettings');
+  };
+}
+function inSetSel(key,val){
+  if(key==='folderOpened') return folderBtnSel(val);
+  if(key==='fmtUsed') return val==='font' ? '#cmpFont' : ('#cmpTools [data-fmt="'+val+'"]');
+  if(key==='attOpened') return attChipSel(val);
+  if(key==='attAdded') return filePickerSel(val,'cmpAtt');
+  if(key==='imgInserted') return filePickerSel(val,'cmpImg');
+  if(key==='replied') return mailActionSel(val,'reply');
+  if(key==='repliedAll') return mailActionSel(val,'replyall');
+  return null;
+}
 const G={
   /* génériques */
   flag:(key,hint,spot)=>({spot:spot||'list', hint:hint, test:c=>!!c.evt[key]}),
-  inSet:(key,val,hint,spot)=>({spot:spot||'list', hint:hint, test:c=>c.evt[key] && c.evt[key].has(val)}),
+  inSet:(key,val,hint,spot)=>({spot:spot||'list', hint:hint, sel:inSetSel(key,val), test:c=>c.evt[key] && c.evt[key].has(val)}),
   setSize:(key,n,hint,spot)=>({spot:spot||'list', hint:hint, test:c=>c.evt[key] && c.evt[key].size>=n}),
   /* lecture */
-  openedMail:(id,hint)=>({spot:'list', hint:hint||'Clique sur le mail dans la <b>liste du milieu</b> pour l\'ouvrir.', test:c=>c.evt.openedMail && c.evt.openedMail.has(id)}),
-  allRead:(hint)=>({spot:'list', hint:hint||'Ouvre <b>tous</b> les mails avec un point bleu (non lus) : clique-les un par un.', test:c=>!c.mails.some(m=>m.folder==='inbox'&&!m.read)}),
+  openedMail:(id,hint)=>({spot:'list', hint:hint||'Clique sur le mail dans la <b>liste du milieu</b> pour l\'ouvrir.', sel:mailRowSel(id), test:c=>c.evt.openedMail && c.evt.openedMail.has(id)}),
+  reopenedSent:(hint)=>({spot:'list', hint:hint||'Clique sur ton mail dans la liste du milieu pour le relire.',
+    sel:function(){ const m=M.mails.find(x=>x.folder==='sent'); if(m){ const row=document.querySelector('#mailList [data-id="'+m.id+'"]'); if(row) return row; } return document.querySelector('#ccFolders [data-f="sent"]'); },
+    test:c=>c.evt.openedMail && [...c.evt.openedMail].some(id=>{const mm=c.mails.find(x=>x.id===id); return mm && mm.folder==='sent';})}),
+  allRead:(hint)=>({spot:'list', hint:hint||'Ouvre <b>tous</b> les mails avec un point bleu (non lus) : clique-les un par un.',
+    sel:function(){ if(M.folder!=='inbox') return document.querySelector('#ccFolders [data-f="inbox"]'); const m=M.mails.find(x=>x.folder==='inbox'&&!x.read); return m?document.querySelector('#mailList [data-id="'+m.id+'"]'):null; },
+    test:c=>!c.mails.some(m=>m.folder==='inbox'&&!m.read)}),
   /* envoi : match sur le DERNIER mail envoyé */
   sent:(match,hint)=>({spot:'compose', hint:hint||'Clique sur <b>✏️ Nouveau message</b>, remplis les champs demandés, puis <b>📨 Envoyer</b>.',
+    sel:function(){
+      if(document.getElementById('cmpWin')) return document.getElementById('cmpSend');
+      if(match.reply && match.to && match.to.length){
+        const m=M.mails.find(x=>x.folder==='inbox' && match.to.includes(x.from));
+        if(m){
+          if(M.sel!==m.id){ const row=document.querySelector('#mailList [data-id="'+m.id+'"]'); if(row) return row; }
+          const btn=document.querySelector('#reader [data-act="reply"]'); if(btn) return btn;
+        }
+      }
+      return document.getElementById('btnNew');
+    },
     test:c=>c.evt.sent.some(r=>sentMatches(r,match))}),
   /* dossiers / rangement */
-  folderCreated:(name)=>({spot:'addfolder', hint:'Clique sur <b>➕ Nouveau dossier</b> (colonne de gauche) et nomme-le <b>'+name+'</b>.', test:c=>c.evt.folderCreated && c.evt.folderCreated.has(normText(name))}),
-  movedTo:(id,folderName)=>({spot:'reader', hint:'Ouvre le mail, puis <b>📁 Déplacer ▾</b> et choisis le dossier <b>'+folderName+'</b>.', test:c=>c.evt.movedTo && c.evt.movedTo.has(id+':'+normText(folderName))}),
+  folderCreated:(name)=>({spot:'addfolder', hint:'Clique sur <b>➕ Nouveau dossier</b> (colonne de gauche) et nomme-le <b>'+name+'</b>.', sel:'#btnAddFolder', test:c=>c.evt.folderCreated && c.evt.folderCreated.has(normText(name))}),
+  movedTo:(id,folderName)=>({spot:'reader', hint:'Ouvre le mail, puis <b>📁 Déplacer ▾</b> et choisis le dossier <b>'+folderName+'</b>.', sel:moveToSel(id,folderName), test:c=>c.evt.movedTo && c.evt.movedTo.has(id+':'+normText(folderName))}),
   inFolder:(fid,n,hint)=>({spot:'reader', hint:hint, test:c=>c.mails.filter(m=>m.folder===fid).length>=n}),
-  trashed:(id)=>({spot:'reader', hint:'Ouvre le mail puis clique sur <b>🗑️ Supprimer</b> : il part dans la Corbeille.', test:c=>c.evt.trashed && c.evt.trashed.has(id)}),
-  restored:(id)=>({spot:'folders', hint:'Ouvre le dossier <b>🗑️ Corbeille</b>, clique le mail, puis <b>↩️ Restaurer</b>.', test:c=>c.evt.restored && c.evt.restored.has(id)}),
-  trashEmptied:()=>({spot:'list', hint:'Va dans la <b>🗑️ Corbeille</b> et clique le bouton <b>🧹 Vider</b> en haut de la liste.', test:c=>!!c.evt.trashEmptied}),
-  markedSpam:(id)=>({spot:'reader', hint:'Ouvre le mail suspect, puis clique sur <b>🚫 Indésirable</b>.', test:c=>c.evt.markedSpam && c.evt.markedSpam.has(id)}),
-  unspammed:(id)=>({spot:'folders', hint:'Va dans <b>🚫 Indésirables</b>, ouvre le mail, puis clique <b>✅ Pas indésirable</b>.', test:c=>c.evt.unspammed && c.evt.unspammed.has(id)}),
-  markedUnread:(id)=>({spot:'reader', hint:'Ouvre le mail puis clique sur <b>🔵 Non lu</b> : son point bleu revient.', test:c=>c.evt.markedUnread && c.evt.markedUnread.has(id)}),
-  starred:(id)=>({spot:'reader', hint:'Ouvre le mail et clique sur l\'<b>⭐ étoile</b> à côté de son objet.', test:c=>c.evt.starred && c.evt.starred.has(id)}),
+  trashed:(id)=>({spot:'reader', hint:'Ouvre le mail puis clique sur <b>🗑️ Supprimer</b> : il part dans la Corbeille.', sel:mailActionSel(id,'del'), test:c=>c.evt.trashed && c.evt.trashed.has(id)}),
+  restored:(id)=>({spot:'folders', hint:'Ouvre le dossier <b>🗑️ Corbeille</b>, clique le mail, puis <b>↩️ Restaurer</b>.', sel:folderMailActionSel('trash',id,'restore'), test:c=>c.evt.restored && c.evt.restored.has(id)}),
+  trashEmptied:()=>({spot:'list', hint:'Va dans la <b>🗑️ Corbeille</b> et clique le bouton <b>🧹 Vider</b> en haut de la liste.',
+    sel:function(){ return document.getElementById('btnEmptyTrash') || document.querySelector('#ccFolders [data-f="trash"]'); },
+    test:c=>!!c.evt.trashEmptied}),
+  markedSpam:(id)=>({spot:'reader', hint:'Ouvre le mail suspect, puis clique sur <b>🚫 Indésirable</b>.', sel:mailActionSel(id,'spam'), test:c=>c.evt.markedSpam && c.evt.markedSpam.has(id)}),
+  unspammed:(id)=>({spot:'folders', hint:'Va dans <b>🚫 Indésirables</b>, ouvre le mail, puis clique <b>✅ Pas indésirable</b>.', sel:folderMailActionSel('spam',id,'notspam'), test:c=>c.evt.unspammed && c.evt.unspammed.has(id)}),
+  markedUnread:(id)=>({spot:'reader', hint:'Ouvre le mail puis clique sur <b>🔵 Non lu</b> : son point bleu revient.', sel:mailActionSel(id,'unread'), test:c=>c.evt.markedUnread && c.evt.markedUnread.has(id)}),
+  starred:(id)=>({spot:'reader', hint:'Ouvre le mail et clique sur l\'<b>⭐ étoile</b> à côté de son objet.', sel:mailActionSel(id,'star'), test:c=>c.evt.starred && c.evt.starred.has(id)}),
   /* brouillons */
-  draftSaved:()=>({spot:'compose', hint:'Dans la fenêtre du message, clique sur <b>💾 Brouillon</b> (en bas à droite).', test:c=>!!c.evt.draftSaved}),
-  draftResumed:()=>({spot:'folders', hint:'Ouvre le dossier <b>📝 Brouillons</b> et clique sur ton brouillon pour le continuer.', test:c=>c.evt.draftResumed && c.evt.draftResumed.size>0}),
+  draftSaved:()=>({spot:'compose', hint:'Dans la fenêtre du message, clique sur <b>💾 Brouillon</b> (en bas à droite).', sel:'#cmpDraft', test:c=>!!c.evt.draftSaved}),
+  draftResumed:()=>({spot:'folders', hint:'Ouvre le dossier <b>📝 Brouillons</b> et clique sur ton brouillon pour le continuer.', sel:draftRowSel(), test:c=>c.evt.draftResumed && c.evt.draftResumed.size>0}),
   /* carnet / listes */
-  contactAdded:(addr,name)=>({spot:'contacts', hint:'Va dans <b>📇 Contacts</b> (en bas à gauche), clique <b>➕ Nouveau contact</b> et recopie bien l\'adresse <b>'+addr+'</b>.', test:c=>c.evt.contactAdded && c.evt.contactAdded.has(addr)}),
-  listCreated:(name,n)=>({spot:'contacts', hint:'Dans <b>📇 Contacts</b>, clique <b>📣 Nouvelle liste</b>, nomme-la <b>'+name+'</b> et coche '+n+' contacts.', test:c=>c.evt.listCreated && [...c.evt.listCreated].some(v=>v.startsWith(normText(name)+':') && parseInt(v.split(':')[1],10)>=n)}),
+  contactAdded:(addr,name)=>({spot:'contacts', hint:'Va dans <b>📇 Contacts</b> (en bas à gauche), clique <b>➕ Nouveau contact</b> et recopie bien l\'adresse <b>'+addr+'</b>.', sel:contactsSel('btnAddContact'), test:c=>c.evt.contactAdded && c.evt.contactAdded.has(addr)}),
+  listCreated:(name,n)=>({spot:'contacts', hint:'Dans <b>📇 Contacts</b>, clique <b>📣 Nouvelle liste</b>, nomme-la <b>'+name+'</b> et coche '+n+' contacts.', sel:contactsSel('btnAddList'), test:c=>c.evt.listCreated && [...c.evt.listCreated].some(v=>v.startsWith(normText(name)+':') && parseInt(v.split(':')[1],10)>=n)}),
   /* recherche / tri / filtres */
-  searched:(words)=>({spot:'search', hint:'Clique dans la <b>barre de recherche 🔍</b> (en haut), tape <b>'+words[0]+'</b> puis '+kbd('Entrée')+'.', test:c=>c.evt.searches.some(q=>words.some(w=>q.includes(normText(w))))}),
-  filterUsed:(kind,label)=>({spot:'filter', hint:'Clique sur <b>🔽 Filtrer</b> (en haut) et choisis <b>'+label+'</b>.', test:c=>c.evt.filterUsed && c.evt.filterUsed.has(kind)}),
-  sortUsed:(kind,label)=>({spot:'sort', hint:'Clique sur <b>↕️ Trier</b> (en haut) et choisis <b>'+label+'</b>.', test:c=>c.evt.sortUsed && c.evt.sortUsed.has(kind)}),
-  ruleCreated:(q,folderName)=>({spot:'settings', hint:'Clique sur <b>⚙️</b> puis <b>🪄 Filtres automatiques</b> : expéditeur contient <b>'+q+'</b> → déplacer vers <b>'+folderName+'</b>.', test:c=>c.evt.ruleCreated && c.evt.ruleCreated.has(normText(q)+'>'+normText(folderName))}),
+  searched:(words)=>({spot:'search', hint:'Clique dans la <b>barre de recherche 🔍</b> (en haut), tape <b>'+words[0]+'</b> puis '+kbd('Entrée')+'.', sel:'#ccSearch', test:c=>c.evt.searches.some(q=>words.some(w=>q.includes(normText(w))))}),
+  filterUsed:(kind,label)=>({spot:'filter', hint:'Clique sur <b>🔽 Filtrer</b> (en haut) et choisis <b>'+label+'</b>.', sel:'#btnFilter', test:c=>c.evt.filterUsed && c.evt.filterUsed.has(kind)}),
+  sortUsed:(kind,label)=>({spot:'sort', hint:'Clique sur <b>↕️ Trier</b> (en haut) et choisis <b>'+label+'</b>.', sel:'#btnSort', test:c=>c.evt.sortUsed && c.evt.sortUsed.has(kind)}),
+  ruleCreated:(q,folderName)=>({spot:'settings', hint:'Clique sur <b>⚙️</b> puis <b>🪄 Filtres automatiques</b> : expéditeur contient <b>'+q+'</b> → déplacer vers <b>'+folderName+'</b>.',
+    sel:settingsMenuSel('rules',['ruleQ','ruOk']), test:c=>c.evt.ruleCreated && c.evt.ruleCreated.has(normText(q)+'>'+normText(folderName))}),
   /* signature */
-  signatureSet:()=>({spot:'settings', hint:'Clique sur <b>⚙️</b> (en haut à droite) puis <b>✍️ Ma signature</b>, écris ta signature et enregistre.', test:c=>!!c.evt.signatureSet}),
+  signatureSet:()=>({spot:'settings', hint:'Clique sur <b>⚙️</b> (en haut à droite) puis <b>✍️ Ma signature</b>, écris ta signature et enregistre.',
+    sel:settingsMenuSel('sig',['sigIn','sigOk']), test:c=>!!c.evt.signatureSet}),
   /* agenda */
   eventAdded:(match,hint)=>({spot:'agenda', hint:hint||'Va dans <b>📅 Agenda</b> (en bas à gauche) et clique sur le bon jour pour ajouter ce qu\'on te demande.',
+    sel:function(){
+      if(M.view!=='agenda') return document.querySelector('#ccNav [data-view="agenda"]');
+      if(match.m!=null && M.agM!==match.m) return document.querySelector('.cc-agenda');
+      if(match.d!=null){ const cell=document.querySelector('.ag-day[data-d="'+match.d+'"]'); if(cell) return cell; }
+      return document.querySelector('.cc-agenda');
+    },
     test:c=>(c.evt.eventAdded||[]).some(e=>eventMatches(e,match))})
 };
 function sentMatches(r, m){
@@ -1942,7 +2147,7 @@ function renderQuizDock(){
   function submit(){
     const v=inp.value.trim(); if(!v) return;
     const n=normText(v);
-    if(q.accepted.some(a=>n===a||n.includes(a))){
+    if(q.accepted.some(a=>n===a||n.includes(a)||v===a)){
       M.evt['quiz_'+q.key]=true;
       checkMission();
     } else {
@@ -2268,28 +2473,28 @@ const LEVELS=[
           goal:G.sent({to:['papi.marcel@cuicui.fr'], reply:true}, 'Ouvre le mail de Papi, clique <b>↩️ Répondre</b> : l\'adresse et l\'objet se remplissent tout seuls ! Écris ton message puis <b>📨 Envoyer</b>.')},
         {t:'Va voir ton mail parti dans le dossier <b>📤 Envoyés</b>',
           goal:G.inSet('folderOpened','sent','Clique sur le dossier <b>📤 Envoyés</b> dans la colonne de gauche.','folders')},
+        {t:'Clique sur ton mail dans la liste pour le relire',
+          goal:G.reopenedSent('Clique sur ton mail (la réponse à Papi) dans la <b>liste du milieu</b> pour le rouvrir et le relire.')},
         {t:'Puis reviens dans ta <b>📥 Boîte de réception</b>',
           goal:G.inSet('folderOpened','inbox','Clique sur le dossier <b>📥 Boîte de réception</b>, tout en haut de la colonne de gauche.','folders')}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'✏️',title:'À toi d\'écrire !',
-      intro:'Écris ton tout premier mail à ton frère Valentin : dis-lui que le maillot est retrouvé !',
-      seed:{ mails:[
-        { from:'valentin@cuicui.fr', subject:'La piscine de mercredi', date:'Hier 19:02', read:true,
-          body:'<p>Salut,</p><p>C\'est Valentin. N\'oublie pas de prendre ton <b>maillot de bain</b> pour la piscine de mercredi !</p><p>Valentin</p>' }
-      ]},
+      intro:'Écris ton tout premier mail à ton frère Valentin : demande-lui s\'il vient à la piscine demain !',
+      seed:{ mails:[] },
       objectives:[
         {t:'Clique sur <b>✏️ Nouveau message</b>', goal:G.flag('openedCompose','Le grand bouton <b>✏️ Nouveau message</b> est en haut de la colonne de gauche.','compose')},
-        {t:'Envoie ton mail à <b>valentin@cuicui.fr</b> · objet « <b>Maillot retrouvé</b> » · raconte-lui !',
-          goal:G.sent({to:['valentin@cuicui.fr'], subjIncl:'maillot'},
-            'Dans <b>À :</b> tape <b>valentin@cuicui.fr</b> puis '+kbd('Entrée')+'. Dans <b>Objet :</b> écris <b>Maillot retrouvé</b>. Écris ton message en dessous, puis <b>📨 Envoyer</b>.')},
-        {t:'Valentin t\'a répondu ! Ouvre sa réponse et <b>lis-la bien</b> 💬',
+        {t:'Envoie ton mail à <b>valentin@cuicui.fr</b> · objet « <b>Piscine</b> » · demande-lui s\'il vient demain !',
+          goal:G.sent({to:['valentin@cuicui.fr'], subjIncl:'piscine'},
+            'Dans <b>À :</b> tape <b>valentin@cuicui.fr</b> puis '+kbd('Entrée')+'. Dans <b>Objet :</b> écris <b>Piscine</b>. Demande-lui s\'il vient demain, puis <b>📨 Envoyer</b>.')},
+        {t:'Valentin t\'a répondu avec l\'horaire ! Ouvre sa réponse et <b>lis-la bien</b> 💬',
           goal:{spot:'list', hint:'Un nouveau mail de Valentin vient d\'arriver dans ta <b>Boîte de réception</b> : clique-le et prends le temps de le lire.',
+            sel:function(){ const m=M.mails.find(x=>x.from==='valentin@cuicui.fr'); return m?document.querySelector('#mailList [data-id="'+m.id+'"]'):null; },
             test:c=>!!c.evt._valentinReplyRead}}
       ],
       /* on laisse ~6 s pour LIRE la réponse avant de valider la mission */
       boot:function(){
         const t=every(500,()=>{
-          const m=M.mails.find(x=>x.from==='valentin@cuicui.fr' && x.subject.indexOf('Bien reçu')>=0);
+          const m=M.mails.find(x=>x.from==='valentin@cuicui.fr');
           if(m && m.read && !M.evt._valentinReplyTimer){
             M.evt._valentinReplyTimer=true; clearInterval(t);
             after(6000,()=>{ M.evt._valentinReplyRead=true; checkMission(); });
@@ -2298,8 +2503,8 @@ const LEVELS=[
       },
       onSendHook:function(rec){
         if(rec.to.includes('valentin@cuicui.fr')){
-          after(1600,()=>deliverMail({from:'valentin@cuicui.fr', subject:'Bien reçu, merci !',
-            body:'<p>Super, merci de l\'avoir cherché ! 👍</p><p>On se retrouve à la piscine mercredi.</p><p>Valentin</p>'}));
+          after(1600,()=>deliverMail({from:'valentin@cuicui.fr', subject:'Re : Piscine',
+            body:'<p>Oui je viens ! 😄</p><p>Rendez-vous à <b>17h30</b> devant l\'entrée de la piscine.</p><p>Valentin</p>'}));
         }
       }},
     {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'La tournée du facteur',
@@ -2315,17 +2520,16 @@ const LEVELS=[
         serieRun({ timer:180, bonus:60, goal:'Exécute les ordres du facteur !',
           steps:[
             {ic:'📬', ord:'Ouvre le mail de <b>Zoé</b>', test:c=>c.evt.openedMail && c.evt.openedMail.has('m1')},
-            {ic:'↩️', ord:'<b>Réponds</b> à Zoé', sub:'↩️ Répondre → un petit mot → 📨 Envoyer', hold:6000,
+            {ic:'↩️', ord:'<b>Réponds</b> à Zoé', sub:'↩️ Répondre → un petit mot → 📨 Envoyer',
               test:c=>c.evt.sent.some(r=>r.to.includes('zoe@cuicui.fr')&&r.replyOf)},
-            {ic:'✏️', ord:'Écris à <b>leonce@cuicui.fr</b> · objet « <b>Foot</b> »', sub:'✏️ Nouveau message', hold:6000,
+            {ic:'✏️', ord:'Écris à <b>leonce@cuicui.fr</b> · objet « <b>Foot</b> »', sub:'✏️ Nouveau message → parle-lui du <b>match de foot</b> à la récré !',
               test:c=>c.evt.sent.some(r=>r.to.includes('leonce@cuicui.fr')&&normText(r.subject).includes('foot'))},
             {ic:'🔵', ord:'Du courrier ! Lis <b>tous</b> les mails non lus',
               prep:function(){ deliverMail({from:'arsene@cuicui.fr', subject:'Ma dent est tombée', body:'<p>Regarde le trou ! 🦷😁</p>'});
                 deliverMail({from:'bibliotheque@ville.fr', subject:'Ton livre est arrivé', body:'<p>Le livre <b>« Les volcans »</b> que tu as réservé t\'attend à la bibliothèque !</p>'}); },
               test:c=>!c.mails.some(m=>m.folder==='inbox'&&!m.read)},
-            {ic:'📤', ord:'Va vérifier tes mails partis dans <b>Envoyés</b>',
-              prep:function(){ if(M.evt.folderOpened) M.evt.folderOpened.delete('sent'); },
-              test:c=>c.evt.folderOpened && c.evt.folderOpened.has('sent')}
+            {ic:'📤', ord:'Va dans <b>Envoyés</b> et <b>relis chacun</b> de tes mails', sub:'Clique sur chaque mail parti pour le relire.', hold:5000,
+              test:c=>{ const s=c.mails.filter(m=>m.folder==='sent'); return s.length>=2 && s.every(m=>c.evt.openedMail && c.evt.openedMail.has(m.id)); }}
           ]}, done);
       }}
   ]},
@@ -2347,7 +2551,7 @@ const LEVELS=[
       objectives:[
         {t:'Lis le mail de <b>M. Leco</b>', goal:G.openedMail('m1')},
         {t:'Clique sur <b>✏️ Nouveau message</b>', goal:G.flag('openedCompose','Le grand bouton <b>✏️ Nouveau message</b> est en haut de la colonne de gauche.','compose')},
-        {t:'Dans <b>À :</b> mets <b>les DEUX adresses</b> · objet « <b>Sport déplacé</b> » · puis envoie',
+        {t:'Dans <b>À :</b> mets <b>leonce@cuicui.fr</b> ET <b>zoe@cuicui.fr</b> · objet « <b>Sport déplacé</b> » · puis envoie',
           goal:G.sent({to:['leonce@cuicui.fr','zoe@cuicui.fr'], subjIncl:'sport'},
             'Dans <b>À :</b> tape <b>leonce@cuicui.fr</b> puis '+kbd('Entrée')+', puis <b>zoe@cuicui.fr</b> puis '+kbd('Entrée')+' (ou sépare-les par un point-virgule <b>;</b>). Objet : <b>Sport déplacé</b>, écris le message, puis <b>📨 Envoyer</b>.')},
         {t:'Réponds à la question du <b>carnet de mission</b> 📝',
@@ -2365,26 +2569,26 @@ const LEVELS=[
         {t:'Clique <b>↩️ Répondre</b>, puis ouvre le champ copie avec <b>+ Cc</b>',
           goal:G.flag('openedCc','Dans la fenêtre de réponse, clique le petit bouton <b>+ Cc</b> à droite du champ « À ».','compose')},
         {t:'Ajoute <b>zoe@cuicui.fr</b> en <b>Cc</b> et envoie ta réponse à Léonce',
-          goal:G.sent({to:['leonce@cuicui.fr'], cc:['zoe@cuicui.fr']},
+          goal:G.sent({to:['leonce@cuicui.fr'], cc:['zoe@cuicui.fr'], reply:true},
             'Dans le champ <b>Cc :</b> tape <b>zoe@cuicui.fr</b> puis '+kbd('Entrée')+'. Écris ta réponse et <b>📨 Envoyer</b>.')},
         {t:'Réponds à la question du <b>carnet de mission</b> 📝',
           goal:G.flag('quiz_cc','Cc = copie VISIBLE : Léonce voit que Zoé a reçu le mail.','quiz'),
           quiz:{key:'cc', q:'Léonce peut-il voir que Zoé a reçu ta réponse ? (oui / non)', accepted:['oui','yes']}}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'👀',title:'Encore un Cc !',
-      intro:'On refait un Cc pour bien s\'entraîner : écris à Nina, et garde Arsène au courant en copie.',
+      intro:'On refait un Cc pour bien s\'entraîner : écris à Pauline, et garde Arsène au courant en copie.',
       seed:{ mails:[
-        { from:'nina.dubois@cuicui.fr', subject:'Le club théâtre', date:'Auj. 9:05',
-          body:'<p>Coucou ! Confirme-moi qu\'on se voit au <b>club théâtre</b> mercredi ? 🎭</p><p>Mets <b>Arsène en copie (Cc)</b>, il fait partie du club aussi.</p><p>Nina</p>' }
+        { from:'pauline.tricot@cuicui.fr', subject:'Le club théâtre', date:'Auj. 9:05',
+          body:'<p>Coucou ! Confirme-moi qu\'on se voit au <b>club théâtre</b> mercredi ? 🎭</p><p>Mets <b>Arsène en copie (Cc)</b>, il fait partie du club aussi.</p><p>Pauline</p>' }
       ]},
       objectives:[
-        {t:'Lis le mail de <b>Nina</b>', goal:G.openedMail('m1')},
-        {t:'<b>Réponds</b> à Nina, ouvre <b>+ Cc</b> et mets <b>arsene@cuicui.fr</b> en copie',
-          goal:G.sent({to:['nina.dubois@cuicui.fr'], cc:['arsene@cuicui.fr']},
+        {t:'Lis le mail de <b>Pauline</b>', goal:G.openedMail('m1')},
+        {t:'<b>Réponds</b> à Pauline, ouvre <b>+ Cc</b> et mets <b>arsene@cuicui.fr</b> en copie',
+          goal:G.sent({to:['pauline.tricot@cuicui.fr'], cc:['arsene@cuicui.fr'], reply:true},
             'Clique <b>↩️ Répondre</b>, puis <b>+ Cc</b>. Dans <b>Cc :</b> tape <b>arsene@cuicui.fr</b> puis '+kbd('Entrée')+'. Écris ta réponse et <b>📨 Envoyer</b>.')},
         {t:'Réponds à la question du <b>carnet de mission</b> 📝',
-          goal:G.flag('quiz_cc2','En Cc, tout le monde se voit : Nina voit qu\'Arsène a reçu le mail, et Arsène voit que Nina l\'a reçu.','quiz'),
-          quiz:{key:'cc2', q:'Arsène (en Cc) voit-il que Nina a reçu le mail ? (oui / non)', accepted:['oui','yes']}}
+          goal:G.flag('quiz_cc2','En Cc, tout le monde se voit : Pauline voit qu\'Arsène a reçu le mail, et Arsène voit que Pauline l\'a reçu.','quiz'),
+          quiz:{key:'cc2', q:'Arsène (en Cc) voit-il que Pauline a reçu le mail ? (oui / non)', accepted:['oui','yes']}}
       ]},
     {kind:'mission',label:'Mission 4',emoji:'🕶️',title:'La copie cachée (Cci)',
       intro:'Préviens 3 camarades du tournoi… sans montrer leurs adresses aux autres : c\'est le Cci !',
@@ -2422,6 +2626,27 @@ const LEVELS=[
           goal:G.flag('quiz_mix','Arsène (À) et Zoé (Cc) sont visibles de tous. Léonce (Cci) est caché : ni Arsène ni Zoé ne le voient.','quiz'),
           quiz:{key:'mix', q:'Arsène voit-il que Léonce (en Cci) a reçu le mail ? (oui / non)', accepted:['non','no']}}
       ]},
+    {kind:'mission',label:'Mission 6',emoji:'✂️',title:'On retire !',
+      intro:'Léonce a fait une gaffe : il a mis TOUT LE MONDE dans son mail… y compris la personne qu\'il ne fallait surtout pas prévenir !',
+      seed:{ mails:[
+        { from:'leonce@cuicui.fr', to:['toi@cuicui.fr','zoe@cuicui.fr','arsene@cuicui.fr'], subject:'Fête d\'anniversaire', date:'Auj. 10:00',
+          body:'<p>Coucou tout le monde !</p><p>On se retrouve samedi pour préparer la fête d\'anniversaire de <b>Zoé</b> ? Qui apporte quoi ?</p><p>Léonce</p>' }
+      ]},
+      objectives:[
+        {t:'Lis le mail de <b>Léonce</b>… tu remarques le problème ? 👀', goal:G.openedMail('m1')},
+        {t:'Clique <b>↩️↩️ Répondre à tous</b>',
+          goal:G.inSet('repliedAll','m1','Dans le mail de Léonce, clique le bouton <b>↩️↩️ Répondre à tous</b> en haut.','reader')},
+        {t:'Retire <b>Zoé</b> du champ <b>À</b> : c\'est SA fête-surprise, elle ne doit pas voir ce mail !',
+          goal:{spot:'compose', hint:'Dans le champ <b>À :</b>, clique la petite croix <b>✕</b> sur le chip de <b>Zoé</b> pour la retirer.',
+            sel:function(){ const zone=document.getElementById('zone_to'); if(!zone) return null; const chip=[...zone.querySelectorAll('.chip')].find(ch=>ch.textContent.indexOf('Zoé')===0); return chip?chip.querySelector('.ch-x'):null; },
+            test:c=>c.evt.recipientRemoved && c.evt.recipientRemoved.has('to') && c.compose && !c.compose.to.includes('zoe@cuicui.fr')}},
+        {t:'Ajoute <b>pauline.tricot@cuicui.fr</b> en <b>Cc</b> (elle s\'occupe du gâteau), puis envoie ta réponse',
+          goal:G.sent({toOnly:['leonce@cuicui.fr','arsene@cuicui.fr'], cc:['pauline.tricot@cuicui.fr']},
+            'Ouvre <b>+ Cc</b>, tape <b>pauline.tricot@cuicui.fr</b> puis '+kbd('Entrée')+'. Vérifie bien que <b>Zoé n\'est plus dans À</b>, puis <b>📨 Envoyer</b>.')},
+        {t:'Réponds à la question du <b>carnet de mission</b> 📝',
+          goal:G.flag('quiz_retrait','On a retiré Zoé car c\'est SA fête surprise : si elle voit le mail, la surprise est gâchée !','quiz'),
+          quiz:{key:'retrait', q:'Pourquoi a-t-on retiré Zoé des destinataires ?', accepted:['surprise','fete surprise','sa fete','c est sa fete']}}
+      ]},
     {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'Qui reçoit quoi ?',
       intro:'Un mail s\'affiche avec ses destinataires. À toi de dire qui voit quoi !',
       goal:'Réponds juste : qui voit quoi ?',
@@ -2442,9 +2667,9 @@ const LEVELS=[
               opts:[{t:'OUI',cls:'yes'},{t:'NON',ok:true,cls:'no'}]},
             {card:card('Léonce 🦁','','Arsène 🐸'), q:'Arsène voit-il que Léonce a reçu le mail ?', why:'Arsène voit le champ « À » : donc oui !',
               opts:[{t:'OUI',ok:true},{t:'NON',cls:'no'}]},
-            {card:card('Zoé 🐢','Nina 🦊','Papi 👴'), q:'Nina voit-elle l\'adresse de Papi ?', why:'Papi est en Cci : invisible !',
+            {card:card('Zoé 🐢','Pauline 🦊','Papi 👴'), q:'Pauline voit-elle l\'adresse de Papi ?', why:'Papi est en Cci : invisible !',
               opts:[{t:'OUI',cls:'yes'},{t:'NON',ok:true,cls:'no'}]},
-            {card:card('Zoé 🐢','Nina 🦊','Papi 👴'), q:'Zoé voit-elle l\'adresse de Nina ?', why:'Nina est en Cc : visible.',
+            {card:card('Zoé 🐢','Pauline 🦊','Papi 👴'), q:'Zoé voit-elle l\'adresse de Pauline ?', why:'Pauline est en Cc : visible.',
               opts:[{t:'OUI',ok:true},{t:'NON',cls:'no'}]},
             {card:card('30 parents 👨‍👩‍👧',''), q:'Pour écrire à 30 parents sans montrer leurs adresses, on les met en…', why:'Cci : chacun reçoit, personne ne voit les autres.',
               opts:[{t:'Cci 🕶️',ok:true,cls:'yes'},{t:'Cc 👀',cls:'no'}]},
@@ -2464,20 +2689,30 @@ const LEVELS=[
     tools:[{g:'📇',n:'Le carnet d\'adresses'},{g:'➕',n:'Enregistrer un contact'},{g:'📣',n:'Liste de diffusion : un nom, plusieurs contacts'},{g:'✨',n:'Fini les fautes de frappe d\'adresse !'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'➕',title:'Un nouveau contact',
-      intro:'Nina a une nouvelle adresse mail. Enregistre-la, puis écris-lui SANS taper son adresse !',
+      intro:'Pauline a une nouvelle adresse mail. Enregistre-la, puis écris-lui SANS taper son adresse !',
       seed:{ mails:[
-        { from:'nina.dubois@cuicui.fr', subject:'Ma nouvelle adresse !', date:'Auj. 9:20',
-          body:'<p>Salut !</p><p>C\'est Nina 🦊 J\'ai une nouvelle adresse mail : <b>nina.dubois@cuicui.fr</b>.</p><p>Enregistre-moi dans ton carnet et écris-moi pour tester !</p>' }
+        { from:'pauline.tricot@cuicui.fr', subject:'Ma nouvelle adresse !', date:'Auj. 9:20',
+          body:'<p>Salut !</p><p>C\'est Pauline 🦊 J\'ai une nouvelle adresse mail : <b>pauline.tricot@cuicui.fr</b>.</p><p>Enregistre-moi dans ton carnet et écris-moi pour tester !</p>' }
       ]},
       objectives:[
-        {t:'Lis le mail de <b>Nina</b>', goal:G.openedMail('m1')},
+        {t:'Lis le mail de <b>Pauline</b>', goal:G.openedMail('m1')},
         {t:'Ouvre <b>📇 Contacts</b> (en bas de la colonne de gauche)',
           goal:G.flag('openedContacts','Le bouton <b>📇 Contacts</b> est tout en bas de la colonne de gauche.','contacts')},
-        {t:'Enregistre <b>Nina</b> · adresse <b>nina.dubois@cuicui.fr</b>',
-          goal:G.contactAdded('nina.dubois@cuicui.fr','Nina')},
-        {t:'Écris à <b>Nina</b> (nina.dubois@cuicui.fr) en la choisissant avec le bouton <b>📇</b> du message',
-          goal:G.sent({to:['nina.dubois@cuicui.fr']},
-            'Clique <b>✏️ Nouveau message</b>, puis le petit bouton <b>📇</b> au bout du champ « À » : choisis <b>Nina</b> dans la liste ! Objet + message, puis 📨.')}
+        {t:'Enregistre <b>Pauline</b> · adresse <b>pauline.tricot@cuicui.fr</b>',
+          goal:G.contactAdded('pauline.tricot@cuicui.fr','Pauline')},
+        {t:'Clique sur <b>✏️ Nouveau message</b>', goal:G.flag('openedCompose','Le grand bouton <b>✏️ Nouveau message</b> est en haut de la colonne de gauche.','compose')},
+        {t:'Clique le bouton <b>📇</b> à côté du champ « À » et choisis <b>Pauline</b>',
+          goal:{spot:'compose', hint:'Le petit bouton <b>📇</b> est au bout du champ « À ». Clique-le, puis choisis <b>Pauline</b> dans la liste.',
+            sel:function(){
+              const mi=[...document.querySelectorAll('.cc-mi[data-a]')].find(function(b){ return b.getAttribute('data-a')==='pauline.tricot@cuicui.fr'; });
+              if(mi) return mi;
+              const zone=document.getElementById('zone_to'); if(zone){ const book=zone.parentNode.querySelector('.cr-book'); if(book) return book; }
+              return document.getElementById('btnNew');
+            },
+            test:c=>c.evt.usedBookPicker && c.evt.usedBookPicker.has('pauline.tricot@cuicui.fr')}},
+        {t:'Rédige un petit message simple et envoie-le à <b>Pauline</b>',
+          goal:G.sent({to:['pauline.tricot@cuicui.fr']},
+            'Écris quelques mots dans le corps du message, puis clique <b>📨 Envoyer</b>.')}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'📣',title:'La liste de diffusion',
       intro:'Le Club Nature part en sortie ! Ajoute Arsène au carnet, crée la liste « Club Nature » et préviens tout le monde d\'un seul mail.',
@@ -2498,24 +2733,25 @@ const LEVELS=[
             'Nouveau message → bouton <b>📇</b> du champ « À » → choisis <b>📣 Club Nature</b>. Objet : <b>Sortie forêt</b>, puis 📨 !')},
         {t:'Va voir dans <b>📤 Envoyés</b> : ton mail est parti chez les 3 !',
           goal:{spot:'folders', hint:'Clique le dossier <b>📤 Envoyés</b> puis ouvre ton mail : regarde la ligne « À ».',
+            sel:folderBtnSel('sent'),
             prep:function(){ if(M.evt.folderOpened) M.evt.folderOpened.delete('sent'); },
             test:c=>c.evt.folderOpened && c.evt.folderOpened.has('sent')}}
       ]},
     {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'Le carnet mélangé',
       intro:'Catastrophe, le carnet s\'est mélangé ! Associe chaque copain à sa vraie adresse.',
       goal:'Associe chaque nom à la bonne adresse !',
-      hint:'Lis les adresses lettre par lettre : nina.dubois ≠ nina-dubois !',
+      hint:'Lis les adresses lettre par lettre : pauline.tricot ≠ pauline-tricot !',
       seed:{},
       run:function(done){
         const pairs=[
           {n:'Léonce 🦁', a:'leonce@cuicui.fr'},
           {n:'Zoé 🐢', a:'zoe@cuicui.fr'},
-          {n:'Nina 🦊', a:'nina.dubois@cuicui.fr'},
+          {n:'Pauline 🦊', a:'pauline.tricot@cuicui.fr'},
           {n:'Papi Marcel 👴', a:'papi.marcel@cuicui.fr'},
           {n:'M. Leco 👨‍🏫', a:'m.leco@erea.fr'},
           {n:'La bibliothèque 📚', a:'bibliotheque@ville.fr'}
         ];
-        const decoys=['nina-dubois@cuicui.biz','papi.marcel@cuicuii.fr','m.leco@erea.com'];
+        const decoys=['pauline-tricot@cuicui.biz','papi.marcel@cuicuii.fr','m.leco@erea.com'];
         arcStart({shields:3, timer:120, bonus:40, goalText:'Associe les 6 copains à leur adresse !'});
         const addrs=pairs.map(p=>p.a).concat(decoys).sort(()=>Math.random()-.5);
         let selName=null, found=0;
@@ -2595,9 +2831,11 @@ const LEVELS=[
         {t:'Lis le mail de <b>Zoé</b>', goal:G.openedMail('m1')},
         {t:'Nouveau message : joins <b>au moins 3 fichiers</b> (📎 Joindre un fichier, plusieurs fois)',
           goal:{spot:'compose', hint:'Clique <b>✏️ Nouveau message</b>, puis <b>📎 Joindre un fichier</b> et choisis un fichier. Recommence pour en avoir <b>3 en tout</b> (par exemple photo-classe.jpg, dessin-oiseau.png, poesie-automne.pdf).',
+            sel:function(){ return document.getElementById('cmpWin') ? document.getElementById('cmpAtt') : document.getElementById('btnNew'); },
             test:c=>(c.evt.maxAtts||0)>=3}},
         {t:'Oups, trop de fichiers ! <b>Retire</b> les pièces jointes pour ne garder que <b>photo-classe.jpg</b>',
           goal:{spot:'compose', hint:'Sur chaque pièce jointe, la petite croix <b>✕</b> la retire. Retire-les jusqu\'à ne garder <b>que</b> photo-classe.jpg.',
+            sel:function(){ const c=M.compose; if(!c) return null; const i=c.atts.findIndex(a=>a.n!=='photo-classe.jpg'); return i>=0?document.querySelector('#cmpAtts .ch-x[data-i="'+i+'"]'):null; },
             test:c=>!!c.evt.attRemoved && c.compose && c.compose.atts.length===1 && c.compose.atts[0].n==='photo-classe.jpg'}},
         {t:'Envoie à <b>Zoé</b> (zoe@cuicui.fr) · objet « <b>La photo</b> » · avec cette <b>seule</b> pièce jointe',
           goal:G.sent({to:['zoe@cuicui.fr'], subjIncl:'photo', att:'photo-classe', attExact:1},
@@ -2634,8 +2872,8 @@ const LEVELS=[
               test:c=>c.evt.sent.some(r=>r.to.includes('zoe@cuicui.fr')&&r.atts.some(a=>a.includes('recette')))},
             {ic:'➡️', ord:'<b>Transfère</b> la photo de la tortue à <b>Arsène</b>', sub:'Ouvre le mail de Zoé → ➡️ Transférer · À : arsene@cuicui.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('arsene@cuicui.fr')&&r.atts.some(a=>a.includes('caramel')))},
-            {ic:'🖼️', ord:'Envoie ton <b>dessin d\'oiseau</b> DANS le texte à <b>Nina</b>', sub:'Bouton 🖼️ → dessin-oiseau.png · À : nina.dubois@cuicui.fr',
-              test:c=>c.evt.sent.some(r=>r.to.includes('nina.dubois@cuicui.fr')&&r.img)},
+            {ic:'🖼️', ord:'Envoie ton <b>dessin d\'oiseau</b> DANS le texte à <b>Pauline</b>', sub:'Bouton 🖼️ → dessin-oiseau.png · À : pauline.tricot@cuicui.fr',
+              test:c=>c.evt.sent.some(r=>r.to.includes('pauline.tricot@cuicui.fr')&&r.img)},
             {ic:'📄', ord:'Envoie <b>expose-volcans.docx</b> à <b>M. Leco</b> · objet « <b>Exposé</b> »', sub:'À : m.leco@erea.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('m.leco@erea.fr')&&r.atts.some(a=>a.includes('expose'))&&normText(r.subject).includes('expose'))}
           ]}, done);
@@ -2746,6 +2984,7 @@ const LEVELS=[
         {t:'Marque la <b>recette de Papi</b> d\'une ⭐ (pour la retrouver facilement)', goal:G.starred('m4')},
         {t:'Ouvre ton dossier <b>📁 Collège</b> pour admirer le rangement !',
           goal:{spot:'folders', hint:'Ton nouveau dossier <b>Collège</b> est apparu dans la colonne de gauche : clique-le.',
+            sel:function(){ const f=M.folders.find(x=>normText(x.name)===normText('Collège')); return f?document.querySelector('#ccFolders [data-f="'+f.id+'"]'):null; },
             test:c=>c.evt.folderOpened && [...c.evt.folderOpened].some(f=>f.startsWith('cf'))}}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'💾',title:'Brouillon & corbeille',
@@ -2757,12 +2996,12 @@ const LEVELS=[
           body:'<p>Papi vient déjeuner dimanche, il apporte le gâteau ! 🍰</p>' }
       ]},
       objectives:[
-        {t:'Commence un mail à <b>Nina</b> (nina.dubois@cuicui.fr) · objet « <b>Cabane</b> »… puis <b>💾 Brouillon</b> — on sonne à la porte !',
+        {t:'Commence un mail à <b>Pauline</b> (pauline.tricot@cuicui.fr) · objet « <b>Cabane</b> »… puis <b>💾 Brouillon</b> — on sonne à la porte !',
           goal:G.flag('draftSaved','Écris le début du mail, puis clique <b>💾 Brouillon</b> (en bas à droite de la fenêtre) au lieu d\'envoyer.','compose')},
         {t:'Reprends ton brouillon dans le dossier <b>📝 Brouillons</b>',
           goal:G.draftResumed()},
-        {t:'Finis-le et <b>envoie-le</b> à Nina',
-          goal:G.sent({to:['nina.dubois@cuicui.fr']},'Termine ton message et clique <b>📨 Envoyer</b>. Le brouillon disparaît de « Brouillons ».')},
+        {t:'Finis-le et <b>envoie-le</b> à Pauline',
+          goal:G.sent({to:['pauline.tricot@cuicui.fr']},'Termine ton message et clique <b>📨 Envoyer</b>. Le brouillon disparaît de « Brouillons ».')},
         {t:'<b>Supprime</b> la pub « MEGA PROMO » (🗑️)', goal:G.trashed('m1')},
         {t:'Oups, tu as AUSSI supprimé le mail de Maman ! (fais-le) …puis <b>restaure-le</b> depuis la Corbeille',
           goal:G.restored('m2','Supprime le mail de Maman (🗑️), puis va dans la <b>🗑️ Corbeille</b>, ouvre-le et clique <b>↩️ Restaurer</b>. Ouf !')},
@@ -2843,7 +3082,7 @@ const LEVELS=[
           goal:G.flag('quiz_code2','Le code est écrit en gras dans le mail « Sac de piscine ».','quiz'),
           quiz:{key:'code2', q:'Quel est le code du cadenas de piscine ?', accepted:['4227']}},
         {t:'Efface la recherche (croix ✕) pour revoir toute ta boîte',
-          goal:{spot:'search', hint:'Clique la petite <b>✕</b> au bout de la barre de recherche.',
+          goal:{spot:'search', hint:'Clique la petite <b>✕</b> au bout de la barre de recherche.', sel:'#ccSearchX',
             test:c=>!M.search}}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'🔽',title:'Filtres et tri',
@@ -2883,6 +3122,7 @@ const LEVELS=[
           goal:G.inSet('ruleAutoMoved','m3','Attends le prochain numéro : il se rangera tout seul dans le dossier <b>Gazette</b> (regarde la notification).')},
         {t:'Ouvre le dossier <b>Gazette</b> pour vérifier',
           goal:{spot:'folders', hint:'Clique le dossier <b>📁 Gazette</b> à gauche : les numéros y sont rangés.',
+            sel:function(){ const f=M.folders.find(x=>normText(x.name)===normText('Gazette')); return f?document.querySelector('#ccFolders [data-f="'+f.id+'"]'):null; },
             test:c=>c.evt.folderOpened && [...c.evt.folderOpened].some(f=>f.startsWith('cf'))}}
       ],
       boot:function(){
@@ -2909,7 +3149,7 @@ const LEVELS=[
         { from:'papi.marcel@cuicui.fr', subject:'Pétanque dimanche ?', date:'Lun. 14:00', read:true, body:'<p>Une petite partie ?</p>' },
         { from:'arsene@cuicui.fr', subject:'IMPORTANT étoile', date:'Lun. 16:20', read:true, star:true, body:'<p>3ᵉ indice (je l\'ai mis en ⭐ pour toi) : compte <b>7 pas</b> depuis le cerisier !</p>' },
         { from:'gazette@ecole.fr', subject:'Gazette du lundi', date:'Lun. 6:00', read:true, body:'<p>La météo de la semaine.</p>' },
-        { from:'nina.dubois@cuicui.fr', subject:'Dernier indice !', date:'Lun. 18:00', body:'<p>Creuse sous la <b>brouette</b> ! 🛞 Envoie-moi le mot « TROUVÉ » quand tu y es !</p>' }
+        { from:'pauline.tricot@cuicui.fr', subject:'Dernier indice !', date:'Lun. 18:00', body:'<p>Creuse sous la <b>brouette</b> ! 🛞 Envoie-moi le mot « TROUVÉ » quand tu y es !</p>' }
       ]},
       run:function(done){
         serieRun({ timer:200, bonus:60, goal:'Suis la piste du trésor !',
@@ -2922,8 +3162,8 @@ const LEVELS=[
               test:c=>c.evt.openedMail && c.evt.openedMail.has('m5')},
             {ic:'🔵', ord:'Lis le <b>dernier indice</b> (le mail non lu !)', sub:'🔽 Filtrer → Non lus',
               test:c=>c.evt.openedMail && c.evt.openedMail.has('m7')},
-            {ic:'🏆', ord:'Réponds « <b>TROUVÉ</b> » à Nina !', sub:'↩️ Répondre (l\'adresse nina.dubois@cuicui.fr se remplit toute seule)',
-              test:c=>c.evt.sent.some(r=>r.to.includes('nina.dubois@cuicui.fr')&&r.body.includes('trouve'))}
+            {ic:'🏆', ord:'Réponds « <b>TROUVÉ</b> » à Pauline !', sub:'↩️ Répondre (l\'adresse pauline.tricot@cuicui.fr se remplit toute seule)',
+              test:c=>c.evt.sent.some(r=>r.to.includes('pauline.tricot@cuicui.fr')&&r.body.includes('trouve'))}
           ]}, done);
       }}
   ]},
@@ -2949,6 +3189,7 @@ const LEVELS=[
             'Clique la case du <b>17</b> (nous sommes en juin), choisis <b>🎈 Un événement</b>, écris <b>Cinéma</b>, et valide.')},
         {t:'Va jeter un œil au mois de <b>juillet</b> (flèche ▶), puis reviens en <b>juin</b> (◀)',
           goal:{spot:'agenda', hint:'Utilise les flèches <b>◀ ▶</b> en haut de l\'agenda.',
+            sel:function(){ return (!M.evt.agNav || !M.evt.agNav.has('next')) ? document.getElementById('agNext') : document.getElementById('agPrev'); },
             test:c=>c.evt.agNav && c.evt.agNav.has('next') && c.evt.agNav.has('prev')}}
       ]},
     {kind:'mission',label:'Mission 2',emoji:'📚',title:'Devoirs et anniversaires',
@@ -3565,17 +3806,15 @@ function openRoundPopup(){
   const s=currentStep, exam=!!s.exam;
   const boss=s.mode==='boss';
   const game=s.kind==='game';
-  const list=(s.objectives||[]).map(o=>'<li><span>'+o.t+'</span></li>').join('');
   modal.className='modal'+(exam?' test-modal':'');
   modal.innerHTML='<span class="m-emoji">'+s.emoji+'</span>'
     +'<div class="kicker"'+(boss?' style="color:var(--red-d)"':'')+'>'+(reviewing()?'Entraînement':(boss?'⚔️ Boss final':s.label))+'</div><h2>'+s.title+'</h2>'
     +'<div class="howto'+(boss?' boss':(exam?' test':''))+'"><p class="h-head">'+(boss?'⚔️ Le combat :':(exam?'🏆 L\'examen :':'👉 Ta mission :'))+'</p>'
     +(s.intro?'<p>'+s.intro+'</p>':'')
-    +(list?'<ul class="tasklist">'+list+'</ul>':'')
     +'</div>'
     +'<div class="m-actions"><button class="m-btn primary'+(boss?' boss':(exam?' test':' green'))+'" id="goBtn">'
     +(boss?'À l\'attaque ! ⚔️':(game?(s._launched?'Reprendre 🎮':'GO ! 🎮'):'C\'est parti ! 🚀'))+'</button></div>';
-  modal.dataset.ttsText = s.title + '. ' + (s.intro||'') + ' ' + (s.objectives||[]).map(o=>o.t||'').join(' ');
+  modal.dataset.ttsText = s.title + '. ' + (s.intro||'');
   openOverlay();
   document.getElementById('goBtn').onclick=()=>{
     closeOverlay(); audioCtx();
@@ -3724,21 +3963,29 @@ function clearSpots(){ clearTimeout(_spotT); _spots.forEach(el=>el.classList.rem
 function highlightForStep(){
   clearSpots();
   const o=activeObj(); if(!o || !o.goal) return;
-  const spot=o.goal.spot;
   const q=s=>document.querySelector(s);
-  if(spot==='list')          spotEl(q('#mailList'));
-  else if(spot==='folders')  spotEl(q('#ccFolders'));
-  else if(spot==='addfolder')spotEl(q('#btnAddFolder'));
-  else if(spot==='reader')   spotEl(q('#rdActions')||q('#reader'));
-  else if(spot==='search')   spotEl(q('#ccSearchBox'));
-  else if(spot==='filter')   spotEl(q('#btnFilter'));
-  else if(spot==='sort')     spotEl(q('#btnSort'));
-  else if(spot==='settings') spotEl(q('#btnSettings'));
-  else if(spot==='quiz')     spotEl(q('#quizDock'));
-  else if(spot==='toolbar')  spotEl(q('#cmpTools')||q('#btnNew'));
-  else if(spot==='compose')  spotEl(q('#cmpWin')||q('#btnNew'));
-  else if(spot==='contacts') spotEl(q('#ccNav [data-view="contacts"]'));
-  else if(spot==='agenda')   spotEl(M.view==='agenda'?q('.cc-agenda'):q('#ccNav [data-view="agenda"]'));
+  /* priorité au sélecteur précis du bon bouton (goal.sel) ; le "spot" large ne sert plus que de repli */
+  let el=null;
+  if(o.goal.sel){
+    try{ el = typeof o.goal.sel==='function' ? o.goal.sel() : q(o.goal.sel); }catch(e){ el=null; }
+  }
+  if(!el){
+    const spot=o.goal.spot;
+    if(spot==='list')          el=q('#mailList');
+    else if(spot==='folders')  el=q('#ccFolders');
+    else if(spot==='addfolder')el=q('#btnAddFolder');
+    else if(spot==='reader')   el=q('#rdActions')||q('#reader');
+    else if(spot==='search')   el=q('#ccSearchBox');
+    else if(spot==='filter')   el=q('#btnFilter');
+    else if(spot==='sort')     el=q('#btnSort');
+    else if(spot==='settings') el=q('#btnSettings');
+    else if(spot==='quiz')     el=q('#quizDock');
+    else if(spot==='toolbar')  el=q('#cmpTools')||q('#btnNew');
+    else if(spot==='compose')  el=q('#cmpWin')||q('#btnNew');
+    else if(spot==='contacts') el=q('#ccNav [data-view="contacts"]');
+    else if(spot==='agenda')   el=M.view==='agenda'?q('.cc-agenda'):q('#ccNav [data-view="agenda"]');
+  }
+  spotEl(el);
   if(_spots.length) _spotT=setTimeout(clearSpots, 6000);
 }
 function onHint(){
