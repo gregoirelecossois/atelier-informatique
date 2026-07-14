@@ -433,9 +433,15 @@
     color:#fff;font-size:.7rem;display:flex;align-items:center;justify-content:center;padding:0;}
   .ccwin .w-x:hover{background:rgba(255,255,255,.45);}
   /* composer */
-  .cmp{left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,94%);height:min(470px,92%);}
+  .cmp{left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,94%);height:min(470px,92%);min-width:380px;min-height:300px;}
   .cmp .w-bar{cursor:move;touch-action:none;}
   .cmp .w-bar.dragging{cursor:grabbing;}
+  /* poignées de redimensionnement sur les côtés de la fenêtre de rédaction */
+  .cmp-rz{position:absolute;z-index:70;touch-action:none;}
+  .cmp-rz-e{top:0;right:-5px;width:10px;height:100%;cursor:ew-resize;}
+  .cmp-rz-w{top:0;left:-5px;width:10px;height:100%;cursor:ew-resize;}
+  .cmp-rz-s{left:0;bottom:-5px;width:100%;height:10px;cursor:ns-resize;}
+  .cmp-rz-se{right:-6px;bottom:-6px;width:16px;height:16px;cursor:nwse-resize;}
   .cmp-fields{flex:none;border-bottom:2px solid var(--line-2);}
   .cmp-row{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--line-2);}
   .cmp-row .cr-k{flex:none;width:46px;font-weight:800;font-size:.78rem;color:#5a6b7b;}
@@ -530,9 +536,9 @@
   .ct-card{border:2px solid var(--cc-line);background:#fff;border-radius:13px;padding:11px 13px;display:flex;gap:10px;align-items:center;position:relative;}
   .ct-card:hover{border-color:var(--cc-brand);}
   .ct-card .cc-av{width:38px;height:38px;flex:none;border-radius:50%;background:var(--cc-soft);display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
-  .ct-card .cc-tx{flex:1;min-width:0;}
+  .ct-card .cc-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
   .ct-card .cc-n{font-weight:800;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .ct-card .cc-a{font-weight:700;font-size:.72rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .ct-card .cc-a{font-weight:700;font-size:.74rem;color:#47586b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .ct-card .cc-acts{display:flex;flex-direction:column;gap:3px;}
   .ct-card .cc-act{border:none;background:#f2f7fb;border-radius:7px;width:26px;height:24px;font-size:.74rem;display:flex;align-items:center;justify-content:center;padding:0;}
   .ct-card .cc-act:hover{background:var(--cc-soft);}
@@ -854,6 +860,39 @@ function makeDraggable(handle, win, onMove){
   handle.addEventListener('pointerup', stop);
   handle.addEventListener('pointercancel', stop);
 }
+/* redimensionnement d'une fenêtre (ccwin) par ses bords, ancrée dans son conteneur */
+function makeResizableWin(win, opts){
+  if(!win) return;
+  const parent=win.offsetParent||win.parentNode;
+  function bind(dir){
+    const handle=win.querySelector('.cmp-rz-'+dir); if(!handle) return;
+    let dragging=false, startX=0, startY=0, startW=0, startH=0, startL=0, startT=0;
+    handle.addEventListener('pointerdown', e=>{
+      e.preventDefault(); e.stopPropagation();
+      const wr=win.getBoundingClientRect(), pr=parent.getBoundingClientRect();
+      startW=wr.width; startH=wr.height; startL=wr.left-pr.left; startT=wr.top-pr.top;
+      win.style.left=startL+'px'; win.style.top=startT+'px'; win.style.transform='none';
+      win.style.width=startW+'px'; win.style.height=startH+'px';
+      dragging=true; startX=e.clientX; startY=e.clientY;
+      handle.classList.add('dragging'); try{ handle.setPointerCapture(e.pointerId); }catch(_){}
+    });
+    handle.addEventListener('pointermove', e=>{
+      if(!dragging) return;
+      const pr=parent.getBoundingClientRect();
+      const dx=e.clientX-startX, dy=e.clientY-startY;
+      let w=startW, h=startH, l=startL;
+      if(dir.indexOf('e')>=0) w=Math.max(opts.minW, Math.min(startW+dx, pr.width-startL));
+      if(dir.indexOf('w')>=0){ w=Math.max(opts.minW, Math.min(startW-dx, startL+startW)); l=startL+startW-w; }
+      if(dir.indexOf('s')>=0) h=Math.max(opts.minH, Math.min(startH+dy, pr.height-startT));
+      win.style.width=w+'px'; win.style.height=h+'px'; win.style.left=l+'px';
+      if(opts.onResize) opts.onResize({width:w, height:h, left:l, top:startT});
+    });
+    function stop(){ if(!dragging) return; dragging=false; handle.classList.remove('dragging'); }
+    handle.addEventListener('pointerup', stop);
+    handle.addEventListener('pointercancel', stop);
+  }
+  ['e','w','s','se'].forEach(bind);
+}
 
 /* minuteries de mission — toutes annulées à chaque startStep() */
 let _timers=[];
@@ -974,6 +1013,11 @@ function saveExtraContact(addr,name,av){
   list.push({addr:addr,name:name,av:av});
   store.set('ml_extracontacts', JSON.stringify(list));
 }
+function renameExtraContact(oldAddr,newAddr,name,av){
+  const list=getExtraContacts().filter(c=>c.addr!==oldAddr && c.addr!==newAddr);
+  list.push({addr:newAddr,name:name,av:av});
+  store.set('ml_extracontacts', JSON.stringify(list));
+}
 
 /* remise à zéro + graine de la mission */
 function seedMail(seed){
@@ -982,10 +1026,15 @@ function seedMail(seed){
   M.folders=baseFolders().concat((seed.customFolders||[]).map((n,i)=>({id:'cf'+i,name:n,ic:'📁'})));
   M.mails=[]; M.seq=1; _mailK=1000; M.sel=null;
   (seed.mails||[]).forEach(o=>M.mails.push(mkMail(o)));
-  M.contacts=(seed.contacts||[
+  const baseContacts=[
     {addr:'m.leco@erea.fr'},{addr:'papi.marcel@cuicui.fr'},{addr:'tata.monica@cuicui.fr'},
     {addr:'leonce@cuicui.fr'},{addr:'zoe@cuicui.fr'}
-  ]).map(c=>({addr:c.addr, name:c.name||whoName(c.addr), av:c.av||who(c.addr).av}));
+  ];
+  /* à partir du niveau 4, on ne demande plus jamais d'ajouter de nouveaux contacts (c'est le niveau 3
+     qui enseigne ça) : toutes les adresses utiles pour la suite sont donc déjà dans le carnet,
+     même si le joueur a sauté directement ici depuis le menu développeur */
+  if(currentLevel>=4) baseContacts.push({addr:'pauline.tricot@cuicui.fr'},{addr:'arsene@cuicui.fr'});
+  M.contacts=(seed.contacts||baseContacts).map(c=>({addr:c.addr, name:c.name||whoName(c.addr), av:c.av||who(c.addr).av}));
   /* les contacts que le joueur a enregistrés lui-même restent dans son carnet pour la suite,
      sauf dans la mission qui les fait justement découvrir (il doit encore les ajouter !) */
   const freshAddr=currentStep && currentStep.introducesContact;
@@ -1287,7 +1336,43 @@ function ctxPasteInto(el){
   if(navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(finish).catch(fallback);
   else fallback();
 }
+function onMailCtxMenu(e, row){
+  e.preventDefault();
+  const id=row.getAttribute('data-id'), m=getMail(id); if(!m) return;
+  closeMenus();
+  const isSpam=m.folder==='spam';
+  const html='<button class="cc-mi" data-act="del"><span class="mi-ic">🗑️</span>Supprimer</button>'
+    +'<button class="cc-mi" data-act="move"><span class="mi-ic">📁</span>Déplacer vers…</button>'
+    +(isSpam
+      ? '<button class="cc-mi" data-act="notspam"><span class="mi-ic">✅</span>Pas indésirable</button>'
+      : '<button class="cc-mi" data-act="spam"><span class="mi-ic">🚫</span>Indésirable</button>')
+    +'<button class="cc-mi" data-act="star"><span class="mi-ic">⭐</span>'+(m.star?'Retirer des favoris':'Marquer comme favori')+'</button>';
+  const app=document.getElementById('ccapp'); if(!app) return;
+  const menu=document.createElement('div'); menu.className='cc-menu'; menu.innerHTML=html;
+  app.appendChild(menu);
+  const ar=app.getBoundingClientRect();
+  let left=e.clientX-ar.left, top=e.clientY-ar.top;
+  menu.style.left='0px'; menu.style.top='0px';
+  const mw=menu.offsetWidth, mh=menu.offsetHeight;
+  if(left+mw>ar.width-6) left=Math.max(4, ar.width-mw-6);
+  if(top+mh>ar.height-6) top=Math.max(4, ar.height-mh-6);
+  menu.style.left=left+'px'; menu.style.top=top+'px';
+  menu.addEventListener('pointerdown',ev=>ev.stopPropagation());
+  menu.querySelectorAll('.cc-mi').forEach(b=>{
+    b.onclick=()=>{
+      const act=b.getAttribute('data-act');
+      if(act==='move'){
+        const rect=b.getBoundingClientRect();
+        menuMove({getBoundingClientRect:()=>rect}, m, true);
+      } else {
+        closeMenus(); evtAdd('ctxAct', act); mailAction(act, m, b);
+      }
+    };
+  });
+}
 function onCtxMenu(e){
+  const mailRow=e.target.closest('.mailrow');
+  if(mailRow){ onMailCtxMenu(e, mailRow); return; }
   const editable=e.target.closest('input,textarea,[contenteditable="true"]');
   const readable=!editable && e.target.closest('.cc-read,.rd-body,.rd-head,.rw-addr,.ph-mb,.ph-mh');
   const target=editable||readable;
@@ -1361,7 +1446,7 @@ function menuSettings(btn){
     if(b.getAttribute('data-v')==='sig') dlgSignature(); else dlgRules();
   });
 }
-function menuMove(btn, m){
+function menuMove(btn, m, viaCtx){
   const dest=M.folders.filter(f=>f.id!==m.folder && f.id!=='drafts' && f.id!=='sent');
   const menu=openMenu(btn, dest.map(f=>'<button class="cc-mi" data-v="'+f.id+'"><span class="mi-ic">'+f.ic+'</span>'+esc(f.name)+'</button>').join(''));
   if(!menu) return;
@@ -1371,6 +1456,7 @@ function menuMove(btn, m){
     if(fid==='trash') evtAdd('trashed', m.id);
     else if(fid==='spam') evtAdd('markedSpam', m.id);
     else evtAdd('movedTo', m.id+':'+normText(folderById(fid).name));
+    if(viaCtx) evtAdd('ctxAct','move');
     toast('📁 Mail rangé dans <b>'+esc(folderById(fid).name)+'</b>.');
     renderAll();
   });
@@ -1523,7 +1609,10 @@ function openCompose(preset){
   else evtFlag('openedCompose'); /* une fenêtre de rédaction est ouverte (nouveau, répondre, transférer) */
   /* signature ajoutée automatiquement aux nouveaux messages */
   if(M.signature && !d && M.compose.bodyHtml.indexOf('class="sig"')<0){
-    M.compose.bodyHtml+='<p class="sig">'+esc(M.signature)+'</p>';
+    /* une ligne modifiable vide doit toujours précéder la signature : sans elle, le navigateur
+       n'a aucun point d'ancrage éditable où insérer du texte (la signature est en lecture seule) */
+    if(!M.compose.bodyHtml) M.compose.bodyHtml='<p><br></p>';
+    M.compose.bodyHtml+='<p class="sig" contenteditable="false">'+esc(M.signature)+'</p>';
     M.compose.sigAdded=true;
   }
   renderCompose();
@@ -1558,16 +1647,39 @@ function renderCompose(){
     +  '<button class="cmp-send" id="cmpSend">📨 Envoyer</button>'
     +  '<button class="cmp-tool" id="cmpAtt">📎 Joindre un fichier</button>'
     +  '<div class="cf-right"><button class="cmp-tool" id="cmpDraft">💾 Brouillon</button></div>'
-    +'</div></div>';
+    +'</div>'
+    +'<div class="cmp-rz cmp-rz-w" title="Redimensionner"></div>'
+    +'<div class="cmp-rz cmp-rz-e" title="Redimensionner"></div>'
+    +'<div class="cmp-rz cmp-rz-s" title="Redimensionner"></div>'
+    +'<div class="cmp-rz cmp-rz-se" title="Redimensionner"></div>'
+    +'</div>';
   renderChips('to'); if(c.showCc) renderChips('cc'); if(c.showBcc) renderChips('bcc');
   renderCmpAtts();
   const cmpWin=document.getElementById('cmpWin');
   if(c._pos){ cmpWin.style.left=c._pos.left+'px'; cmpWin.style.top=c._pos.top+'px'; cmpWin.style.transform='none'; }
+  if(c._size){ cmpWin.style.width=c._size.width+'px'; cmpWin.style.height=c._size.height+'px'; }
   makeDraggable(cmpWin.querySelector('.w-bar'), cmpWin, pos=>{ c._pos=pos; });
+  makeResizableWin(cmpWin, {minW:380, minH:300, onResize:size=>{ c._size={width:size.width,height:size.height}; c._pos={left:size.left,top:size.top}; }});
   document.getElementById('cmpX').onclick=()=>{ beep('click'); closeWins(); renderAll(); };
   document.getElementById('cmpSubj').addEventListener('input',e=>{ c.subject=e.target.value; });
   const body=document.getElementById('cmpBody');
   body.addEventListener('input',()=>{ c.bodyHtml=body.innerHTML; fireEvt(); });
+  /* la signature n'est pas modifiable : le curseur ne doit jamais s'y trouver, ni passer après elle */
+  const sigEl=body.querySelector('.sig');
+  if(sigEl){
+    const clampSigCaret=()=>{
+      const sel=window.getSelection(); if(!sel||!sel.rangeCount) return;
+      const r=sel.getRangeAt(0); if(!body.contains(r.startContainer)) return;
+      const testRange=document.createRange(); testRange.selectNode(sigEl);
+      let cmp; try{ cmp=testRange.comparePoint(r.startContainer, r.startOffset); }catch(e){ return; }
+      if(cmp>=0){
+        const nr=document.createRange(); nr.setStartBefore(sigEl); nr.collapse(true);
+        sel.removeAllRanges(); sel.addRange(nr);
+      }
+    };
+    body.addEventListener('mouseup', clampSigCaret);
+    body.addEventListener('keydown', clampSigCaret);
+  }
   /* mise en forme */
   function applyFmt(f){
     body.focus();
@@ -1596,8 +1708,16 @@ function renderCompose(){
     applyFmt(f);
   });
   const fontSel=document.getElementById('cmpFont');
-  fontSel.addEventListener('pointerdown',()=>{ /* la sélection est gardée par le select natif */ });
-  fontSel.onchange=()=>{ body.focus();
+  /* le clic natif sur le menu déroulant peut faire perdre la sélection de texte avant le
+     changement : on la mémorise donc AVANT l'ouverture du menu, pour la restaurer ensuite */
+  let savedFontRange=null;
+  fontSel.addEventListener('pointerdown',()=>{
+    const sel=window.getSelection();
+    if(sel && sel.rangeCount && body.contains(sel.anchorNode)) savedFontRange=sel.getRangeAt(0).cloneRange();
+  });
+  fontSel.onchange=()=>{
+    body.focus();
+    if(savedFontRange){ const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(savedFontRange); }
     if(fontSel.value) document.execCommand('fontName',false,fontSel.value);
     c.bodyHtml=body.innerHTML; evtAdd('fmtUsed','font'); fireEvt(); };
   document.getElementById('cmpImg').onclick=()=>dlgFilePicker(true);
@@ -1662,6 +1782,18 @@ function renderChips(k){
   }
   inp.onkeydown=(e)=>{ if(e.key==='Enter'||e.key===','||e.key===';'||e.key==='Tab'){ e.preventDefault(); commit(true); } };
   inp.onblur=()=>{ commit(false); };
+  /* auto-complétion façon messagerie moderne (dès le niveau 3, une fois le carnet enseigné) :
+     dès qu'on tape le début d'une adresse déjà dans le carnet, elle se complète toute seule,
+     avec la partie ajoutée sélectionnée — Entrée la valide, continuer à taper l'efface. */
+  if(currentLevel>=3){
+    inp.oninput=(e)=>{
+      if(e.inputType && e.inputType.indexOf('delete')===0) return;
+      const val=inp.value; if(!val) return;
+      const low=val.toLowerCase();
+      const match=M.contacts.find(x=>x.addr.toLowerCase().startsWith(low) && x.addr.toLowerCase()!==low);
+      if(match){ inp.value=match.addr; inp.setSelectionRange(val.length, match.addr.length); }
+    };
+  }
   const lkCc=document.getElementById('lkCc'), lkBcc=document.getElementById('lkBcc');
   if(lkCc) lkCc.onclick=()=>{ c.showCc=true; evtFlag('openedCc'); renderCompose(); document.getElementById('in_cc').focus(); };
   if(lkBcc) lkBcc.onclick=()=>{ c.showBcc=true; evtFlag('openedBcc'); renderCompose(); document.getElementById('in_bcc').focus(); };
@@ -1860,11 +1992,16 @@ function dlgNewContact(preset, editIdx){
     if(M.contacts.some((c,i)=>c.addr===a && i!==editIdx)){
       beep('bad'); toast('🤔 Un contact a déjà cette adresse !'); document.getElementById('ncAddr').focus(); return;
     }
-    if(editing) M.contacts[editIdx]={addr:a, name:n, av:who(a).av};
-    else { M.contacts.push({addr:a, name:n, av:who(a).av}); saveExtraContact(a, n, who(a).av); }
+    if(editing){
+      const oldAddr=preset.addr;
+      M.contacts[editIdx]={addr:a, name:n, av:who(a).av};
+      /* si l'ancien contact était enregistré dans le carnet persistant, on renomme son adresse là aussi */
+      if(getExtraContacts().some(x=>x.addr===oldAddr)) renameExtraContact(oldAddr, a, n, who(a).av);
+    } else { M.contacts.push({addr:a, name:n, av:who(a).av}); saveExtraContact(a, n, who(a).av); }
     winsBox().innerHTML=''; beep('good');
     toast(editing?('✏️ Contact <b>'+esc(n)+'</b> modifié !'):('📇 Contact <b>'+esc(n)+'</b> enregistré !'));
-    evtAdd('contactAdded', a); renderMain();
+    if(editing) evtAdd('contactEdited', a); else evtAdd('contactAdded', a);
+    renderMain();
   };
 }
 function dlgNewList(editIdx){
@@ -1988,6 +2125,13 @@ function moveToSel(id,folderName){
 function contactsSel(btnId){
   return function(){ if(M.view!=='contacts') return document.querySelector('#ccNav [data-view="contacts"]'); return document.getElementById(btnId); };
 }
+function contactEditSel(name){
+  return function(){
+    if(M.view!=='contacts') return document.querySelector('#ccNav [data-view="contacts"]');
+    const i=M.contacts.findIndex(c=>normText(c.name)===normText(name));
+    return i>=0 ? document.querySelector('.ct-card [data-edit="'+i+'"]') : null;
+  };
+}
 function filePickerSel(val,fallbackId){
   return function(){
     const i=MYFILES.findIndex(f=>f.n.toLowerCase()===val);
@@ -2031,6 +2175,8 @@ const G={
   /* génériques */
   flag:(key,hint,spot)=>({spot:spot||'list', hint:hint, test:c=>!!c.evt[key]}),
   inSet:(key,val,hint,spot)=>({spot:spot||'list', hint:hint, sel:inSetSel(key,val), test:c=>c.evt[key] && c.evt[key].has(val)}),
+  /* police : ne valide que si TOUT le texte écrit est passé dans la police demandée (pas juste un mot) */
+  fontAllUsed:(fontName,hint)=>({spot:'toolbar', hint:hint, sel:inSetSel('fmtUsed','font'), test:()=>bodyAllInFont(fontName)}),
   setSize:(key,n,hint,spot)=>({spot:spot||'list', hint:hint, test:c=>c.evt[key] && c.evt[key].size>=n}),
   /* lecture */
   openedMail:(id,hint)=>({spot:'list', hint:hint||'Clique sur le mail dans la <b>liste du milieu</b> pour l\'ouvrir.', sel:mailRowSel(id), test:c=>c.evt.openedMail && c.evt.openedMail.has(id)}),
@@ -2058,7 +2204,7 @@ const G={
   folderCreated:(name)=>({spot:'addfolder', hint:'Clique sur <b>➕ Nouveau dossier</b> (colonne de gauche) et nomme-le <b>'+name+'</b>.', sel:'#btnAddFolder', test:c=>c.evt.folderCreated && c.evt.folderCreated.has(normText(name))}),
   movedTo:(id,folderName)=>({spot:'reader', hint:'Ouvre le mail, puis <b>📁 Déplacer ▾</b> et choisis le dossier <b>'+folderName+'</b>.', sel:moveToSel(id,folderName), test:c=>c.evt.movedTo && c.evt.movedTo.has(id+':'+normText(folderName))}),
   inFolder:(fid,n,hint)=>({spot:'reader', hint:hint, test:c=>c.mails.filter(m=>m.folder===fid).length>=n}),
-  trashed:(id)=>({spot:'reader', hint:'Ouvre le mail puis clique sur <b>🗑️ Supprimer</b> : il part dans la Corbeille.', sel:mailActionSel(id,'del'), test:c=>c.evt.trashed && c.evt.trashed.has(id)}),
+  trashed:(id,hint)=>({spot:'reader', hint:hint||'Ouvre le mail puis clique sur <b>🗑️ Supprimer</b> : il part dans la Corbeille.', sel:mailActionSel(id,'del'), test:c=>c.evt.trashed && c.evt.trashed.has(id)}),
   restored:(id)=>({spot:'folders', hint:'Ouvre le dossier <b>🗑️ Corbeille</b>, clique le mail, puis <b>↩️ Restaurer</b>.', sel:folderMailActionSel('trash',id,'restore'), test:c=>c.evt.restored && c.evt.restored.has(id)}),
   trashEmptied:()=>({spot:'list', hint:'Va dans la <b>🗑️ Corbeille</b> et clique le bouton <b>🧹 Vider</b> en haut de la liste.',
     sel:function(){ return document.getElementById('btnEmptyTrash') || document.querySelector('#ccFolders [data-f="trash"]'); },
@@ -2072,6 +2218,7 @@ const G={
   draftResumed:()=>({spot:'folders', hint:'Ouvre le dossier <b>📝 Brouillons</b> et clique sur ton brouillon pour le continuer.', sel:draftRowSel(), test:c=>c.evt.draftResumed && c.evt.draftResumed.size>0}),
   /* carnet / listes */
   contactAdded:(addr,name)=>({spot:'contacts', hint:'Va dans <b>📇 Contacts</b> (en bas à gauche), clique <b>➕ Nouveau contact</b> et recopie bien l\'adresse <b>'+addr+'</b>.', sel:contactsSel('btnAddContact'), test:c=>c.evt.contactAdded && c.evt.contactAdded.has(addr)}),
+  contactEdited:(addr,name,hint)=>({spot:'contacts', hint:hint||'Va dans <b>📇 Contacts</b>, clique le crayon <b>✏️</b> sur la fiche de <b>'+name+'</b> et corrige l\'adresse en <b>'+addr+'</b>.', sel:contactEditSel(name), test:c=>c.evt.contactEdited && c.evt.contactEdited.has(addr)}),
   listCreated:(name,n)=>({spot:'contacts', hint:'Dans <b>📇 Contacts</b>, clique <b>📣 Nouvelle liste</b>, nomme-la <b>'+name+'</b> et coche '+n+' contacts.', sel:contactsSel('btnAddList'), test:c=>c.evt.listCreated && [...c.evt.listCreated].some(v=>v.startsWith(normText(name)+':') && parseInt(v.split(':')[1],10)>=n)}),
   /* recherche / tri / filtres */
   searched:(words)=>({spot:'search', hint:'Clique dans la <b>barre de recherche 🔍</b> (en haut), tape <b>'+words[0]+'</b> puis '+kbd('Entrée')+'.', sel:'#ccSearch', test:c=>c.evt.searches.some(q=>words.some(w=>q.includes(normText(w))))}),
@@ -2119,6 +2266,24 @@ function eventMatches(e, m){
   if(m.titleIncl && !m.titleIncl.some(w=>normText(e.title).includes(normText(w)))) return false;
   if(m.yearly && !e.yearly) return false;
   return true;
+}
+/* vrai seulement si TOUT le texte du corps du message (hors signature) est dans la police demandée */
+function bodyAllInFont(fontName){
+  const body=document.getElementById('cmpBody'); if(!body) return false;
+  const walker=document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+  let any=false, node;
+  while((node=walker.nextNode())){
+    if(!node.textContent.trim()) continue;
+    const el=node.parentElement; if(!el || el.closest('.sig')) continue;
+    any=true;
+    let faceOk=false;
+    for(let a=el; a && a!==body; a=a.parentElement){
+      if(a.tagName==='FONT' && a.getAttribute('face')===fontName){ faceOk=true; break; }
+    }
+    const familyOk=getComputedStyle(el).fontFamily.toLowerCase().includes(fontName.toLowerCase());
+    if(!faceOk && !familyOk) return false;
+  }
+  return any;
 }
 let _missionDone=false;
 function checkMission(){
@@ -2721,8 +2886,8 @@ const LEVELS=[
 { n:3, title:'Le carnet d\'adresses', subtitle:'contacts & listes',
   intro:{ emoji:'📇',
     lead:'Marre de retaper les adresses ? Le <b>carnet d\'adresses</b> les retient pour toi — et les <b>listes de diffusion</b> écrivent à toute une bande d\'un coup !',
-    teach:'Ouvre <b>📇 Contacts</b> (en bas à gauche). <b>➕ Nouveau contact</b> pour enregistrer quelqu\'un. Dans un message, le bouton <b>📇</b> ouvre ton carnet. Une <b>liste de diffusion</b> 📣 rassemble plusieurs contacts sous un seul nom.',
-    tools:[{g:'📇',n:'Le carnet d\'adresses'},{g:'➕',n:'Enregistrer un contact'},{g:'📣',n:'Liste de diffusion : un nom, plusieurs contacts'},{g:'✨',n:'Fini les fautes de frappe d\'adresse !'}] },
+    teach:'Ouvre <b>📇 Contacts</b> (en bas à gauche). <b>➕ Nouveau contact</b> pour enregistrer quelqu\'un. Dans un message, le bouton <b>📇</b> ouvre ton carnet. Une <b>liste de diffusion</b> 📣 rassemble plusieurs contacts sous un seul nom. Une adresse a changé ? Clique <b>✏️</b> sur la fiche pour la corriger, pas besoin de tout recréer !',
+    tools:[{g:'📇',n:'Le carnet d\'adresses'},{g:'➕',n:'Enregistrer un contact'},{g:'📣',n:'Liste de diffusion : un nom, plusieurs contacts'},{g:'✏️',n:'Modifier un contact si son adresse change'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'➕',title:'Un nouveau contact',
       intro:'Pauline a une nouvelle adresse mail. Enregistre-la, puis écris-lui SANS taper son adresse !',
@@ -2773,6 +2938,24 @@ const LEVELS=[
           goal:G.reopenedSent('Clique le dossier <b>📤 Envoyés</b> puis ouvre ton mail : regarde la ligne « À ».')}
       ],
       winDelay:5000},
+    {kind:'mission',label:'Mission 3',emoji:'✏️',title:'Adresse changée !',
+      intro:'Yanis, un nouveau camarade, t\'écrit… mais il va se tromper d\'adresse !',
+      seed:{ mails:[
+        { from:'yanis@cuicui.fr', subject:'Salut, c\'est Yanis !', date:'Auj. 8:10',
+          body:'<p>Salut ! Je suis nouveau dans la classe, la maîtresse m\'a donné ton adresse.</p><p>Ajoute-moi dans ton carnet : <b>yanis@cuicui.fr</b> !</p><p>Yanis</p>' },
+        { from:'yanis@cuicui.fr', subject:'Oups, mauvaise adresse !', date:'Auj. 9:40',
+          body:'<p>Zut, je me suis trompé dans mon premier mail !</p><p>Ma vraie adresse, c\'est <b>yanis.dubois@cuicui.fr</b> (avec mon nom de famille). Corrige-la dans ton carnet, s\'il te plaît !</p><p>Yanis</p>' }
+      ]},
+      objectives:[
+        {t:'Lis le premier mail de <b>Yanis</b>', goal:G.openedMail('m1')},
+        {t:'Ajoute <b>Yanis</b> au carnet · adresse <b>yanis@cuicui.fr</b>', goal:G.contactAdded('yanis@cuicui.fr','Yanis')},
+        {t:'Lis le second mail : Yanis s\'est trompé d\'adresse !', goal:G.openedMail('m2')},
+        {t:'Dans <b>📇 Contacts</b>, clique <b>✏️</b> sur la fiche de <b>Yanis</b> et corrige son adresse en <b>yanis.dubois@cuicui.fr</b>',
+          goal:G.contactEdited('yanis.dubois@cuicui.fr','Yanis')},
+        {t:'Vérifie : écris à <b>Yanis</b> grâce à sa fiche <b>corrigée</b>',
+          goal:G.sent({to:['yanis.dubois@cuicui.fr']},
+            'Nouveau message → tape juste <b>« yanis »</b> dans le champ « À » : son adresse complète s\'écrit toute seule (surlignée), appuie sur '+kbd('Entrée')+' ! (Ou clique le bouton <b>📇</b> et choisis <b>Yanis</b>.) → 📨 !')}
+      ]},
     {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'Le carnet mélangé',
       intro:'Catastrophe, le carnet s\'est mélangé ! Associe chaque copain à sa vraie adresse.',
       goal:'Associe chaque nom à la bonne adresse !',
@@ -2955,14 +3138,14 @@ const LEVELS=[
         {t:'Lis la demande de <b>M. Leco</b>', goal:G.openedMail('m1')},
         {t:'Nouveau message : écris l\'invitation puis <b>centre</b> le texte (bouton <b>↔️</b>)',
           goal:G.inSet('fmtUsed','center','Écris ton invitation, clique dedans, puis le bouton <b>↔️</b> centre la ligne comme sur une affiche.','toolbar')},
-        {t:'Choisis la police <b>Fredoka</b> (menu « Police » de la barre d\'outils)',
-          goal:G.inSet('fmtUsed','font','Sélectionne ton texte, puis ouvre le menu <b>Police normale</b> et choisis <b>Fredoka (ronde)</b>.','toolbar')},
+        {t:'Choisis la police <b>Fredoka</b> pour TOUT ton texte (menu « Police » de la barre d\'outils)',
+          goal:G.fontAllUsed('Fredoka','Sélectionne <b>tout ton texte</b> (Ctrl+A), puis ouvre le menu <b>Police normale</b> et choisis <b>Fredoka (ronde)</b>. Si une partie du texte n\'est pas sélectionnée, elle gardera l\'ancienne police !')},
         {t:'Envoie l\'invitation à <b>tata.monica@cuicui.fr</b> · objet « <b>Spectacle</b> »',
           goal:G.sent({to:['tata.monica@cuicui.fr'], subjIncl:'spectacle', fmt:['center','font']},
             'À : <b>tata.monica@cuicui.fr</b> · objet <b>Spectacle</b> · texte centré + police Fredoka → 📨 !')}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'✍️',title:'Ta signature',
-      intro:'Les grands signent leurs mails automatiquement. Crée TA signature !',
+      intro:'Pour signer tes mails automatiquement, on va créer ta signature.',
       seed:{ mails:[
         { from:'papi.marcel@cuicui.fr', subject:'C\'est qui ?', date:'Auj. 11:40',
           body:'<p>J\'ai reçu un mail d\'un certain « toi@cuicui.fr »… mais c\'est QUI ? 🤔</p>'
@@ -2998,8 +3181,8 @@ const LEVELS=[
 { n:6, title:'Range ta boîte !', subtitle:'dossiers, corbeille, indésirables',
   intro:{ emoji:'🧹',
     lead:'Une boîte mail, ça se range comme une chambre ! Dossiers, brouillons, corbeille, indésirables… chaque mail à sa place.',
-    teach:'Crée des <b>dossiers</b> (➕) et range avec <b>📁 Déplacer</b>. Un mail pas fini ? <b>💾 Brouillon</b>. Un mail supprimé va à la <b>🗑️ Corbeille</b> (récupérable… jusqu\'à ce qu\'on la vide !). Les pubs et arnaques vont aux <b>🚫 Indésirables</b>.',
-    tools:[{g:'📁',n:'Des dossiers pour classer'},{g:'💾',n:'Le brouillon : à finir plus tard'},{g:'🗑️',n:'La corbeille (récupérable !)'},{g:'🚫',n:'Les indésirables (spam)'}] },
+    teach:'Crée des <b>dossiers</b> (➕) et range avec <b>📁 Déplacer</b>. Un mail pas fini ? <b>💾 Brouillon</b>. Un mail supprimé va à la <b>🗑️ Corbeille</b> (récupérable… jusqu\'à ce qu\'on la vide !). Les pubs et arnaques vont aux <b>🚫 Indésirables</b>. <b>Astuce :</b> un <b>clic droit</b> sur un mail, directement dans la liste, ouvre un raccourci vers ces actions — pratique pour un mail suspect qu\'il vaut mieux ne <b>jamais ouvrir</b> !',
+    tools:[{g:'📁',n:'Des dossiers pour classer'},{g:'💾',n:'Le brouillon : à finir plus tard'},{g:'🗑️',n:'La corbeille (récupérable !)'},{g:'🖱️',n:'Clic droit sur un mail : raccourci direct'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'📁',title:'Opération grand rangement',
       intro:'Ta boîte déborde ! Crée un dossier « Collège » et range-y les mails du professeur.',
@@ -3017,7 +3200,9 @@ const LEVELS=[
         {t:'Crée un dossier « <b>Collège</b> » (bouton <b>➕ Nouveau dossier</b>)', goal:G.folderCreated('Collège')},
         {t:'Range le mail « <b>Sortie au musée</b> » dedans (📁 Déplacer ▾)', goal:G.movedTo('m1','Collège')},
         {t:'Range aussi « <b>Poésie pour vendredi</b> »', goal:G.movedTo('m3','Collège')},
-        {t:'Marque la <b>recette de Papi</b> d\'une ⭐ (pour la retrouver facilement)', goal:G.starred('m4')},
+        {t:'Marque la <b>recette de Papi</b> d\'une ⭐ : <b>clic droit</b> sur le mail dans la liste, puis <b>Marquer comme favori</b>',
+          goal:{spot:'list', hint:'Clique avec le bouton <b>droit</b> de la souris sur le mail « Recette de crêpes » dans la liste, puis choisis <b>⭐ Marquer comme favori</b>.',
+            sel:mailRowSel('m4'), test:c=>c.evt.starred && c.evt.starred.has('m4') && c.evt.ctxAct && c.evt.ctxAct.has('star')}},
         {t:'Ouvre ton dossier <b>📁 Collège</b> pour admirer le rangement !',
           goal:{spot:'folders', hint:'Ton nouveau dossier <b>Collège</b> est apparu dans la colonne de gauche : clique-le.',
             sel:function(){ const f=M.folders.find(x=>normText(x.name)===normText('Collège')); return f?document.querySelector('#ccFolders [data-f="'+f.id+'"]'):null; },
@@ -3038,9 +3223,13 @@ const LEVELS=[
           goal:G.draftResumed()},
         {t:'Finis-le et <b>envoie-le</b> à Pauline',
           goal:G.sent({to:['pauline.tricot@cuicui.fr']},'Termine ton message et clique <b>📨 Envoyer</b>. Le brouillon disparaît de « Brouillons ».')},
-        {t:'<b>Supprime</b> la pub « MEGA PROMO » (🗑️)', goal:G.trashed('m1')},
-        {t:'Oups, tu as AUSSI supprimé le mail de Tata Monica ! (fais-le) …puis <b>restaure-le</b> depuis la Corbeille',
-          goal:G.restored('m2','Supprime le mail de Tata Monica (🗑️), puis va dans la <b>🗑️ Corbeille</b>, ouvre-le et clique <b>↩️ Restaurer</b>. Ouf !')},
+        {t:'<b>Clic droit</b> sur la pub « MEGA PROMO » dans la liste → <b>Supprimer</b> (pas besoin de l\'ouvrir !)',
+          goal:{spot:'list', hint:'Clique avec le bouton <b>droit</b> sur « MEGA PROMO » dans la liste des mails, puis choisis <b>🗑️ Supprimer</b>.',
+            sel:mailRowSel('m1'), test:c=>c.evt.trashed && c.evt.trashed.has('m1') && c.evt.ctxAct && c.evt.ctxAct.has('del')}},
+        {t:'Oups, supprime AUSSI par erreur le mail de <b>Tata Monica</b> ! (🗑️)',
+          goal:G.trashed('m2','Ouvre le mail de Tata Monica et clique <b>🗑️ Supprimer</b> — comme si c\'était une erreur !')},
+        {t:'Va dans la <b>🗑️ Corbeille</b>, ouvre le mail de Tata Monica et clique <b>↩️ Restaurer</b>',
+          goal:G.restored('m2','Va dans la <b>🗑️ Corbeille</b> (colonne de gauche), ouvre le mail de Tata Monica et clique <b>↩️ Restaurer</b>. Ouf !')},
         {t:'<b>Vide la corbeille</b> pour jeter la pub définitivement (bouton 🧹 Vider)', goal:G.trashEmptied()}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'🚫',title:'Les indésirables',
@@ -3054,15 +3243,16 @@ const LEVELS=[
           body:'<p>Salut ! Tu peux relire mon exposé sur les requins ? 🦈 Merci !</p><p>Arsène</p>' }
       ]},
       objectives:[
-        {t:'Un mail te promet une console <b>gratuite</b>… Méfiance ! Marque-le <b>🚫 Indésirable</b>',
-          goal:G.markedSpam('m1')},
+        {t:'Un mail te promet une console <b>gratuite</b>… Méfiance ! Sans même l\'ouvrir, <b>clic droit</b> dessus → <b>Indésirable</b>',
+          goal:{spot:'list', hint:'Un mail trop beau pour être vrai ? Pas besoin de l\'ouvrir : clique avec le bouton <b>droit</b> sur le mail dans la liste, puis choisis <b>🚫 Indésirable</b>. C\'est même plus prudent !',
+            sel:mailRowSel('m1'), test:c=>c.evt.markedSpam && c.evt.markedSpam.has('m1') && c.evt.ctxAct && c.evt.ctxAct.has('spam')}},
         {t:'Va inspecter le dossier <b>🚫 Indésirables</b>',
           goal:G.inSet('folderOpened','spam','Clique le dossier <b>🚫 Indésirables</b> dans la colonne de gauche.','folders')},
         {t:'Le mail de <b>Arsène</b> n\'a rien à faire là ! Clique <b>✅ Pas indésirable</b>',
           goal:G.unspammed('m3')},
         {t:'Réponds à la question du <b>carnet de mission</b> 📝',
           goal:G.flag('quiz_spam','Les cadeaux « gratuits » à gogo, les !!! partout : c\'est le costume des arnaques.','quiz'),
-          quiz:{key:'spam', q:'Un mail promet un cadeau gratuit avec plein de !!! : on clique ou on se méfie ?', accepted:['mefie','se mefier','on se mefie','mefiance']}}
+          quiz:{key:'spam', q:'Clic ou méfiance ? Un mail promet un cadeau gratuit avec plein de !!!', accepted:['mefiance','mefie','se mefier','on se mefie']}}
       ]},
     {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'Le grand tri',
       intro:'La boîte déborde ! Range chaque mail au bon endroit avant la fin du chrono.',
