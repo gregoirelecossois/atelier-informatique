@@ -528,6 +528,55 @@
   .fp-file .fp-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .fp-file .fp-s{flex:none;font-weight:700;color:#8d9cab;font-size:.72rem;}
   .fp-file .fp-s.big{color:var(--red-d);font-weight:800;}
+  /* bouton « Enregistrer » d'une pièce jointe (façon Thunderbird) */
+  .rd-atts .att-item{display:inline-flex;align-items:center;gap:6px;}
+  .att-save{display:inline-flex;align-items:center;gap:5px;border:2px solid var(--cc-line);border-radius:9px;
+    background:#eef8fb;color:var(--cc-brand-d);font-weight:800;font-size:.76rem;cursor:pointer;padding:7px 10px;font-family:inherit;white-space:nowrap;}
+  .att-save:hover{border-color:var(--cc-brand);background:var(--cc-soft);}
+  .att-save .as-ic{font-size:.95rem;}
+  /* fenêtre « Enregistrer sous » façon explorateur Windows */
+  .fxsave{left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,95%);height:min(464px,94%);}
+  .fxsave .fx-addr{flex:none;display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid var(--line-2);background:#fff;}
+  .fxsave .fx-crumb{background:#f5f8fc;border:1px solid #dde6f0;border-radius:8px;padding:7px 12px;font-weight:700;
+    font-size:.86rem;color:var(--ink);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .fx-crumb .fx-seg{background:none;border:none;font:inherit;font-weight:700;color:var(--blue-d);cursor:pointer;padding:0;border-radius:4px;}
+  .fx-crumb .fx-seg:hover{text-decoration:underline;}
+  .fx-crumb .fx-seg.cur{color:var(--ink);cursor:default;text-decoration:none;}
+  .fx-crumb .fx-sep{color:var(--muted);margin:0 5px;font-weight:800;}
+  .fxsave .fx-guide{flex:none;display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid var(--line-2);
+    background:#fff7e6;color:#7c4a03;font-weight:700;font-size:.84rem;line-height:1.35;}
+  .fxsave .fx-guide b{color:#9a3412;}
+  .fxsave .fx-body{display:flex;flex:1;min-height:0;}
+  .fxsave .fx-side{width:172px;flex:none;border-right:1px solid var(--line-2);padding:8px 7px;background:#fbfdff;overflow-y:auto;}
+  .fx-folder{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:none;background:none;
+    border-radius:8px;padding:8px 10px;font-family:inherit;font-weight:700;font-size:.85rem;color:var(--ink);cursor:pointer;}
+  .fx-folder:hover{background:#eef4ff;}
+  .fx-folder.active{background:#dbeafe;color:var(--blue-d);box-shadow:inset 0 0 0 2px #bcd2ff;}
+  .fx-folder.sub{padding-left:26px;font-size:.83rem;}
+  .fx-pcrow{display:flex;align-items:center;width:100%;border-radius:9px;margin:2px 0;}
+  .fx-pcrow.active{background:#dbeafe;box-shadow:inset 0 0 0 2px #bcd2ff;}
+  .fx-chev{border:none;background:none;cursor:pointer;font-size:.7rem;color:var(--muted);padding:7px 3px 7px 6px;border-radius:6px;line-height:1;flex:none;}
+  .fx-chev:hover{background:#e4ecf7;color:var(--ink);}
+  .fx-pclabel{flex:1;display:flex;align-items:center;gap:9px;text-align:left;border:none;background:none;
+    font-family:inherit;font-weight:800;font-size:.86rem;color:var(--ink);padding:8px 6px;border-radius:7px;cursor:pointer;}
+  .fx-pclabel:hover{background:#eef4ff;}
+  .fxsave .fx-main{flex:1;padding:11px;overflow:auto;min-width:0;}
+  .fx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px;}
+  .fx-file{display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid transparent;
+    border-radius:11px;padding:8px 5px;cursor:pointer;background:none;font-family:inherit;}
+  .fx-file:hover{background:#f1f6ff;}
+  .fx-file.sel{background:#dbeafe;border-color:var(--blue);}
+  .fx-thumb{width:60px;height:46px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+    font-size:1.7rem;box-shadow:inset 0 0 0 1px rgba(0,0,0,.07);}
+  .fx-file.is-folder .fx-thumb{background:#fff3d4;color:#b8860b;font-size:1.9rem;}
+  .fx-fn{font-size:.72rem;font-weight:700;color:var(--ink);word-break:break-word;text-align:center;line-height:1.16;}
+  .fx-empty{color:var(--muted);font-weight:700;text-align:center;padding:44px 12px;font-size:.9rem;}
+  .fxsave .fx-foot{flex:none;display:flex;align-items:center;gap:9px;padding:10px 13px;border-top:1px solid var(--line-2);background:#fbfdff;flex-wrap:wrap;}
+  .fxsave .fx-lbl{font-weight:800;font-size:.82rem;color:var(--muted);}
+  .fx-namebox{flex:1;min-width:120px;border:1px solid #cdd8e4;border-radius:8px;padding:8px 11px;
+    font-size:.86rem;font-weight:700;color:var(--ink);background:#fff;font-family:inherit;outline:none;}
+  .fx-namebox:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(96,165,250,.35);}
+  .fx-type{border:1px solid #cdd8e4;border-radius:8px;padding:8px 9px;font-size:.78rem;color:var(--muted);background:#fff;}
   /* carnet d'adresses */
   .cc-contacts{flex:1;min-width:0;overflow:auto;padding:14px 18px;}
   .ct-head{display:flex;align-items:center;gap:10px;margin:0 0 12px;flex-wrap:wrap;}
@@ -970,6 +1019,41 @@ const MYFILES=[
 ];
 const MAX_ATT_KO=25000; /* 25 Mo, comme les vraies messageries */
 
+/* ---- ordinateur simulé : arborescence des fenêtres « Enregistrer sous » / « Choisir un fichier » ---- */
+function pcFile(n,ic){ return {name:n, icon:ic||'📄', kind:'file'}; }
+/* pcAtt : fichier que l'on peut JOINDRE à un mail (porte sa taille + métadonnées image) */
+function pcAtt(n,s,ic,img,emoji){ return {name:n, icon:ic||'📄', kind:'file', s:s, img:!!img, emoji:emoji||'', att:true}; }
+function pcDir(n,ch,ic){ return {name:n, icon:ic||'📁', kind:'folder', children:ch||[]}; }
+const PC_BUREAU=pcDir('Bureau',[ pcFile('raccourci-jeu.lnk','🔗'), pcFile('mes-notes.txt') ],'🖥️');
+const PC_TELECH=pcDir('Téléchargements',[ pcFile('installeur.exe','⚙️'), pcFile('manuel-tablette.pdf','📕'), pcFile('image-drole.gif','🖼️') ],'⬇️');
+const PC_DOCS=pcDir('Documents',[
+  pcDir('Collège',[ pcAtt('poesie-automne.pdf',120,'📄'), pcAtt('expose-volcans.docx',210,'📘'), pcFile('emploi-du-temps.pdf','📕'), pcFile('liste-fournitures.txt') ]),
+  pcDir('Recettes',[ pcAtt('recette-crepes.pdf',95,'📄'), pcFile('gateau-au-chocolat.pdf','📕') ]),
+  pcFile('lettre-a-mamie.txt')
+],'📄');
+const PC_IMAGES=pcDir('Images',[
+  pcDir('Vacances',[ pcFile('plage.jpg','🖼️'), pcFile('montagne.jpg','🖼️') ]),
+  pcDir('Famille',[ pcFile('anniversaire.jpg','🖼️') ]),
+  pcDir('Animaux',[ pcFile('mon-chat.jpg','🖼️'), pcFile('tortue.jpg','🖼️') ]),
+  pcAtt('photo-classe.jpg',1200,'🖼️',true,'📸'),
+  pcAtt('dessin-fusee.png',340,'🖼️',true,'🚀'),
+  pcAtt('dessin-oiseau.png',280,'🖼️',true,'🐦'),
+  pcFile('avatar.png','🖼️')
+],'🖼️');
+const PC_MUSIQUE=pcDir('Musique',[ pcAtt('chanson-ecole.mp3',4200,'🎵'), pcFile('chanson-preferee.mp3','🎵') ],'🎵');
+const PC_VIDEOS=pcDir('Vidéos',[ pcAtt('video-vacances.mp4',48000,'🎬'), pcFile('spectacle-ecole.mp4','🎬') ],'🎬');
+const PC_CEPC={name:'Ce PC', icon:'💻', kind:'pc', children:[PC_BUREAU, PC_TELECH, PC_DOCS, PC_IMAGES, PC_MUSIQUE, PC_VIDEOS]};
+/* accès rapide (volet gauche) : raccourcis vers des dossiers, chemins canoniques depuis Ce PC */
+const PC_QUICK=[
+  {label:'Bureau', icon:'🖥️', path:[PC_CEPC,PC_BUREAU]},
+  {label:'Téléchargements', icon:'⬇️', path:[PC_CEPC,PC_TELECH]},
+  {label:'Documents', icon:'📄', path:[PC_CEPC,PC_DOCS]},
+  {label:'Images', icon:'🖼️', path:[PC_CEPC,PC_IMAGES]}
+];
+function pcKey(arr){ return arr.map(n=>normText(typeof n==='string'?n:n.name)).join('/'); }
+/* nom de fichier normalisé (sans extension, tirets ↔ espaces tolérés) pour comparer les noms saisis */
+function normFileName(s){ return normText(String(s).replace(/\.[a-z0-9]+$/i,'')).replace(/-/g,' ').trim(); }
+
 /* aujourd'hui simulé : mercredi 10 juin 2026 (stable pour les missions) */
 const SIM={y:2026,m:5,d:10};
 const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
@@ -1235,8 +1319,9 @@ function readerHtml(){
   const ccLine=m.cc.length?('<div class="rd-line"><span class="rl-k">Cc :</span>'+m.cc.map(a=>whoChip(a)).join(' ')+'</div>'):'';
   const bccLine=(m.from===ME&&m.bcc.length)?('<div class="rd-line"><span class="rl-k">Cci :</span>'+m.bcc.map(a=>whoChip(a)).join(' ')+'</div>'):'';
   const atts=m.atts.length?('<div class="rd-atts">'+m.atts.map((a,i)=>
-    '<button class="att-chip" data-att="'+i+'"><span class="ac-ic">'+a.ic+'</span>'+esc(a.n)
-    +'<span class="ac-size">'+fmtSize(a.s)+'</span></button>').join('')+'</div>'):'';
+    '<span class="att-item"><button class="att-chip" data-att="'+i+'"><span class="ac-ic">'+a.ic+'</span>'+esc(a.n)
+    +'<span class="ac-size">'+fmtSize(a.s)+'</span></button>'
+    +'<button class="att-save" data-att="'+i+'" title="Enregistrer sur l\'ordinateur"><span class="as-ic">⬇️</span>Enregistrer</button></span>').join('')+'</div>'):'';
   return '<div class="rd-actions" id="rdActions">'+acts+'</div>'
     +'<div class="rd-head">'
     +  '<h3 class="rd-sub"><button class="rs-star'+(m.star?' on':'')+'" data-act="star" title="Marquer comme favori">⭐</button>'+esc(m.subject)+'</h3>'
@@ -1261,6 +1346,9 @@ function bindReader(){
   r.querySelectorAll('.att-chip').forEach(b=>{
     b.onclick=()=>{ const a=m.atts[+b.getAttribute('data-att')]; if(a) dlgAttPreview(m,a); };
   });
+  r.querySelectorAll('.att-save').forEach(b=>{
+    b.onclick=(e)=>{ e.stopPropagation(); const a=m.atts[+b.getAttribute('data-att')]; if(a) startAttSave(m,a); };
+  });
 }
 function mailAction(act, m, btn){
   if(act==='reply'||act==='replyall'){
@@ -1278,6 +1366,8 @@ function mailAction(act, m, btn){
     menuMove(btn, m);
   } else if(act==='unread'){
     beep('click'); m.read=false; M.sel=null; evtAdd('markedUnread', m.id); renderAll();
+  } else if(act==='read'){
+    beep('click'); m.read=true; evtAdd('markedRead', m.id); renderAll();
   } else if(act==='spam'){
     beep('delete'); m.folder='spam'; M.sel=null; evtAdd('markedSpam', m.id);
     toast('🚫 Mail déplacé dans les <b>Indésirables</b>. Bien vu !'); renderAll();
@@ -1340,13 +1430,19 @@ function onMailCtxMenu(e, row){
   e.preventDefault();
   const id=row.getAttribute('data-id'), m=getMail(id); if(!m) return;
   closeMenus();
-  const isSpam=m.folder==='spam';
-  const html='<button class="cc-mi" data-act="del"><span class="mi-ic">🗑️</span>Supprimer</button>'
-    +'<button class="cc-mi" data-act="move"><span class="mi-ic">📁</span>Déplacer vers…</button>'
-    +(isSpam
-      ? '<button class="cc-mi" data-act="notspam"><span class="mi-ic">✅</span>Pas indésirable</button>'
-      : '<button class="cc-mi" data-act="spam"><span class="mi-ic">🚫</span>Indésirable</button>')
-    +'<button class="cc-mi" data-act="star"><span class="mi-ic">⭐</span>'+(m.star?'Retirer des favoris':'Marquer comme favori')+'</button>';
+  const isSpam=m.folder==='spam', isTrash=m.folder==='trash';
+  const html=isTrash
+    ? '<button class="cc-mi" data-act="restore"><span class="mi-ic">↩️</span>Restaurer</button>'
+      +'<button class="cc-mi" data-act="harddel"><span class="mi-ic">❌</span>Supprimer définitivement</button>'
+    : '<button class="cc-mi" data-act="del"><span class="mi-ic">🗑️</span>Supprimer</button>'
+      +'<button class="cc-mi" data-act="move"><span class="mi-ic">📁</span>Déplacer vers…</button>'
+      +(m.read
+        ? '<button class="cc-mi" data-act="unread"><span class="mi-ic">🔵</span>Marquer comme non lu</button>'
+        : '<button class="cc-mi" data-act="read"><span class="mi-ic">📩</span>Marquer comme lu</button>')
+      +(isSpam
+        ? '<button class="cc-mi" data-act="notspam"><span class="mi-ic">✅</span>Pas indésirable</button>'
+        : '<button class="cc-mi" data-act="spam"><span class="mi-ic">🚫</span>Indésirable</button>')
+      +'<button class="cc-mi" data-act="star"><span class="mi-ic">⭐</span>'+(m.star?'Retirer des favoris':'Marquer comme favori')+'</button>';
   const app=document.getElementById('ccapp'); if(!app) return;
   const menu=document.createElement('div'); menu.className='cc-menu'; menu.innerHTML=html;
   app.appendChild(menu);
@@ -1370,9 +1466,32 @@ function onMailCtxMenu(e, row){
     };
   });
 }
+function onTrashCtxMenu(e){
+  e.preventDefault();
+  closeMenus();
+  const hasMails=M.mails.some(m=>m.folder==='trash');
+  const app=document.getElementById('ccapp'); if(!app) return;
+  const menu=document.createElement('div'); menu.className='cc-menu';
+  menu.innerHTML='<button class="cc-mi danger" data-act="empty"'+(hasMails?'':' disabled')+'><span class="mi-ic">🧹</span>Vider la corbeille</button>';
+  app.appendChild(menu);
+  const ar=app.getBoundingClientRect();
+  let left=e.clientX-ar.left, top=e.clientY-ar.top;
+  menu.style.left='0px'; menu.style.top='0px';
+  const mw=menu.offsetWidth, mh=menu.offsetHeight;
+  if(left+mw>ar.width-6) left=Math.max(4, ar.width-mw-6);
+  if(top+mh>ar.height-6) top=Math.max(4, ar.height-mh-6);
+  menu.style.left=left+'px'; menu.style.top=top+'px';
+  menu.addEventListener('pointerdown',ev=>ev.stopPropagation());
+  menu.querySelector('.cc-mi').onclick=()=>{
+    if(!hasMails) return;
+    closeMenus(); dlgEmptyTrash();
+  };
+}
 function onCtxMenu(e){
   const mailRow=e.target.closest('.mailrow');
   if(mailRow){ onMailCtxMenu(e, mailRow); return; }
+  const folderBtn=e.target.closest('.cc-folder');
+  if(folderBtn && folderBtn.getAttribute('data-f')==='trash'){ onTrashCtxMenu(e); return; }
   const editable=e.target.closest('input,textarea,[contenteditable="true"]');
   const readable=!editable && e.target.closest('.cc-read,.rd-body,.rd-head,.rw-addr,.ph-mb,.ph-mh');
   const target=editable||readable;
@@ -1514,6 +1633,175 @@ function dlgAttPreview(m, a){
     +'<p>C\'est une <b>pièce jointe</b> : un fichier accroché au mail'+(a.img?' (ici, une image)':'')+'.</p></div>',
     '<button class="d-btn pri" id="apOk">Fermer</button>');
   document.getElementById('apOk').onclick=()=>{ winsBox().innerHTML=''; };
+}
+/* clic sur le bouton ⬇️ Enregistrer d'une pièce jointe : on récupère l'éventuelle
+   consigne de rangement de l'objectif en cours (dossier + nom précis à respecter) */
+function startAttSave(m, a){
+  const o=(typeof activeObj==='function')?activeObj():null;
+  let cfg={};
+  if(o && o.goal && o.goal.saveCfg && normText(o.goal.saveCfg.file)===normText(a.n)) cfg=o.goal.saveCfg;
+  else if(typeof ARC!=='undefined' && ARC.on && ARC.saveCfg && normText(ARC.saveCfg.file)===normText(a.n)) cfg=ARC.saveCfg;
+  openSaveExplorer(a, cfg);
+}
+/* explorateur de fichiers Windows simulé — deux usages :
+   • mode 'save' : « Enregistrer sous » (champ nom + Enregistrer) — pour télécharger une PJ reçue ;
+   • mode 'open' : « Choisir un fichier » (double-clic pour joindre) — pour envoyer une PJ.
+   Volet gauche : clic simple (accès rapide + Ce PC). Liste de droite : DOUBLE-CLIC pour ouvrir
+   un dossier ou choisir un fichier, comme dans un vrai explorateur. */
+function openFileExplorer(cfg){
+  cfg=cfg||{};
+  const mode=cfg.mode||'save';
+  beep('click');
+  const w=winsBox(); if(!w) return;
+  const a=cfg.attObj||null;
+  const ext=a?((String(a.n).match(/\.[a-z0-9]+$/i)||[''])[0]):'';
+  const baseOf=n=>String(n).replace(/\.[a-z0-9]+$/i,'');
+  let path=cfg.startPath?cfg.startPath.slice():[PC_CEPC];
+  let sbExpanded=true, sideScroll=0;
+  let name=(mode==='save')?((cfg.suggestName!=null)?cfg.suggestName:baseOf(a.n)):'';
+  let selFile=null;
+  const cur=()=>path[path.length-1];
+  const win=document.createElement('div');
+  win.className='ccwin ccdlg fxsave'; win.id='fxSaveWin'; win.style.zIndex=90;
+  w.appendChild(win);
+  const titleTxt=cfg.title||(mode==='save'?'💾 Enregistrer sous':'📎 Choisir un fichier à joindre');
+  function guideText(){
+    if(cfg.guide) return cfg.guide;
+    if(mode==='save') return 'Choisis le <b>dossier</b> (<b>double-clic</b> pour l\'ouvrir), écris le <b>nom</b>, puis clique <b>Enregistrer</b>.';
+    return 'Ouvre les dossiers en <b>double-cliquant</b> dessus, puis <b>double-clique</b> le fichier à joindre.';
+  }
+  function footHtml(){
+    if(mode==='save'){
+      return '<span class="fx-lbl">Nom du fichier :</span>'
+        +'<input class="fx-namebox" id="fxName" maxlength="40" placeholder="mon-fichier" value="'+esc(name)+'">'
+        +'<span class="fx-type">'+(ext?esc(ext):'fichier')+'</span>'
+        +'<button class="d-btn" id="fxCancel">Annuler</button>'
+        +'<button class="d-btn grn" id="fxSave">💾 Enregistrer</button>';
+    }
+    return '<span class="fx-lbl">Fichier :</span>'
+      +'<input class="fx-namebox" id="fxName" readonly placeholder="aucun fichier choisi" value="'+esc(selFile?selFile.name:'')+'">'
+      +'<button class="d-btn" id="fxCancel">Annuler</button>'
+      +'<button class="d-btn grn" id="fxOpen"'+(selFile?'':' disabled')+'>📎 Joindre</button>';
+  }
+  function render(){
+    win.innerHTML='<div class="w-bar"><span class="wb-t">'+titleTxt+'</span>'
+      +'<button class="w-x" id="fxX">✕</button></div>'
+      +'<div class="fx-addr"><span style="font-weight:800">📁</span><span class="fx-crumb" id="fxCrumb"></span></div>'
+      +'<div class="fx-guide"><span>🧭</span><span>'+guideText()+'</span></div>'
+      +'<div class="fx-body"><div class="fx-side" id="fxSide"></div><div class="fx-main" id="fxMain"></div></div>'
+      +'<div class="fx-foot">'+footHtml()+'</div>';
+    /* fil d'Ariane cliquable */
+    const crumb=win.querySelector('#fxCrumb'); crumb.innerHTML='';
+    path.forEach((node,i)=>{
+      if(i) crumb.insertAdjacentHTML('beforeend','<span class="fx-sep">›</span>');
+      const last=i===path.length-1;
+      const b=document.createElement('button'); b.className='fx-seg'+(last?' cur':''); b.textContent=node.name;
+      if(!last) b.onclick=()=>{ path=path.slice(0,i+1); selFile=null; render(); };
+      crumb.appendChild(b);
+    });
+    /* volet gauche (clic simple) : accès rapide + Ce PC développable */
+    const side=win.querySelector('#fxSide'); side.innerHTML='';
+    const navTo=p=>{ path=p.slice(); selFile=null; render(); };
+    PC_QUICK.forEach(q=>{
+      const b=document.createElement('button');
+      b.className='fx-folder'+(cur()===q.path[q.path.length-1]?' active':'');
+      b.innerHTML='<span>'+q.icon+'</span> '+esc(q.label);
+      b.onclick=()=>navTo(q.path);
+      side.appendChild(b);
+    });
+    const row=document.createElement('div');
+    row.className='fx-pcrow'+(cur()===PC_CEPC?' active':'');
+    const chev=document.createElement('button'); chev.className='fx-chev'; chev.textContent=sbExpanded?'▾':'▸';
+    chev.onclick=e=>{ e.stopPropagation(); sbExpanded=!sbExpanded; render(); };
+    const lab=document.createElement('button'); lab.className='fx-pclabel';
+    lab.innerHTML='<span>'+PC_CEPC.icon+'</span> '+PC_CEPC.name;
+    lab.onclick=()=>{ sbExpanded=true; navTo([PC_CEPC]); };
+    row.appendChild(chev); row.appendChild(lab); side.appendChild(row);
+    if(sbExpanded){
+      PC_CEPC.children.forEach(dk=>{ const b=document.createElement('button');
+        b.className='fx-folder sub'+(cur()===dk?' active':'');
+        b.innerHTML='<span>'+dk.icon+'</span> '+esc(dk.name);
+        b.onclick=()=>navTo([PC_CEPC,dk]);
+        side.appendChild(b); });
+    }
+    side.scrollTop=sideScroll; side.onscroll=()=>{ sideScroll=side.scrollTop; };
+    /* contenu du dossier courant (double-clic pour ouvrir/choisir) */
+    const main=win.querySelector('#fxMain'); main.innerHTML='';
+    const items=cur().children||[];
+    if(!items.length){ main.innerHTML='<div class="fx-empty">📂 Ce dossier est vide.</div>'; }
+    else{
+      const grid=document.createElement('div'); grid.className='fx-grid';
+      items.forEach(node=>{ const isFolder=node.kind!=='file';
+        const f=document.createElement('button');
+        f.className='fx-file'+(isFolder?' is-folder':'')+((!isFolder&&selFile===node)?' sel':'');
+        if(!isFolder) f.dataset.fn=String(node.name).toLowerCase();
+        f.title=isFolder?'Double-cliquer pour ouvrir':(mode==='open'?'Double-cliquer pour joindre':'');
+        f.innerHTML='<span class="fx-thumb"'+(isFolder?'':' style="background:#eef4ff;font-size:1.9rem"')+'>'+node.icon+'</span><span class="fx-fn">'+esc(node.name)+'</span>';
+        if(isFolder){
+          f.ondblclick=()=>{ path=path.concat(node); selFile=null; render(); };
+        } else if(mode==='open'){
+          f.onclick=()=>{ selFile=node; render(); };
+          f.ondblclick=()=>doPick(node);
+        } else {
+          f.onclick=()=>toast('📄 Ce fichier est déjà rangé ici.');
+        }
+        grid.appendChild(f); });
+      main.appendChild(grid);
+    }
+    win.querySelector('#fxX').onclick=()=>{ beep('click'); win.remove(); };
+    win.querySelector('#fxCancel').onclick=()=>{ beep('click'); win.remove(); };
+    if(mode==='save'){
+      const nameEl=win.querySelector('#fxName');
+      nameEl.oninput=e=>{ name=e.target.value; };
+      nameEl.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); doSave(); } };
+      win.querySelector('#fxSave').onclick=doSave;
+    } else {
+      const ob=win.querySelector('#fxOpen'); if(ob) ob.onclick=()=>{ if(selFile) doPick(selFile); };
+    }
+  }
+  function doSave(){
+    const clean=baseOf(name.trim());
+    if(!clean){ beep('bad'); toast('✏️ Écris un <b>nom de fichier</b> avant d\'enregistrer.'); return; }
+    if(cfg.targetPath && pcKey(path)!==pcKey(cfg.targetPath)){
+      beep('bad'); toast(cfg.folderHint||('📁 Ce n\'est pas le bon dossier : range le fichier dans <b>'+esc(cfg.targetPath.join(' › '))+'</b>.')); return;
+    }
+    if(cfg.requireName && normFileName(clean)!==normFileName(cfg.requireName)){
+      beep('bad'); toast(cfg.nameHint||('✏️ Enregistre le fichier sous le nom <b>'+esc(baseOf(cfg.requireName))+'</b>.')); return;
+    }
+    const finalName=clean+ext;
+    const folder=cur();
+    if(folder.children && !folder.children.some(f=>normText(f.name)===normText(finalName)))
+      folder.children.push({name:finalName, icon:'⭐', kind:'file', s:(a?a.s:100), img:(a?a.img:false), emoji:(a?a.emoji:'')});
+    const pk=pcKey(path);
+    winsBox().innerHTML=''; beep('good');
+    toast('💾 <b>'+esc(finalName)+'</b> enregistré dans <b>'+esc(cur().name)+'</b> !');
+    evtAdd('downloaded', a.n.toLowerCase());
+    evtAdd('savedTo', a.n.toLowerCase()+'>'+pk);
+    evtAdd('savedName', normFileName(clean)+'>'+pk);
+    if(cfg.onSaved) cfg.onSaved(finalName, pk);
+  }
+  function doPick(node){ if(cfg.onPick) cfg.onPick(node, ()=>{ try{ win.remove(); }catch(e){} }); }
+  render();
+  if(mode==='save'){ const nameEl=win.querySelector('#fxName'); if(nameEl) setTimeout(()=>{ try{ nameEl.focus(); nameEl.select(); }catch(e){} },40); }
+}
+function openSaveExplorer(a, cfg){ openFileExplorer(Object.assign({}, cfg||{}, {mode:'save', attObj:a})); }
+/* fenêtre « Choisir un fichier à joindre » : on va chercher la PJ dans les dossiers du PC */
+function openAttachExplorer(){
+  openFileExplorer({ mode:'open',
+    onPick:function(node, close){
+      const c=M.compose; if(!c){ close(); return; }
+      const sz=node.s||100;
+      if(sz>MAX_ATT_KO){
+        beep('bad');
+        toast('⛔ <b>'+esc(node.name)+'</b> est trop lourd ('+fmtSize(sz)+') ! Les mails acceptent <b>25 Mo maximum</b>. Les grosses vidéos passent par un lien de partage.');
+        evtFlag('tooBigTried'); fireEvt(); return;
+      }
+      if(!c.atts.some(x=>normText(x.n)===normText(node.name)))
+        c.atts.push({n:node.name, s:sz, ic:node.icon, img:!!node.img, emoji:node.emoji});
+      M.evt.maxAtts=Math.max(M.evt.maxAtts||0, c.atts.length);
+      close(); beep('good'); renderCmpAtts();
+      evtAdd('attAdded', node.name.toLowerCase()); fireEvt();
+    }});
 }
 function dlgSignature(){
   openDlg('✍️ Ma signature',
@@ -1721,7 +2009,7 @@ function renderCompose(){
     if(fontSel.value) document.execCommand('fontName',false,fontSel.value);
     c.bodyHtml=body.innerHTML; evtAdd('fmtUsed','font'); fireEvt(); };
   document.getElementById('cmpImg').onclick=()=>dlgFilePicker(true);
-  document.getElementById('cmpAtt').onclick=()=>dlgFilePicker(false);
+  document.getElementById('cmpAtt').onclick=()=>openAttachExplorer();
   document.getElementById('cmpSend').onclick=sendCompose;
   document.getElementById('cmpDraft').onclick=saveDraft;
 }
@@ -2134,6 +2422,10 @@ function contactEditSel(name){
 }
 function filePickerSel(val,fallbackId){
   return function(){
+    if(document.getElementById('fxSaveWin')){
+      const f=[...document.querySelectorAll('#fxMain .fx-file')].find(b=>b.dataset.fn===val);
+      return f || document.getElementById('fxSide');
+    }
     const i=MYFILES.findIndex(f=>f.n.toLowerCase()===val);
     const chip=i>=0?document.querySelector('.fp-file[data-i="'+i+'"]'):null;
     return chip || document.getElementById(fallbackId);
@@ -2144,6 +2436,16 @@ function attChipSel(val){
     const m=M.sel?getMail(M.sel):null;
     if(m && m.folder===M.folder){ const i=m.atts.findIndex(a=>a.n.toLowerCase()===val); if(i>=0) return document.querySelector('.att-chip[data-att="'+i+'"]'); }
     const mm=M.mails.find(x=>x.atts.some(a=>a.n.toLowerCase()===val));
+    return (mm && mm.folder===M.folder) ? document.querySelector('#mailList [data-id="'+mm.id+'"]') : null;
+  };
+}
+function downloadSel(file){
+  const v=file.toLowerCase();
+  return function(){
+    if(document.getElementById('fxSaveWin')) return document.getElementById('fxSave')||document.getElementById('fxSide');
+    const m=M.sel?getMail(M.sel):null;
+    if(m && m.folder===M.folder){ const i=m.atts.findIndex(a=>a.n.toLowerCase()===v); if(i>=0){ const b=document.querySelector('.att-save[data-att="'+i+'"]'); if(b) return b; } }
+    const mm=M.mails.find(x=>x.atts.some(a=>a.n.toLowerCase()===v));
     return (mm && mm.folder===M.folder) ? document.querySelector('#mailList [data-id="'+mm.id+'"]') : null;
   };
 }
@@ -2200,6 +2502,23 @@ const G={
       return document.getElementById('btnNew');
     },
     test:c=>c.evt.sent.some(r=>sentMatches(r,match))}),
+  /* enregistrement d'une pièce jointe dans un dossier précis de l'ordinateur.
+     pathArr : chemin cible (ex. ['Ce PC','Documents','Collège']). saveName (optionnel) :
+     nom exact à donner au fichier. */
+  savedIn:(file,pathArr,saveName,hint)=>{
+    const pathLbl=pathArr.join(' › ');
+    const cfg={file:file, targetPath:pathArr,
+      guide:(saveName?('Range le fichier dans <b>'+pathLbl+'</b> et nomme-le <b>'+saveName+'</b>, puis clique <b>Enregistrer</b>.')
+                      :('Range le fichier dans <b>'+pathLbl+'</b>, puis clique <b>Enregistrer</b>.')),
+      folderHint:'📁 Ce n\'est pas le bon dossier : range-le dans <b>'+pathLbl+'</b>.'};
+    if(saveName){ cfg.requireName=saveName; cfg.suggestName=''; cfg.nameHint='✏️ Enregistre le fichier sous le nom <b>'+saveName+'</b>.'; }
+    return {spot:'reader', saveCfg:cfg,
+      hint:hint||('À côté de la pièce jointe <b>'+file+'</b>, clique <b>⬇️ Enregistrer</b>, ouvre <b>'+pathLbl+'</b>'+(saveName?(', écris le nom <b>'+saveName+'</b>'):'')+', puis <b>💾 Enregistrer</b>.'),
+      sel:downloadSel(file),
+      test:c=> saveName
+        ? (c.evt.savedName && c.evt.savedName.has(normFileName(saveName)+'>'+pcKey(pathArr)))
+        : (c.evt.savedTo && c.evt.savedTo.has(file.toLowerCase()+'>'+pcKey(pathArr)))};
+  },
   /* dossiers / rangement */
   folderCreated:(name)=>({spot:'addfolder', hint:'Clique sur <b>➕ Nouveau dossier</b> (colonne de gauche) et nomme-le <b>'+name+'</b>.', sel:'#btnAddFolder', test:c=>c.evt.folderCreated && c.evt.folderCreated.has(normText(name))}),
   movedTo:(id,folderName)=>({spot:'reader', hint:'Ouvre le mail, puis <b>📁 Déplacer ▾</b> et choisis le dossier <b>'+folderName+'</b>.', sel:moveToSel(id,folderName), test:c=>c.evt.movedTo && c.evt.movedTo.has(id+':'+normText(folderName))}),
@@ -2251,6 +2570,7 @@ function sentMatches(r, m){
   if(m.subjIncl && !normText(r.subject).includes(normText(m.subjIncl))) return false;
   if(m.bodyIncl && !m.bodyIncl.some(w=>r.body.includes(normText(w)))) return false;
   if(m.att && !r.atts.some(a=>a.includes(m.att.toLowerCase()))) return false;
+  if(m.atts && !m.atts.every(x=>r.atts.some(a=>a.includes(x.toLowerCase())))) return false;
   if(m.attN!=null && r.atts.length<m.attN) return false;
   if(m.attExact!=null && r.atts.length!==m.attExact) return false;
   if(m.img && !r.img) return false;
@@ -2493,7 +2813,7 @@ function arcGoal(txt){ const el=document.getElementById('arcGoalTxt'); if(el) el
 function arcStart(cfg){
   cfg=cfg||{};
   ARC.on=true; ARC.over=false; ARC.score=0; ARC.combo=0; ARC.misses=0;
-  ARC.onEvt=null;
+  ARC.onEvt=null; ARC.saveCfg=null;
   clearTimeout(ARC.comboT);
   ARC.shields=(cfg.shields!=null)?cfg.shields:3; ARC.maxShields=ARC.shields;
   ARC.timer=cfg.timer||null; ARC.left=ARC.timer||0; ARC.bonus=cfg.bonus||null;
@@ -2593,6 +2913,7 @@ function serieRun(cfg, done){
     i++;
     if(i>=cfg.steps.length){ hideOrder(); done(); return; }
     const st=cfg.steps[i];
+    ARC.saveCfg=st.saveCfg||null;
     if(st.prep) st.prep();
     showOrder('<span class="oc-n">'+(i+1)+'/'+cfg.steps.length+'</span><span class="oc-ic">'+(st.ic||'📨')+'</span>'
       +'<span class="oc-txt">'+st.ord+(st.sub?'<span class="oc-sub">'+st.sub+'</span>':'')+'</span>');
@@ -3005,8 +3326,8 @@ const LEVELS=[
 { n:4, title:'Les pièces jointes', subtitle:'fichiers & images',
   intro:{ emoji:'📎',
     lead:'Un mail peut transporter des <b>fichiers</b> : photos, devoirs, dessins… accrochés au message par un trombone 📎 : ce sont les <b>pièces jointes</b>.',
-    teach:'Pour joindre : <b>📎 Joindre un fichier</b> dans la fenêtre du message. Tu peux en mettre <b>plusieurs</b>, et en <b>retirer</b> avec la petite croix <b>✕</b>. Pour mettre une image <b>dans</b> le texte : le bouton <b>🖼️</b>. Attention au poids : au-delà de <b>25 Mo</b>, ça ne passe pas !',
-    tools:[{g:'📎',n:'Joindre un ou plusieurs fichiers'},{g:'✕',n:'Retirer une pièce jointe'},{g:'🖼️',n:'Insérer une image dans le texte'},{g:'⚖️',n:'25 Mo maximum !'}] },
+    teach:'Pour joindre : <b>📎 Joindre un fichier</b> ouvre l\'<b>explorateur</b> de ton ordinateur ; ouvre les dossiers en <b>double-cliquant</b> (comme dans Windows !) pour aller chercher le bon fichier. Tu peux en mettre <b>plusieurs</b>, et en <b>retirer</b> avec la petite croix <b>✕</b>. Pour mettre une image <b>dans</b> le texte : le bouton <b>🖼️</b>. Attention au poids : au-delà de <b>25 Mo</b>, ça ne passe pas ! Tu reçois une pièce jointe ? À côté d\'elle, le bouton <b>⬇️ Enregistrer</b> ouvre le même explorateur pour la <b>ranger dans le bon dossier</b> (Documents, Images…), et même lui donner un nom.',
+    tools:[{g:'📎',n:'Joindre un ou plusieurs fichiers'},{g:'✕',n:'Retirer une pièce jointe'},{g:'🖼️',n:'Insérer une image dans le texte'},{g:'⬇️',n:'Enregistrer un fichier reçu dans un dossier'}] },
   rounds:[
     {kind:'mission',label:'Mission 1',emoji:'📬',title:'Un trombone dans le mail',
       intro:'Papi t\'envoie une photo de son jardin. Ouvre-la, puis transfère-la à Tata Monica !',
@@ -3027,14 +3348,14 @@ const LEVELS=[
       intro:'M. Leco attend ta poésie en pièce jointe… et gare aux fichiers trop lourds !',
       seed:{ mails:[
         { from:'m.leco@erea.fr', subject:'Devoir : ta poésie d\'automne', date:'Auj. 7:58',
-          body:'<p>Bonjour !</p><p>Envoie-moi ta <b>poésie d\'automne</b> en pièce jointe (le fichier <b>poesie-automne.pdf</b> dans tes documents).</p><p>Objet du mail : <b>Ma poésie</b>. Merci !<br>M. Leco</p>' }
+          body:'<p>Bonjour !</p><p>Envoie-moi ta <b>poésie d\'automne</b> en pièce jointe : le fichier <b>poesie-automne.pdf</b> est rangé dans <b>Documents › Collège</b>.</p><p>Objet du mail : <b>Ma poésie</b>. Merci !<br>M. Leco</p>' }
       ]},
       objectives:[
         {t:'Lis la consigne de <b>M. Leco</b>', goal:G.openedMail('m1')},
-        {t:'Nouveau message : clique <b>📎 Joindre un fichier</b> et choisis <b>poesie-automne.pdf</b>',
-          goal:G.inSet('attAdded','poesie-automne.pdf','Dans la fenêtre du message, le bouton <b>📎 Joindre un fichier</b> est en bas. Choisis <b>poesie-automne.pdf</b>.','compose')},
-        {t:'Expérience 🧪 : essaie d\'ajouter AUSSI <b>video-vacances.mp4</b> (48 Mo)… que se passe-t-il ?',
-          goal:G.flag('tooBigTried','Re-clique <b>📎 Joindre un fichier</b> et clique la grosse vidéo : Cui-Cui va refuser, c\'est normal — c\'est la leçon !','compose')},
+        {t:'Nouveau message : clique <b>📎 Joindre un fichier</b>, va chercher <b>poesie-automne.pdf</b> dans <b>Documents › Collège</b>',
+          goal:G.inSet('attAdded','poesie-automne.pdf','Clique <b>📎 Joindre un fichier</b> : l\'explorateur s\'ouvre. Ouvre <b>Documents</b> puis <b>Collège</b> (double-clic), puis <b>double-clique</b> <b>poesie-automne.pdf</b>.','compose')},
+        {t:'Expérience 🧪 : essaie d\'ajouter AUSSI <b>video-vacances.mp4</b> (dans le dossier <b>Vidéos</b>, 48 Mo)… que se passe-t-il ?',
+          goal:G.flag('tooBigTried','Re-clique <b>📎 Joindre un fichier</b>, ouvre le dossier <b>Vidéos</b> et double-clique la grosse vidéo : Cui-Cui va refuser, c\'est normal — c\'est la leçon !','compose')},
         {t:'Envoie ta poésie à <b>m.leco@erea.fr</b> · objet « <b>Ma poésie</b> »',
           goal:G.sent({to:['m.leco@erea.fr'], subjIncl:'poesie', att:'poesie-automne'},
             'À : <b>m.leco@erea.fr</b> (ou 📇), objet <b>Ma poésie</b>, la pièce jointe est déjà accrochée → 📨 !')}
@@ -3049,7 +3370,7 @@ const LEVELS=[
       objectives:[
         {t:'Lis le mail de <b>Zoé</b>', goal:G.openedMail('m1')},
         {t:'Nouveau message : joins <b>au moins 3 fichiers</b> (📎 Joindre un fichier, plusieurs fois)',
-          goal:{spot:'compose', hint:'Clique <b>✏️ Nouveau message</b>, puis <b>📎 Joindre un fichier</b> et choisis un fichier. Recommence pour en avoir <b>3 en tout</b> (par exemple photo-classe.jpg, dessin-oiseau.png, poesie-automne.pdf).',
+          goal:{spot:'compose', hint:'Clique <b>✏️ Nouveau message</b>, puis <b>📎 Joindre un fichier</b> : dans l\'explorateur, ouvre les dossiers (double-clic) et double-clique un fichier. Recommence pour en avoir <b>3 en tout</b> (par ex. <b>photo-classe.jpg</b> dans Images, <b>poesie-automne.pdf</b> dans Documents › Collège, <b>recette-crepes.pdf</b> dans Documents › Recettes).',
             sel:function(){ return document.getElementById('cmpWin') ? document.getElementById('cmpAtt') : document.getElementById('btnNew'); },
             test:c=>(c.evt.maxAtts||0)>=3}},
         {t:'Oups, trop de fichiers ! <b>Retire</b> les pièces jointes pour ne garder que <b>photo-classe.jpg</b>',
@@ -3075,6 +3396,61 @@ const LEVELS=[
           goal:G.sent({to:['papi.marcel@cuicui.fr'], subjIncl:'fusee', img:true},
             'À : <b>papi.marcel@cuicui.fr</b>, objet <b>Ma fusée</b>, l\'image est dans le texte → 📨 !')}
       ]},
+    {kind:'mission',label:'Mission 5',emoji:'⬇️',title:'Enregistrer un fichier reçu',
+      intro:'M. Leco t\'envoie deux fichiers. À côté de chaque pièce jointe, le bouton ⬇️ Enregistrer ouvre l\'explorateur de ton ordinateur : range chaque fichier dans le bon dossier !',
+      seed:{ mails:[
+        { from:'m.leco@erea.fr', subject:'Le planning de la sortie au musée', date:'Auj. 8:10',
+          atts:[{n:'planning-sortie.pdf', s:180, ic:'📄'},{n:'photo-musee.jpg', s:900, ic:'🖼️', img:true, emoji:'🏛️'}],
+          body:'<p>Bonjour !</p><p>Voici le <b>planning</b> de la sortie (un fichier PDF) et une <b>photo</b> du musée.</p>'
+            +'<p>Enregistre-les sur ton ordinateur : range le planning dans <b>Documents</b> et la photo dans <b>Images</b>. Comme ça tu les retrouveras facilement !</p><p>M. Leco</p>' }
+      ]},
+      objectives:[
+        {t:'Lis le mail de <b>M. Leco</b> (repère les deux 📎 !)', goal:G.openedMail('m1')},
+        {t:'À côté de <b>planning-sortie.pdf</b>, clique <b>⬇️ Enregistrer</b> et range-le dans <b>Ce PC › Documents</b>',
+          goal:G.savedIn('planning-sortie.pdf', ['Ce PC','Documents'], null,
+            'Sous le mail, à côté de <b>planning-sortie.pdf</b>, clique <b>⬇️ Enregistrer</b>. Dans l\'explorateur, ouvre <b>Documents</b> (volet de gauche), puis clique <b>💾 Enregistrer</b>.')},
+        {t:'Fais pareil avec la <b>photo</b> : enregistre <b>photo-musee.jpg</b> dans <b>Ce PC › Images</b>',
+          goal:G.savedIn('photo-musee.jpg', ['Ce PC','Images'], null,
+            'À côté de <b>photo-musee.jpg</b>, clique <b>⬇️ Enregistrer</b>, ouvre le dossier <b>Images</b>, puis <b>💾 Enregistrer</b>. Une photo se range dans Images !')}
+      ]},
+    {kind:'mission',label:'Mission 6',emoji:'🗂️',title:'Le bon dossier, le bon nom',
+      intro:'Tata Monica t\'envoie des fichiers aux noms bizarres. Range-les dans le bon sous-dossier ET donne-leur un nom clair au moment de les enregistrer !',
+      seed:{ mails:[
+        { from:'tata.monica@cuicui.fr', subject:'Photo et papier à ranger', date:'Auj. 10:30',
+          atts:[{n:'IMG_2087.jpg', s:1100, ic:'🖼️', img:true, emoji:'🏖️'},{n:'scan0012.pdf', s:240, ic:'📄'}],
+          body:'<p>Coucou !</p><p>Voici la <b>photo de nos vacances à la mer</b> et le <b>mot du collège</b> que j\'ai scanné. Leurs noms ne veulent rien dire !</p>'
+            +'<p>Range la photo dans <b>Images › Vacances</b> en la renommant <b>ete-a-la-mer</b>, et le papier dans <b>Documents › Collège</b> en le renommant <b>mot-du-college</b>. 😘</p>' }
+      ]},
+      objectives:[
+        {t:'Lis le mail de <b>Tata Monica</b>', goal:G.openedMail('m1')},
+        {t:'Enregistre la photo dans <b>Ce PC › Images › Vacances</b> sous le nom <b>ete-a-la-mer</b>',
+          goal:G.savedIn('IMG_2087.jpg', ['Ce PC','Images','Vacances'], 'ete-a-la-mer',
+            'À côté de <b>IMG_2087.jpg</b>, clique <b>⬇️ Enregistrer</b>. Ouvre <b>Images</b> puis le sous-dossier <b>Vacances</b>. Efface le nom, écris <b>ete-a-la-mer</b>, puis <b>💾 Enregistrer</b>.')},
+        {t:'Enregistre le document dans <b>Ce PC › Documents › Collège</b> sous le nom <b>mot-du-college</b>',
+          goal:G.savedIn('scan0012.pdf', ['Ce PC','Documents','Collège'], 'mot-du-college',
+            'À côté de <b>scan0012.pdf</b>, clique <b>⬇️ Enregistrer</b>. Ouvre <b>Documents</b> puis le sous-dossier <b>Collège</b>. Écris le nom <b>mot-du-college</b>, puis <b>💾 Enregistrer</b>.')}
+      ]},
+    {kind:'mission',label:'Mission 7',emoji:'🔎',title:'La chasse aux pièces jointes',
+      intro:'Léonce prépare l\'exposé et te réclame trois fichiers… mais ils sont rangés à des endroits différents de ton ordinateur. Va les chercher dans l\'explorateur et joins-les au mail !',
+      seed:{ mails:[
+        { from:'leonce@cuicui.fr', subject:'Il me manque des fichiers pour l\'exposé !', date:'Auj. 11:15',
+          body:'<p>Salut ! Pour finir notre <b>exposé</b>, envoie-moi <b>trois pièces jointes</b> :</p>'
+            +'<ul><li>la <b>photo-classe.jpg</b> (dans <b>Images</b>)</li><li>la <b>recette-crepes.pdf</b> (dans <b>Documents › Recettes</b>)</li><li>la <b>chanson-ecole.mp3</b> (dans <b>Musique</b>)</li></ul>'
+            +'<p>Objet : <b>Notre exposé</b>. Merci ! 🦁</p><p>Léonce</p>' }
+      ]},
+      objectives:[
+        {t:'Lis la demande de <b>Léonce</b>', goal:G.openedMail('m1')},
+        {t:'Clique <b>✏️ Nouveau message</b>', goal:G.flag('openedCompose','Le grand bouton <b>✏️ Nouveau message</b> est en haut de la colonne de gauche.','compose')},
+        {t:'Joins la <b>photo-classe.jpg</b> (dossier <b>Images</b>)',
+          goal:G.inSet('attAdded','photo-classe.jpg','Clique <b>📎 Joindre un fichier</b>, ouvre le dossier <b>Images</b> (double-clic), puis <b>double-clique</b> <b>photo-classe.jpg</b>.','compose')},
+        {t:'Joins la <b>recette-crepes.pdf</b> (dossier <b>Documents › Recettes</b>)',
+          goal:G.inSet('attAdded','recette-crepes.pdf','Re-clique <b>📎 Joindre un fichier</b>, ouvre <b>Documents</b> puis <b>Recettes</b>, et double-clique <b>recette-crepes.pdf</b>.','compose')},
+        {t:'Joins la <b>chanson-ecole.mp3</b> (dossier <b>Musique</b>)',
+          goal:G.inSet('attAdded','chanson-ecole.mp3','Re-clique <b>📎 Joindre un fichier</b>, ouvre le dossier <b>Musique</b>, et double-clique <b>chanson-ecole.mp3</b>.','compose')},
+        {t:'Envoie le tout à <b>Léonce</b> (leonce@cuicui.fr) · objet « <b>Notre exposé</b> »',
+          goal:G.sent({to:['leonce@cuicui.fr'], subjIncl:'expose', atts:['photo-classe','recette-crepes','chanson-ecole']},
+            'Vérifie que les <b>3 pièces jointes</b> sont bien accrochées, mets l\'objet <b>Notre exposé</b>, écris un mot, puis <b>📨 Envoyer</b>.')}
+      ]},
     {kind:'game',exam:true,label:'Examen',emoji:'🏁',title:'L\'expédition express',
       intro:'Examen chrono : pièces jointes, images, transferts… le centre de tri s\'emballe !',
       goal:'Envoie les bons fichiers aux bonnes personnes !',
@@ -3082,18 +3458,31 @@ const LEVELS=[
       seed:{ mails:[
         { from:'zoe@cuicui.fr', subject:'La photo de la tortue !', date:'Auj. 9:12',
           atts:[{n:'caramel-tortue.jpg', s:640, ic:'🖼️', img:true, emoji:'🐢'}],
-          body:'<p>Voilà Caramel ! Fais-la suivre à Arsène, il voulait la voir 🐢</p>' }
+          body:'<p>Voilà Caramel ! Fais-la suivre à Arsène, il voulait la voir 🐢</p>' },
+        { from:'m.leco@erea.fr', subject:'Deux fichiers à ranger sur ton ordinateur', date:'Auj. 8:30',
+          atts:[{n:'devoir-maths.pdf', s:210, ic:'📄'},{n:'photo-sortie.jpg', s:880, ic:'🖼️', img:true, emoji:'🏞️'}],
+          body:'<p>Enregistre bien ces deux fichiers dans les <b>bons dossiers</b> de ton ordinateur, avec le bouton <b>⬇️ Enregistrer</b> !</p><p>M. Leco</p>' }
       ]},
       run:function(done){
-        serieRun({ timer:200, bonus:60, goal:'Exécute les ordres du centre de tri !',
+        serieRun({ timer:240, bonus:60, goal:'Exécute les ordres du centre de tri !',
           steps:[
-            {ic:'📎', ord:'Envoie <b>recette-crepes.pdf</b> à <b>Zoé</b>', sub:'✏️ Nouveau message → 📎 Joindre · À : zoe@cuicui.fr',
+            {ic:'📎', ord:'Envoie <b>recette-crepes.pdf</b> à <b>Zoé</b>', sub:'📎 Joindre → Documents › Recettes · À : zoe@cuicui.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('zoe@cuicui.fr')&&r.atts.some(a=>a.includes('recette')))},
             {ic:'➡️', ord:'<b>Transfère</b> la photo de la tortue à <b>Arsène</b>', sub:'Ouvre le mail de Zoé → ➡️ Transférer · À : arsene@cuicui.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('arsene@cuicui.fr')&&r.atts.some(a=>a.includes('caramel')))},
+            {ic:'🗂️', ord:'<b>Enregistre</b> le fichier <b>devoir-maths.pdf</b> dans <b>Ce PC › Documents › Collège</b>', sub:'Ouvre le mail de M. Leco → ⬇️ Enregistrer → Documents › Collège',
+              saveCfg:{file:'devoir-maths.pdf', targetPath:['Ce PC','Documents','Collège'],
+                guide:'Range <b>devoir-maths.pdf</b> dans <b>Ce PC › Documents › Collège</b>, puis clique <b>Enregistrer</b>.',
+                folderHint:'📁 Pas le bon dossier : range-le dans <b>Documents › Collège</b>.'},
+              test:c=>c.evt.savedTo && c.evt.savedTo.has('devoir-maths.pdf>'+pcKey(['Ce PC','Documents','Collège']))},
+            {ic:'🖼️', ord:'<b>Enregistre</b> la <b>photo-sortie.jpg</b> dans <b>Ce PC › Images › Vacances</b>', sub:'⬇️ Enregistrer → Images › Vacances',
+              saveCfg:{file:'photo-sortie.jpg', targetPath:['Ce PC','Images','Vacances'],
+                guide:'Range <b>photo-sortie.jpg</b> dans <b>Ce PC › Images › Vacances</b>, puis clique <b>Enregistrer</b>.',
+                folderHint:'📁 Pas le bon dossier : range-la dans <b>Images › Vacances</b>.'},
+              test:c=>c.evt.savedTo && c.evt.savedTo.has('photo-sortie.jpg>'+pcKey(['Ce PC','Images','Vacances']))},
             {ic:'🖼️', ord:'Envoie ton <b>dessin d\'oiseau</b> DANS le texte à <b>Pauline</b>', sub:'Bouton 🖼️ → dessin-oiseau.png · À : pauline.tricot@cuicui.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('pauline.tricot@cuicui.fr')&&r.img)},
-            {ic:'📄', ord:'Envoie <b>expose-volcans.docx</b> à <b>M. Leco</b> · objet « <b>Exposé</b> »', sub:'À : m.leco@erea.fr',
+            {ic:'📄', ord:'Envoie <b>expose-volcans.docx</b> à <b>M. Leco</b> · objet « <b>Exposé</b> »', sub:'📎 Joindre → Documents › Collège · À : m.leco@erea.fr',
               test:c=>c.evt.sent.some(r=>r.to.includes('m.leco@erea.fr')&&r.atts.some(a=>a.includes('expose'))&&normText(r.subject).includes('expose'))}
           ]}, done);
       }}
@@ -3226,9 +3615,9 @@ const LEVELS=[
         {t:'<b>Clic droit</b> sur la pub « MEGA PROMO » dans la liste → <b>Supprimer</b> (pas besoin de l\'ouvrir !)',
           goal:{spot:'list', hint:'Clique avec le bouton <b>droit</b> sur « MEGA PROMO » dans la liste des mails, puis choisis <b>🗑️ Supprimer</b>.',
             sel:mailRowSel('m1'), test:c=>c.evt.trashed && c.evt.trashed.has('m1') && c.evt.ctxAct && c.evt.ctxAct.has('del')}},
-        {t:'Oups, supprime AUSSI par erreur le mail de <b>Tata Monica</b> ! (🗑️)',
-          goal:G.trashed('m2','Ouvre le mail de Tata Monica et clique <b>🗑️ Supprimer</b> — comme si c\'était une erreur !')},
-        {t:'Va dans la <b>🗑️ Corbeille</b>, ouvre le mail de Tata Monica et clique <b>↩️ Restaurer</b>',
+        {t:'Supprime aussi le mail de <b>Tata Monica</b>. (🗑️)',
+          goal:G.trashed('m2','Ouvre le mail de Tata Monica et clique <b>🗑️ Supprimer</b>.')},
+        {t:'<b>Oups</b>, tu as supprimé le mail de Tata Monica par erreur ! Va dans la <b>🗑️ Corbeille</b>, ouvre-le et clique <b>↩️ Restaurer</b>',
           goal:G.restored('m2','Va dans la <b>🗑️ Corbeille</b> (colonne de gauche), ouvre le mail de Tata Monica et clique <b>↩️ Restaurer</b>. Ouf !')},
         {t:'<b>Vide la corbeille</b> pour jeter la pub définitivement (bouton 🧹 Vider)', goal:G.trashEmptied()}
       ]},
@@ -3326,7 +3715,9 @@ const LEVELS=[
         {t:'Lis-les tous (plus aucun point bleu !)', goal:G.allRead('Ouvre chaque mail encore affiché : la liste se vide au fur et à mesure !')},
         {t:'Affiche seulement les mails <b>avec pièce jointe</b> (🔽 Filtrer → Avec 📎)',
           goal:G.filterUsed('atts','Avec pièce jointe')},
-        {t:'Trie les mails <b>par expéditeur</b> (↕️ Trier → Par expéditeur)',
+        {t:'Avant de trier, remets le filtre sur <b>📬 Tous les mails</b> pour tous les revoir (🔽 Filtrer → Tous les mails)',
+          goal:G.filterUsed('all','Tous les mails')},
+        {t:'Maintenant, trie tous les mails <b>par expéditeur</b> (↕️ Trier → Par expéditeur)',
           goal:G.sortUsed('from','Par expéditeur (A → Z)')},
         {t:'Garde le mail du dentiste sous le coude : marque-le <b>🔵 Non lu</b>',
           goal:G.markedUnread('m3','Remets le filtre sur <b>📬 Tous les mails</b> si besoin. Ouvre « Pense au dentiste » puis clique <b>🔵 Non lu</b> : son point bleu revient, tu le verras ce soir !')}
