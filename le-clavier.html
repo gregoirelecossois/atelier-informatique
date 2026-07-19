@@ -387,20 +387,6 @@
   .attack-flash{position:absolute;inset:0;background:#fff;z-index:31;pointer-events:none;animation:atkFlash .5s ease forwards;}
   @keyframes atkFlash{0%{opacity:.85;}100%{opacity:0;}}
 
-  /* Boss en mode MOTS (Niveau 7) */
-  .spell.word .rune{display:inline-flex;align-items:center;padding:7px 14px;border-radius:13px;
-    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.25rem;color:#ede9fe;white-space:nowrap;letter-spacing:.5px;
-    background:linear-gradient(#6d28d9,#4c1d95);border:2px solid #c4b5fd;box-shadow:0 0 16px 3px rgba(167,139,250,.7);}
-  .spell.word.active .rune{border-color:#fde047;box-shadow:0 0 22px 5px rgba(253,224,71,.7);}
-  .spell.word .typed{color:#86efac;}
-  .spell.pop .rune{animation:spellPop .25s ease forwards;}
-  .atk-word{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:20;animation:tgtIn .3s ease both;}
-  .atk-word .card{display:inline-flex;align-items:center;padding:10px 22px;border-radius:16px;letter-spacing:.5px;
-    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.9rem;color:#7c2d12;background:#fff;white-space:nowrap;
-    border:3px solid #f59e0b;box-shadow:0 0 22px 5px rgba(245,158,11,.72);animation:tgtFloat 1.5s ease-in-out infinite;}
-  .atk-word .typed{color:#16a34a;}
-  .atk-word.hit .card{animation:tgtHit .25s ease forwards;}
-
   /* ---------- Invasion spatiale (Niveaux 3 & 4) ---------- */
   .field.invaders{
     background:
@@ -672,8 +658,7 @@
     .lock-burst,.lock-glow,.lock-star{animation:none;}
     .drop.pop .cap,.drop.miss .cap,.field.shake{animation:none;}
     .boss-sprite,.boss-sprite.hurt,.boss-sprite.exhausted,.boss-sweat,.spell .orb,.spell.pop .orb,
-    .atk-target .cap,.atk-target.hit .cap,.attack-title,.attack-flash,.hero.hit,.dmg-float,
-    .spell.word .rune,.spell.pop .rune,.atk-word .card,.atk-word.hit .card{animation:none!important;}
+    .atk-target .cap,.atk-target.hit .cap,.attack-title,.attack-flash,.hero.hit,.dmg-float{animation:none!important;}
     .field.invaders{animation:none;}
     .ship.hit,.invader.pop .cap,.invader.miss .cap,.invader.big .ufo::before,.invader.big .cap-ring,
     .mbc.current,.laser{animation:none!important;}
@@ -1872,7 +1857,8 @@ function caughtD(){
   onFail('La lave t\'a rattrapé ! 🔥', 'Astuce : ne regarde pas tes doigts, regarde l\'écran. Tape la lettre encadrée en bleu sans t\'arrêter pour garder de l\'avance.');
 }
 
-/* ---- Combat de Boss : « le Dragon des Touches » ---- */
+/* ---- Combat de Boss « sorts qui descendent » (utilisé par le Vaisseau-Mère, Niveau 5) ----
+   Le thème du step (theme/enh) habille le moteur ; repli visuel historique : dragon. */
 const BOSS_POOL=('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789').split('')
   .concat(['.',',','?','!',';',':','(',')','=','"','-','@','#','€','+','é','è','à','ç','ù']);
 const BOSS_COMPLEX=['@','#','€','+','=','"','(',')','?',':',';','_'];
@@ -1959,7 +1945,6 @@ function startBoss(step){
     sprite:document.getElementById('bossSprite'),
     hero:document.getElementById('bossHero'),
     spells:[], attackTargets:[],
-    wordMode:!!step.wordMode, defenseWords:step.defenseWords||[], attackWords:step.attackWords||[], attackWord:null,
     swarm:!!step.swarm, lane:Math.floor(SWARM_LANES/2),
     atkPool: step.swarm ? BOSS_COMPLEX.concat(BOSS_COMPLEX).concat('0123456789'.split('')) : BOSS_COMPLEX,
     lives, maxLives:lives, penalizeWrong:!!step.penalizeWrong,
@@ -2031,8 +2016,7 @@ function updateBossHud(){
   const lv=document.getElementById('bossLives'); if(lv) lv.innerHTML=h;
   const ph=document.getElementById('bossPhase');
   if(ph){
-    if(B.wordMode) ph.textContent = B.phase==='attack' ? '⚔️ Tape les mots d\'attaque !' : '⚡ Tape les mots d\'esquive !';
-    else if(B.swarm) ph.textContent = B.phase==='attack' ? '💥 Mitraille le Vaisseau-Mère !' : '🕹️ Aligne-toi (F/J) et tire !';
+    if(B.swarm) ph.textContent = B.phase==='attack' ? '💥 Mitraille le Vaisseau-Mère !' : '🕹️ Aligne-toi (F/J) et tire !';
     else ph.textContent = B.phase==='attack' ? '⚔️ Frappe le boss !' : '⚡ Esquive les sorts !';
   }
   const mt=document.getElementById('bossMeter'); if(mt){ mt.style.width=Math.max(0,B.lives/B.maxLives*100)+'%'; mt.style.background=(B.lives<=2?'var(--red)':'var(--green)'); }
@@ -2059,16 +2043,6 @@ function spawnSpell(){
     B.spells.push({el,ch,lane,x,y:140});
     return;
   }
-  if(B.wordMode){
-    const w=B.defenseWords[Math.floor(Math.random()*B.defenseWords.length)];
-    const el=document.createElement('div'); el.className='spell word';
-    el.innerHTML='<div class="rune"><span class="typed"></span><span class="rest">'+escapeHtml(w)+'</span></div>';
-    const x=24+Math.random()*44;
-    el.style.left=x+'%'; el.style.transform='translate(-50%,96px)';
-    B.field.appendChild(el);
-    B.spells.push({el,word:w,typed:0,x,y:96});
-    return;
-  }
   const ch=BOSS_POOL[Math.floor(Math.random()*BOSS_POOL.length)];
   const el=document.createElement('div'); el.className='spell';
   el.innerHTML='<div class="orb">'+escapeHtml(ch)+'</div>';
@@ -2078,11 +2052,6 @@ function spawnSpell(){
   B.spells.push({el,ch,x,y:96});
 }
 function removeSpell(s){ const i=B.spells.indexOf(s); if(i>=0) B.spells.splice(i,1); }
-// mot le plus bas = cible active (la plus urgente)
-function activeSpell(){ let low=null; for(const s of B.spells){ if(!low||s.y>low.y) low=s; } return low; }
-function paintActiveSpell(){ const a=activeSpell(); for(const s of B.spells) s.el.classList.toggle('active', s===a); }
-function updateSpellWord(s){ const t=s.el.querySelector('.typed'), r=s.el.querySelector('.rest');
-  if(t&&r){ t.textContent=s.word.slice(0,s.typed); r.textContent=s.word.slice(s.typed); } }
 function loopB(ts){
   if(!B.running) return;
   if(!B.last) B.last=ts;
@@ -2097,7 +2066,6 @@ function loopB(ts){
       s.el.style.transform='translate(-50%,'+s.y+'px)';
       if(s.y>=B.groundY) spellHitsHero(s);
     }
-    if(B.wordMode) paintActiveSpell();
   } else if(B.phase==='attack'){
     if(B.attackEndTs && ts>=B.attackEndTs) closeAttack();
   }
@@ -2122,7 +2090,6 @@ function onKeyB(e){
   if(B.phase==='tuto') return onKeyTuto(e);
   if(e.key.length!==1) return; e.preventDefault();
   if(B.phase==='attack'){
-    if(B.wordMode) return typeAttackWord(e.key);
     let hit=null;
     for(const t of B.attackTargets){ if(t.ch===e.key){ hit=t; break; } }
     if(hit) damageBoss(hit); else beep('key');
@@ -2138,7 +2105,6 @@ function onKeyB(e){
     else beep('key');   // pas aligné ou mauvaise touche : rien ne se passe
     return;
   }
-  if(B.wordMode) return typeDefenseWord(e.key);
   let best=null;
   for(const s of B.spells){ if(s.ch===e.key){ if(!best||s.y>best.y) best=s; } }
   if(best) destroySpell(best);
@@ -2350,23 +2316,6 @@ function bossWrongKey(){
   updateBossHud();
   if(B.lives<=0) bossFail();
 }
-// MODE MOTS — esquive : on tape le mot le plus bas, lettre par lettre
-function typeDefenseWord(key){
-  const s=activeSpell(); if(!s){ beep('key'); return; }
-  if(key===s.word[s.typed]){
-    s.typed++; beep('key'); updateSpellWord(s);
-    if(s.typed>=s.word.length) destroySpell(s);
-  } else { beep('bad'); if(B.penalizeWrong) bossWrongKey(); }
-}
-// MODE MOTS — attaque : on tape le mot d'arme affiché devant le boss
-function typeAttackWord(key){
-  const a=B.attackWord; if(!a){ beep('key'); return; }
-  if(key===a.word[a.typed]){
-    a.typed++; updateAttackWord();
-    if(a.typed>=a.word.length) hitBossWord(a);
-    else beep('key');
-  } else { beep('bad'); if(B.penalizeWrong) bossWrongKey(); }
-}
 function openAttack(){
   B.phase='attack'; B.attackEndTs=0; B.immune=true;
   B.spells.forEach(s=>s.el.remove()); B.spells=[];
@@ -2386,8 +2335,7 @@ function openAttack(){
   setTimeout(()=>{
     ban.remove();
     if(!B.running || B.phase!=='attack') return;
-    if(B.wordMode) spawnAttackWord();
-    else for(let i=0;i<4;i++) spawnOneTarget();
+    for(let i=0;i<4;i++) spawnOneTarget();
     B.attackEndTs=performance.now()+B.attackMs;
     B.immune=false;
   },1300);
@@ -2473,29 +2421,6 @@ function damageBoss(t){
   if(bossTakeHit(xPx,yPx)) return;
   if(B.attackEndTs && performance.now()<B.attackEndTs) spawnOneTarget();
 }
-// MODE MOTS — cible d'attaque (un mot d'arme devant le boss)
-function spawnAttackWord(){
-  if(B.attackWord){ B.attackWord.el.remove(); }
-  let w, tries=0;
-  do{ w=B.attackWords[Math.floor(Math.random()*B.attackWords.length)]; tries++; }
-  while(tries<8 && B.attackWord && w===B.attackWord.word);
-  const el=document.createElement('div'); el.className='atk-word';
-  el.innerHTML='<div class="card"><span class="typed"></span><span class="rest">'+escapeHtml(w)+'</span></div>';
-  B.field.appendChild(el);
-  B.attackWord={el,word:w,typed:0};
-}
-function updateAttackWord(){
-  const a=B.attackWord; if(!a) return;
-  const t=a.el.querySelector('.typed'), r=a.el.querySelector('.rest');
-  if(t&&r){ t.textContent=a.word.slice(0,a.typed); r.textContent=a.word.slice(a.typed); }
-}
-function hitBossWord(a){
-  const el=a.el; el.classList.add('hit'); setTimeout(()=>el.remove(),250);
-  B.attackWord=null;
-  const xPx=B.field.clientWidth/2, yPx=B.field.clientHeight*0.42;
-  if(bossTakeHit(xPx,yPx)) return;
-  if(B.attackEndTs && performance.now()<B.attackEndTs) spawnAttackWord();
-}
 function floatDamage(x,y,txt){
   const d=document.createElement('div'); d.className='dmg-float'; d.textContent=txt||'-1';
   d.style.left=x+'px'; d.style.top=y+'px'; B.field.appendChild(d); setTimeout(()=>d.remove(),800);
@@ -2509,7 +2434,6 @@ function flashBanner(title, sub){
 function closeAttack(){
   B.phase='cast'; B.attackEndTs=0; B.immune=true;
   B.attackTargets.forEach(t=>t.el.remove()); B.attackTargets=[];
-  if(B.attackWord){ B.attackWord.el.remove(); B.attackWord=null; }
   const sw=document.getElementById('bossSweat'); if(sw) sw.remove();
   B.sprite.classList.remove('exhausted');
   // fin de la vulnérabilité : le vaisseau est replacé sur les couloirs
@@ -2534,7 +2458,6 @@ function closeAttack(){
 function bossDefeated(){
   B.running=false; cancelAnimationFrame(B.raf); teardownBossFullscreen();
   B.attackTargets.forEach(t=>t.el.remove()); B.attackTargets=[];
-  if(B.attackWord){ B.attackWord.el.remove(); B.attackWord=null; }
   B.spells.forEach(s=>s.el.remove()); B.spells=[];
   const sw=document.getElementById('bossSweat'); if(sw) sw.remove();
   B.sprite.classList.remove('exhausted','hurt'); B.sprite.classList.add('dead');
@@ -2545,11 +2468,9 @@ function bossDefeated(){
 }
 function bossFail(){
   B.running=false; cancelAnimationFrame(B.raf); stopBossMusic(); teardownBossFullscreen();
-  const tip = B.wordMode
-    ? 'Astuce : pendant l\'esquive, tape vite le mot qui descend lettre par lettre — commence dès qu\'il apparaît. Pendant l\'attaque, tape le mot d\'arme affiché devant le dragon. Attention aux majuscules et aux fautes : chaque erreur coûte une vie !'
-    : B.swarm
-      ? 'Astuce : déplace-toi avec F et J pour te placer juste sous un alien, puis tape sa lettre — attention aux majuscules ! Quand le Vaisseau-Mère est vulnérable, mitraille les symboles et les chiffres. Trop dur ? Baisse la difficulté avec ⚙️ Difficulté. Tu vas y arriver !'
-      : 'Astuce : pendant les sorts, lis bien la touche dans la boule violette et tape-la vite. Attention aux majuscules ! Garde tes doigts posés sur le clavier. Tu vas y arriver !';
+  const tip = B.swarm
+    ? 'Astuce : déplace-toi avec F et J pour te placer juste sous un alien, puis tape sa lettre — attention aux majuscules ! Quand le Vaisseau-Mère est vulnérable, mitraille les symboles et les chiffres. Trop dur ? Baisse la difficulté avec ⚙️ Difficulté. Tu vas y arriver !'
+    : 'Astuce : pendant les sorts, lis bien la touche dans la boule violette et tape-la vite. Attention aux majuscules ! Garde tes doigts posés sur le clavier. Tu vas y arriver !';
   onFail(bt('failMsg','Le dragon t\'a vaincu cette fois ! 🐉'), tip);
 }
 function stopB(){ B.running=false; cancelAnimationFrame(B.raf); stopBossMusic(); teardownBossFullscreen(); }
@@ -2971,8 +2892,8 @@ function openBossBriefing(s){
       + '<li><span class="ni-glyph">🎯</span> Aligne-toi sous un alien, tape sa lettre</li>'
       + '<li><span class="ni-glyph">💥</span> Vulnérable : tape symboles et chiffres</li>'
       + (enh.shield?'<li><span class="ni-glyph">🛡️</span> Son bouclier se recharge à chaque essaim</li>':'')
-    : '<li><span class="ni-glyph">🛡️</span> '+(s.wordMode?'Esquive : tape le mot':'Défense : tape la touche affichée')+'</li>'
-      + '<li><span class="ni-glyph">💥</span> '+(s.wordMode?'Attaque : tape le mot d\'arme':'Attaque : frappe les symboles')+'</li>'
+    : '<li><span class="ni-glyph">🛡️</span> Défense : tape la touche affichée</li>'
+      + '<li><span class="ni-glyph">💥</span> Attaque : frappe les symboles</li>'
       + (enh.shield?'<li><span class="ni-glyph">🛡️</span> Brise son bouclier avant de le pirater</li>':'');
   modal.className='modal test-modal';
   modal.innerHTML=
@@ -3312,8 +3233,6 @@ document.getElementById('hintBtn').onclick=()=>{
     pauseActive();
     const tip = currentStep.hackBoss
       ? 'Lis l\'<b>alerte</b> en haut du terminal, puis tape la <b>commande</b> affichée, lettre par lettre, avant que la barre rouge de <b>traçage</b> soit pleine. La <b>case jaune</b> te montre où tu en es. S\'il y a <b>deux commandes</b>, attention : l\'une est un <b>piège</b> ! Tape celle qui répond à l\'alerte. Clique sur 💡 si tu cherches une touche. Trop dur ? Baisse la difficulté avec ⚙️.'
-      : currentStep.wordMode
-      ? 'Pendant l\'<b>esquive</b>, tape vite le mot qui descend, lettre par lettre — commence dès qu\'il apparaît. Pendant l\'<b>attaque</b>, tape le mot d\'arme affiché devant le dragon. Attention aux <b>majuscules</b> et aux fautes : chaque erreur coûte une vie !'
       : currentStep.swarm
         ? 'Déplace ton vaisseau avec '+kbd('F')+' et '+kbd('J')+'. <b>Aligne-toi</b> juste sous un alien, puis tape <b>sa lettre</b> (attention aux majuscules !) pour tirer au laser. Mal aligné ou mauvaise touche : le tir ne part pas. Quand le Vaisseau-Mère est <b>vulnérable</b>, tape les <b>symboles et chiffres</b> affichés — son bouclier 🛡️ se recharge à chaque essaim. Trop dur ? Baisse la difficulté avec ⚙️.'
         : 'Pendant l\'<b>esquive</b>, lis bien la touche dans la boule violette et tape-la vite. Fais attention aux <b>majuscules</b> ! Pendant l\'<b>attaque</b>, frappe les symboles affichés devant le dragon. Chaque mauvaise touche coûte une vie !';
@@ -3321,7 +3240,7 @@ document.getElementById('hintBtn').onclick=()=>{
     modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker">Astuce — Combat de Boss</div>'
       +'<p class="tip-cap">'+tip+'</p>'
       +'<div class="m-actions"><button class="m-btn primary green" id="okHint">J\'ai compris ▶</button></div>';
-    modal.dataset.ttsText = (window.TTS_STATIC||{})[currentStep.hackBoss?'boss_hint_hack':currentStep.wordMode?'boss_hint_word':currentStep.swarm?'boss_hint_swarm':'boss_hint_spell'] || '';
+    modal.dataset.ttsText = (window.TTS_STATIC||{})[currentStep.hackBoss?'boss_hint_hack':currentStep.swarm?'boss_hint_swarm':'boss_hint_spell'] || '';
     openOverlay();
     document.getElementById('okHint').onclick=()=>{ closeOverlay(); resumeActive(); };
     return;
