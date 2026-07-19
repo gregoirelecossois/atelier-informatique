@@ -27,7 +27,35 @@
   html,body{margin:0;padding:0;}
   body{
     font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;color:var(--ink);
-    background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
+    background:var(--shell);height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+    padding-bottom:58px;
+  }
+  /* ===== Fenêtre principale toujours visible sans défilement =====
+     Page bloquée à la hauteur de l'écran : les barres (haut, progression, consigne,
+     actions) gardent leur taille naturelle et la ZONE DE JEU CENTRALE remplit tout
+     l'espace restant (flex-grow, base 0) — elle reste la plus grande possible.
+     Sur écran peu haut, on compacte les barres pour donner encore plus au centre.
+     Le padding-bas réserve la bande du bouton flottant « Mode dyslexique ». */
+  .topbar,.progress-wrap,.banner{flex:0 0 auto;}
+  .stage-wrap{flex:1 1 0;min-height:0;overflow:auto;display:flex;flex-direction:column;}
+  #stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
+  #stage>.hud{flex:0 0 auto;}
+  #stage>.field,#stage>.type-area{flex:1 1 auto;min-height:220px;}
+  /* boss (dragon) en mode NORMAL uniquement : la chaîne remplit la hauteur.
+     En PLEIN ÉCRAN on ne touche à rien (dimensionnement propre + transform:scale),
+     d'où :not(:fullscreen) — sinon texte manquant / sprites tronqués. */
+  #stage .boss-fs-wrap:not(:fullscreen),
+  #stage .boss-fs-wrap:not(:fullscreen) .boss-scaler{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
+  #stage .boss-fs-wrap:not(:fullscreen) .boss-scaler>.hud{flex:0 0 auto;}
+  #stage .boss-fs-wrap:not(:fullscreen) .bossfield{flex:1 1 auto;min-height:300px;}
+  @media (max-height:860px){
+    body>.topbar{padding-top:6px;padding-bottom:6px;}
+    body>.progress-wrap{padding-top:5px;padding-bottom:8px;}
+    body>.banner{margin-top:7px;padding-top:8px;padding-bottom:9px;}
+    body>.stage-wrap{margin-top:7px;margin-bottom:7px;}  }
+  @media (max-height:680px){
+    body>.banner{font-size:.92rem;}
+    body>.banner .b-emoji{font-size:1.4rem;}
   }
   button{font-family:inherit;cursor:pointer;}
   .display{font-family:"Fredoka","Fluent Emoji",sans-serif;}
@@ -102,7 +130,7 @@
   .tip-cap kbd, .tip-char kbd{vertical-align:middle;}
 
   /* parachute field */
-  .field{position:relative;height:clamp(360px,52vh,540px);overflow:hidden;
+  .field{position:relative;height:clamp(240px,44vh,540px);overflow:hidden;
     background:linear-gradient(#eaf3ff,#dbeafe 78%,#cfe6d6 78%,#bfe0c7);}
   .field.shake{animation:fieldShake .25s;}
   @keyframes fieldShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
@@ -159,8 +187,12 @@
   .type-stats{max-width:780px;margin:14px auto 0;display:flex;gap:18px;color:var(--muted);font-weight:800;font-size:.95rem;}
 
   /* ---------- Action bar ---------- */
-  .actions{max-width:1000px;margin:10px auto 22px;width:calc(100% - 36px);display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap;}
-  .btn{border:none;border-radius:13px;padding:13px 20px;font-weight:800;font-size:1.02rem;display:inline-flex;align-items:center;gap:9px;}
+  /* Barre d'actions FIXÉE dans la bande du bas, centrée entre « Mode Dys »
+     (bas gauche) et « Dev » (bas droite) : elle ne prend plus de hauteur dans
+     le flux, ce qui agrandit d'autant la fenêtre centrale. */
+  .actions{position:fixed;left:50%;bottom:11px;transform:translateX(-50%);z-index:80;
+    margin:0;display:flex;gap:9px;justify-content:center;flex-wrap:nowrap;}
+  .btn{border:none;border-radius:11px;padding:9px 15px;font-weight:800;font-size:.94rem;display:inline-flex;align-items:center;gap:7px;}
   .btn:active{transform:translateY(1px);}
   .btn-hint{background:#fff;color:var(--amber-d);border:2px solid var(--amber);}
   .btn-hint:hover{background:#fff8ec;}
@@ -583,7 +615,6 @@
 
   @media (max-width:560px){
     .newtools{grid-template-columns:1fr;}
-    .btn{flex:1;justify-content:center;}
   }
   @media (prefers-reduced-motion: reduce){
     .sc-star,.sc-star.filled,.sc-tile{animation:none!important;transition:none!important;}
@@ -607,6 +638,13 @@
   @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
   @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
   html.dys, html.dys *{font-family:"OpenDyslexic","Fluent Emoji",sans-serif !important;}
+  /* OpenDyslexic est nettement plus large et plus haute que Nunito : sans rien faire,
+     le texte paraît plus gros et déborde sur des lignes supplémentaires, ce qui décale
+     la mise en page des missions. On réduit la taille de base d'environ 15 % en mode Dys
+     pour que la police conserve le MÊME encombrement visuel qu'en mode normal. Toutes les
+     tailles de texte sont en rem (aucune dimension de layout ne l'est), donc seule la
+     typographie est mise à l'échelle — jamais les marges, paddings ou dimensions. */
+  html.dys{font-size:85%;}
   .dys-toggle{position:fixed;bottom:16px;left:16px;z-index:500;display:inline-flex;align-items:center;gap:9px;
     border:2px solid #d7e0ea;background:#fff;color:#22303f;border-radius:999px;padding:7px 9px 7px 13px;
     font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-weight:800;font-size:.82rem;line-height:1;cursor:pointer;
@@ -631,10 +669,8 @@
       Accueil
     </a>
     <h1 class="display" id="lvlTitle">Le clavier <span class="dot">·</span> le parachute</h1>
-    <span class="step-count" id="stepCount">Niveau 1 · Mission 1 / 4</span>
+    <button class="reset-btn" id="stepCount" title="Voir les niveaux">🗺️ Niveau 1 · Mission 1</button>
     <button class="reset-btn" id="soundBtn" title="Activer / couper le son">🔊 Son</button>
-    <button class="reset-btn" id="levelBtn" title="Voir les niveaux">🗺️ Niveau 1/6</button>
-    <button class="reset-btn danger" id="resetBtn" title="Recommencer ce niveau">↺ Recommencer</button>
   </div>
 
   <div class="progress-wrap"><div class="track" id="track"></div></div>
@@ -908,6 +944,7 @@ const LEVELS=[
        pool:['.',',','?','!',';',':','(',')','=','"','-','_','@','#','€','+'],codes:[5,6,6,7,8],energies:3,traceBase:4200,tracePerChar:1300,showTips:true},
       {kind:'jalon',mode:'boss',label:'Combat de Boss',emoji:'🛸',title:'le Vaisseau-Mère',
        desc:'Tu l\'as localisé… mais il envoie son <b>essaim</b> ! Déplace ton vaisseau avec '+kbd('F')+' et '+kbd('J')+', <b>aligne-toi</b> sous un alien puis tape <b>sa lettre</b> pour tirer au laser. Essaim détruit ? Le Vaisseau-Mère devient <b>vulnérable</b> : mitraille-le avec les <b>symboles et chiffres</b> — mais son bouclier se recharge à chaque nouvel essaim !',
+       bannerGoal:'Tu l\'as localisé, prépare-toi au combat !',
        diff:true, swarm:true,
        theme:{ cyber:true, name:'le Vaisseau-Mère', emoji:'🛸', hero:'🚀',
                castTitle:'🛸 L\'ESSAIM ATTAQUE ! 🛸', castSub:'Aligne-toi avec F et J, puis tape la lettre de l\'alien !',
@@ -2499,14 +2536,14 @@ function updateProgress(){
     track.appendChild(d);
   });
   const shown=Math.min(playIdx+1, STEPS.length);
-  document.getElementById('stepCount').textContent='Niveau '+currentLevel+' · '+STEPS[playIdx].label+' ('+shown+'/'+STEPS.length+')';
+  document.getElementById('stepCount').textContent='🗺️ Niveau '+currentLevel+' · '+STEPS[playIdx].label+' ('+shown+'/'+STEPS.length+')';
 }
 function updateBanner(){
   const b=document.getElementById('banner');
   b.className='banner'+(currentStep.kind==='jalon'?' test':'')+(reviewing()?' review':'');
   document.getElementById('bEmoji').textContent=currentStep.emoji;
   document.getElementById('bTitle').textContent=(reviewing()?'Révision · ':'')+currentStep.label+' : '+currentStep.title;
-  document.getElementById('bSub').innerHTML='<span class="b-goal-label">Objectif :</span> '+stripTags(currentStep.desc);
+  document.getElementById('bSub').innerHTML='<span class="b-goal-label">Objectif :</span> '+stripTags(currentStep.bannerGoal||currentStep.desc);
   // le bouton « Difficulté » n'a de sens que pour un boss à modes
   const db=document.getElementById('diffBtn'); if(db) db.style.display=(currentStep.mode==='boss'&&currentStep.diff)?'':'none';
 }
@@ -2772,7 +2809,7 @@ function openLevelSelector(){
   });
   document.getElementById('closeLvls').onclick=()=>{ closeOverlay(); resumeActive(); };
 }
-document.getElementById('levelBtn').onclick=openLevelSelector;
+document.getElementById('stepCount').onclick=openLevelSelector;
 
 /* ---- animation cadenas (Web Animations API : déterministe, sans conflit CSS) ---- */
 function playUnlock(nextN, done){
@@ -2836,18 +2873,6 @@ function playUnlock(nextN, done){
     ],{duration:700,easing:back,fill:'forwards'}).finished;
   }).then(finish).catch(finish);
 }
-
-/* ---- recommencer le niveau ---- */
-document.getElementById('resetBtn').onclick=()=>{
-  modal.className='modal warn';
-  modal.innerHTML='<span class="m-emoji">↺</span><h2>Recommencer ce niveau ?</h2>'
-    +'<p>Tu repartiras de la <b>première mission du Niveau '+currentLevel+'</b>. Les autres niveaux ne changent pas.</p>'
-    +'<div class="m-actions"><button class="m-btn ghost" id="cR">Annuler</button>'
-    +'<button class="m-btn primary" id="dR">Oui, recommencer</button></div>';
-  openOverlay();
-  document.getElementById('cR').onclick=()=>{ closeOverlay(); resumeActive(); };
-  document.getElementById('dR').onclick=()=>{ closeOverlay(); progressIdx=0; saveProgress(); startStep(0); };
-};
 
 /* ---- boutons action ---- */
 document.getElementById('seeMission').onclick=openRoundPopup;
@@ -3027,7 +3052,7 @@ function confetti(){
   var KEY='a11y_dys', root=document.documentElement;
   var btn=document.createElement('button');
   btn.type='button'; btn.className='dys-toggle';
-  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dyslexique</span><span class="dys-switch"><span class="dys-knob"></span></span>';
+  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dys</span><span class="dys-switch"><span class="dys-knob"></span></span>';
   function apply(on){
     root.classList.toggle('dys',on);
     btn.setAttribute('aria-pressed',on?'true':'false');

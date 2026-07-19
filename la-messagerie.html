@@ -31,7 +31,26 @@
   html,body{margin:0;padding:0;}
   body{
     font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;color:var(--ink);
-    background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
+    background:var(--shell);height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+    padding-bottom:58px;
+  }
+  /* ===== Fenêtre principale toujours visible sans défilement =====
+     Page bloquée à la hauteur de l'écran : les barres gardent leur taille,
+     seule la zone de jeu se réduit / défile en interne si l'écran est petit.
+     Le padding-bas réserve la bande du bouton flottant « Mode dyslexique ». */
+  .topbar,.progress-wrap,.banner,.arc-hud,.quiz-dock{flex:0 0 auto;}
+  .stage-wrap{flex:1 1 0;min-height:0;overflow:auto;display:flex;flex-direction:column;}
+  #stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
+  #stage>.screen{flex:1 1 auto;min-height:320px;}
+  @media (max-height:860px){
+    body>.topbar{padding-top:6px;padding-bottom:6px;}
+    body>.progress-wrap{padding-top:6px;padding-bottom:8px;}
+    body>.banner{margin-top:7px;padding-top:8px;padding-bottom:9px;}
+    body>.stage-wrap{margin-top:7px;}
+  }
+  @media (max-height:680px){
+    body>.banner{font-size:.92rem;}
+    body>.banner .b-emoji{font-size:1.4rem;}
   }
   button{font-family:inherit;cursor:pointer;}
   .display{font-family:"Fredoka","Fluent Emoji",sans-serif;}
@@ -110,7 +129,7 @@
 
   /* ---------- Stage (l'écran avec la messagerie) ---------- */
   .stage-wrap{max-width:1000px;margin:12px auto 0;width:calc(100% - 36px);}
-  .screen{position:relative;height:clamp(460px,68vh,680px);border-radius:16px;overflow:hidden;
+  .screen{position:relative;height:clamp(320px,52vh,680px);border-radius:16px;overflow:hidden;
     border:3px solid #cdd9e8;box-shadow:0 18px 40px -24px rgba(34,48,63,.55);
     background:var(--cc-bar);user-select:none;-webkit-user-select:none;}
   .screen input,.screen textarea,.screen [contenteditable]{user-select:text;-webkit-user-select:text;}
@@ -137,8 +156,10 @@
   @keyframes qshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
 
   /* ---------- Boutons sous l'écran ---------- */
-  .stage-actions{max-width:1000px;margin:10px auto 26px;width:calc(100% - 36px);
-    display:flex;gap:10px;justify-content:flex-end;}
+  /* Barre d'actions FIXÉE dans la bande du bas, centrée entre « Mode Dys »
+     (bas gauche) et « Dev » (bas droite) : libère la hauteur pour le centre. */
+  .stage-actions{position:fixed;left:50%;bottom:11px;transform:translateX(-50%);z-index:40;
+    margin:0;display:flex;gap:9px;justify-content:center;flex-wrap:nowrap;}
   .sa-btn{border:2px solid var(--line);background:#fff;border-radius:10px;padding:8px 13px;
     font-weight:800;font-size:.88rem;color:var(--muted);}
   .sa-btn:hover{border-color:var(--blue);color:var(--blue-d);}
@@ -751,6 +772,13 @@
   @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
   @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
   html.dys, html.dys *{font-family:"OpenDyslexic","Fluent Emoji",sans-serif !important;}
+  /* OpenDyslexic est nettement plus large et plus haute que Nunito : sans rien faire,
+     le texte paraît plus gros et déborde sur des lignes supplémentaires, ce qui décale
+     la mise en page des missions. On réduit la taille de base d'environ 15 % en mode Dys
+     pour que la police conserve le MÊME encombrement visuel qu'en mode normal. Toutes les
+     tailles de texte sont en rem (aucune dimension de layout ne l'est), donc seule la
+     typographie est mise à l'échelle — jamais les marges, paddings ou dimensions. */
+  html.dys{font-size:85%;}
   .dys-toggle{position:fixed;bottom:16px;left:16px;z-index:500;display:inline-flex;align-items:center;gap:9px;
     border:2px solid #d7e0ea;background:#fff;color:#22303f;border-radius:999px;padding:7px 9px 7px 13px;
     font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-weight:800;font-size:.82rem;line-height:1;cursor:pointer;
@@ -777,10 +805,8 @@
       Accueil
     </a>
     <h1 class="display" id="lvlTitle">La messagerie <span class="dot">·</span> découverte</h1>
-    <span class="reset-btn" id="stepCount" style="cursor:default">Niveau 1 · Mission 1</span>
+    <button class="reset-btn" id="stepCount" title="Voir les niveaux">🗺️ Niveau 1 · Mission 1</button>
     <button class="reset-btn" id="soundBtn" title="Activer / couper le son">🔊 Son</button>
-    <button class="reset-btn" id="levelBtn" title="Voir les niveaux">🗺️ Niveau 1/9</button>
-    <button class="reset-btn danger" id="resetBtn" title="Recommencer cette mission">↺ Recommencer</button>
   </div>
 
   <div class="progress-wrap"><div class="track" id="track"></div></div>
@@ -802,7 +828,7 @@
 
   <div class="stage-actions">
     <button class="sa-btn sa-hint" id="hintBtn">💡 Astuce</button>
-    <button class="sa-btn" id="restartBtn">↺ Recommencer la mission</button>
+    <button class="sa-btn" id="restartBtn">↺ Recommencer</button>
   </div>
 
   <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
@@ -1668,7 +1694,9 @@ function openFileExplorer(cfg){
   function guideText(){
     if(cfg.guide) return cfg.guide;
     if(mode==='save') return 'Choisis le <b>dossier</b> (<b>double-clic</b> pour l\'ouvrir), écris le <b>nom</b>, puis clique <b>Enregistrer</b>.';
-    return 'Ouvre les dossiers en <b>double-cliquant</b> dessus, puis <b>double-clique</b> le fichier à joindre.';
+    return cfg.imageOnly
+      ? 'Ouvre les dossiers en <b>double-cliquant</b> dessus, puis <b>double-clique</b> l\'image à insérer.'
+      : 'Ouvre les dossiers en <b>double-cliquant</b> dessus, puis <b>double-clique</b> le fichier à joindre.';
   }
   function footHtml(){
     if(mode==='save'){
@@ -1678,10 +1706,10 @@ function openFileExplorer(cfg){
         +'<button class="d-btn" id="fxCancel">Annuler</button>'
         +'<button class="d-btn grn" id="fxSave">💾 Enregistrer</button>';
     }
-    return '<span class="fx-lbl">Fichier :</span>'
-      +'<input class="fx-namebox" id="fxName" readonly placeholder="aucun fichier choisi" value="'+esc(selFile?selFile.name:'')+'">'
+    return '<span class="fx-lbl">'+(cfg.imageOnly?'Image :':'Fichier :')+'</span>'
+      +'<input class="fx-namebox" id="fxName" readonly placeholder="'+(cfg.imageOnly?'aucune image choisie':'aucun fichier choisi')+'" value="'+esc(selFile?selFile.name:'')+'">'
       +'<button class="d-btn" id="fxCancel">Annuler</button>'
-      +'<button class="d-btn grn" id="fxOpen"'+(selFile?'':' disabled')+'>📎 Joindre</button>';
+      +'<button class="d-btn grn" id="fxOpen"'+(selFile?'':' disabled')+'>'+(cfg.imageOnly?'🖼️ Insérer':'📎 Joindre')+'</button>';
   }
   function render(){
     win.innerHTML='<div class="w-bar"><span class="wb-t">'+titleTxt+'</span>'
@@ -1727,15 +1755,17 @@ function openFileExplorer(cfg){
     side.scrollTop=sideScroll; side.onscroll=()=>{ sideScroll=side.scrollTop; };
     /* contenu du dossier courant (double-clic pour ouvrir/choisir) */
     const main=win.querySelector('#fxMain'); main.innerHTML='';
-    const items=cur().children||[];
-    if(!items.length){ main.innerHTML='<div class="fx-empty">📂 Ce dossier est vide.</div>'; }
+    let items=cur().children||[];
+    /* en mode « insérer une image », on ne montre que les dossiers et les images */
+    if(cfg.imageOnly) items=items.filter(n=>n.kind!=='file'||n.img);
+    if(!items.length){ main.innerHTML='<div class="fx-empty">'+(cfg.imageOnly?'🖼️ Aucune image dans ce dossier.':'📂 Ce dossier est vide.')+'</div>'; }
     else{
       const grid=document.createElement('div'); grid.className='fx-grid';
       items.forEach(node=>{ const isFolder=node.kind!=='file';
         const f=document.createElement('button');
         f.className='fx-file'+(isFolder?' is-folder':'')+((!isFolder&&selFile===node)?' sel':'');
         if(!isFolder) f.dataset.fn=String(node.name).toLowerCase();
-        f.title=isFolder?'Double-cliquer pour ouvrir':(mode==='open'?'Double-cliquer pour joindre':'');
+        f.title=isFolder?'Double-cliquer pour ouvrir':(mode==='open'?(cfg.imageOnly?'Double-cliquer pour insérer':'Double-cliquer pour joindre'):'');
         f.innerHTML='<span class="fx-thumb"'+(isFolder?'':' style="background:#eef4ff;font-size:1.9rem"')+'>'+node.icon+'</span><span class="fx-fn">'+esc(node.name)+'</span>';
         if(isFolder){
           f.ondblclick=()=>{ path=path.concat(node); selFile=null; render(); };
@@ -1801,6 +1831,23 @@ function openAttachExplorer(){
       M.evt.maxAtts=Math.max(M.evt.maxAtts||0, c.atts.length);
       close(); beep('good'); renderCmpAtts();
       evtAdd('attAdded', node.name.toLowerCase()); fireEvt();
+    }});
+}
+/* fenêtre « Insérer une image » : on va chercher l'image dans les dossiers du PC,
+   dans le même explorateur Windows que pour joindre un fichier (façon Thunderbird),
+   filtré sur les images. Un double-clic insère l'image dans le texte du mail. */
+function openImageExplorer(){
+  openFileExplorer({ mode:'open', imageOnly:true,
+    title:'🖼️ Choisir une image à insérer',
+    onPick:function(node, close){
+      const c=M.compose; if(!c){ close(); return; }
+      const body=document.getElementById('cmpBody'); if(!body){ close(); return; }
+      body.focus();
+      document.execCommand('insertHTML', false, '<span class="m-img" contenteditable="false">'+(node.emoji||'🖼️')+'</span><p></p>');
+      c.bodyHtml=body.innerHTML;
+      close(); beep('good');
+      toast('🖼️ Image <b>'+esc(node.name)+'</b> insérée dans le mail !');
+      evtAdd('imgInserted', node.name.toLowerCase()); fireEvt();
     }});
 }
 function dlgSignature(){
@@ -2008,7 +2055,7 @@ function renderCompose(){
     if(savedFontRange){ const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(savedFontRange); }
     if(fontSel.value) document.execCommand('fontName',false,fontSel.value);
     c.bodyHtml=body.innerHTML; evtAdd('fmtUsed','font'); fireEvt(); };
-  document.getElementById('cmpImg').onclick=()=>dlgFilePicker(true);
+  document.getElementById('cmpImg').onclick=()=>openImageExplorer();
   document.getElementById('cmpAtt').onclick=()=>openAttachExplorer();
   document.getElementById('cmpSend').onclick=sendCompose;
   document.getElementById('cmpDraft').onclick=saveDraft;
@@ -2109,45 +2156,6 @@ function renderCmpAtts(){
   box.querySelectorAll('.ch-x').forEach(b=>b.onclick=()=>{
     c.atts.splice(+b.getAttribute('data-i'),1); beep('delete');
     renderCmpAtts(); evtFlag('attRemoved');
-  });
-}
-function dlgFilePicker(imageOnly){
-  beep('click');
-  const files=MYFILES.filter(f=>!imageOnly||f.img);
-  const w=winsBox(); if(!w) return;
-  const dlg=document.createElement('div');
-  dlg.className='ccwin ccdlg'; dlg.style.zIndex=80;
-  dlg.innerHTML='<div class="w-bar"><span class="wb-t">'+(imageOnly?'🖼️ Insérer une image':'📎 Mes documents — choisis un fichier')+'</span>'
-    +'<button class="w-x" id="fpX">✕</button></div>'
-    +'<div class="d-body"><div class="fp-list">'
-    +files.map((f,i)=>'<button class="fp-file" data-i="'+i+'"><span class="fp-ic">'+f.ic+'</span>'
-      +'<span class="fp-n">'+esc(f.n)+'</span><span class="fp-s'+(f.s>MAX_ATT_KO?' big':'')+'">'+fmtSize(f.s)+'</span></button>').join('')
-    +'</div></div>';
-  w.appendChild(dlg);
-  dlg.querySelector('#fpX').onclick=()=>{ beep('click'); dlg.remove(); };
-  dlg.querySelectorAll('.fp-file').forEach(b=>b.onclick=()=>{
-    const f=files[+b.getAttribute('data-i')]; const c=M.compose; if(!c) return;
-    if(imageOnly){
-      const body=document.getElementById('cmpBody');
-      body.focus();
-      document.execCommand('insertHTML', false, '<span class="m-img" contenteditable="false">'+(f.emoji||'🖼️')+'</span><p></p>');
-      c.bodyHtml=body.innerHTML;
-      dlg.remove(); beep('good');
-      toast('🖼️ Image <b>'+esc(f.n)+'</b> insérée dans le mail !');
-      evtAdd('imgInserted', f.n.toLowerCase()); fireEvt();
-      return;
-    }
-    if(f.s>MAX_ATT_KO){
-      beep('bad');
-      dlg.remove();
-      toast('⛔ <b>'+esc(f.n)+'</b> est trop lourd ('+fmtSize(f.s)+') ! Les mails acceptent <b>25 Mo maximum</b>. Les grosses vidéos passent par un lien de partage.');
-      evtFlag('tooBigTried'); fireEvt();
-      return;
-    }
-    if(!c.atts.some(x=>x.n===f.n)) c.atts.push({n:f.n,s:f.s,ic:f.ic,img:f.img,emoji:f.emoji});
-    M.evt.maxAtts=Math.max(M.evt.maxAtts||0, c.atts.length);
-    dlg.remove(); beep('good'); renderCmpAtts();
-    evtAdd('attAdded', f.n.toLowerCase()); fireEvt();
   });
 }
 function expandRecipients(c){
@@ -4384,7 +4392,7 @@ function updateProgress(){
     track.appendChild(d);
   });
   const shown=Math.min(playIdx+1, STEPS.length);
-  document.getElementById('stepCount').textContent='Niveau '+currentLevel+' · '+(STEPS[playIdx].label||'')+' ('+shown+'/'+STEPS.length+')';
+  document.getElementById('stepCount').textContent='🗺️ Niveau '+currentLevel+' · '+(STEPS[playIdx].label||'')+' ('+shown+'/'+STEPS.length+')';
 }
 function updateBanner(){
   const b=document.getElementById('banner');
@@ -4399,9 +4407,7 @@ function updateBanner(){
   } else {
     renderJalonObjective(false);
   }
-  const lbl=boss?'le combat':(exam?'l\'examen':'la mission');
-  document.getElementById('restartBtn').textContent='↺ Recommencer '+lbl;
-  document.getElementById('resetBtn').title='Recommencer '+lbl;
+  document.getElementById('restartBtn').textContent = boss ? '↺ Recommencer le combat' : '↺ Recommencer';
 }
 function refreshLevelBtn(){ const b=document.getElementById('levelBtn'); if(b) b.textContent='🗺️ Niveau '+currentLevel+'/'+LEVELS.length; }
 
@@ -4629,9 +4635,8 @@ function onHint(){
 /* boutons de la page */
 document.getElementById('hintBtn').onclick=onHint;
 document.getElementById('restartBtn').onclick=()=>startStep(playIdx);
-document.getElementById('resetBtn').onclick=()=>startStep(playIdx);
 document.getElementById('seeMission').onclick=()=>openRoundPopup();
-document.getElementById('levelBtn').onclick=()=>openLevelSelector();
+document.getElementById('stepCount').onclick=()=>openLevelSelector();
 
 /* ---------------------------------------------------------
    18. INIT
@@ -4708,7 +4713,7 @@ document.getElementById('levelBtn').onclick=()=>openLevelSelector();
   var KEY='a11y_dys', root=document.documentElement;
   var btn=document.createElement('button');
   btn.type='button'; btn.className='dys-toggle';
-  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dyslexique</span><span class="dys-switch"><span class="dys-knob"></span></span>';
+  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dys</span><span class="dys-switch"><span class="dys-knob"></span></span>';
   function apply(on){ root.classList.toggle('dys',on); btn.setAttribute('aria-pressed',on?'true':'false');
     btn.title=on?'Mode Dyslexique activé — clique pour revenir à la police normale':'Activer le Mode Dyslexique (police OpenDyslexic)'; }
   btn.addEventListener('click',function(){ var want=!root.classList.contains('dys'); try{localStorage.setItem(KEY,want?'1':'0');}catch(e){} apply(want); });
