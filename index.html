@@ -98,6 +98,13 @@
   @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
   @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
   html.dys, html.dys *{font-family:"OpenDyslexic","Fluent Emoji",sans-serif !important;}
+  /* OpenDyslexic est nettement plus large et plus haute que Nunito : sans rien faire,
+     le texte paraît plus gros et déborde sur des lignes supplémentaires, ce qui décale
+     la mise en page. On réduit la taille de base d'environ 15 % en mode Dys pour que la
+     police conserve le MÊME encombrement visuel qu'en mode normal. Toutes les tailles de
+     texte sont en rem (aucune dimension de layout ne l'est), donc seule la typographie
+     est mise à l'échelle — jamais les marges, paddings ou dimensions. */
+  html.dys{font-size:85%;}
   .dys-toggle{position:fixed;top:16px;right:16px;z-index:500;display:inline-flex;align-items:center;gap:9px;
     border:2px solid #d7e0ea;background:#fff;color:#22303f;border-radius:999px;padding:7px 9px 7px 13px;
     font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-weight:800;font-size:.82rem;line-height:1;cursor:pointer;

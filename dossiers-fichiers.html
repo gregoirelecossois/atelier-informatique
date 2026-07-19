@@ -30,7 +30,26 @@
   html,body{margin:0;padding:0;}
   body{
     font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;color:var(--ink);
-    background:var(--shell);min-height:100vh;display:flex;flex-direction:column;
+    background:var(--shell);height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+    padding-bottom:58px;
+  }
+  /* ===== Fenêtre principale toujours visible sans défilement =====
+     Page bloquée à la hauteur de l'écran : les barres gardent leur taille,
+     seule la zone de jeu se réduit / défile en interne si l'écran est petit.
+     Le padding-bas réserve la bande du bouton flottant « Mode dyslexique ». */
+  .topbar,.progress-wrap,.banner{flex:0 0 auto;}
+  .stage-wrap{flex:1 1 0;min-height:0;overflow:auto;display:flex;flex-direction:column;}
+  #stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
+  #stage>.screen{flex:1 1 auto;min-height:300px;}
+  @media (max-height:860px){
+    body>.topbar{padding-top:6px;padding-bottom:6px;}
+    body>.progress-wrap{padding-top:5px;padding-bottom:8px;}
+    body>.banner{margin-top:7px;padding-top:8px;padding-bottom:9px;}
+    body>.stage-wrap{margin-top:7px;margin-bottom:7px;}
+  }
+  @media (max-height:680px){
+    body>.banner{font-size:.92rem;}
+    body>.banner .b-emoji{font-size:1.4rem;}
   }
   button{font-family:inherit;cursor:pointer;}
   .display{font-family:"Fredoka","Fluent Emoji",sans-serif;}
@@ -117,7 +136,7 @@
 
   /* ---------- Stage (l'écran de l'ordinateur) ---------- */
   .stage-wrap{max-width:1000px;margin:12px auto;width:calc(100% - 36px);}
-  .screen{position:relative;height:clamp(440px,66vh,660px);border-radius:16px;overflow:hidden;
+  .screen{position:relative;height:clamp(320px,52vh,660px);border-radius:16px;overflow:hidden;
     border:3px solid #cdd9e8;box-shadow:0 18px 40px -24px rgba(34,48,63,.55);
     background:
       radial-gradient(1200px 600px at 70% -10%, #5b8def 0%, transparent 60%),
@@ -332,19 +351,17 @@
   @keyframes spotPulse{0%,100%{opacity:.55}50%{opacity:1}}
 
   /* ---------- Barre d'actions (en bas) ---------- */
-  .stage-actions{position:relative;max-width:1000px;margin:0 auto 22px;width:calc(100% - 36px);
-    display:flex;align-items:center;justify-content:center;min-height:52px;gap:12px;}
-  .sa-btn{border:2px solid var(--line);background:#fff;font-weight:800;border-radius:13px;
-    padding:12px 20px;font-size:1rem;display:inline-flex;align-items:center;gap:8px;}
+  /* Barre d'actions FIXÉE dans la bande du bas, centrée entre « Mode Dys »
+     (bas gauche) et « Dev » (bas droite) : libère la hauteur pour le centre. */
+  .stage-actions{position:fixed;left:50%;bottom:11px;transform:translateX(-50%);z-index:80;
+    margin:0;display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:nowrap;}
+  .sa-btn{border:2px solid var(--line);background:#fff;font-weight:800;border-radius:11px;
+    padding:9px 15px;font-size:.92rem;display:inline-flex;align-items:center;gap:7px;}
   .sa-btn:active{transform:translateY(1px);}
-  .sa-hint{position:absolute;left:0;color:var(--amber-d);border-color:var(--amber);}
+  .sa-hint{color:var(--amber-d);border-color:var(--amber);}
   .sa-hint:hover{background:#fff8ec;}
   .sa-restart{color:var(--muted);}
   .sa-restart:hover{border-color:var(--red);color:var(--red-d);}
-  @media (max-width:560px){
-    .stage-actions{flex-direction:column;}
-    .sa-hint{position:static;}
-  }
 
   /* drag ghost */
   .drag-ghost{position:fixed;z-index:9999;pointer-events:none;display:flex;flex-direction:column;align-items:center;
@@ -664,6 +681,13 @@
   @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-400.woff2") format("woff2");font-weight:400;font-display:swap;}
   @font-face{font-family:"OpenDyslexic";src:url("assets/fonts/opendyslexic-700.woff2") format("woff2");font-weight:700;font-display:swap;}
   html.dys, html.dys *{font-family:"OpenDyslexic","Fluent Emoji",sans-serif !important;}
+  /* OpenDyslexic est nettement plus large et plus haute que Nunito : sans rien faire,
+     le texte paraît plus gros et déborde sur des lignes supplémentaires, ce qui décale
+     la mise en page des missions. On réduit la taille de base d'environ 15 % en mode Dys
+     pour que la police conserve le MÊME encombrement visuel qu'en mode normal. Toutes les
+     tailles de texte sont en rem (aucune dimension de layout ne l'est), donc seule la
+     typographie est mise à l'échelle — jamais les marges, paddings ou dimensions. */
+  html.dys{font-size:85%;}
   .dys-toggle{position:fixed;bottom:16px;left:16px;z-index:500;display:inline-flex;align-items:center;gap:9px;
     border:2px solid #d7e0ea;background:#fff;color:#22303f;border-radius:999px;padding:7px 9px 7px 13px;
     font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-weight:800;font-size:.82rem;line-height:1;cursor:pointer;
@@ -688,10 +712,8 @@
       Accueil
     </a>
     <h1 class="display" id="lvlTitle">Dossiers et fichiers <span class="dot">·</span> le bureau</h1>
-    <span class="reset-btn" id="stepCount" style="cursor:default">Niveau 1 · Mission 1</span>
+    <button class="reset-btn" id="stepCount" title="Voir les niveaux">🗺️ Niveau 1 · Mission 1</button>
     <button class="reset-btn" id="soundBtn" title="Activer / couper le son">🔊 Son</button>
-    <button class="reset-btn" id="levelBtn" title="Voir les niveaux">🗺️ Niveau 1/7</button>
-    <button class="reset-btn danger" id="resetBtn" title="Recommencer cette mission">↺ Recommencer</button>
   </div>
 
   <div class="progress-wrap"><div class="track" id="track"></div></div>
@@ -709,7 +731,7 @@
 
   <div class="stage-actions">
     <button class="sa-btn sa-hint" id="hintBtn">💡 Astuce</button>
-    <button class="sa-btn sa-restart" id="restartBtn">↺ Recommencer la mission</button>
+    <button class="sa-btn sa-restart" id="restartBtn">↺ Recommencer</button>
   </div>
 
   <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
@@ -2882,7 +2904,7 @@ function updateProgress(){
     track.appendChild(d);
   });
   const shown=Math.min(playIdx+1, STEPS.length);
-  document.getElementById('stepCount').textContent='Niveau '+currentLevel+' · '+(STEPS[playIdx].label||'')+' ('+shown+'/'+STEPS.length+')';
+  document.getElementById('stepCount').textContent='🗺️ Niveau '+currentLevel+' · '+(STEPS[playIdx].label||'')+' ('+shown+'/'+STEPS.length+')';
 }
 function updateBanner(){
   const b=document.getElementById('banner');
@@ -4155,8 +4177,7 @@ function restartMission(){ commitRename(); cancelRenameTimer(); clearSpots();
     openBossBriefing();
   } else { startStep(playIdx); }
 }
-document.getElementById('levelBtn').onclick=openLevelSelector;
-document.getElementById('resetBtn').onclick=restartMission;
+document.getElementById('stepCount').onclick=openLevelSelector;
 document.getElementById('restartBtn').onclick=restartMission;
 document.getElementById('hintBtn').onclick=onHint;
 document.getElementById('seeMission').onclick=()=>{ if(currentStep && currentStep.mode==='boss') openBossBriefing(); else openRoundPopup(); };
@@ -4342,7 +4363,7 @@ function onHint(){
   var KEY='a11y_dys', root=document.documentElement;
   var btn=document.createElement('button');
   btn.type='button'; btn.className='dys-toggle';
-  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dyslexique</span><span class="dys-switch"><span class="dys-knob"></span></span>';
+  btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dys</span><span class="dys-switch"><span class="dys-knob"></span></span>';
   function apply(on){ root.classList.toggle('dys',on); btn.setAttribute('aria-pressed',on?'true':'false');
     btn.title=on?'Mode Dyslexique activé — clique pour revenir à la police normale':'Activer le Mode Dyslexique (police OpenDyslexic)'; }
   btn.addEventListener('click',function(){ var want=!root.classList.contains('dys'); try{localStorage.setItem(KEY,want?'1':'0');}catch(e){} apply(want); });
