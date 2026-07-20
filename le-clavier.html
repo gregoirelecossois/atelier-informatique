@@ -1129,14 +1129,14 @@ function playHackWarning(){
 }
 
 function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
-document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('kb_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); resumeBossMusic(); resumeHackAmbient(); } else { pauseBossMusic(); pauseHackAmbient(); } };
+document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('kb_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); resumeBossMusic(); resumeHbBossMusic(); resumeHackAmbient(); } else { pauseBossMusic(); pauseHbBossMusic(); pauseHackAmbient(); } };
 
 /* =========================================================
    5. MOTEUR DE JEU — abstraction
    ========================================================= */
 let activeGame=null;   // {onKey(e), stop(), pause?(), resume?()}
 let gamePaused=false;  // vrai quand une astuce est ouverte : le jeu est gelé
-function stopGame(){ if(activeGame){ try{activeGame.stop();}catch(e){} activeGame=null; } gamePaused=false; if(typeof stopBossMusic==='function') stopBossMusic(); if(typeof stopHackAmbient==='function') stopHackAmbient(); }
+function stopGame(){ if(activeGame){ try{activeGame.stop();}catch(e){} activeGame=null; } gamePaused=false; if(typeof stopBossMusic==='function') stopBossMusic(); if(typeof stopHbBossMusic==='function') stopHbBossMusic(); if(typeof stopHackAmbient==='function') stopHackAmbient(); }
 function pauseActive(){ if(activeGame && activeGame.pause){ try{activeGame.pause();}catch(e){} } gamePaused=true; }
 function resumeActive(){ if(gamePaused && activeGame && activeGame.resume){ try{activeGame.resume();}catch(e){} } gamePaused=false; }
 
@@ -1900,13 +1900,25 @@ let kbSwarmTutoSeen=false;
 
 function startBossMusic(){
   try{
-    if(!bossAudio){ bossAudio=new Audio('musics/musique_boss.mp3'); bossAudio.loop=true; bossAudio.volume=.5; }
+    if(!bossAudio){ bossAudio=new Audio('musics/vaisseau-mere.mp3'); bossAudio.loop=true; bossAudio.volume=.5; }
     if(soundOn){ bossAudio.currentTime=0; const p=bossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }
   }catch(e){}
 }
 function pauseBossMusic(){ if(bossAudio){ try{bossAudio.pause();}catch(e){} } }
 function resumeBossMusic(){ if(bossAudio && soundOn && B.running){ try{ const p=bossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
 function stopBossMusic(){ if(bossAudio){ try{bossAudio.pause(); bossAudio.currentTime=0;}catch(e){} } }
+
+/* ---- musique du duel de terminal K0RT3X (Niveau 7, boss final) ---- */
+let hbBossAudio=null;
+function startHbBossMusic(){
+  try{
+    if(!hbBossAudio){ hbBossAudio=new Audio('musics/ia-vaisseau.mp3'); hbBossAudio.loop=true; hbBossAudio.volume=.5; }
+    if(soundOn){ hbBossAudio.currentTime=0; const p=hbBossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }
+  }catch(e){}
+}
+function pauseHbBossMusic(){ if(hbBossAudio){ try{hbBossAudio.pause();}catch(e){} } }
+function resumeHbBossMusic(){ if(hbBossAudio && soundOn && HB.running){ try{ const p=hbBossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
+function stopHbBossMusic(){ if(hbBossAudio){ try{hbBossAudio.pause(); hbBossAudio.currentTime=0;}catch(e){} } }
 
 function startBoss(step){
   stopGame(); gamePaused=false;
@@ -2560,12 +2572,12 @@ function startHackBoss(step){
   HB.field=hbEl('hackField');
   hbEl('hudTip').onclick=()=>{ openGameTip((HB.cmd&&HB.cmd[HB.pos])||'@'); };
   updateHbHud(); hbSetPhase('🧠 K0RT3X arrive…');
-  startBossMusic();
+  startHbBossMusic();
   activeGame={ onKey:onKeyHB, stop:stopHB,
-    pause(){ HB.running=false; if(HB.raf){ cancelAnimationFrame(HB.raf); HB.raf=0; } pauseBossMusic(); },
+    pause(){ HB.running=false; if(HB.raf){ cancelAnimationFrame(HB.raf); HB.raf=0; } pauseHbBossMusic(); },
     resume(){ HB.running=true;
       if(HB.ready&&HB.barDur){ HB.lastTs=0; HB.raf=requestAnimationFrame(hbBarLoop); }
-      if(bossAudio&&soundOn){ try{ const p=bossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } } };
+      if(hbBossAudio&&soundOn){ try{ const p=hbBossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } } };
   const st=hbEl('hbStatus'); st.className='ht-status';
   hbType(st,'> intrusion détectée dans ton ordinateur…',()=>{
     hbWait(450,()=>{ hbSay(HB_TAUNTS.intro); hbWait(1600,hbNextAlert); });
@@ -2807,7 +2819,7 @@ function hbDefeated(){
   HB.ready=false; hbStopBar(); HB.state='dead';
   HB.hp=0; updateHbHud(); hbSetPhase('🏆 Gagné !');
   const boss=hbEl('hbBoss'); if(boss) boss.className='hb-boss dead';
-  stopBossMusic(); beep('win');
+  stopHbBossMusic(); beep('win');
   const c=hbEyeCenter()||{x:HB.field.clientWidth/2,y:HB.field.clientHeight/2};
   for(let i=0;i<5;i++) hbWait(i*180,()=>burstAt(c.x+(Math.random()*120-60), c.y+(Math.random()*80-40), HB.field));
   const al=hbEl('hbAlert'); al.className='hb-alert ok';
@@ -2826,7 +2838,7 @@ function stopHB(){
   HB.sid=++hbSid;   // invalide timers et machines à écrire en attente
   HB.running=false; HB.ready=false;
   if(HB.raf){ cancelAnimationFrame(HB.raf); HB.raf=0; }
-  stopBossMusic();
+  stopHbBossMusic();
 }
 
 /* =========================================================
@@ -3113,11 +3125,9 @@ function courseFinish(){
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
     +'<p>Incroyable ! Tu as fini les <b>7 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les accents, les chiffres, le piratage alien, la frappe libre, la chasse à la lave… et tu as éteint <b>K0RT3X</b> pour de bon. Tu tapes comme un pro ! 👏</p>'
-    +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
-    +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+    +'<div class="m-actions"><a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
-  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
 }
 
 /* ---- sélecteur de niveaux ---- */
