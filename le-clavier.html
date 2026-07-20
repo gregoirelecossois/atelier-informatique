@@ -2979,7 +2979,7 @@ function openRoundPopup(){
     + fjBox
     + '<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
   modal.dataset.ttsText = s.title + '. ' + s.desc;   // 🔊 lit le titre + la consigne de la mission
-  openOverlay();
+  openOverlay(); fitModalWidth();
   document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }
 function launchGame(){
@@ -3092,7 +3092,7 @@ function openLevelIntro(n, cont){
     + (tools?'<ul class="newtools">'+tools+'</ul>':'')
     + '<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
   modal.dataset.ttsText = lvl.title + '. ' + (it.lead||'') + (it.teach ? ' ' + it.teach : '');   // 🔊 lit l'intro du niveau
-  openOverlay();
+  openOverlay(); fitModalWidth();
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
 }
 function refreshLevelBtn(){ const b=document.getElementById('levelBtn'); if(b) b.textContent='🗺️ Niveau '+currentLevel+'/'+LEVELS.length; }
@@ -3279,7 +3279,32 @@ document.getElementById('hintBtn').onclick=()=>{
 /* =========================================================
    8. OVERLAY / TOAST / CONFETTI
    ========================================================= */
-function openOverlay(){ pauseActive(); overlay.classList.add('open'); if(window.ttsDecorateModal) ttsDecorateModal(modal); }   // tout panneau gèle l'exercice + 🔊 lecture
+function openOverlay(){ modal.style.maxWidth=''; pauseActive(); overlay.classList.add('open'); if(window.ttsDecorateModal) ttsDecorateModal(modal); }   // tout panneau gèle l'exercice + 🔊 lecture
+/* Popups longues : élargir plutôt que faire scroller.
+   Sur un écran court, une popup de niveau ou de mission peut déborder et obliger l'élève à
+   scroller pour trouver le bouton « C'est parti ». Plutôt que ça, on l'élargit par paliers
+   (jusqu'à 1,6× sa largeur normale, sans dépasser l'écran) : le texte tient sur moins de
+   lignes et la popup rentre en hauteur. On n'y touche que si elle déborde vraiment, et on
+   annule si l'élargissement n'a rien arrangé — c'est ce qui protège les briefings qui
+   contiennent un clavier illustré, dont l'élargissement augmenterait la hauteur. À n'appeler
+   que juste après openOverlay(), et seulement pour les popups de niveau/mission — jamais
+   pour les popups de boss. */
+function fitModalWidth(){
+  modal.style.maxWidth='';
+  const ov=modal.parentElement; if(!ov) return;
+  const base=modal.offsetWidth;                        // offsetWidth : insensible à l'animation (scale)
+  if(!base || modal.scrollHeight<=modal.clientHeight+1) return;   // ça tient déjà : rien à faire
+  const cs=getComputedStyle(ov);
+  const avail=ov.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0);
+  const cap=Math.min(base*1.6, avail);
+  if(cap<base+40) return;                              // écran trop étroit : on garde le scroll
+  const h0=modal.scrollHeight;
+  let w=base;
+  while(w<cap-1 && modal.scrollHeight>modal.clientHeight+1){
+    w=Math.min(w+60,cap); modal.style.maxWidth=w+'px';
+  }
+  if(modal.scrollHeight>=h0) modal.style.maxWidth='';  // élargir n'a pas aidé : on revient à la normale
+}
 function closeOverlay(){ overlay.classList.remove('open'); if(window.ttsStopCurrent) ttsStopCurrent(); }   // coupe l'audio en cours si la popup se ferme
 let toastTimer=null;
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');

@@ -2808,14 +2808,14 @@ const LEVELS=[
     teach:'La plupart des fichiers <b>s\'ouvrent</b> : ils t\'affichent un texte, une image, un son. Mais les extensions <b>.exe</b>, <b>.msi</b> et <b>.bat</b> sont différentes : elles ne montrent rien, elles <b>s\'exécutent</b> et installent un programme sur l\'ordinateur. Elles sont utiles (c\'est comme ça qu\'on installe un vrai logiciel), mais on ne les lance <b>que si on sait d\'où vient le fichier</b>. Pour changer une extension : <b>renomme</b> le fichier (clic droit → Renommer ou '+kbd('F2')+') et modifie les lettres <b>après le point</b>. Un fichier <b>sans extension</b> ne peut pas s\'ouvrir : il faut lui en <b>ajouter</b> une !',
     tools:[{g:'🏷️',n:'.txt .jpg .mp3 : l\'extension'},{g:'🗂️',n:'Les familles : texte, image, son, vidéo…'},{g:'⚠️',n:'.exe .msi .bat : ça s\'installe !'},{g:'F2',n:'Renommer pour changer l\'extension'},{g:'➕',n:'Ajouter une extension manquante'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'🗂️',title:'La famille des extensions',
+    {kind:'mission',label:'Mission 1',emoji:'🗂️',title:'Documents et images',
       pre:'extmap',
-      intro:'Tu connais maintenant les grandes <b>familles</b>. À toi de jouer : sur le Bureau, glisse chaque fichier dans le dossier de sa famille en regardant <b>l\'extension</b> (les lettres après le point) — pas le nom !',
+      intro:'Tu connais maintenant les grandes <b>familles</b>. On commence par deux d\'entre elles : sur le Bureau, glisse chaque fichier dans le dossier de sa famille en regardant <b>l\'extension</b> (les lettres après le point) — pas le nom !',
       seed:{desktop:[
-        folder('Documents',[]), folder('Images',[]), folder('Sons',[]), folder('Vidéos',[]),
-        file('exposé-volcans','pdf',{icon:'❔'}), file('photo-classe','jpg',{icon:'❔'}), file('interview','mp3',{icon:'❔'}), file('documentaire','mp4',{icon:'❔'}),
-        file('bruitage','wav',{icon:'❔'}), file('poésie','odt',{icon:'❔'}), file('sortie-scolaire','avi',{icon:'❔'}), file('logo-college','png',{icon:'❔'}),
-        file('devoir-maths','docx',{icon:'❔'}), file('expérience','mov',{icon:'❔'}), file('schéma-svt','webp',{icon:'❔'}), file('podcast-histoire','m4a',{icon:'❔'})
+        folder('Documents',[]), folder('Images',[]),
+        file('exposé-volcans','pdf',{icon:'❔'}), file('photo-classe','jpg',{icon:'❔'}),
+        file('poésie','odt',{icon:'❔'}), file('logo-college','png',{icon:'❔'}),
+        file('devoir-maths','docx',{icon:'❔'}), file('schéma-svt','webp',{icon:'❔'})
       ]},
       objectives:[
         {t:'📄 Range les 3 documents dans le dossier <b>Documents</b>',
@@ -2823,7 +2823,18 @@ const LEVELS=[
           mov:['exposé-volcans.pdf','poésie.odt','devoir-maths.docx']},
         {t:'🖼️ Range les 3 images dans le dossier <b>Images</b>',
           goal:G.all([G.movedInto('photo-classe.jpg','Images'),G.movedInto('logo-college.png','Images'),G.movedInto('schéma-svt.webp','Images')]),
-          mov:['photo-classe.jpg','logo-college.png','schéma-svt.webp']},
+          mov:['photo-classe.jpg','logo-college.png','schéma-svt.webp']}
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'🎬',title:'Sons et vidéos',
+      pre:'extmap',
+      intro:'Au tour des deux autres familles : les <b>sons</b> et les <b>vidéos</b>. Même méthode — c\'est <b>l\'extension</b> qui décide, pas le nom du fichier.',
+      seed:{desktop:[
+        folder('Sons',[]), folder('Vidéos',[]),
+        file('interview','mp3',{icon:'❔'}), file('documentaire','mp4',{icon:'❔'}),
+        file('bruitage','wav',{icon:'❔'}), file('sortie-scolaire','avi',{icon:'❔'}),
+        file('podcast-histoire','m4a',{icon:'❔'}), file('expérience','mov',{icon:'❔'})
+      ]},
+      objectives:[
         {t:'🎵 Range les 3 sons dans le dossier <b>Sons</b>',
           goal:G.all([G.movedInto('interview.mp3','Sons'),G.movedInto('bruitage.wav','Sons'),G.movedInto('podcast-histoire.m4a','Sons')]),
           mov:['interview.mp3','bruitage.wav','podcast-histoire.m4a']},
@@ -2831,7 +2842,7 @@ const LEVELS=[
           goal:G.all([G.movedInto('documentaire.mp4','Vidéos'),G.movedInto('sortie-scolaire.avi','Vidéos'),G.movedInto('expérience.mov','Vidéos')]),
           mov:['documentaire.mp4','sortie-scolaire.avi','expérience.mov']}
       ]},
-    {kind:'mission',label:'Mission 2',emoji:'⚠️',title:'Attention : ce qui s\'installe',
+    {kind:'mission',label:'Mission 3',emoji:'⚠️',title:'Attention : ce qui s\'installe',
       intro:'Un <b>.pdf</b> ou un <b>.jpg</b> <b>s\'ouvre</b> et te montre quelque chose. Un <b>.exe</b>, un <b>.msi</b> ou un <b>.bat</b> ne montre rien : il <b>s\'exécute</b>. Dans ce dossier <b>Téléchargements</b> : <b>installe</b> les programmes sûrs, <b>range</b> les fichiers à garder, puis <b>supprime</b> les fichiers malveillants (double extension, nom suspect).',
       seed:{desktop:[ folder('Téléchargements',[
         folder('À garder',[]),
@@ -2849,7 +2860,7 @@ const LEVELS=[
           goal:G.all([G.deleted('super-jeu-gratuit.exe'),G.deleted('facture.pdf.exe'),G.deleted('mise-a-jour-urgente.bat')]),
           del:['super-jeu-gratuit.exe','facture.pdf.exe','mise-a-jour-urgente.bat']}
       ]},
-    {kind:'mission',label:'Mission 3',emoji:'🔧',title:'Corrige les extensions',
+    {kind:'mission',label:'Mission 4',emoji:'🔧',title:'Corrige les extensions',
       intro:'Ces fichiers ont la <b>mauvaise extension</b> ! Renomme-les ('+kbd('F2')+') et corrige les lettres <b>après le point</b>. Regarde l\'icône changer.',
       editExt:true,
       seed:{desktop:[ folder('Documents',[ file('vacances','txt'), file('musique','txt'), file('rapport','txt') ]) ], open:'Documents'},
@@ -2858,7 +2869,7 @@ const LEVELS=[
         {t:'C\'est une chanson : change <b>musique.txt</b> en <b>musique.mp3</b>', goal:G.renamedTo('musique.mp3','Documents'), ren:'musique.txt'},
         {t:'C\'est un document : change <b>rapport.txt</b> en <b>rapport.pdf</b>', goal:G.renamedTo('rapport.pdf','Documents'), ren:'rapport.txt'}
       ]},
-    {kind:'mission',label:'Mission 4',emoji:'🧩',title:'Complète les extensions',
+    {kind:'mission',label:'Mission 5',emoji:'🧩',title:'Complète les extensions',
       intro:'Oups, il manque une lettre à chaque extension ! <b>Complète-les</b> pour que les fichiers soient corrects.',
       editExt:true,
       seed:{desktop:[ folder('Documents',[ file('photo','jp'), file('lettre','tx'), file('film','mp') ]) ], open:'Documents'},
@@ -2867,7 +2878,7 @@ const LEVELS=[
         {t:'Complète <b>lettre.tx</b> en <b>lettre.txt</b>', goal:G.renamedTo('lettre.txt','Documents'), ren:'lettre.tx'},
         {t:'Complète <b>film.mp</b> en <b>film.mp4</b>', goal:G.renamedTo('film.mp4','Documents'), ren:'film.mp'}
       ]},
-    {kind:'mission',label:'Mission 5',emoji:'➕',title:'Ajoute une extension, puis ouvre',
+    {kind:'mission',label:'Mission 6',emoji:'➕',title:'Ajoute une extension, puis ouvre',
       intro:'Ces fichiers <b>n\'ont pas d\'extension</b> : impossible de les ouvrir ! Ajoute la bonne extension, <b>puis</b> ouvre-les.',
       editExt:true,
       seed:{desktop:[ folder('Documents',[ file('chanson',undefined,{noext:true,icon:'❔'}), file('histoire',undefined,{noext:true,icon:'❔'}) ]) ], open:'Documents'},
@@ -2877,7 +2888,7 @@ const LEVELS=[
         {t:'Ajoute <b>.txt</b> au fichier <b>histoire</b>', goal:G.renamedTo('histoire.txt','Documents'), ren:'histoire'},
         {t:'<b>Ouvre histoire</b> (double-clic)', goal:G.openedFile('histoire')}
       ]},
-    {kind:'mission',label:'Mission 6',emoji:'✏️',title:'Renomme ET change l\'extension',
+    {kind:'mission',label:'Mission 7',emoji:'✏️',title:'Renomme ET change l\'extension',
       intro:'Cette fois, change <b>le nom</b> ET <b>l\'extension</b> en une seule fois.',
       editExt:true,
       seed:{desktop:[ folder('Documents',[ file('img001','txt'), file('doc-final','txt'), file('son01','txt') ]) ], open:'Documents'},
@@ -2886,7 +2897,7 @@ const LEVELS=[
         {t:'Renomme <b>doc-final.txt</b> en <b>rapport.pdf</b>', goal:G.renamedTo('rapport.pdf','Documents'), ren:'doc-final.txt'},
         {t:'Renomme <b>son01.txt</b> en <b>comptine.mp3</b>', goal:G.renamedTo('comptine.mp3','Documents'), ren:'son01.txt'}
       ]},
-    {kind:'mission',label:'Mission 7',emoji:'⚙️',title:'Installer sans se tromper',
+    {kind:'mission',label:'Mission 8',emoji:'⚙️',title:'Installer sans se tromper',
       intro:'Un <b>.exe</b>, un <b>.msi</b> ou un <b>.bat</b> n\'est <b>pas un virus</b> ! C\'est comme ça qu\'on installe de vrais logiciels utiles. Ce qui compte, c\'est <b>d\'où vient le fichier</b>. Lis d\'abord <b>provenance.txt</b>, il te dit tout — puis <b>installe</b> les bons programmes et <b>supprime</b> les autres.',
       seed:{desktop:[ folder('Téléchargements',[
         file('provenance','txt',{text:"📋 D'où viennent ces fichiers ?\n\n• libreoffice-installeur.msi\ntéléchargé sur le site officiel libreoffice.org, par le professeur.\n\n• geogebra-installeur.exe\ntéléchargé sur le site officiel geogebra.org, pour le cours de maths.\n\n• pilote-imprimante.exe\ntéléchargé sur le site du fabricant de l'imprimante.\n\n• photo-vacances.jpg.exe\nreçu par mail d'une adresse inconnue.\n\n• installer-programme.exe\ntéléchargé après avoir cliqué sur une publicité.\n\n• facture123.bat\npièce jointe d'un mail que personne n'attendait."}),
@@ -3141,7 +3152,7 @@ function openLevelIntro(n, cont){
     +(tools?'<ul class="newtools">'+tools+'</ul>':'')
     +'<div class="m-actions"><button class="m-btn primary green" id="lvlGo">C\'est parti ! 🚀</button></div>';
   modal.dataset.ttsText = lvl.title + '. ' + (it.lead||'') + (it.teach ? ' ' + it.teach : '');
-  openOverlay();
+  openOverlay(); fitModalWidth();
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
 }
 /* ---- Carte interactive des familles d'extensions (avant le tri de la mission 7.1) ---- */
@@ -3190,7 +3201,7 @@ function openExtMap(cont){
     +'<div class="ex-chips">'+f.exts.map((x,xi)=>'<button class="ex-chip" data-f="'+fi+'" data-x="'+xi+'">.'+x.e+'</button>').join('')+'</div></div>'
   ).join('');
   modal.className='modal extmap';
-  modal.innerHTML='<span class="m-emoji">🏷️</span><div class="kicker">Mission 1 · découverte</div>'
+  modal.innerHTML='<span class="m-emoji">🏷️</span><div class="kicker">Découverte</div>'
     +'<h2>La famille des extensions</h2>'
     +'<p>Les extensions se regroupent par <b>fonction</b> : ce qu\'on peut faire avec le fichier. Survole-les pour tout savoir !</p>'
     +'<div class="ex-grid">'+fams+'</div>'
@@ -3228,7 +3239,7 @@ function openRoundPopup(skipPre){
     +'</div>'
     +'<div class="m-actions"><button class="m-btn primary'+(jalon?' test':'')+'" id="goBtn">C\'est parti ! 🚀</button></div>';
   modal.dataset.ttsText = s.title + '. ' + (s.intro||s.desc||'');
-  openOverlay();
+  openOverlay(); fitModalWidth();
   document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); };
 }
 function onMissionWin(){
@@ -4434,7 +4445,30 @@ function bossWin(){
 /* ---------------------------------------------------------
    15. OVERLAY / TOAST / CONFETTI
    --------------------------------------------------------- */
-function openOverlay(){ overlay.classList.add('open'); if(window.ttsDecorateModal) ttsDecorateModal(modal); }
+function openOverlay(){ modal.style.maxWidth=''; overlay.classList.add('open'); if(window.ttsDecorateModal) ttsDecorateModal(modal); }
+/* Popups longues : élargir plutôt que faire scroller.
+   Sur un écran court, une popup de niveau ou de mission peut déborder et obliger l'élève à
+   scroller pour trouver le bouton « C'est parti ». Plutôt que ça, on l'élargit par paliers
+   (jusqu'à 1,6× sa largeur normale, sans dépasser l'écran) : le texte tient sur moins de
+   lignes et la popup rentre en hauteur. On n'y touche que si elle déborde vraiment, et on
+   annule si l'élargissement n'a rien arrangé. À n'appeler que juste après openOverlay(), et
+   seulement pour les popups de niveau/mission — jamais pour les popups de boss. */
+function fitModalWidth(){
+  modal.style.maxWidth='';
+  const ov=modal.parentElement; if(!ov) return;
+  const base=modal.offsetWidth;                        // offsetWidth : insensible à l'animation (scale)
+  if(!base || modal.scrollHeight<=modal.clientHeight+1) return;   // ça tient déjà : rien à faire
+  const cs=getComputedStyle(ov);
+  const avail=ov.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0);
+  const cap=Math.min(base*1.6, avail);
+  if(cap<base+40) return;                              // écran trop étroit : on garde le scroll
+  const h0=modal.scrollHeight;
+  let w=base;
+  while(w<cap-1 && modal.scrollHeight>modal.clientHeight+1){
+    w=Math.min(w+60,cap); modal.style.maxWidth=w+'px';
+  }
+  if(modal.scrollHeight>=h0) modal.style.maxWidth='';  // élargir n'a pas aidé : on revient à la normale
+}
 function closeOverlay(){ overlay.classList.remove('open'); if(window.ttsStopCurrent) ttsStopCurrent(); }
 let _toastT=null;
 function toast(msg){ const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove('show'),8000); }
