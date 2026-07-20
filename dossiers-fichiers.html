@@ -601,6 +601,11 @@
   .m-btn.ghost{background:#fff;color:var(--muted);}
   .m-btn.ghost:hover{border-color:var(--blue);color:var(--blue-d);}
 
+  /* ---------- Simulation d'installation (barre de progression) ---------- */
+  .inst-track{background:#e3ebf3;border:2px solid var(--line);border-radius:999px;height:22px;overflow:hidden;margin:16px 0 6px;}
+  .inst-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:999px;transition:width .12s linear;}
+  .inst-pct{font-weight:800;color:var(--blue-d);text-align:center;font-size:.85rem;}
+
   /* ---------- Fenêtre Propriétés (style Windows, dans le screen) ---------- */
   .props-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
     z-index:200;background:rgba(0,0,0,0.10);}
@@ -644,6 +649,35 @@
   .notepad-view .np-feedback{margin-top:6px;font-weight:700;font-size:.84rem;}
   .notepad-view .np-feedback.ok{color:var(--green-d);}
   .notepad-view .np-feedback.err{color:var(--red-d);}
+
+  /* ---------- Carte des familles d'extensions (Niveau 7, mission 1) ---------- */
+  .modal.extmap{max-width:760px;padding:18px 20px 16px;}
+  .modal.extmap .m-emoji{font-size:2.1rem;margin-bottom:2px;}
+  .modal.extmap h2{margin:0 0 4px;}
+  .modal.extmap>p{font-size:.95rem;margin-bottom:2px;}
+  .modal.extmap .m-actions{margin-top:12px;}
+  .ex-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin:10px 0 0;}
+  .ex-fam{border:2px solid var(--line);border-radius:14px;padding:8px 10px 9px;background:#fbfdff;text-align:center;}
+  .ex-fam .ef-head{display:flex;flex-direction:column;align-items:center;gap:1px;margin-bottom:6px;}
+  .ex-fam .ef-ic{font-size:1.5rem;line-height:1;}
+  .ex-fam .ef-name{font-weight:800;font-size:.9rem;color:var(--ink);}
+  .ex-fam .ef-what{font-weight:700;font-size:.74rem;color:var(--muted);}
+  .ex-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+  .ex-chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;
+    font-family:inherit;font-weight:800;font-size:.85rem;color:var(--blue-d);cursor:pointer;transition:.15s;}
+  .ex-chip:hover,.ex-chip:focus-visible,.ex-chip.on{background:var(--blue);border-color:var(--blue);color:#fff;outline:none;transform:translateY(-1px);}
+  .ex-fam.danger{border-color:#fbe3b6;background:#fff8ec;}
+  .ex-fam.danger .ex-chip{color:var(--amber-d);}
+  .ex-fam.danger .ex-chip:hover,.ex-fam.danger .ex-chip:focus-visible,.ex-fam.danger .ex-chip.on{background:var(--amber);border-color:var(--amber);color:#3d2c06;}
+  .ex-info{margin-top:10px;border:2px solid #d9e6fb;background:#f3f8ff;border-radius:14px;padding:9px 13px;
+    text-align:left;min-height:66px;display:flex;align-items:center;gap:12px;}
+  .ex-info .xi-ic{font-size:2rem;line-height:1;flex:none;}
+  .ex-info .xi-ext{font-weight:800;color:var(--blue-d);font-size:1rem;}
+  .ex-info .xi-type{font-weight:700;font-size:.82rem;color:var(--muted);}
+  .ex-info .xi-desc{font-weight:600;font-size:.92rem;color:#3a4a59;line-height:1.4;margin-top:3px;}
+  .ex-info.warn{border-color:#fbe3b6;background:#fff8ec;}
+  .ex-info.warn .xi-ext{color:var(--amber-d);}
+  @media (max-width:560px){ .ex-grid{grid-template-columns:1fr 1fr;} .ex-fam .ef-what{display:none;} }
 
   .lvl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0 4px;}
   .lvl-card{display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:2px solid var(--line);
@@ -767,10 +801,18 @@
 function kbd(s){ return '<kbd>'+s+'</kbd>'; }
 const ICON={
   drive:'💽', folder:'📁', folderOpen:'📂', bin:'🗑️', binFull:'🗑️',
-  txt:'📄', doc:'📝', pdf:'📕', jpg:'🖼️', png:'🖼️', gif:'🎞️', photo:'📷',
-  mp3:'🎵', mp4:'🎬', zip:'🗜️', exe:'⚙️', xls:'📊', ppt:'📽️', html:'🌐',
+  txt:'📄', doc:'📝', docx:'📝', odt:'📝', rtf:'📄', pdf:'📕',
+  jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🎞️', webp:'🖼️', bmp:'🖼️', photo:'📷',
+  mp3:'🎵', wav:'🎵', ogg:'🎵', m4a:'🎵',
+  mp4:'🎬', avi:'🎬', mkv:'🎬', mov:'🎬',
+  zip:'🗜️', rar:'🗜️',
+  exe:'⚙️', msi:'📦', bat:'🖥️',
+  xls:'📊', ppt:'📽️', html:'🌐',
   app:'🧩', virus:'🦠', generic:'📄'
 };
+/* extensions qui n'affichent rien mais EXÉCUTENT / INSTALLENT un programme */
+const EXEC_EXTS=new Set(['exe','msi','bat']);
+function isExec(node){ return node && node.type==='file' && EXEC_EXTS.has(node.ext); }
 function iconFor(node){
   if(node.icon) return node.icon;
   if(node.type==='folder') return node===EX.binNode ? (BIN.kids.length?ICON.binFull:ICON.bin) : ICON.folder;
@@ -781,7 +823,12 @@ function formatSize(kb){
   return kb+' Ko';
 }
 function sizeKbByExt(ext){
-  const map={txt:12,doc:48,pdf:320,jpg:1400,png:820,gif:2100,photo:2800,mp3:4200,mp4:24000,zip:6700,exe:1100,xls:30,ppt:2400,html:8,virus:0};
+  const map={txt:12,doc:48,docx:52,odt:44,rtf:26,pdf:320,
+    jpg:1400,jpeg:1400,png:820,gif:2100,webp:410,bmp:5200,photo:2800,
+    mp3:4200,wav:32000,ogg:3600,m4a:3900,
+    mp4:24000,avi:41000,mkv:38000,mov:29000,
+    zip:6700,rar:6100,exe:1100,msi:8400,bat:2,
+    xls:30,ppt:2400,html:8,virus:0};
   return map[ext]||10;
 }
 function nodeSizeKb(node){
@@ -794,8 +841,13 @@ function fakeSize(node){
 }
 function typeLabel(node){
   if(node.type==='folder') return 'Dossier';
-  const map={txt:'Document texte',doc:'Document Word',pdf:'Document PDF',jpg:'Image JPEG',png:'Image PNG',
-    gif:'Image GIF',photo:'Photo',mp3:'Fichier audio',mp4:'Vidéo',zip:'Dossier compressé',exe:'Application',
+  const map={txt:'Document texte',doc:'Document Word',docx:'Document Word',odt:'Document LibreOffice',
+    rtf:'Texte enrichi',pdf:'Document PDF',
+    jpg:'Image JPEG',jpeg:'Image JPEG',png:'Image PNG',gif:'Image GIF animée',webp:'Image WebP',bmp:'Image Bitmap',photo:'Photo',
+    mp3:'Fichier audio',wav:'Fichier audio',ogg:'Fichier audio',m4a:'Fichier audio',
+    mp4:'Vidéo',avi:'Vidéo',mkv:'Vidéo',mov:'Vidéo',
+    zip:'Dossier compressé',rar:'Dossier compressé',
+    exe:'Application',msi:'Programme d\'installation',bat:'Fichier de commandes',
     xls:'Feuille de calcul',ppt:'Présentation',html:'Page web',virus:'⚠ Fichier infecté'};
   return map[node.ext]||'Fichier';
 }
@@ -1416,7 +1468,8 @@ function openNode(node, w){
     checkMission();
   } else {
     if(node.noext || !node.ext){ beep('bad'); openNoExtDialog(node); checkMission(); return; }
-    const VALID_EXTS=new Set(['txt','doc','pdf','jpg','jpeg','png','gif','mp3','mp4','zip','exe','xls','ppt','html','app','virus']);
+    const VALID_EXTS=new Set(['txt','doc','docx','odt','rtf','pdf','jpg','jpeg','png','gif','webp','bmp',
+      'mp3','wav','ogg','m4a','mp4','avi','mkv','mov','zip','rar','exe','msi','bat','xls','ppt','html','app','virus']);
     if(currentStep && currentStep.editExt && !VALID_EXTS.has(node.ext)){ beep('bad'); openBadExtDialog(node); checkMission(); return; }
     EX.opened.add(node.name); beep('open');
     openFilePreview(node); checkMission();
@@ -1441,6 +1494,86 @@ function openBadExtDialog(node){
     +'<div class="m-actions"><button class="m-btn primary test" id="beClose">Compris&nbsp;!</button></div>';
   openOverlay();
   document.getElementById('beClose').onclick=()=>closeOverlay();
+}
+/* texte lu de l'alerte « fichier exécutable » (pur : réutilisé par le build TTS) */
+function execTtsText(ext, dbl){
+  const what={exe:'lancer un programme', msi:'installer un nouveau logiciel', bat:'exécuter une suite de commandes'}[ext]||'lancer un programme';
+  return 'Attention. Un fichier point '+ext+' ne te montre ni texte ni image : il demande à l\'ordinateur de '+what+'. '
+    +(dbl?'Ici, le fichier se déguise : la vraie extension est toujours la dernière. ':'')
+    +'Avant de lancer un fichier qui s\'installe, demande-toi d\'où il vient. Si tu ne l\'as pas téléchargé toi-même sur le site officiel du logiciel, ne le lance pas et demande à un adulte.';
+}
+/* double-clic sur un .exe / .msi / .bat : ces fichiers ne s'AFFICHENT pas, ils s'EXÉCUTENT */
+function openExecDialog(node){
+  const disp=displayName(node);
+  const dbl=/\.(pdf|jpg|jpeg|png|docx?|odt|mp3|mp4)$/i.test(node.name||'');
+  const what={exe:'lancer un programme', msi:'installer un nouveau logiciel', bat:'exécuter une suite de commandes'}[node.ext]||'lancer un programme';
+  modal.className='modal warn';
+  modal.innerHTML='<span class="m-emoji">⚠️</span><div class="kicker" style="color:var(--amber-d)">Ce fichier ne s\'ouvre pas… il s\'exécute</div>'
+    +'<h2>'+disp+'</h2>'
+    +'<p>Un <b>.'+node.ext+'</b> ne te montre ni texte ni image : il demande à l\'ordinateur de <b>'+what+'</b>. C\'est comme ça qu\'on installe de vrais logiciels utiles… mais c\'est aussi comme ça qu\'un virus s\'installe.</p>'
+    +(dbl?'<div class="howto boss"><p class="h-head">🎭 Attention, déguisement !</p><p>Ce fichier fait croire à un <b>'+(node.name.split('.').pop())+'</b>, mais la <b>vraie</b> extension est la <b>dernière</b> : <b>.'+node.ext+'</b>. C\'est un piège très courant.</p></div>':'')
+    +'<div class="howto test"><p class="h-head">👉 Le bon réflexe :</p><p>Avant de lancer un fichier qui s\'installe, demande-toi : <b>d\'où vient-il ?</b> Si tu ne l\'as pas téléchargé toi-même sur le <b>site officiel</b> du logiciel, ne le lance pas et <b>demande à un adulte</b>.</p></div>'
+    +'<div class="m-actions"><button class="m-btn primary test" id="exClose">Compris&nbsp;!</button></div>';
+  modal.dataset.ttsText = execTtsText(node.ext, dbl);
+  openOverlay();
+  document.getElementById('exClose').onclick=()=>closeOverlay();
+}
+/* textes lus (purs, sans nom de fichier : réutilisés par le build TTS) */
+function installTtsText(){ return 'Installation en cours. Patiente jusqu\'à la fin de la barre de progression.'; }
+function installedTtsText(){ return 'Installation terminée. Le programme est maintenant installé sur l\'ordinateur.'; }
+function dangerTtsText(ext, dbl){
+  return 'Danger ! Ce fichier point '+ext+' est un piège. '
+    +(dbl?'Il se déguise, mais sa vraie extension est toujours la dernière. ':'')
+    +'En l\'ouvrant pour de vrai, il aurait pu installer un virus sur l\'ordinateur. On recommence la mission pour repartir du bon pied.';
+}
+/* double-clic sur un programme SÛR marqué installer:true : simule une installation avec barre de progression */
+function openInstallSim(node){
+  beep('open');
+  const disp=displayName(node);
+  modal.className='modal';
+  modal.innerHTML='<span class="m-emoji">📦</span><div class="kicker">Installation</div>'
+    +'<h2>'+disp+'</h2><p>Installation du programme en cours…</p>'
+    +'<div class="inst-track"><div class="inst-fill" id="instFill"></div></div>'
+    +'<div class="inst-pct" id="instPct">0&nbsp;%</div>';
+  modal.dataset.ttsText = installTtsText();
+  openOverlay();
+  const fill=document.getElementById('instFill'), pct=document.getElementById('instPct');
+  let p=0;
+  const iv=setInterval(()=>{
+    p=Math.min(100, p+8+Math.random()*10);
+    const pi=Math.round(p);
+    fill.style.width=pi+'%'; pct.textContent=pi+' %';
+    if(p>=100){
+      clearInterval(iv);
+      (EX.evt.installed=EX.evt.installed||new Set()).add(node.name).add(disp);
+      beep('good');
+      modal.className='modal good';
+      modal.innerHTML='<span class="m-emoji">✅</span><h2>'+disp+' installé&nbsp;!</h2>'
+        +'<p>Le programme est maintenant installé sur l\'ordinateur.</p>'
+        +'<div class="m-actions"><button class="m-btn primary green" id="instOk">Continuer</button></div>';
+      modal.dataset.ttsText = installedTtsText();
+      if(window.ttsDecorateModal) ttsDecorateModal(modal);
+      document.getElementById('instOk').onclick=()=>{ closeOverlay(); checkMission(); };
+    }
+  }, 120);
+}
+/* double-clic sur un fichier marqué malicious:true : alerte danger, la mission redémarre */
+function dangerousFileFail(node){
+  beep('bad'); _missionDone=true;
+  const disp=displayName(node);
+  const dbl=/\.(pdf|jpg|jpeg|png|docx?|odt|mp3|mp4)$/i.test(node.name||'');
+  modal.className='modal bad';
+  modal.innerHTML='<span class="m-emoji">☠️</span><div class="kicker" style="color:var(--red-d)">Danger !</div>'
+    +'<h2>'+disp+'</h2>'
+    +'<p>Ce fichier est <b>dangereux</b>. '
+    +(dbl?'Il se déguise en <b>'+node.name.split('.').pop()+'</b>, mais sa <b>vraie</b> extension (la <b>dernière</b>) est <b>.'+node.ext+'</b> : un piège très courant.'
+         :'Son nom essaie de te mettre en confiance, mais c\'est un <b>programme</b> qui peut installer un virus.')+'</p>'
+    +'<div class="howto boss"><p class="h-head">⚠️ Ce qu\'il aurait pu se passer :</p><p>En le lançant pour de vrai, ce fichier aurait pu installer un <b>virus</b>, voler des informations ou abîmer l\'ordinateur.</p></div>'
+    +'<p style="font-size:.95rem;color:var(--muted)">On <b>recommence la mission</b> pour refaire les choses dans le bon ordre.</p>'
+    +'<div class="m-actions"><button class="m-btn primary boss" id="dangerRetry">↺ Recommencer la mission</button></div>';
+  modal.dataset.ttsText = dangerTtsText(node.ext, dbl);
+  openOverlay();
+  document.getElementById('dangerRetry').onclick=()=>{ closeOverlay(); startStep(playIdx); };
 }
 function doMove(nodes, dest){
   let moved=0;
@@ -1601,6 +1734,7 @@ const GENERIC_TEXTS=[
   "🎈 Idées pour la journée\n\n- sauter dans la plus GROSSE flaque\n- inventer une danse rigolote 💃\n- faire un câlin à quelqu'un\n- sourire à un inconnu 😄"
 ];
 function fileText(node){
+  if(node.text) return node.text;
   const n=(node.name||'').toLowerCase();
   if(/pub/.test(n)) return JUNK.pub;
   if(/spam/.test(n)) return JUNK.spam;
@@ -1668,6 +1802,11 @@ function playTune(node){
 /* aperçu de fichier (double-clic) */
 function openFilePreview(node){
   if(node.infected){ return; } // géré par le boss
+  if(isExec(node) && !node.editable){
+    if(node.malicious) return dangerousFileFail(node);
+    if(node.installer) return openInstallSim(node);
+    return openExecDialog(node);
+  }
   const ext=node.ext; let body='', music=false;
   if(node.editable){
     const prev=(EX.evt.notepadAnswers&&EX.evt.notepadAnswers[node.name])||'';
@@ -1676,9 +1815,9 @@ function openFilePreview(node){
       +'<div class="np-answer"><input class="np-input" id="npInput" type="text" placeholder="Tape ta réponse…" value="'+prev+'">'
       +'<button class="np-ok" id="npOk">✓ Valider</button></div>'
       +'<div class="np-feedback" id="npFb"></div></div>';
-  } else if(ext==='txt'||ext==='doc'||ext==='pdf'){
+  } else if(ext==='txt'||ext==='doc'||ext==='docx'||ext==='odt'||ext==='rtf'||ext==='pdf'){
     body='<div class="doc-paper">'+fileText(node).replace(/\n/g,'<br>')+'</div>';
-  } else if(ext==='mp3'||ext==='mp4'){
+  } else if(ext==='mp3'||ext==='wav'||ext==='ogg'||ext==='m4a'||ext==='mp4'||ext==='avi'||ext==='mkv'||ext==='mov'){
     music=true;
     body='<div class="music-player"><div class="mp-disc">'+iconFor(node)+'</div>'
       +'<div class="mp-bars"><i></i><i></i><i></i><i></i><i></i></div>'
@@ -2070,7 +2209,7 @@ const G={
   createdAny:()=>({hint:'Clic droit dans la fenêtre (zone vide) → Nouveau dossier.', test:c=>c.evt.createdFolder}),
   created:(name,parent)=>({hint:'Clic droit dans la fenêtre → Nouveau dossier, puis tape le nom.', test:c=> parent? c.inFolder(parent,name) : findAnyByName(c.root,name).some(n=>n.type==='folder')}),
   renamedTo:(name,parent)=>({hint:'Clic droit → Renommer (ou touche F2), efface et tape le nouveau nom.', test:c=> parent? c.inFolder(parent,name) : !!c.find(name).length}),
-  movedInto:(item,dest)=>({hint:'Glisse le fichier sur le dossier, ou utilise Couper puis Coller.', test:c=>c.inFolder(dest,item)}),
+  movedInto:(item,dest)=>({hint:'Glisse le fichier sur le dossier, ou utilise Couper puis Coller.', item, dest, test:c=>c.inFolder(dest,item)}),
   copiedInto:(item,dest)=>({hint:'Copier (Ctrl+C) puis Coller (Ctrl+V) : la copie reste à sa place ET arrive dans le dossier.', test:c=>c.inFolder(dest,item) && c.countNamed(item)>=2}),
   deleted:(name)=>({hint:'Sélectionne le fichier puis appuie sur Suppr (ou clic droit → Supprimer).', test:c=>c.bin.some(n=>n.name===name||displayName(n)===name)}),
   restored:(name)=>({hint:'Ouvre la Corbeille, clic droit sur le fichier → Restaurer.', restoreTarget:name, test:c=> !!c.find(name).length && !c.bin.some(n=>n.name===name)}),
@@ -2092,11 +2231,18 @@ const G={
   propsOpened:(name)=>({hint:'Clic droit sur l\'élément → <b>Propriétés</b>.', test:c=>c.evt.propsOpened && c.evt.propsOpened.has(name)}),
   propsDetailsTab:(name)=>({hint:'Dans la fenêtre Propriétés, clique sur l\'onglet <b>Détails</b>.', test:c=>c.evt.propsDetailsOpened && c.evt.propsDetailsOpened.has(name)}),
   notepadFilled:(fileName,expected)=>({hint:'Ouvre le fichier, tape la valeur trouvée dans les Propriétés, puis clique <b>Valider</b>.', test:c=>c.evt.notepadAnswers && c.evt.notepadAnswers[fileName] && c.evt.notepadAnswers[fileName].toLowerCase()===expected.toLowerCase()}),
+  installed:(name)=>({hint:'Double-clique sur le programme, puis attends la fin de la barre de progression.', test:c=>c.evt.installed && c.evt.installed.has(name)}),
 };
 
 /* construit, à partir des objectifs, la liste des actions destructives autorisées */
 function buildGuard(step){
-  const g={del:[], ren:[], mov:[], restoreTargets:[]};
+  const g={del:[], ren:[], mov:[], restoreTargets:[], movDest:{}};
+  // repère les couples item→destination attendus par les objectifs movedInto (seul ou dans G.all)
+  const collectMovDest=(goal)=>{
+    if(!goal) return;
+    if(goal.item && goal.dest) (g.movDest[goal.item]=g.movDest[goal.item]||[]).push(goal.dest);
+    if(goal.parts) goal.parts.forEach(collectMovDest);
+  };
   (step.objectives||[]).forEach(o=>{
     if(o.del) g.del=g.del.concat(o.del);
     if(o.ren) g.ren=g.ren.concat(o.ren);
@@ -2104,10 +2250,16 @@ function buildGuard(step){
     // deletedTogether / lassoDeleted : les noms sont dans le goal lui-même
     if(o.goal && o.goal.togetherNames) g.del=g.del.concat(o.goal.togetherNames);
     if(o.goal && o.goal.restoreTarget) g.restoreTargets.push(o.goal.restoreTarget);
+    collectMovDest(o.goal);
   });
   return g;
 }
 function _allowed(rec, list){ return list.some(a=>a===rec.name || a===rec.display); }
+/* un item déplacé vers une destination qui n'est PAS celle attendue par son objectif movedInto */
+function _wrongDest(rec, movDest){
+  const allowed = movDest[rec.name] || movDest[rec.display];
+  return allowed && allowed.indexOf(rec.dest)<0;
+}
 /* détecte une action « hors objectif » : suppression / renommage / déplacement
    d'un élément du décor (seeded) qui n'était pas demandé, ou suppression définitive
    (corbeille vidée / « Supprimer définitivement ») d'un fichier qu'il fallait restaurer.
@@ -2117,7 +2269,11 @@ function missionViolation(){
   const g=currentStep._guard; if(!g) return null;
   for(const r of (EX.evt.dels||[])){ if(r.seeded && !_allowed(r, g.del)) return 'delete'; }
   for(const r of (EX.evt.rens||[])){ if(r.seeded && !_allowed({name:r.from, display:r.from}, g.ren)) return 'rename'; }
-  for(const r of (EX.evt.movs||[])){ if(r.seeded && !_allowed(r, g.mov)) return 'move'; }
+  for(const r of (EX.evt.movs||[])){
+    if(!r.seeded) continue;
+    if(!_allowed(r, g.mov)) return 'move';
+    if(_wrongDest(r, g.movDest)) return 'wrongDest';
+  }
   for(const r of (EX.evt.permaDels||[])){ if(_allowed(r, g.restoreTargets)) return 'permaDelete'; }
   return null;
 }
@@ -2127,6 +2283,7 @@ function missionFail(type){
     delete:'Tu as <b>supprimé</b> un élément qui n\'était pas demandé.',
     rename:'Tu as <b>renommé</b> un élément que tu ne devais pas toucher.',
     move:'Tu as <b>déplacé</b> un élément qui n\'était pas dans l\'objectif.',
+    wrongDest:'Tu as déplacé un fichier dans le <b>mauvais dossier</b>.',
     permaDelete:'Tu as supprimé <b>définitivement</b> un fichier qu\'il fallait restaurer.'
   };
   modal.className='modal warn';
@@ -2647,11 +2804,52 @@ const LEVELS=[
 /* ===== NIVEAU 7 — Les extensions de fichiers ===== */
 { n:7, title:'Les extensions de fichiers', subtitle:'les extensions',
   intro:{ emoji:'🏷️',
-    lead:'Chaque fichier a une <b>extension</b> : les petites lettres après le point (<b>.txt</b>, <b>.jpg</b>, <b>.mp3</b>…). Elles disent à l\'ordinateur <b>quel type</b> de fichier c\'est et avec <b>quel programme</b> l\'ouvrir.',
-    teach:'Pour changer une extension : <b>renomme</b> le fichier (clic droit → Renommer ou '+kbd('F2')+') et modifie les lettres <b>après le point</b>. Un texte finit par <b>.txt</b>, une image par <b>.jpg</b> ou <b>.png</b>, une musique par <b>.mp3</b>, un document par <b>.pdf</b>. Un fichier <b>sans extension</b> ne peut pas s\'ouvrir : il faut lui en <b>ajouter</b> une !',
-    tools:[{g:'🏷️',n:'.txt .jpg .mp3 : l\'extension'},{g:'F2',n:'Renommer pour changer l\'extension'},{g:'➕',n:'Ajouter une extension manquante'}] },
+    lead:'Chaque fichier a une <b>extension</b> : les petites lettres après le point (<b>.txt</b>, <b>.jpg</b>, <b>.mp3</b>…). Elles disent à l\'ordinateur <b>quel type</b> de fichier c\'est et avec <b>quel programme</b> l\'ouvrir. Elles se rangent en <b>familles</b> : documents, images, sons, vidéos, archives… et <b>programmes</b>.',
+    teach:'La plupart des fichiers <b>s\'ouvrent</b> : ils t\'affichent un texte, une image, un son. Mais les extensions <b>.exe</b>, <b>.msi</b> et <b>.bat</b> sont différentes : elles ne montrent rien, elles <b>s\'exécutent</b> et installent un programme sur l\'ordinateur. Elles sont utiles (c\'est comme ça qu\'on installe un vrai logiciel), mais on ne les lance <b>que si on sait d\'où vient le fichier</b>. Pour changer une extension : <b>renomme</b> le fichier (clic droit → Renommer ou '+kbd('F2')+') et modifie les lettres <b>après le point</b>. Un fichier <b>sans extension</b> ne peut pas s\'ouvrir : il faut lui en <b>ajouter</b> une !',
+    tools:[{g:'🏷️',n:'.txt .jpg .mp3 : l\'extension'},{g:'🗂️',n:'Les familles : texte, image, son, vidéo…'},{g:'⚠️',n:'.exe .msi .bat : ça s\'installe !'},{g:'F2',n:'Renommer pour changer l\'extension'},{g:'➕',n:'Ajouter une extension manquante'}] },
   rounds:[
-    {kind:'mission',label:'Mission 1',emoji:'🔧',title:'Corrige les extensions',
+    {kind:'mission',label:'Mission 1',emoji:'🗂️',title:'La famille des extensions',
+      pre:'extmap',
+      intro:'Tu connais maintenant les grandes <b>familles</b>. À toi de jouer : sur le Bureau, glisse chaque fichier dans le dossier de sa famille en regardant <b>l\'extension</b> (les lettres après le point) — pas le nom !',
+      seed:{desktop:[
+        folder('Documents',[]), folder('Images',[]), folder('Sons',[]), folder('Vidéos',[]),
+        file('exposé-volcans','pdf',{icon:'❔'}), file('photo-classe','jpg',{icon:'❔'}), file('interview','mp3',{icon:'❔'}), file('documentaire','mp4',{icon:'❔'}),
+        file('bruitage','wav',{icon:'❔'}), file('poésie','odt',{icon:'❔'}), file('sortie-scolaire','avi',{icon:'❔'}), file('logo-college','png',{icon:'❔'}),
+        file('devoir-maths','docx',{icon:'❔'}), file('expérience','mov',{icon:'❔'}), file('schéma-svt','webp',{icon:'❔'}), file('podcast-histoire','m4a',{icon:'❔'})
+      ]},
+      objectives:[
+        {t:'📄 Range les 3 documents dans le dossier <b>Documents</b>',
+          goal:G.all([G.movedInto('exposé-volcans.pdf','Documents'),G.movedInto('poésie.odt','Documents'),G.movedInto('devoir-maths.docx','Documents')]),
+          mov:['exposé-volcans.pdf','poésie.odt','devoir-maths.docx']},
+        {t:'🖼️ Range les 3 images dans le dossier <b>Images</b>',
+          goal:G.all([G.movedInto('photo-classe.jpg','Images'),G.movedInto('logo-college.png','Images'),G.movedInto('schéma-svt.webp','Images')]),
+          mov:['photo-classe.jpg','logo-college.png','schéma-svt.webp']},
+        {t:'🎵 Range les 3 sons dans le dossier <b>Sons</b>',
+          goal:G.all([G.movedInto('interview.mp3','Sons'),G.movedInto('bruitage.wav','Sons'),G.movedInto('podcast-histoire.m4a','Sons')]),
+          mov:['interview.mp3','bruitage.wav','podcast-histoire.m4a']},
+        {t:'🎬 Range les 3 vidéos dans le dossier <b>Vidéos</b>',
+          goal:G.all([G.movedInto('documentaire.mp4','Vidéos'),G.movedInto('sortie-scolaire.avi','Vidéos'),G.movedInto('expérience.mov','Vidéos')]),
+          mov:['documentaire.mp4','sortie-scolaire.avi','expérience.mov']}
+      ]},
+    {kind:'mission',label:'Mission 2',emoji:'⚠️',title:'Attention : ce qui s\'installe',
+      intro:'Un <b>.pdf</b> ou un <b>.jpg</b> <b>s\'ouvre</b> et te montre quelque chose. Un <b>.exe</b>, un <b>.msi</b> ou un <b>.bat</b> ne montre rien : il <b>s\'exécute</b>. Dans ce dossier <b>Téléchargements</b> : <b>installe</b> les programmes sûrs, <b>range</b> les fichiers à garder, puis <b>supprime</b> les fichiers malveillants (double extension, nom suspect).',
+      seed:{desktop:[ folder('Téléchargements',[
+        folder('À garder',[]),
+        file('calculatrice-plus','exe',{installer:true}), file('jeu-tables-multiplication','msi',{installer:true}),
+        file('exposé-volcans','pdf'), file('photo-classe','jpg'), file('interview','mp3'),
+        file('super-jeu-gratuit','exe',{malicious:true}), file('facture.pdf','exe',{malicious:true}), file('mise-a-jour-urgente','bat',{malicious:true})
+      ]) ], open:'Téléchargements'},
+      objectives:[
+        {t:'⚙️ Installe les <b>2 programmes sûrs</b> (double-clique, puis attends la fin de la barre)',
+          goal:G.all([G.installed('calculatrice-plus.exe'),G.installed('jeu-tables-multiplication.msi')])},
+        {t:'📄 Range les 3 fichiers sûrs (<b>.pdf</b>, <b>.jpg</b>, <b>.mp3</b>) dans <b>À garder</b>',
+          goal:G.all([G.movedInto('exposé-volcans.pdf','À garder'),G.movedInto('photo-classe.jpg','À garder'),G.movedInto('interview.mp3','À garder')]),
+          mov:['exposé-volcans.pdf','photo-classe.jpg','interview.mp3']},
+        {t:'🗑️ Ceux-là sont malveillants (double extension ou nom suspect) : supprime <b>super-jeu-gratuit.exe</b>, <b>facture.pdf.exe</b> et <b>mise-a-jour-urgente.bat</b>',
+          goal:G.all([G.deleted('super-jeu-gratuit.exe'),G.deleted('facture.pdf.exe'),G.deleted('mise-a-jour-urgente.bat')]),
+          del:['super-jeu-gratuit.exe','facture.pdf.exe','mise-a-jour-urgente.bat']}
+      ]},
+    {kind:'mission',label:'Mission 3',emoji:'🔧',title:'Corrige les extensions',
       intro:'Ces fichiers ont la <b>mauvaise extension</b> ! Renomme-les ('+kbd('F2')+') et corrige les lettres <b>après le point</b>. Regarde l\'icône changer.',
       editExt:true,
       seed:{desktop:[ folder('Documents',[ file('vacances','txt'), file('musique','txt'), file('rapport','txt') ]) ], open:'Documents'},
@@ -2660,7 +2858,7 @@ const LEVELS=[
         {t:'C\'est une chanson : change <b>musique.txt</b> en <b>musique.mp3</b>', goal:G.renamedTo('musique.mp3','Documents'), ren:'musique.txt'},
         {t:'C\'est un document : change <b>rapport.txt</b> en <b>rapport.pdf</b>', goal:G.renamedTo('rapport.pdf','Documents'), ren:'rapport.txt'}
       ]},
-    {kind:'mission',label:'Mission 2',emoji:'🧩',title:'Complète les extensions',
+    {kind:'mission',label:'Mission 4',emoji:'🧩',title:'Complète les extensions',
       intro:'Oups, il manque une lettre à chaque extension ! <b>Complète-les</b> pour que les fichiers soient corrects.',
       editExt:true,
       seed:{desktop:[ folder('Documents',[ file('photo','jp'), file('lettre','tx'), file('film','mp') ]) ], open:'Documents'},
@@ -2669,7 +2867,7 @@ const LEVELS=[
         {t:'Complète <b>lettre.tx</b> en <b>lettre.txt</b>', goal:G.renamedTo('lettre.txt','Documents'), ren:'lettre.tx'},
         {t:'Complète <b>film.mp</b> en <b>film.mp4</b>', goal:G.renamedTo('film.mp4','Documents'), ren:'film.mp'}
       ]},
-    {kind:'mission',label:'Mission 3',emoji:'➕',title:'Ajoute une extension, puis ouvre',
+    {kind:'mission',label:'Mission 5',emoji:'➕',title:'Ajoute une extension, puis ouvre',
       intro:'Ces fichiers <b>n\'ont pas d\'extension</b> : impossible de les ouvrir ! Ajoute la bonne extension, <b>puis</b> ouvre-les.',
       editExt:true,
       seed:{desktop:[ folder('Documents',[ file('chanson',undefined,{noext:true,icon:'❔'}), file('histoire',undefined,{noext:true,icon:'❔'}) ]) ], open:'Documents'},
@@ -2679,7 +2877,7 @@ const LEVELS=[
         {t:'Ajoute <b>.txt</b> au fichier <b>histoire</b>', goal:G.renamedTo('histoire.txt','Documents'), ren:'histoire'},
         {t:'<b>Ouvre histoire</b> (double-clic)', goal:G.openedFile('histoire')}
       ]},
-    {kind:'mission',label:'Mission 4',emoji:'✏️',title:'Renomme ET change l\'extension',
+    {kind:'mission',label:'Mission 6',emoji:'✏️',title:'Renomme ET change l\'extension',
       intro:'Cette fois, change <b>le nom</b> ET <b>l\'extension</b> en une seule fois.',
       editExt:true,
       seed:{desktop:[ folder('Documents',[ file('img001','txt'), file('doc-final','txt'), file('son01','txt') ]) ], open:'Documents'},
@@ -2687,6 +2885,21 @@ const LEVELS=[
         {t:'Renomme <b>img001.txt</b> en <b>photo-plage.jpg</b>', goal:G.renamedTo('photo-plage.jpg','Documents'), ren:'img001.txt'},
         {t:'Renomme <b>doc-final.txt</b> en <b>rapport.pdf</b>', goal:G.renamedTo('rapport.pdf','Documents'), ren:'doc-final.txt'},
         {t:'Renomme <b>son01.txt</b> en <b>comptine.mp3</b>', goal:G.renamedTo('comptine.mp3','Documents'), ren:'son01.txt'}
+      ]},
+    {kind:'mission',label:'Mission 7',emoji:'⚙️',title:'Installer sans se tromper',
+      intro:'Un <b>.exe</b>, un <b>.msi</b> ou un <b>.bat</b> n\'est <b>pas un virus</b> ! C\'est comme ça qu\'on installe de vrais logiciels utiles. Ce qui compte, c\'est <b>d\'où vient le fichier</b>. Lis d\'abord <b>provenance.txt</b>, il te dit tout — puis <b>installe</b> les bons programmes et <b>supprime</b> les autres.',
+      seed:{desktop:[ folder('Téléchargements',[
+        file('provenance','txt',{text:"📋 D'où viennent ces fichiers ?\n\n• libreoffice-installeur.msi\ntéléchargé sur le site officiel libreoffice.org, par le professeur.\n\n• geogebra-installeur.exe\ntéléchargé sur le site officiel geogebra.org, pour le cours de maths.\n\n• pilote-imprimante.exe\ntéléchargé sur le site du fabricant de l'imprimante.\n\n• photo-vacances.jpg.exe\nreçu par mail d'une adresse inconnue.\n\n• installer-programme.exe\ntéléchargé après avoir cliqué sur une publicité.\n\n• facture123.bat\npièce jointe d'un mail que personne n'attendait."}),
+        file('libreoffice-installeur','msi',{installer:true}), file('geogebra-installeur','exe',{installer:true}), file('pilote-imprimante','exe',{installer:true}),
+        file('photo-vacances.jpg','exe',{malicious:true}), file('installer-programme','exe',{malicious:true}), file('facture123','bat',{malicious:true})
+      ]) ], open:'Téléchargements'},
+      objectives:[
+        {t:'Ouvre <b>provenance.txt</b> pour savoir d\'où vient chaque fichier', goal:G.openedFile('provenance')},
+        {t:'⚙️ Ces trois-là viennent de <b>sites officiels</b> : installe-les (double-clique, puis attends la fin de la barre)',
+          goal:G.all([G.installed('libreoffice-installeur.msi'),G.installed('geogebra-installeur.exe'),G.installed('pilote-imprimante.exe')])},
+        {t:'🗑️ Mail inconnu, pub, pièce jointe surprise… et un fichier déguisé en photo : supprime les trois autres',
+          goal:G.all([G.deleted('photo-vacances.jpg.exe'),G.deleted('installer-programme.exe'),G.deleted('facture123.bat')]),
+          del:['photo-vacances.jpg.exe','installer-programme.exe','facture123.bat']}
       ]},
     {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand réparage',
       intro:'Répare tout le dossier : ajoute, complète et corrige les extensions, et ouvre ce qui doit l\'être !',
@@ -2931,8 +3144,82 @@ function openLevelIntro(n, cont){
   openOverlay();
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
 }
-function openRoundPopup(){
+/* ---- Carte interactive des familles d'extensions (avant le tri de la mission 7.1) ---- */
+const EXT_FAMILIES=[
+  {ic:'📝', name:'Textes & documents', what:'pour LIRE et ÉCRIRE', exts:[
+    {e:'txt', d:'Du texte tout simple, sans mise en forme. Il s\'ouvre sur n\'importe quel ordinateur.'},
+    {e:'docx', d:'Le document de Word : texte mis en forme, titres, images, tableaux.'},
+    {e:'odt', d:'Le document de LibreOffice Writer, la suite bureautique gratuite.'},
+    {e:'pdf', d:'Un document figé : il s\'affiche exactement pareil partout, mais on ne le modifie pas.'}
+  ]},
+  {ic:'🖼️', name:'Images', what:'pour VOIR', exts:[
+    {e:'jpg', d:'La photo la plus courante : légère, c\'est le format des appareils photo et des téléphones.'},
+    {e:'png', d:'Image très nette, qui peut avoir un fond transparent. Parfaite pour les logos et les dessins.'},
+    {e:'gif', d:'Une petite image qui bouge, en boucle. Peu de couleurs, mais ça s\'anime !'},
+    {e:'webp', d:'Format récent du web : même qualité que le jpg, mais un fichier deux fois plus léger.'}
+  ]},
+  {ic:'🎵', name:'Sons', what:'pour ÉCOUTER', exts:[
+    {e:'mp3', d:'Le son le plus répandu : léger et lisible sur tous les appareils.'},
+    {e:'wav', d:'Son de qualité maximale, sans compression… mais un fichier très lourd. Utilisé en studio.'},
+    {e:'ogg', d:'Format audio libre et gratuit, très utilisé dans les jeux vidéo.'},
+    {e:'m4a', d:'L\'audio d\'Apple (iPhone, Apple Music) : plus léger que le wav, de bonne qualité.'}
+  ]},
+  {ic:'🎬', name:'Vidéos', what:'pour REGARDER', exts:[
+    {e:'mp4', d:'La vidéo la plus courante : bonne qualité, fichier raisonnable, lisible partout.'},
+    {e:'avi', d:'Un ancien format vidéo de Windows. Ça marche encore, mais c\'est souvent très lourd.'},
+    {e:'mkv', d:'Format qui peut contenir plusieurs pistes : VF, VO et sous-titres dans un seul fichier.'},
+    {e:'mov', d:'Le format vidéo d\'Apple (QuickTime) : c\'est ce que filment les iPhone.'}
+  ]},
+  {ic:'🗜️', name:'Archives', what:'pour TRANSPORTER', exts:[
+    {e:'zip', d:'Une valise : plusieurs fichiers compressés en un seul, plus léger à envoyer. On la « décompresse » pour récupérer le contenu.'},
+    {e:'rar', d:'Comme le zip, mais il faut un logiciel spécial pour l\'ouvrir.'}
+  ]},
+  {ic:'⚙️', name:'Programmes', what:'pour INSTALLER et LANCER', danger:true, exts:[
+    {e:'exe', warn:true, d:'Un programme Windows. Il n\'affiche ni texte ni image : il se LANCE et agit sur l\'ordinateur.'},
+    {e:'msi', warn:true, d:'Un installateur : il ajoute un nouveau logiciel sur l\'ordinateur.'},
+    {e:'bat', warn:true, d:'Une liste de commandes que l\'ordinateur exécute d\'un coup, sans rien demander.'}
+  ]}
+];
+const EXTMAP_TTS='Voici les familles d\'extensions. Chaque extension a une fonction : lire, voir, écouter, regarder, transporter ou installer. '
+  +'Survole une extension pour savoir à quoi elle sert. Les extensions de la famille Programmes sont à part : elles n\'affichent rien, elles agissent sur l\'ordinateur. '
+  +'Quand tu as fini d\'explorer, clique sur le bouton pour passer au tri.';
+function openExtMap(cont){
+  const fams=EXT_FAMILIES.map((f,fi)=>
+    '<div class="ex-fam'+(f.danger?' danger':'')+'">'
+    +'<div class="ef-head"><span class="ef-ic">'+f.ic+'</span><span class="ef-name">'+f.name+'</span><span class="ef-what">'+f.what+'</span></div>'
+    +'<div class="ex-chips">'+f.exts.map((x,xi)=>'<button class="ex-chip" data-f="'+fi+'" data-x="'+xi+'">.'+x.e+'</button>').join('')+'</div></div>'
+  ).join('');
+  modal.className='modal extmap';
+  modal.innerHTML='<span class="m-emoji">🏷️</span><div class="kicker">Mission 1 · découverte</div>'
+    +'<h2>La famille des extensions</h2>'
+    +'<p>Les extensions se regroupent par <b>fonction</b> : ce qu\'on peut faire avec le fichier. Survole-les pour tout savoir !</p>'
+    +'<div class="ex-grid">'+fams+'</div>'
+    +'<div class="ex-info" id="exInfo"><span class="xi-ic">👆</span><div><div class="xi-desc">Passe la souris (ou clique) sur une extension pour découvrir à quoi elle sert.</div></div></div>'
+    +'<div class="m-actions"><button class="m-btn primary green" id="exGo">Passer au tri 🚀</button></div>';
+  modal.dataset.ttsText = EXTMAP_TTS;
+  openOverlay();
+  const info=document.getElementById('exInfo');
+  const show=(fi,xi)=>{
+    const f=EXT_FAMILIES[fi], x=f.exts[xi];
+    info.className='ex-info'+(x.warn?' warn':'');
+    info.innerHTML='<span class="xi-ic">'+(ICON[x.e]||ICON.generic)+'</span><div>'
+      +'<span class="xi-ext">.'+x.e+'</span> <span class="xi-type">· '+typeLabel({type:'file',ext:x.e})+' · '+f.name+'</span>'
+      +'<div class="xi-desc">'+x.d+(x.warn?' <b>Ne le lance jamais sans savoir d\'où il vient.</b>':'')+'</div></div>';
+    modal.querySelectorAll('.ex-chip').forEach(c=>c.classList.remove('on'));
+    const cur=modal.querySelector('.ex-chip[data-f="'+fi+'"][data-x="'+xi+'"]'); if(cur) cur.classList.add('on');
+  };
+  modal.querySelectorAll('.ex-chip').forEach(c=>{
+    const fi=+c.getAttribute('data-f'), xi=+c.getAttribute('data-x');
+    c.onmouseenter=()=>show(fi,xi);
+    c.onfocus=()=>show(fi,xi);
+    c.onclick=()=>{ show(fi,xi); beep('open'); };
+  });
+  document.getElementById('exGo').onclick=()=>{ closeOverlay(); audioCtx(); cont&&cont(); };
+}
+function openRoundPopup(skipPre){
   const s=currentStep, jalon=s.kind==='jalon';
+  // écran de découverte facultatif, affiché AVANT la consigne de la mission
+  if(!skipPre && s.pre==='extmap') return openExtMap(()=>openRoundPopup(true));
   modal.className='modal'+(jalon?' test-modal':'');
   modal.innerHTML='<span class="m-emoji">'+s.emoji+'</span>'
     +'<div class="kicker">'+(reviewing()?'Entraînement':s.label)+'</div><h2>'+s.title+'</h2>'
@@ -2992,11 +3279,9 @@ function courseFinish(){
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
     +'<p>Incroyable ! Tu as fini les <b>8 niveaux</b> de <b>Dossiers et fichiers</b> et tu as vaincu le <b>virus 🦠</b> ! Tu sais ouvrir, naviguer avec le volet, créer, ranger, supprimer, restaurer, rechercher, trier et gérer les extensions. Un vrai pro de l\'ordinateur ! 👏</p>'
-    +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
-    +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+    +'<div class="m-actions"><a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
-  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
 }
 
 /* sélecteur de niveaux */

@@ -3360,12 +3360,10 @@ function onCourseFinish(){
     <h2>Parcours terminé !</h2>
     <p>Incroyable ! Tu as fini <b>tous les niveaux</b> du <b>Traitement de texte</b> : la mise en forme, les paragraphes, les listes, le clavier, l'écriture, les tableaux et les images. Tu es devenu un vrai <b>pro de l'ordinateur</b> ! 👏</p>
     <div class="m-actions">
-      <button class="m-btn ghost" id="again">↺ Tout recommencer</button>
       <a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Retour à l'accueil</a>
     </div>`;
   modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
-  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1, 0, true); };
 }
 function updateProgressFinished(){
   stepIndex=STEPS.length; updateProgress();

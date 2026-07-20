@@ -3056,12 +3056,9 @@ function courseFinish(){
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
     +'<p>Incroyable ! Tu as fini les <b>6 niveaux</b> de <b>La souris</b> <b>et vaincu le Démon Gardien</b> 🐲 ! Le clic, le glisser-déposer, le double-clic, le clic droit, la sélection et la molette n\'ont plus de secret pour toi. Tu es un vrai pro de la souris ! 👏</p>'
-    +'<div class="m-actions"><button class="m-btn ghost" id="replayBoss">⚔️ Rejouer le Boss</button>'
-    +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+    +'<div class="m-actions"><a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
-  // « Rejouer le Boss » : on recharge le niveau du boss (et non la dernière mission du niveau courant).
-  document.getElementById('replayBoss').onclick=()=>{ closeOverlay(); audioCtx(); const bossLvl=LEVELS.findIndex(l=>l.game==='boss')+1; loadLevel(bossLvl>0?bossLvl:LEVELS.length, 0, false); };
 }
 
 /* ---- sélecteur de niveaux ---- */

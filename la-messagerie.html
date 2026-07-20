@@ -4509,11 +4509,9 @@ function courseFinish(){
     +(tot<max
       ?'<p style="font-size:.9rem;color:var(--muted)">Rejoue tes missions préférées (🗺️ Niveaux) pour tout dorer !</p>'
       :'<p style="font-size:.9rem;color:var(--muted)">Récolte PARFAITE. Chapeau bas, inspecteur. 🎩</p>')
-    +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
-    +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+    +'<div class="m-actions"><a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
-  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
 }
 
 /* sélecteur de niveaux */

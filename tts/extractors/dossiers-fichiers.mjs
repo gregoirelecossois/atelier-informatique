@@ -63,6 +63,31 @@ function extractMissionFailMap(html){
   return ctx.__M;
 }
 
+// EXTMAP_TTS : constante lue sur l'écran des familles d'extensions (niveau 7, mission 1).
+function extractExtmapTts(html){
+  const m = html.match(/const\s+EXTMAP_TTS\s*=\s*([\s\S]*?);\r?\n/);
+  if (!m) return '';
+  const ctx = {}; vm.createContext(ctx);
+  vm.runInContext('var __S = ' + m[1] + ';', ctx);
+  return ctx.__S;
+}
+// execTtsText(ext, dbl) : alerte « ce fichier s'exécute » — toutes les combinaisons possibles.
+function extractExecTts(html){
+  const ctx = {}; vm.createContext(ctx);
+  vm.runInContext(extractFn(html, 'execTtsText'), ctx);
+  const out = [];
+  for (const ext of ['exe','msi','bat']) for (const dbl of [false, true]) out.push(ctx.execTtsText(ext, dbl));
+  return out;
+}
+// installTtsText / installedTtsText / dangerTtsText(ext,dbl) : simulation d'installation + alerte danger.
+function extractInstallDangerTts(html){
+  const ctx = {}; vm.createContext(ctx);
+  vm.runInContext(extractFn(html, 'installTtsText') + '\n' + extractFn(html, 'installedTtsText') + '\n' + extractFn(html, 'dangerTtsText'), ctx);
+  const out = [ctx.installTtsText(), ctx.installedTtsText()];
+  for (const ext of ['exe','msi','bat']) for (const dbl of [false, true]) out.push(ctx.dangerTtsText(ext, dbl));
+  return out;
+}
+
 export function extractWanted(html, { ttsKey, ttsNormalize, extractStatic }){
   const { LEVELS } = extractCore(html);
   const PHASES = extractBossPhases(html);
@@ -89,6 +114,9 @@ export function extractWanted(html, { ttsKey, ttsNormalize, extractStatic }){
   for (const txt of Object.values(FAIL_MAP)) add(txt);                 // messages d'échec de mission
   add("Tu as fait autre chose que l'objectif affiché en haut.");        // repli par défaut de missionFail
   add("Il faut utiliser la méthode demandée par l'objectif.");          // repli par défaut de wrongMethodFail
+  add(extractExtmapTts(html));                                         // écran des familles d'extensions
+  for (const txt of extractExecTts(html)) add(txt);                    // alertes .exe / .msi / .bat
+  for (const txt of extractInstallDangerTts(html)) add(txt);           // simulation d'installation + alerte danger
   for (const v of Object.values(STATIC)) add(v);                       // réussite, déblocage, fin, boss…
 
   return wanted;

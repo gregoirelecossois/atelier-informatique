@@ -22,6 +22,8 @@ export function ttsNormalize(s){
     .replace(/[\u{2600}-\u{27BF}]/gu, ' ')
     .replace(/[\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}\u{2300}-\u{23FF}]/gu, ' ')
     .replace(/[\u{FE00}-\u{FE0F}\u{200D}\u{20E3}]/gu, '')
+    // Le boss du clavier s'écrit K0RT3X mais se prononce « Kortex »
+    .replace(/K0RT3X/g, 'Kortex')
     .replace(/\s+/g, ' ').trim();
 }
 export function ttsKey(s){

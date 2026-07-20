@@ -683,7 +683,7 @@
   /* --- pare-feu (défense de zone) --- */
   .fw-zone{position:absolute;inset:0;overflow:hidden;background:linear-gradient(#0f2038,#15304f 70%,#1d3a5f);cursor:crosshair;}
   .fw-top{position:absolute;top:8px;left:0;right:0;text-align:center;color:#cfe3ff;font-weight:800;font-size:.8rem;z-index:6;pointer-events:none;}
-  .fw-file{position:absolute;display:flex;flex-direction:column;align-items:center;gap:1px;border:none;background:transparent;cursor:pointer;transform:translateX(-50%);z-index:5;padding:2px;}
+  .fw-file{position:absolute;display:flex;flex-direction:column;align-items:center;gap:1px;border:none;background:transparent;cursor:crosshair;transform:translateX(-50%);z-index:5;padding:2px;}
   .fw-file .ff-ic{font-size:1.9rem;line-height:1;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5));}
   .fw-file .ff-n{font-weight:800;font-size:.66rem;color:#fff;background:rgba(15,23,42,.72);border-radius:5px;padding:1px 6px;white-space:nowrap;}
   .fw-file.boom{animation:fwBoomK .35s ease forwards;pointer-events:none;}
@@ -5398,7 +5398,7 @@ const IX_SOSIES=[
   {t:'secretariat@college-curie.fr', ok:true},
   {t:'direction@ent-college-curie.secure-login.com', ok:false, bad:'.secure-login.com'},
   {t:'www.presse-jeunes.fr', ok:true},
-  {t:'securite@p1xmail-verif.com', ok:false, bad:'p1xmail-verif.com'},
+  {t:'amendes-gouv.nepasrepondre.fr@mezze.nl', ok:false, bad:'mezze.nl'},
   {t:'ent.college-curie.fr', ok:true},
   {t:'www.zanim0.fr', ok:false, bad:'0'}
 ];
@@ -6321,11 +6321,9 @@ function courseFinish(){
     +(tot<max
       ?'<p style="font-size:.9rem;color:var(--muted)">Rejoue tes missions préférées (🗺️ Niveaux) pour tout dorer !</p>'
       :'<p style="font-size:.9rem;color:var(--muted)">Récolte PARFAITE. Chapeau bas, agent. 🎩</p>')
-    +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
-    +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+    +'<div class="m-actions"><a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
-  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
 }
 
 /* sélecteur de niveaux */

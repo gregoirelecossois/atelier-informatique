@@ -387,20 +387,6 @@
   .attack-flash{position:absolute;inset:0;background:#fff;z-index:31;pointer-events:none;animation:atkFlash .5s ease forwards;}
   @keyframes atkFlash{0%{opacity:.85;}100%{opacity:0;}}
 
-  /* Boss en mode MOTS (Niveau 7) */
-  .spell.word .rune{display:inline-flex;align-items:center;padding:7px 14px;border-radius:13px;
-    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.25rem;color:#ede9fe;white-space:nowrap;letter-spacing:.5px;
-    background:linear-gradient(#6d28d9,#4c1d95);border:2px solid #c4b5fd;box-shadow:0 0 16px 3px rgba(167,139,250,.7);}
-  .spell.word.active .rune{border-color:#fde047;box-shadow:0 0 22px 5px rgba(253,224,71,.7);}
-  .spell.word .typed{color:#86efac;}
-  .spell.pop .rune{animation:spellPop .25s ease forwards;}
-  .atk-word{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:20;animation:tgtIn .3s ease both;}
-  .atk-word .card{display:inline-flex;align-items:center;padding:10px 22px;border-radius:16px;letter-spacing:.5px;
-    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.9rem;color:#7c2d12;background:#fff;white-space:nowrap;
-    border:3px solid #f59e0b;box-shadow:0 0 22px 5px rgba(245,158,11,.72);animation:tgtFloat 1.5s ease-in-out infinite;}
-  .atk-word .typed{color:#16a34a;}
-  .atk-word.hit .card{animation:tgtHit .25s ease forwards;}
-
   /* ---------- Invasion spatiale (Niveaux 3 & 4) ---------- */
   .field.invaders{
     background:
@@ -501,6 +487,55 @@
   .rad-ship{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0);font-size:1.7rem;line-height:1;transition:transform .4s;}
   .rad-ship.on{transform:translate(-50%,-50%) scale(1);}
   @media (max-width:640px){ .ht-radar{display:none;} }
+
+  /* ---------- Boss final « K0RT3X » (Niveau 7) : duel de terminal ---------- */
+  .hackboss .hterm{gap:8px;}
+  .hb-alert{display:flex;align-items:center;gap:10px;min-height:38px;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:800;font-size:1.12rem;color:#fca5a5;}
+  .hb-alert .hba-ic{font-size:1.65rem;line-height:1;}
+  .hb-alert .hba-txt{letter-spacing:.05em;text-shadow:0 0 10px rgba(239,68,68,.6);animation:htBlink 1s steps(1) infinite;}
+  .hb-alert.ok .hba-txt{color:#86efac;text-shadow:0 0 10px rgba(34,197,94,.6);animation:none;}
+  .hb-cmdlab{font-size:.9rem;font-weight:800;color:#a5f3fc;min-height:1.3em;}
+  .hb-cmdlab b{color:#fde68a;}
+  .hb-rows{display:flex;flex-direction:column;gap:8px;min-height:50px;justify-content:center;}
+  .hb-row{min-height:0;flex-wrap:nowrap;overflow-x:auto;}
+  .hb-row .hb-prompt{flex:0 0 auto;color:#5eead4;font-weight:800;font-size:1.2rem;margin-right:2px;}
+  .hb-row.gone{animation:hbRowGone .4s forwards;}
+  @keyframes hbRowGone{0%{opacity:1;}30%{transform:translateX(6px);filter:brightness(1.6) sepia(1) saturate(6) hue-rotate(-40deg);}100%{opacity:0;transform:translateX(-10px);}}
+  .ht-log > div.say{color:#e9d5ff;font-weight:800;text-shadow:0 0 8px rgba(217,70,239,.55);}
+  /* barre de riposte (K0RT3X ouvert) : orange au lieu du traçage rouge */
+  .ht-trace.riposte .ht-trace-label{color:#fde68a;}
+  .ht-trace.riposte .ht-trace-bar{background:rgba(120,53,15,.35);border-color:#92400e;}
+  .ht-trace.riposte .ht-trace-bar > i{background:repeating-linear-gradient(45deg,#f59e0b 0 10px,#b45309 10px 20px);box-shadow:0 0 10px rgba(245,158,11,.7);}
+  /* avatar de K0RT3X : un œil-machine rouge qui pulse, souffre, panique puis s'éteint */
+  .hb-boss{position:relative;z-index:2;flex:0 0 auto;width:168px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .hb-name{font-family:Consolas,"Cascadia Mono",monospace;font-weight:700;font-size:.95rem;letter-spacing:.14em;
+    color:#f0abfc;text-shadow:0 0 10px rgba(217,70,239,.75);}
+  .hb-eye{width:130px;height:130px;border-radius:50%;border:3px solid #7f1d1d;
+    background:radial-gradient(circle at 50% 42%,#450a0a 0%,#1c0505 68%,#0a0202 100%);
+    box-shadow:0 0 26px rgba(239,68,68,.45), inset 0 0 30px rgba(239,68,68,.25);
+    display:flex;align-items:center;justify-content:center;animation:hbPulse 2.6s ease-in-out infinite;}
+  .hb-iris{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle,#fecaca 0%,#ef4444 38%,#7f1d1d 82%);box-shadow:0 0 22px rgba(239,68,68,.95);
+    transition:background .9s,box-shadow .9s;}
+  .hb-pupil{width:17px;height:34px;border-radius:50%;background:#0a0202;}
+  @keyframes hbPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+  .hb-boss.hurt .hb-eye{animation:hbHurt .45s;}
+  @keyframes hbHurt{0%{filter:brightness(2.4);transform:translateX(0) scale(.94);}30%{transform:translateX(-6px);}
+    60%{transform:translateX(6px);}100%{filter:none;transform:none;}}
+  .hb-boss.laugh .hb-eye{animation:hbLaugh .55s ease-in-out 2;}
+  @keyframes hbLaugh{0%,100%{transform:scale(1) rotate(0);}50%{transform:scale(1.13) rotate(5deg);}}
+  .hb-boss.panic .hb-eye{animation:hbPanic .26s linear infinite;}
+  @keyframes hbPanic{0%{transform:translate(0,0);}25%{transform:translate(-3px,2px);}50%{transform:translate(3px,-2px);}
+    75%{transform:translate(-2px,-2px);}100%{transform:translate(0,0);}}
+  .hb-boss.dead .hb-eye{animation:hbDie 1.4s forwards;}
+  @keyframes hbDie{0%{filter:brightness(1);}30%{filter:brightness(2.2);}60%{filter:brightness(.4) grayscale(.6);}
+    100%{filter:brightness(.15) grayscale(1);box-shadow:none;}}
+  .hb-boss.dead .hb-iris{background:#333;box-shadow:none;}
+  .hb-hpbar{width:100%;height:12px;border-radius:7px;background:rgba(88,28,135,.35);border:1px solid #6b21a8;overflow:hidden;}
+  .hb-hpbar > i{display:block;height:100%;width:100%;border-radius:7px;
+    background:linear-gradient(90deg,#d946ef,#a21caf);box-shadow:0 0 10px rgba(217,70,239,.7);transition:width .35s;}
+  @media (max-width:640px){ .hb-boss{display:none;} }
 
   /* ---------- Boss « cyber » (Niveau 5) : reskin vaisseau vs vaisseau-mère ---------- */
   .field.bossfield.cyber{background:
@@ -623,14 +658,15 @@
     .lock-burst,.lock-glow,.lock-star{animation:none;}
     .drop.pop .cap,.drop.miss .cap,.field.shake{animation:none;}
     .boss-sprite,.boss-sprite.hurt,.boss-sprite.exhausted,.boss-sweat,.spell .orb,.spell.pop .orb,
-    .atk-target .cap,.atk-target.hit .cap,.attack-title,.attack-flash,.hero.hit,.dmg-float,
-    .spell.word .rune,.spell.pop .rune,.atk-word .card,.atk-word.hit .card{animation:none!important;}
+    .atk-target .cap,.atk-target.hit .cap,.attack-title,.attack-flash,.hero.hit,.dmg-float{animation:none!important;}
     .field.invaders{animation:none;}
     .ship.hit,.invader.pop .cap,.invader.miss .cap,.invader.big .ufo::before,.invader.big .cap-ring,
     .mbc.current,.laser{animation:none!important;}
     .field.invaders,.field.bossfield.cyber{animation:none;}
     .hero.rocket.hit,.bossfield.alert .glitch-layer,.bossfield.alert .boss-sprite{animation:none!important;}
     .rad-sweep,.ht-blink,.ht-trace-label,.hc.cur,.hc.bad,.hterm.glitch,.rad-zone.found{animation:none!important;}
+    .hb-alert .hba-txt,.hb-eye,.hb-boss.hurt .hb-eye,.hb-boss.laugh .hb-eye,.hb-boss.panic .hb-eye,
+    .hb-boss.dead .hb-eye,.hb-row.gone{animation:none!important;}
   }
 </style>
 <style>
@@ -704,8 +740,8 @@
   "win_jalon": "Défi réussi ! Bravo, tu maîtrises. Passe à la suite.",
   "win_review": "Bien joué ! Tu as refait cette mission. On revient à ta mission en cours, ta progression est gardée.",
   "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau jeu s'ouvre.",
-  "course_finish": "Parcours terminé ! Incroyable, tu as fini les sept niveaux du clavier. Tu tapes comme un pro !",
-  "boss_hint_word": "Pendant l'esquive, tape vite le mot qui descend, lettre par lettre. Pendant l'attaque, tape le mot d'arme affiché devant le dragon. Attention aux majuscules et aux fautes : chaque erreur coûte une vie !",
+  "course_finish": "Parcours terminé ! Incroyable, tu as fini les sept niveaux du clavier, et tu as éteint K0RT3X pour de bon. Tu tapes comme un pro !",
+  "boss_hint_hack": "Lis l'alerte en haut du terminal, puis tape la commande affichée, lettre par lettre, avant que la barre rouge de traçage soit pleine. La case jaune te montre où tu en es. S'il y a deux commandes, attention : l'une est un piège ! Tape celle qui répond à l'alerte. Clique sur l'ampoule si tu cherches une touche.",
   "boss_hint_swarm": "Déplace ton vaisseau avec les touches F et J. Aligne-toi juste sous un alien, puis tape sa lettre pour tirer au laser. Quand le vaisseau-mère est vulnérable, tape les symboles et les chiffres affichés.",
   "boss_hint_spell": "Pendant l'esquive, lis bien la touche dans la boule violette et tape-la vite, attention aux majuscules. Pendant l'attaque, frappe les symboles affichés devant le dragon."
 }
@@ -985,11 +1021,11 @@ const LEVELS=[
       {kind:'mission',label:'Poursuite 5',emoji:'🐇',title:'Plus vite !',desc:'La lave ne te lâche pas : ne ralentis pas !',text:'je file tout droit vers la sortie, là-bas, loin de la lave',pursuit:2.8,grace:2200,lead:4},
       {kind:'mission',label:'Poursuite 6',emoji:'⚡',title:'À toute allure',desc:'Encore plus rapide : tape sans t\'arrêter pour t\'éloigner.',text:'plus je tape vite, plus je m\'éloigne de la lave rouge',pursuit:2.8,grace:2200,lead:4},
       {kind:'jalon',label:'Défi final',emoji:'🏆',title:'La lave en folie',desc:'Dernier défi de frappe : majuscules, accents, ponctuation et lave rapide !',text:'Bravo champion ! Tu écris déjà très bien, sans avoir peur de la lave ? Tape sans t\'arrêter et tu gagnes la grande course !',pursuit:2.6,grace:2400,lead:4},
-      {kind:'jalon',mode:'boss',wordMode:true,label:'Boss final',emoji:'🐉',title:'le Dragon des Touches — le retour',
-       desc:'Le <b>Dragon des Touches</b> est de retour, plus puissant que jamais ! Cette fois, tu te bats avec des <b>mots</b>. Pour <b>esquiver</b> ses sorts, tape vite le <b>mot d\'esquive</b> qui descend (<i>esquive, roulade, parade, bouclier…</i>). Quand il s\'épuise, c\'est l\'heure d\'<b>ATTAQUER</b> : tape les <b>mots d\'armes</b> (<i>épée, masse, attaque…</i>). Touche-le <b>8 fois</b> pour le vaincre. En garde, chevalier ! ⚔️',
-       defenseWords:['raté','Esquive','roulade','Parade','bouclier','saut','feinte','en-garde','recul','éclat','demi-tour','défense','évite','Côté','plongeon','contre','pare','Abri'],
-       attackWords:['épée','Gourdin','masse','attaque','Coup','lance','Hache','dague','assaut','frappe','Flèche','arc','bélier','Sabre','boulet'],
-       penalizeWrong:true, lives:6, bossHits:8, spellsPerWave:5, speed:55, spawnMs:2800, maxConcurrent:2, attackMs:9000}
+      {kind:'jalon',mode:'boss',hackBoss:true,diff:true,label:'Boss final',emoji:'🧠',title:'K0RT3X — le cerveau du Vaisseau-Mère',
+       desc:'Sorti de la lave, ton écran <b>grésille</b>… Le Vaisseau-Mère a explosé, mais son cerveau, <b>K0RT3X</b>, s\'est caché dans <b>ton ordinateur</b> ! À chaque <b>alerte</b> (virus, webcam, wifi…), tape la <b>contre-commande</b> affichée avant que la barre rouge de <b>traçage</b> soit pleine. Quand K0RT3X est <b>ouvert</b>, tape la commande de <b>purge</b> pour lui faire un dégât. Attention aux <b>pièges</b>… et éteins-le pour toujours !',
+       bannerGoal:'Bloque ses attaques, purge-le, éteins-le !',
+       theme:{ name:'K0RT3X', emoji:'🧠',
+               failMsg:'K0RT3X a pris le contrôle de ton ordinateur ! 🧠' }}
     ]}
 ];
 
@@ -1093,14 +1129,14 @@ function playHackWarning(){
 }
 
 function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
-document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('kb_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); resumeBossMusic(); resumeHackAmbient(); } else { pauseBossMusic(); pauseHackAmbient(); } };
+document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('kb_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); resumeBossMusic(); resumeHbBossMusic(); resumeHackAmbient(); } else { pauseBossMusic(); pauseHbBossMusic(); pauseHackAmbient(); } };
 
 /* =========================================================
    5. MOTEUR DE JEU — abstraction
    ========================================================= */
 let activeGame=null;   // {onKey(e), stop(), pause?(), resume?()}
 let gamePaused=false;  // vrai quand une astuce est ouverte : le jeu est gelé
-function stopGame(){ if(activeGame){ try{activeGame.stop();}catch(e){} activeGame=null; } gamePaused=false; if(typeof stopBossMusic==='function') stopBossMusic(); if(typeof stopHackAmbient==='function') stopHackAmbient(); }
+function stopGame(){ if(activeGame){ try{activeGame.stop();}catch(e){} activeGame=null; } gamePaused=false; if(typeof stopBossMusic==='function') stopBossMusic(); if(typeof stopHbBossMusic==='function') stopHbBossMusic(); if(typeof stopHackAmbient==='function') stopHackAmbient(); }
 function pauseActive(){ if(activeGame && activeGame.pause){ try{activeGame.pause();}catch(e){} } gamePaused=true; }
 function resumeActive(){ if(gamePaused && activeGame && activeGame.resume){ try{activeGame.resume();}catch(e){} } gamePaused=false; }
 
@@ -1821,7 +1857,8 @@ function caughtD(){
   onFail('La lave t\'a rattrapé ! 🔥', 'Astuce : ne regarde pas tes doigts, regarde l\'écran. Tape la lettre encadrée en bleu sans t\'arrêter pour garder de l\'avance.');
 }
 
-/* ---- Combat de Boss : « le Dragon des Touches » ---- */
+/* ---- Combat de Boss « sorts qui descendent » (utilisé par le Vaisseau-Mère, Niveau 5) ----
+   Le thème du step (theme/enh) habille le moteur ; repli visuel historique : dragon. */
 const BOSS_POOL=('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789').split('')
   .concat(['.',',','?','!',';',':','(',')','=','"','-','@','#','€','+','é','è','à','ç','ù']);
 const BOSS_COMPLEX=['@','#','€','+','=','"','(',')','?',':',';','_'];
@@ -1863,13 +1900,25 @@ let kbSwarmTutoSeen=false;
 
 function startBossMusic(){
   try{
-    if(!bossAudio){ bossAudio=new Audio('musics/musique_boss.mp3'); bossAudio.loop=true; bossAudio.volume=.5; }
+    if(!bossAudio){ bossAudio=new Audio('musics/vaisseau-mere.mp3'); bossAudio.loop=true; bossAudio.volume=.5; }
     if(soundOn){ bossAudio.currentTime=0; const p=bossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }
   }catch(e){}
 }
 function pauseBossMusic(){ if(bossAudio){ try{bossAudio.pause();}catch(e){} } }
 function resumeBossMusic(){ if(bossAudio && soundOn && B.running){ try{ const p=bossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
 function stopBossMusic(){ if(bossAudio){ try{bossAudio.pause(); bossAudio.currentTime=0;}catch(e){} } }
+
+/* ---- musique du duel de terminal K0RT3X (Niveau 7, boss final) ---- */
+let hbBossAudio=null;
+function startHbBossMusic(){
+  try{
+    if(!hbBossAudio){ hbBossAudio=new Audio('musics/ia-vaisseau.mp3'); hbBossAudio.loop=true; hbBossAudio.volume=.5; }
+    if(soundOn){ hbBossAudio.currentTime=0; const p=hbBossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }
+  }catch(e){}
+}
+function pauseHbBossMusic(){ if(hbBossAudio){ try{hbBossAudio.pause();}catch(e){} } }
+function resumeHbBossMusic(){ if(hbBossAudio && soundOn && HB.running){ try{ const p=hbBossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
+function stopHbBossMusic(){ if(hbBossAudio){ try{hbBossAudio.pause(); hbBossAudio.currentTime=0;}catch(e){} } }
 
 function startBoss(step){
   stopGame(); gamePaused=false;
@@ -1908,7 +1957,6 @@ function startBoss(step){
     sprite:document.getElementById('bossSprite'),
     hero:document.getElementById('bossHero'),
     spells:[], attackTargets:[],
-    wordMode:!!step.wordMode, defenseWords:step.defenseWords||[], attackWords:step.attackWords||[], attackWord:null,
     swarm:!!step.swarm, lane:Math.floor(SWARM_LANES/2),
     atkPool: step.swarm ? BOSS_COMPLEX.concat(BOSS_COMPLEX).concat('0123456789'.split('')) : BOSS_COMPLEX,
     lives, maxLives:lives, penalizeWrong:!!step.penalizeWrong,
@@ -1980,8 +2028,7 @@ function updateBossHud(){
   const lv=document.getElementById('bossLives'); if(lv) lv.innerHTML=h;
   const ph=document.getElementById('bossPhase');
   if(ph){
-    if(B.wordMode) ph.textContent = B.phase==='attack' ? '⚔️ Tape les mots d\'attaque !' : '⚡ Tape les mots d\'esquive !';
-    else if(B.swarm) ph.textContent = B.phase==='attack' ? '💥 Mitraille le Vaisseau-Mère !' : '🕹️ Aligne-toi (F/J) et tire !';
+    if(B.swarm) ph.textContent = B.phase==='attack' ? '💥 Mitraille le Vaisseau-Mère !' : '🕹️ Aligne-toi (F/J) et tire !';
     else ph.textContent = B.phase==='attack' ? '⚔️ Frappe le boss !' : '⚡ Esquive les sorts !';
   }
   const mt=document.getElementById('bossMeter'); if(mt){ mt.style.width=Math.max(0,B.lives/B.maxLives*100)+'%'; mt.style.background=(B.lives<=2?'var(--red)':'var(--green)'); }
@@ -2008,16 +2055,6 @@ function spawnSpell(){
     B.spells.push({el,ch,lane,x,y:140});
     return;
   }
-  if(B.wordMode){
-    const w=B.defenseWords[Math.floor(Math.random()*B.defenseWords.length)];
-    const el=document.createElement('div'); el.className='spell word';
-    el.innerHTML='<div class="rune"><span class="typed"></span><span class="rest">'+escapeHtml(w)+'</span></div>';
-    const x=24+Math.random()*44;
-    el.style.left=x+'%'; el.style.transform='translate(-50%,96px)';
-    B.field.appendChild(el);
-    B.spells.push({el,word:w,typed:0,x,y:96});
-    return;
-  }
   const ch=BOSS_POOL[Math.floor(Math.random()*BOSS_POOL.length)];
   const el=document.createElement('div'); el.className='spell';
   el.innerHTML='<div class="orb">'+escapeHtml(ch)+'</div>';
@@ -2027,11 +2064,6 @@ function spawnSpell(){
   B.spells.push({el,ch,x,y:96});
 }
 function removeSpell(s){ const i=B.spells.indexOf(s); if(i>=0) B.spells.splice(i,1); }
-// mot le plus bas = cible active (la plus urgente)
-function activeSpell(){ let low=null; for(const s of B.spells){ if(!low||s.y>low.y) low=s; } return low; }
-function paintActiveSpell(){ const a=activeSpell(); for(const s of B.spells) s.el.classList.toggle('active', s===a); }
-function updateSpellWord(s){ const t=s.el.querySelector('.typed'), r=s.el.querySelector('.rest');
-  if(t&&r){ t.textContent=s.word.slice(0,s.typed); r.textContent=s.word.slice(s.typed); } }
 function loopB(ts){
   if(!B.running) return;
   if(!B.last) B.last=ts;
@@ -2046,7 +2078,6 @@ function loopB(ts){
       s.el.style.transform='translate(-50%,'+s.y+'px)';
       if(s.y>=B.groundY) spellHitsHero(s);
     }
-    if(B.wordMode) paintActiveSpell();
   } else if(B.phase==='attack'){
     if(B.attackEndTs && ts>=B.attackEndTs) closeAttack();
   }
@@ -2071,7 +2102,6 @@ function onKeyB(e){
   if(B.phase==='tuto') return onKeyTuto(e);
   if(e.key.length!==1) return; e.preventDefault();
   if(B.phase==='attack'){
-    if(B.wordMode) return typeAttackWord(e.key);
     let hit=null;
     for(const t of B.attackTargets){ if(t.ch===e.key){ hit=t; break; } }
     if(hit) damageBoss(hit); else beep('key');
@@ -2087,7 +2117,6 @@ function onKeyB(e){
     else beep('key');   // pas aligné ou mauvaise touche : rien ne se passe
     return;
   }
-  if(B.wordMode) return typeDefenseWord(e.key);
   let best=null;
   for(const s of B.spells){ if(s.ch===e.key){ if(!best||s.y>best.y) best=s; } }
   if(best) destroySpell(best);
@@ -2299,23 +2328,6 @@ function bossWrongKey(){
   updateBossHud();
   if(B.lives<=0) bossFail();
 }
-// MODE MOTS — esquive : on tape le mot le plus bas, lettre par lettre
-function typeDefenseWord(key){
-  const s=activeSpell(); if(!s){ beep('key'); return; }
-  if(key===s.word[s.typed]){
-    s.typed++; beep('key'); updateSpellWord(s);
-    if(s.typed>=s.word.length) destroySpell(s);
-  } else { beep('bad'); if(B.penalizeWrong) bossWrongKey(); }
-}
-// MODE MOTS — attaque : on tape le mot d'arme affiché devant le boss
-function typeAttackWord(key){
-  const a=B.attackWord; if(!a){ beep('key'); return; }
-  if(key===a.word[a.typed]){
-    a.typed++; updateAttackWord();
-    if(a.typed>=a.word.length) hitBossWord(a);
-    else beep('key');
-  } else { beep('bad'); if(B.penalizeWrong) bossWrongKey(); }
-}
 function openAttack(){
   B.phase='attack'; B.attackEndTs=0; B.immune=true;
   B.spells.forEach(s=>s.el.remove()); B.spells=[];
@@ -2335,8 +2347,7 @@ function openAttack(){
   setTimeout(()=>{
     ban.remove();
     if(!B.running || B.phase!=='attack') return;
-    if(B.wordMode) spawnAttackWord();
-    else for(let i=0;i<4;i++) spawnOneTarget();
+    for(let i=0;i<4;i++) spawnOneTarget();
     B.attackEndTs=performance.now()+B.attackMs;
     B.immune=false;
   },1300);
@@ -2422,29 +2433,6 @@ function damageBoss(t){
   if(bossTakeHit(xPx,yPx)) return;
   if(B.attackEndTs && performance.now()<B.attackEndTs) spawnOneTarget();
 }
-// MODE MOTS — cible d'attaque (un mot d'arme devant le boss)
-function spawnAttackWord(){
-  if(B.attackWord){ B.attackWord.el.remove(); }
-  let w, tries=0;
-  do{ w=B.attackWords[Math.floor(Math.random()*B.attackWords.length)]; tries++; }
-  while(tries<8 && B.attackWord && w===B.attackWord.word);
-  const el=document.createElement('div'); el.className='atk-word';
-  el.innerHTML='<div class="card"><span class="typed"></span><span class="rest">'+escapeHtml(w)+'</span></div>';
-  B.field.appendChild(el);
-  B.attackWord={el,word:w,typed:0};
-}
-function updateAttackWord(){
-  const a=B.attackWord; if(!a) return;
-  const t=a.el.querySelector('.typed'), r=a.el.querySelector('.rest');
-  if(t&&r){ t.textContent=a.word.slice(0,a.typed); r.textContent=a.word.slice(a.typed); }
-}
-function hitBossWord(a){
-  const el=a.el; el.classList.add('hit'); setTimeout(()=>el.remove(),250);
-  B.attackWord=null;
-  const xPx=B.field.clientWidth/2, yPx=B.field.clientHeight*0.42;
-  if(bossTakeHit(xPx,yPx)) return;
-  if(B.attackEndTs && performance.now()<B.attackEndTs) spawnAttackWord();
-}
 function floatDamage(x,y,txt){
   const d=document.createElement('div'); d.className='dmg-float'; d.textContent=txt||'-1';
   d.style.left=x+'px'; d.style.top=y+'px'; B.field.appendChild(d); setTimeout(()=>d.remove(),800);
@@ -2458,7 +2446,6 @@ function flashBanner(title, sub){
 function closeAttack(){
   B.phase='cast'; B.attackEndTs=0; B.immune=true;
   B.attackTargets.forEach(t=>t.el.remove()); B.attackTargets=[];
-  if(B.attackWord){ B.attackWord.el.remove(); B.attackWord=null; }
   const sw=document.getElementById('bossSweat'); if(sw) sw.remove();
   B.sprite.classList.remove('exhausted');
   // fin de la vulnérabilité : le vaisseau est replacé sur les couloirs
@@ -2483,7 +2470,6 @@ function closeAttack(){
 function bossDefeated(){
   B.running=false; cancelAnimationFrame(B.raf); teardownBossFullscreen();
   B.attackTargets.forEach(t=>t.el.remove()); B.attackTargets=[];
-  if(B.attackWord){ B.attackWord.el.remove(); B.attackWord=null; }
   B.spells.forEach(s=>s.el.remove()); B.spells=[];
   const sw=document.getElementById('bossSweat'); if(sw) sw.remove();
   B.sprite.classList.remove('exhausted','hurt'); B.sprite.classList.add('dead');
@@ -2494,14 +2480,366 @@ function bossDefeated(){
 }
 function bossFail(){
   B.running=false; cancelAnimationFrame(B.raf); stopBossMusic(); teardownBossFullscreen();
-  const tip = B.wordMode
-    ? 'Astuce : pendant l\'esquive, tape vite le mot qui descend lettre par lettre — commence dès qu\'il apparaît. Pendant l\'attaque, tape le mot d\'arme affiché devant le dragon. Attention aux majuscules et aux fautes : chaque erreur coûte une vie !'
-    : B.swarm
-      ? 'Astuce : déplace-toi avec F et J pour te placer juste sous un alien, puis tape sa lettre — attention aux majuscules ! Quand le Vaisseau-Mère est vulnérable, mitraille les symboles et les chiffres. Trop dur ? Baisse la difficulté avec ⚙️ Difficulté. Tu vas y arriver !'
-      : 'Astuce : pendant les sorts, lis bien la touche dans la boule violette et tape-la vite. Attention aux majuscules ! Garde tes doigts posés sur le clavier. Tu vas y arriver !';
+  const tip = B.swarm
+    ? 'Astuce : déplace-toi avec F et J pour te placer juste sous un alien, puis tape sa lettre — attention aux majuscules ! Quand le Vaisseau-Mère est vulnérable, mitraille les symboles et les chiffres. Trop dur ? Baisse la difficulté avec ⚙️ Difficulté. Tu vas y arriver !'
+    : 'Astuce : pendant les sorts, lis bien la touche dans la boule violette et tape-la vite. Attention aux majuscules ! Garde tes doigts posés sur le clavier. Tu vas y arriver !';
   onFail(bt('failMsg','Le dragon t\'a vaincu cette fois ! 🐉'), tip);
 }
 function stopB(){ B.running=false; cancelAnimationFrame(B.raf); stopBossMusic(); teardownBossFullscreen(); }
+
+/* ---- Boss final (Niveau 7) : « K0RT3X, le cerveau du Vaisseau-Mère » ----
+   Duel 100 % terminal, dans l'esprit des missions du Niveau 5 :
+   ALERTE  → taper la contre-commande avant que le TRAÇAGE (rouge) soit plein, sinon -1 connexion 📡 ;
+   PIÈGE   → parfois DEUX commandes affichées : taper celle qui répond à l'alerte (l'autre fait bondir le traçage) ;
+   RIPOSTE → K0RT3X « ouvert » : taper la commande de purge avant qu'il se referme = 1 dégât ;
+   RAFALE  → en fin de combat (modes Difficile/Extrême), une 2e purge enchaînée = 1 dégât bonus ;
+   FINALE  → à 1 PV, taper son nom (K0RT3X) SANS chrono pour l'éteindre. */
+const HB={};
+let hbSid=0;
+const HB_ALERTS=[
+  {ic:'🦠',label:'VIRUS !',          log:'un virus fonce sur ton ordinateur…',  short:'stop@virus', long:'bloque@virus',  trap:'installe.virus'},
+  {ic:'📁',label:'VOL DE FICHIERS !',log:'il aspire tes dossiers…',             short:'ferme_tout', long:'ferme_dossiers',trap:'donne_tout!'},
+  {ic:'🔑',label:'MOT DE PASSE !',   log:'il cherche ton code secret…',         short:'cache-code', long:'cache_le_code', trap:'donne.le_code'},
+  {ic:'📸',label:'WEBCAM !',         log:'il allume ta webcam en douce…',       short:'coupe@cam',  long:'coupe@webcam',  trap:'filme-moi!'},
+  {ic:'🔥',label:'SURCHAUFFE !',     log:'ton processeur chauffe trop…',        short:'ventilo+',   long:'ventilo(max)',  trap:'grille#tout'},
+  {ic:'📶',label:'PIRATAGE WIFI !',  log:'il attaque ta connexion wifi…',       short:'coupe#wifi', long:'protege#wifi',  trap:'wifi_ouvert'}
+];
+const HB_PURGES_SHORT=['purge!','scan.pc','vire-le!','efface!'];
+const HB_PURGES_LONG=['purge(virus)','scan.total','anti@kortex','nettoie#pc','expulse-le!'];
+const HB_TAUNTS={
+  intro:'Je suis K0RT3X. Ton ordinateur est à MOI !',
+  hit:['AÏE ! Mes circuits !','ERREUR ! ERREUR !','Ça pique !!','Tu vas le regretter…','Impossible !!'],
+  caught:['AH AH AH ! Trop lent !','Encore raté, humain !','Ton ordinateur sera bientôt à moi !'],
+  trap:['PIÈGE ! Je t\'ai bien eu !','AH AH ! C\'était mon piège !'],
+  escape:['Raté ! Je me referme !','Trop lent, je me cache !'],
+  finale:'NON ! Pas mon nom ! PAS MON NOM !'
+};
+/* Réglages par difficulté — les dégâts pour gagner = hits de KB_BOSS_MODES (4/6/8/10).
+   traps : fraction de dégâts à partir de laquelle les pièges apparaissent (null = jamais).
+   short : ne proposer que les commandes courtes (mode Facile). */
+const HB_TUNING={
+  easy:   {links:4, traceBase:9500, tracePerChar:1900, riposteBase:9500, ripostePerChar:1700, traps:null, rafale:false, short:true},
+  medium: {links:3, traceBase:7200, tracePerChar:1500, riposteBase:7800, ripostePerChar:1400, traps:0.65, rafale:false, short:false},
+  hard:   {links:3, traceBase:5800, tracePerChar:1200, riposteBase:6500, ripostePerChar:1150, traps:0.34, rafale:true,  short:false},
+  extreme:{links:2, traceBase:4600, tracePerChar:950,  riposteBase:5200, ripostePerChar:900,  traps:0,    rafale:true,  short:false}
+};
+function hbEl(id){ return document.getElementById(id); }
+function hbPick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function hbWait(ms,cb){ const sid=HB.sid; setTimeout(()=>{ if(HB.sid===sid) cb(); }, ms); }
+function hbType(el,text,cb,speed){
+  el.textContent=''; const sid=HB.sid; let i=0;
+  const t=setInterval(()=>{
+    if(HB.sid!==sid){ clearInterval(t); return; }
+    el.textContent+=text[i++]||'';
+    if(i>=text.length){ clearInterval(t); cb&&cb(); }
+  }, speed||14);
+}
+function startHackBoss(step){
+  stopGame(); gamePaused=false;
+  const sid=++hbSid;
+  const tune=HB_TUNING[kbBossMode]||HB_TUNING.medium;
+  const hp=(KB_BOSS_MODES[kbBossMode]||KB_BOSS_MODES.medium).hits;
+  Object.assign(HB,{
+    sid, step, tune, hp, maxHp:hp, links:tune.links, maxLinks:tune.links,
+    state:'intro', alert:null, lastAlert:null, deck:[], cmd:'', pos:0, trap:'', trapPos:0,
+    cmdBox:null, trapBox:null, cmdCells:[], trapCells:[], rafaleShot:false,
+    running:true, ready:false, raf:0, barDur:0, barElapsed:0, lastTs:0, barTimeout:null
+  });
+  stage.innerHTML=
+    '<div class="hud">'
+    + '<span class="lives" id="hbLinks"></span>'
+    + '<span class="count" id="hbPhase"></span>'
+    + '<div class="meter"><i id="hbMeter"></i></div>'
+    + '<button type="button" class="tip-pill" id="hudTip">💡 Astuce</button>'
+    + '</div>'
+    + '<div class="field hackfield hackboss" id="hackField">'
+    +   '<div class="scanlines"></div>'
+    +   '<div class="hterm" id="hterm">'
+    +     '<div class="ht-head">● ● ●&nbsp;&nbsp;DUEL DE TERMINAL — INTRUS DÉTECTÉ <span class="ht-blink">▊</span></div>'
+    +     '<div class="hb-alert" id="hbAlert"></div>'
+    +     '<div class="ht-log" id="hbLog"></div>'
+    +     '<div class="hb-cmdlab" id="hbCmdLab"></div>'
+    +     '<div class="hb-rows" id="hbRows"></div>'
+    +     '<div class="ht-trace" id="hbTraceRow" style="visibility:hidden"><span class="ht-trace-label" id="hbTraceLab">⚠ TRAÇAGE</span><span class="ht-trace-bar"><i id="hbTrace"></i></span></div>'
+    +     '<div class="ht-status" id="hbStatus"></div>'
+    +   '</div>'
+    +   '<div class="hb-boss" id="hbBoss">'
+    +     '<div class="hb-name">🧠 K0RT3X</div>'
+    +     '<div class="hb-eye"><div class="hb-iris"><div class="hb-pupil"></div></div></div>'
+    +     '<div class="hb-hpbar"><i id="hbHp"></i></div>'
+    +   '</div>'
+    + '</div>';
+  HB.field=hbEl('hackField');
+  hbEl('hudTip').onclick=()=>{ openGameTip((HB.cmd&&HB.cmd[HB.pos])||'@'); };
+  updateHbHud(); hbSetPhase('🧠 K0RT3X arrive…');
+  startHbBossMusic();
+  activeGame={ onKey:onKeyHB, stop:stopHB,
+    pause(){ HB.running=false; if(HB.raf){ cancelAnimationFrame(HB.raf); HB.raf=0; } pauseHbBossMusic(); },
+    resume(){ HB.running=true;
+      if(HB.ready&&HB.barDur){ HB.lastTs=0; HB.raf=requestAnimationFrame(hbBarLoop); }
+      if(hbBossAudio&&soundOn){ try{ const p=hbBossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } } };
+  const st=hbEl('hbStatus'); st.className='ht-status';
+  hbType(st,'> intrusion détectée dans ton ordinateur…',()=>{
+    hbWait(450,()=>{ hbSay(HB_TAUNTS.intro); hbWait(1600,hbNextAlert); });
+  });
+}
+function updateHbHud(){
+  const lk=hbEl('hbLinks');
+  if(lk){ let h=''; for(let i=0;i<HB.maxLinks;i++) h+=(i<HB.links?'📡':'<span class="lost">📡</span>'); lk.innerHTML=h; }
+  const m=hbEl('hbMeter'); if(m){ m.style.width=(HB.hp/HB.maxHp*100)+'%'; m.style.background='linear-gradient(90deg,#d946ef,#a21caf)'; }
+  const hp=hbEl('hbHp'); if(hp) hp.style.width=(HB.hp/HB.maxHp*100)+'%';
+}
+function hbSetPhase(txt){ const p=hbEl('hbPhase'); if(p) p.textContent=txt; }
+function hbLog(txt,cls){
+  const log=hbEl('hbLog'); if(!log) return;
+  const line=document.createElement('div'); if(cls) line.className=cls;
+  log.appendChild(line);
+  while(log.children.length>2) log.removeChild(log.firstChild);
+  hbType(line,txt);
+}
+function hbSay(txt){ hbLog('K0RT3X ▶ '+txt,'say'); }
+function hbStatus(txt,cls){ const st=hbEl('hbStatus'); if(!st) return; st.className='ht-status'+(cls?' '+cls:''); hbType(st,txt); }
+function hbFlash(title,sub){
+  const ban=document.createElement('div'); ban.className='attack-banner';
+  ban.innerHTML='<div class="attack-title">'+title+'</div>'+(sub?'<div class="attack-sub">'+sub+'</div>':'');
+  HB.field.appendChild(ban); setTimeout(()=>ban.remove(),1200);
+}
+function hbFloat(x,y,txt){
+  const d=document.createElement('div'); d.className='dmg-float'; d.textContent=txt||'-1';
+  d.style.left=x+'px'; d.style.top=y+'px'; HB.field.appendChild(d); setTimeout(()=>d.remove(),800);
+}
+function hbEyeFlash(cls){
+  const boss=hbEl('hbBoss'); if(!boss||boss.classList.contains('dead')) return;
+  boss.classList.remove('hurt','laugh'); void boss.offsetWidth; boss.classList.add(cls);
+  setTimeout(()=>boss.classList.remove(cls),950);
+}
+function hbEyeCenter(){
+  const eye=HB.field&&HB.field.querySelector('.hb-eye'); if(!eye) return null;
+  const er=eye.getBoundingClientRect(); if(!er.width) return null;   // caché sur petit écran
+  const fr=HB.field.getBoundingClientRect();
+  return {x:er.left-fr.left+er.width/2, y:er.top-fr.top+er.height/2};
+}
+/* pioche d'alertes : on mélange le paquet, on évite deux fois la même de suite */
+function hbDrawAlert(){
+  if(!HB.deck.length){
+    HB.deck=HB_ALERTS.slice();
+    for(let i=HB.deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=HB.deck[i]; HB.deck[i]=HB.deck[j]; HB.deck[j]=t; }
+    if(HB.deck.length>1 && HB.deck[HB.deck.length-1]===HB.lastAlert) HB.deck.unshift(HB.deck.pop());
+  }
+  const a=HB.deck.pop(); HB.lastAlert=a; return a;
+}
+function hbNextAlert(){
+  HB.state='alert'; HB.ready=false; HB.rafaleShot=false; hbStopBar();
+  const boss=hbEl('hbBoss'); if(boss) boss.className='hb-boss';
+  const a=hbDrawAlert(); HB.alert=a;
+  const frac=(HB.maxHp-HB.hp)/HB.maxHp;
+  HB.cmd=(HB.tune.short||frac<0.5)?a.short:a.long;
+  HB.trap=(HB.tune.traps!=null && frac>=HB.tune.traps)?a.trap:'';
+  HB.pos=0; HB.trapPos=0;
+  const al=hbEl('hbAlert'); al.className='hb-alert';
+  al.innerHTML='<span class="hba-ic">'+a.ic+'</span><span class="hba-txt">⚠ ALERTE — '+a.label+'</span>';
+  playHackWarning();
+  hbEl('hbCmdLab').innerHTML=HB.trap?'⚠ Deux commandes : une vraie, un <b>piège</b> ! Tape la bonne :':'Tape la contre-commande :';
+  hbLog('> '+a.log);
+  hbSetPhase('🛡️ Bloque l\'attaque !');
+  hbRenderAlertRows();
+}
+/* les commandes apparaissent en glyphes aliens puis se décodent (comme au Niveau 5) */
+function hbRenderAlertRows(){
+  const wrap=hbEl('hbRows'); wrap.innerHTML='';
+  const mk=(text)=>{ const r=document.createElement('div'); r.className='ht-code hb-row';
+    r.innerHTML='<span class="hb-prompt">&gt;</span>'+text.split('').map(()=>'<span class="hc alien">'+ALIEN_GLYPHS[Math.floor(Math.random()*ALIEN_GLYPHS.length)]+'</span>').join('');
+    return r; };
+  HB.cmdBox=mk(HB.cmd); HB.trapBox=HB.trap?mk(HB.trap):null;
+  const rows=HB.trapBox&&Math.random()<0.5?[HB.trapBox,HB.cmdBox]:[HB.cmdBox,HB.trapBox];
+  rows.forEach(r=>{ if(r) wrap.appendChild(r); });
+  HB.cmdCells=[].slice.call(HB.cmdBox.querySelectorAll('.hc'));
+  HB.trapCells=HB.trapBox?[].slice.call(HB.trapBox.querySelectorAll('.hc')):[];
+  playHackDigital();
+  const reveal=(cells,text)=>cells.forEach((c,i)=>hbWait(240+i*70,()=>{ c.classList.remove('alien'); c.textContent=text[i]; }));
+  reveal(HB.cmdCells,HB.cmd); if(HB.trapBox) reveal(HB.trapCells,HB.trap);
+  const total=240+Math.max(HB.cmd.length,(HB.trap||'').length)*70+200;
+  hbWait(total,()=>{
+    if(HB.state!=='alert') return;
+    hbPaintCur(); HB.ready=true;
+    const mul=1-0.25*((HB.maxHp-HB.hp)/HB.maxHp);   // le traçage accélère quand K0RT3X s'énerve
+    let dur=(HB.tune.traceBase+HB.tune.tracePerChar*HB.cmd.length)*mul;
+    if(HB.trap) dur*=1.25;   // temps de lecture en plus quand il y a un piège
+    hbStartBar(dur, hbCaught, '⚠ TRAÇAGE', false);
+  });
+}
+function hbPaintCur(){
+  HB.cmdCells.forEach((c,i)=>c.classList.toggle('cur', i===HB.pos));
+  HB.trapCells.forEach((c,i)=>c.classList.toggle('cur', !!HB.trap && i===HB.trapPos));
+}
+function hbStartBar(durMs,onTimeout,label,riposte){
+  HB.barDur=durMs; HB.barElapsed=0; HB.lastTs=0; HB.barTimeout=onTimeout;
+  const row=hbEl('hbTraceRow'); if(row){ row.style.visibility='visible'; row.classList.toggle('riposte',!!riposte); }
+  const lab=hbEl('hbTraceLab'); if(lab) lab.textContent=label;
+  const f=hbEl('hbTrace'); if(f) f.style.width='0%';
+  if(HB.raf) cancelAnimationFrame(HB.raf);
+  HB.raf=requestAnimationFrame(hbBarLoop);
+}
+function hbBarLoop(ts){
+  if(!HB.running||!HB.ready){ HB.raf=0; return; }
+  if(!HB.lastTs) HB.lastTs=ts;
+  HB.barElapsed+=Math.min(50, ts-HB.lastTs); HB.lastTs=ts;
+  const fr=Math.min(1, HB.barElapsed/(HB.barDur||1));
+  const f=hbEl('hbTrace'); if(f) f.style.width=(fr*100)+'%';
+  if(fr>=1){ HB.raf=0; const cb=HB.barTimeout; HB.barDur=0; HB.barTimeout=null; cb&&cb(); return; }
+  HB.raf=requestAnimationFrame(hbBarLoop);
+}
+function hbStopBar(){
+  HB.barDur=0; HB.barTimeout=null;
+  if(HB.raf){ cancelAnimationFrame(HB.raf); HB.raf=0; }
+  const f=hbEl('hbTrace'); if(f) f.style.width='0%';
+}
+function onKeyHB(e){
+  if(e.key.length!==1) return; e.preventDefault();
+  if(!HB.ready) return;
+  if(HB.state==='alert'){
+    const mc=e.key===HB.cmd[HB.pos], mt=!!HB.trap && e.key===HB.trap[HB.trapPos];
+    if(!mc && !mt) return hbBadKey();
+    playHackTyping();
+    if(mc){ const c=HB.cmdCells[HB.pos]; if(c){ c.classList.remove('cur','bad'); c.classList.add('done'); } HB.pos++; }
+    if(mt){ const c=HB.trapCells[HB.trapPos]; if(c){ c.classList.remove('cur','bad'); c.classList.add('done'); } HB.trapPos++; }
+    if(mc && HB.pos>=HB.cmd.length) return hbBlocked();
+    if(mt && HB.trapPos>=HB.trap.length) return hbTrapped();
+    hbPaintCur();
+    return;
+  }
+  if(HB.state==='riposte'||HB.state==='finale'){
+    if(e.key!==HB.cmd[HB.pos]) return hbBadKey();
+    playHackTyping();
+    const c=HB.cmdCells[HB.pos]; if(c){ c.classList.remove('cur','bad'); c.classList.add('done'); } HB.pos++;
+    if(HB.pos>=HB.cmd.length) return HB.state==='finale'?hbDefeated():hbRiposteHit();
+    hbPaintCur();
+  }
+}
+/* mauvaise touche : pas de vie perdue (le temps qui file suffit), juste un signal clair */
+function hbBadKey(){
+  beep('bad'); glitchTerm(false);
+  const c=HB.cmdCells[HB.pos];
+  if(c){ c.classList.remove('bad'); void c.offsetWidth; c.classList.add('bad'); }
+}
+/* le piège se déclenche : gros bond du traçage + moquerie, mais pas de connexion perdue */
+function hbTrapped(){
+  playHackWarning(); glitchTerm(true);
+  hbSay(hbPick(HB_TAUNTS.trap)); hbEyeFlash('laugh');
+  HB.barElapsed=Math.min(HB.barDur, HB.barElapsed+HB.barDur*0.28);
+  if(HB.trapBox) HB.trapBox.classList.add('gone');
+  HB.trap=''; HB.trapPos=0; HB.trapCells=[];
+  hbEl('hbCmdLab').innerHTML='C\'était le <b>piège</b> ! Vite, la vraie commande :';
+  hbPaintCur();
+}
+function hbBlocked(){
+  HB.ready=false; hbStopBar(); playHackBeep();
+  const al=hbEl('hbAlert');
+  if(al){ al.classList.add('ok'); const t=al.querySelector('.hba-txt'); if(t) t.textContent='✔ ATTAQUE BLOQUÉE !'; }
+  if(HB.trapBox) HB.trapBox.classList.add('gone');
+  hbStatus('✔ contre-commande acceptée !','ok');
+  hbWait(700,hbOpenRiposte);
+}
+/* traçage plein : l'attaque passe, une connexion 📡 saute */
+function hbCaught(){
+  HB.ready=false; HB.links--; playHackWarning(); glitchTerm(true);
+  hbEyeFlash('laugh'); hbSay(hbPick(HB_TAUNTS.caught));
+  updateHbHud();
+  const al=hbEl('hbAlert');
+  if(al){ const t=al.querySelector('.hba-txt'); if(t) t.textContent='✖ ATTAQUE RÉUSSIE — connexion perdue !'; }
+  if(HB.links<=0){ hbWait(700,hbFail); return; }
+  hbStatus('⚠ connexion perdue — tiens bon !','warn');
+  hbWait(1600,hbNextAlert);
+}
+function hbRenderRow(text,delayMs,onReady){
+  const wrap=hbEl('hbRows'); wrap.innerHTML='';
+  const r=document.createElement('div'); r.className='ht-code hb-row';
+  r.innerHTML='<span class="hb-prompt">&gt;</span>'+text.split('').map(c=>'<span class="hc">'+escapeHtml(c)+'</span>').join('');
+  wrap.appendChild(r);
+  HB.cmdBox=r; HB.cmdCells=[].slice.call(r.querySelectorAll('.hc'));
+  HB.trapBox=null; HB.trapCells=[];
+  playHackDigital();
+  hbWait(delayMs,()=>{ hbPaintCur(); HB.ready=true; onReady&&onReady(); });
+}
+function hbOpenRiposte(){
+  if(HB.hp<=1) return hbOpenFinale();
+  HB.state='riposte'; HB.ready=false;
+  const frac=(HB.maxHp-HB.hp)/HB.maxHp;
+  const pool=(HB.tune.short||frac<0.5||HB.rafaleShot)?HB_PURGES_SHORT:HB_PURGES_LONG;
+  HB.cmd=hbPick(pool); HB.pos=0; HB.trap='';
+  const al=hbEl('hbAlert'); al.className='hb-alert ok';
+  al.innerHTML='<span class="hba-ic">💥</span><span class="hba-txt">K0RT3X EST OUVERT !</span>';
+  hbEl('hbCmdLab').textContent=HB.rafaleShot?'ENCORE une purge, enchaîne !':'Tape la commande de purge :';
+  hbFlash(HB.rafaleShot?'⚡ RAFALE ! ⚡':'💥 K0RT3X EST OUVERT ! 💥',
+    HB.rafaleShot?'Enchaîne une deuxième purge !':'Purge-le avant qu\'il se referme !');
+  beep('win');
+  hbSetPhase('💥 Purge-le !');
+  hbRenderRow(HB.cmd, HB.rafaleShot?400:1000, ()=>{
+    if(HB.state!=='riposte') return;
+    const dur=(HB.tune.riposteBase+HB.tune.ripostePerChar*HB.cmd.length)*(HB.rafaleShot?0.8:1);
+    hbStartBar(dur, hbEscaped, '⏳ IL SE REFERME', true);
+  });
+}
+function hbRiposteHit(){
+  HB.ready=false; hbStopBar();
+  HB.hp--; updateHbHud();
+  const c=hbEyeCenter();
+  if(c){ drawLaser(HB.field, 60, HB.field.clientHeight-30, c.x, c.y); playLaserShot();
+    blueBurstAt(c.x,c.y,HB.field); hbFloat(c.x,c.y,'-1'); }
+  beep('good'); hbEyeFlash('hurt'); hbSay(hbPick(HB_TAUNTS.hit));
+  hbStatus('✔ DÉGÂT ! K0RT3X : '+HB.hp+' PV','ok');
+  const frac=(HB.maxHp-HB.hp)/HB.maxHp;
+  if(HB.tune.rafale && !HB.rafaleShot && frac>=0.6 && HB.hp>1){
+    HB.rafaleShot=true; hbWait(700,hbOpenRiposte); return;
+  }
+  HB.rafaleShot=false;
+  hbWait(1300,hbNextAlert);
+}
+/* riposte trop lente : pas de pénalité, il se referme juste (frustration = motivation) */
+function hbEscaped(){
+  HB.ready=false; hbStopBar();
+  hbSay(hbPick(HB_TAUNTS.escape)); hbEyeFlash('laugh');
+  hbStatus('il s\'est refermé… prépare-toi !','warn');
+  hbWait(1300,hbNextAlert);
+}
+function hbOpenFinale(){
+  HB.state='finale'; HB.ready=false;
+  HB.cmd='K0RT3X'; HB.pos=0; HB.trap='';
+  const al=hbEl('hbAlert'); al.className='hb-alert ok';
+  al.innerHTML='<span class="hba-ic">⚡</span><span class="hba-txt">TERMINE-LE !</span>';
+  hbEl('hbCmdLab').innerHTML='Tape <b>son nom</b> pour l\'éteindre — sans chrono, applique-toi :';
+  hbFlash('⚡ TERMINE-LE ! ⚡','Tape son nom : K0RT3X — le 0 et le 3 sont des chiffres !');
+  hbSay(HB_TAUNTS.finale);
+  const row=hbEl('hbTraceRow'); if(row) row.style.visibility='hidden';
+  hbSetPhase('⚡ Tape son nom !');
+  const boss=hbEl('hbBoss'); if(boss) boss.className='hb-boss panic';
+  hbRenderRow(HB.cmd, 1000);
+}
+function hbDefeated(){
+  HB.ready=false; hbStopBar(); HB.state='dead';
+  HB.hp=0; updateHbHud(); hbSetPhase('🏆 Gagné !');
+  const boss=hbEl('hbBoss'); if(boss) boss.className='hb-boss dead';
+  stopHbBossMusic(); beep('win');
+  const c=hbEyeCenter()||{x:HB.field.clientWidth/2,y:HB.field.clientHeight/2};
+  for(let i=0;i<5;i++) hbWait(i*180,()=>burstAt(c.x+(Math.random()*120-60), c.y+(Math.random()*80-40), HB.field));
+  const al=hbEl('hbAlert'); al.className='hb-alert ok';
+  al.innerHTML='<span class="hba-ic">✅</span><span class="hba-txt">ORDINATEUR LIBÉRÉ !</span>';
+  hbSay('nooooon… extinction…');
+  hbStatus('> K0RT3X : extinction totale. Bien joué, hacker !','ok');
+  confetti();
+  hbWait(2100,()=>{ stopHB(); onWin(); });
+}
+function hbFail(){
+  stopHB();
+  onFail((HB.step&&HB.step.theme&&HB.step.theme.failMsg)||'K0RT3X t\'a vaincu ! 🧠',
+    'Astuce : lis l\'alerte en haut du terminal, puis tape la commande, lettre par lettre — la case jaune te montre où tu en es. S\'il y a deux commandes, l\'une est un piège : tape celle qui répond à l\'alerte. Clique sur 💡 si tu cherches une touche. Trop dur ? Baisse la difficulté avec ⚙️ Difficulté. Tu vas y arriver !');
+}
+function stopHB(){
+  HB.sid=++hbSid;   // invalide timers et machines à écrire en attente
+  HB.running=false; HB.ready=false;
+  if(HB.raf){ cancelAnimationFrame(HB.raf); HB.raf=0; }
+  stopHbBossMusic();
+}
 
 /* =========================================================
    6. DÉROULÉ (flow)
@@ -2554,15 +2892,20 @@ function openBossBriefing(s){
   const resuming = !!activeGame;
   const th=s.theme||{}, emoji=th.emoji||'🐉', enh=s.enh||{};
   const goalTxt=s.diff
-    ? (KB_BOSS_MODES.easy.hits+' à '+KB_BOSS_MODES.extreme.hits+' coups pour gagner, selon la difficulté')
+    ? (KB_BOSS_MODES.easy.hits+' à '+KB_BOSS_MODES.extreme.hits+' '+(s.hackBoss?'dégâts pour l\'éteindre':'coups pour gagner')+', selon la difficulté')
     : ((s.bossHits||15)+' coups pour gagner');
-  const bullets = s.swarm
+  const bullets = s.hackBoss
+    ? '<li><span class="ni-glyph">🚨</span> Lis l\'alerte : K0RT3X attaque !</li>'
+      + '<li><span class="ni-glyph">⌨️</span> Tape la contre-commande avant la fin du traçage</li>'
+      + '<li><span class="ni-glyph">💥</span> K0RT3X ouvert ? Tape la commande de purge</li>'
+      + '<li><span class="ni-glyph">⚠️</span> Deux commandes ? L\'une est un piège !</li>'
+    : s.swarm
     ? '<li><span class="ni-glyph">🕹️</span> '+kbd('F')+' / '+kbd('J')+' : déplace ton vaisseau</li>'
       + '<li><span class="ni-glyph">🎯</span> Aligne-toi sous un alien, tape sa lettre</li>'
       + '<li><span class="ni-glyph">💥</span> Vulnérable : tape symboles et chiffres</li>'
       + (enh.shield?'<li><span class="ni-glyph">🛡️</span> Son bouclier se recharge à chaque essaim</li>':'')
-    : '<li><span class="ni-glyph">🛡️</span> '+(s.wordMode?'Esquive : tape le mot':'Défense : tape la touche affichée')+'</li>'
-      + '<li><span class="ni-glyph">💥</span> '+(s.wordMode?'Attaque : tape le mot d\'arme':'Attaque : frappe les symboles')+'</li>'
+    : '<li><span class="ni-glyph">🛡️</span> Défense : tape la touche affichée</li>'
+      + '<li><span class="ni-glyph">💥</span> Attaque : frappe les symboles</li>'
       + (enh.shield?'<li><span class="ni-glyph">🛡️</span> Brise son bouclier avant de le pirater</li>':'');
   modal.className='modal test-modal';
   modal.innerHTML=
@@ -2572,7 +2915,7 @@ function openBossBriefing(s){
     + '<div class="howto test"><p class="h-head">⚔️ Le combat :</p><p>'+s.desc+'</p></div>'
     + '<ul class="newtools">'
     +   bullets
-    +   '<li><span class="ni-glyph">❤️</span> Des vies à protéger</li>'
+    +   (s.hackBoss?'<li><span class="ni-glyph">📡</span> Des connexions à protéger</li>':'<li><span class="ni-glyph">❤️</span> Des vies à protéger</li>')
     +   (s.penalizeWrong?'<li><span class="ni-glyph">⚠️</span> Une mauvaise touche te coûte une vie !</li>':'')
     +   '<li><span class="ni-glyph">'+emoji+'</span> '+goalTxt+'</li>'
     + '</ul>'
@@ -2640,7 +2983,7 @@ function openRoundPopup(){
   document.getElementById('goBtn').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }
 function launchGame(){
-  if(currentStep.mode==='boss') return startBoss(currentStep);
+  if(currentStep.mode==='boss') return currentStep.hackBoss ? startHackBoss(currentStep) : startBoss(currentStep);
   if(LEVELS[currentLevel-1].game==='hackterm') return startHackterm(currentStep);
   if(LEVELS[currentLevel-1].game==='invaders') return startInvaders(currentStep);
   if(LEVELS[currentLevel-1].game==='parachute') startParachute(currentStep);
@@ -2781,12 +3124,10 @@ function courseFinish(){
   confetti(); confetti();
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
-    +'<p>Incroyable ! Tu as fini les <b>7 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les accents, les chiffres, le piratage alien, la frappe libre et la chasse à la lave. Tu tapes comme un pro ! 👏</p>'
-    +'<div class="m-actions"><button class="m-btn ghost" id="again">↺ Tout recommencer</button>'
-    +'<a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
+    +'<p>Incroyable ! Tu as fini les <b>7 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les accents, les chiffres, le piratage alien, la frappe libre, la chasse à la lave… et tu as éteint <b>K0RT3X</b> pour de bon. Tu tapes comme un pro ! 👏</p>'
+    +'<div class="m-actions"><a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
-  document.getElementById('again').onclick=()=>{ closeOverlay(); loadLevel(1,0,true); };
 }
 
 /* ---- sélecteur de niveaux ---- */
@@ -2900,8 +3241,8 @@ document.getElementById('hintBtn').onclick=()=>{
   // Boss : astuce spécifique au combat
   if(currentStep && currentStep.mode==='boss'){
     pauseActive();
-    const tip = currentStep.wordMode
-      ? 'Pendant l\'<b>esquive</b>, tape vite le mot qui descend, lettre par lettre — commence dès qu\'il apparaît. Pendant l\'<b>attaque</b>, tape le mot d\'arme affiché devant le dragon. Attention aux <b>majuscules</b> et aux fautes : chaque erreur coûte une vie !'
+    const tip = currentStep.hackBoss
+      ? 'Lis l\'<b>alerte</b> en haut du terminal, puis tape la <b>commande</b> affichée, lettre par lettre, avant que la barre rouge de <b>traçage</b> soit pleine. La <b>case jaune</b> te montre où tu en es. S\'il y a <b>deux commandes</b>, attention : l\'une est un <b>piège</b> ! Tape celle qui répond à l\'alerte. Clique sur 💡 si tu cherches une touche. Trop dur ? Baisse la difficulté avec ⚙️.'
       : currentStep.swarm
         ? 'Déplace ton vaisseau avec '+kbd('F')+' et '+kbd('J')+'. <b>Aligne-toi</b> juste sous un alien, puis tape <b>sa lettre</b> (attention aux majuscules !) pour tirer au laser. Mal aligné ou mauvaise touche : le tir ne part pas. Quand le Vaisseau-Mère est <b>vulnérable</b>, tape les <b>symboles et chiffres</b> affichés — son bouclier 🛡️ se recharge à chaque essaim. Trop dur ? Baisse la difficulté avec ⚙️.'
         : 'Pendant l\'<b>esquive</b>, lis bien la touche dans la boule violette et tape-la vite. Fais attention aux <b>majuscules</b> ! Pendant l\'<b>attaque</b>, frappe les symboles affichés devant le dragon. Chaque mauvaise touche coûte une vie !';
@@ -2909,7 +3250,7 @@ document.getElementById('hintBtn').onclick=()=>{
     modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker">Astuce — Combat de Boss</div>'
       +'<p class="tip-cap">'+tip+'</p>'
       +'<div class="m-actions"><button class="m-btn primary green" id="okHint">J\'ai compris ▶</button></div>';
-    modal.dataset.ttsText = (window.TTS_STATIC||{})[currentStep.wordMode?'boss_hint_word':currentStep.swarm?'boss_hint_swarm':'boss_hint_spell'] || '';
+    modal.dataset.ttsText = (window.TTS_STATIC||{})[currentStep.hackBoss?'boss_hint_hack':currentStep.swarm?'boss_hint_swarm':'boss_hint_spell'] || '';
     openOverlay();
     document.getElementById('okHint').onclick=()=>{ closeOverlay(); resumeActive(); };
     return;
