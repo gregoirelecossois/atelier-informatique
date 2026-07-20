@@ -3025,7 +3025,7 @@ function openMissionPopup(){
       <div class="m-actions"><button class="m-btn primary" id="goBtn">C'est parti ! 🚀</button></div>`;
     modal.dataset.ttsText = s.title + '. ' + s.intro + ' ' + s.how.join(' ');
   }
-  openOverlay();
+  openOverlay(); fitModalWidth();
   document.getElementById('goBtn').onclick=closeOverlay;
 }
 
@@ -3483,7 +3483,30 @@ document.getElementById('seeMission').onclick=openMissionPopup;
 /* =========================================================
    9. OVERLAY / TOAST / CONFETTI
    ========================================================= */
-function openOverlay(){ overlay.classList.add('open'); if(window.ttsDecorateModal) ttsDecorateModal(modal); }
+function openOverlay(){ modal.style.maxWidth=''; overlay.classList.add('open'); if(window.ttsDecorateModal) ttsDecorateModal(modal); }
+/* Popups longues : élargir plutôt que faire scroller.
+   Sur un écran court, une popup de niveau ou de mission peut déborder et obliger l'élève à
+   scroller pour trouver le bouton « C'est parti ». Plutôt que ça, on l'élargit par paliers
+   (jusqu'à 1,6× sa largeur normale, sans dépasser l'écran) : le texte tient sur moins de
+   lignes et la popup rentre en hauteur. On n'y touche que si elle déborde vraiment, et on
+   annule si l'élargissement n'a rien arrangé. À n'appeler que juste après openOverlay(), et
+   seulement pour les popups de niveau/mission. */
+function fitModalWidth(){
+  modal.style.maxWidth='';
+  const ov=modal.parentElement; if(!ov) return;
+  const base=modal.offsetWidth;                        // offsetWidth : insensible à l'animation (scale)
+  if(!base || modal.scrollHeight<=modal.clientHeight+1) return;   // ça tient déjà : rien à faire
+  const cs=getComputedStyle(ov);
+  const avail=ov.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0);
+  const cap=Math.min(base*1.6, avail);
+  if(cap<base+40) return;                              // écran trop étroit : on garde le scroll
+  const h0=modal.scrollHeight;
+  let w=base;
+  while(w<cap-1 && modal.scrollHeight>modal.clientHeight+1){
+    w=Math.min(w+60,cap); modal.style.maxWidth=w+'px';
+  }
+  if(modal.scrollHeight>=h0) modal.style.maxWidth='';  // élargir n'a pas aidé : on revient à la normale
+}
 function closeOverlay(){ overlay.classList.remove('open'); if(window.ttsStopCurrent) ttsStopCurrent(); }
 
 let toastTimer=null;
@@ -3547,7 +3570,7 @@ function openLevelIntro(n, cont){
     <div class="m-actions"><button class="m-btn primary green" id="lvlGo">C'est parti ! 🚀</button></div>`;
   modal.dataset.ttsText = lvl.title + ". Bienvenue ! Voici les nouveaux pouvoirs que tu viens de débloquer. "
     + (lvl.note || "Ils sont apparus dans ta barre d'outils, tout en haut. À toi de jouer !");
-  openOverlay();
+  openOverlay(); fitModalWidth();
   document.getElementById('lvlGo').onclick=()=>{ closeOverlay(); cont&&cont(); };
 }
 
