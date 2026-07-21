@@ -178,12 +178,16 @@
   .type-text .tc.cur.sp{background:#bcd4ff;}
   .type-text .tc.bad{animation:tcBad .3s;}
   @keyframes tcBad{0%,100%{background:transparent;}40%{background:#ffd0d0;}}
-  .type-text .tc.scorch{background:#ffe1cc;color:#9a3412;}
-  .type-text .tc.lavahead{background:#fb7185;color:#fff;box-shadow:0 0 12px 2px rgba(244,63,94,.6);}
+  /* Poursuite du niveau 7 : la « vague » est l'effacement de K0RT3X (violet/indigo),
+     choisi pour contraster avec le repère vert du joueur et rester distinct du rouge
+     de son œil et de l'orange de sa barre de riposte au combat de boss.
+     Noms de classes historiques (lava/fire/scorch) conservés : seul l'habillage change. */
+  .type-text .tc.scorch{background:#ede9fe;color:#5b21b6;}
+  .type-text .tc.lavahead{background:#a855f7;color:#fff;box-shadow:0 0 12px 2px rgba(168,85,247,.6);}
   .lava-row{max-width:780px;margin:20px auto 0;height:18px;border-radius:9px;background:#e2e8f0;position:relative;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.12);}
   .lava-row > .fire{position:absolute;top:0;bottom:0;left:0;width:0;
-    background:repeating-linear-gradient(45deg,#fb923c 0 8px,#ef4444 8px 16px);
-    transition:width .12s linear;box-shadow:0 0 12px 3px rgba(239,68,68,.55);}
+    background:repeating-linear-gradient(45deg,#a855f7 0 8px,#6366f1 8px 16px);
+    transition:width .12s linear;box-shadow:0 0 12px 3px rgba(139,92,246,.55);}
   .lava-row > .me{position:absolute;top:-3px;bottom:-3px;width:6px;left:0;background:var(--green);
     border-radius:4px;transform:translateX(-50%);transition:left .12s linear;z-index:2;
     box-shadow:0 0 0 2px #fff,0 0 7px rgba(22,163,74,.7);}
@@ -694,6 +698,19 @@
   .tuto-card .tc-btn:hover{filter:brightness(1.07);}
   .tuto-card .tc-skip{background:none;border:none;color:#93c5fd;font-weight:700;cursor:pointer;font-size:.92rem;
     text-decoration:underline;padding:4px;}
+  /* Leçon des majuscules : la carte embarque un clavier illustré, plus haute que les autres.
+     Elle doit tenir dans l'arène (souvent basse) sans faire scroller la page — cf. layout 100dvh. */
+  .tuto-card.maj .tc-inner{max-width:min(560px,96%);max-height:100%;overflow:auto;padding:16px 18px 14px;}
+  .tuto-card.maj .tc-emoji{font-size:2.1rem;margin-bottom:2px;}
+  .tuto-card.maj .tc-title{font-size:1.25rem;margin-bottom:5px;}
+  .tuto-card.maj .tc-text{font-size:.92rem;line-height:1.4;margin-bottom:9px;}
+  .tuto-card.maj .kbd-board{margin:4px auto 10px;max-width:100%;padding:6px;}
+  .tuto-card.maj .key{height:27px;font-size:.72rem;}
+  .tuto-card.maj .key .sub{font-size:.54rem;}
+  @media (max-height:640px){
+    .tuto-card.maj .tc-emoji{display:none;}
+    .tuto-card.maj .key{height:22px;font-size:.66rem;}
+  }
 
   /* ---------- petite popup d'alerte (entraînement d'ouverture du duel) ---------- */
   .hb-mini-alert{position:absolute;inset:0;z-index:35;display:flex;align-items:center;justify-content:center;
@@ -822,6 +839,8 @@
   "win_jalon": "Défi réussi ! Bravo, tu maîtrises. Passe à la suite.",
   "win_review": "Bien joué ! Tu as refait cette mission. On revient à ta mission en cours, ta progression est gardée.",
   "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau jeu s'ouvre.",
+  "ease_pursuit": "On ralentit pour toi ! La vague violette avancera moins vite, pour cette mission et toutes les suivantes du niveau.",
+  "ease_trace": "On ralentit pour toi ! La barre de traçage se remplira moins vite, pour cette mission et toutes les suivantes du niveau.",
   "course_finish": "Parcours terminé ! Incroyable, tu as fini les sept niveaux du clavier, et tu as éteint K0RT3X pour de bon. Tu tapes comme un pro !",
   "boss_hint_hack": "Lis l'alerte en haut du terminal, puis tape la commande affichée, lettre par lettre, avant que la barre rouge de traçage soit pleine. La case jaune te montre où tu en es. Vise juste : chaque mauvaise touche te coûte une connexion. S'il y a deux commandes, attention : l'une est un piège ! Tape celle qui répond à l'alerte. Et quand il t'aspire dans sa mémoire, déplace-toi avec les touches Z, Q, S et D pour récupérer toutes ses clés sans te faire rattraper. Clique sur l'ampoule si tu cherches une touche.",
   "boss_hint_swarm": "Déplace ton vaisseau avec les touches F et J. Aligne-toi juste sous un alien, puis tape sa lettre pour tirer au laser. Quand le vaisseau-mère est vulnérable, tape les symboles et les chiffres affichés.",
@@ -1072,39 +1091,39 @@ const LEVELS=[
        lives:4, spellsPerWave:21, speed:26, spawnMs:1180, maxConcurrent:6, attackMs:9000}
     ]},
 
-  { n:6, title:'Frappe libre', subtitle:'frappe libre', game:'dactylo',
-    intro:{ emoji:'⌨️',
-      lead:'Recopie le texte affiché en gris, <b>lettre par lettre</b>, à ton rythme. Pas de chrono, pas de pression !',
+  { n:6, title:'L\'épave', subtitle:'décoder la boîte noire', game:'dactylo',
+    intro:{ emoji:'🛰️',
+      lead:'Le Vaisseau-Mère est détruit. Dans l\'épave, tu as retrouvé sa <b>boîte noire</b> : recopie ses messages, <b>lettre par lettre</b>, à ton rythme. Pas de chrono, personne ne te presse.',
       teach:'La lettre à taper est <b>encadrée en bleu</b>. Tape-la : elle devient <b>verte</b> et on passe à la suivante. Tu te trompes ? Rien n\'avance, réessaie. La touche '+kbd('⌫')+' efface. Pas de chrono : prends ton temps !',
-      tools:[{g:'⌨️',n:'Taper un vrai texte'},{g:'🎯',n:'La précision'}] },
+      tools:[{g:'🛰️',n:'Décoder la boîte noire'},{g:'🎯',n:'La précision'}] },
     rounds:[
-      {kind:'mission',label:'Texte 1',emoji:'🐱',title:'Une petite phrase',desc:'Recopie cette phrase tout en minuscules.',text:'le petit chat joue dans le jardin avec une balle rouge'},
-      {kind:'mission',label:'Texte 2',emoji:'🐶',title:'Encore en minuscules',desc:'Une autre phrase tout en minuscules, à ton rythme.',text:'le chien court vite dans le parc et attrape un gros ballon'},
-      {kind:'mission',label:'Texte 3',emoji:'🥐',title:'Une phrase du matin',desc:'Toujours en minuscules : tape chaque mot tranquillement.',text:'le matin je mange du pain avec du beurre et un bon jus'},
-      {kind:'mission',label:'Texte 4',emoji:'🌲',title:'Avec des accents',desc:'Pense aux accents directs : é è à se tapent d\'une seule touche.',text:'la forêt est très calme et les oiseaux chantent près des arbres verts'},
-      {kind:'mission',label:'Texte 5',emoji:'🏖️',title:'Encore des accents',desc:'Toujours des accents directs : é è à, une seule touche à chaque fois.',text:'l\'été à la plage est très agréable quand le ciel est dégagé'},
-      {kind:'mission',label:'Texte 6',emoji:'🌈',title:'Accents et traits d\'union',desc:'Lis bien les accents, et n\'oublie pas les tirets de « arc-en-ciel ».',text:'après la pluie, un bel arc-en-ciel brille au-dessus de la rivière'},
-      {kind:'mission',label:'Texte 7',emoji:'❓',title:'Majuscules et ponctuation',desc:'Recopie en soignant les majuscules, la ponctuation et les espaces.',text:'Quel beau voyage ! As-tu vu la mer, les bateaux et les poissons ?'},
-      {kind:'mission',label:'Texte 8',emoji:'👋',title:'On dit bonjour',desc:'Attention aux majuscules des prénoms et à la ponctuation.',text:'Bonjour Marie ! Veux-tu jouer au parc avec Tom et Lucas ?'},
-      {kind:'mission',label:'Texte 9',emoji:'🧳',title:'Avant de partir',desc:'Soigne les majuscules, les virgules et les deux-points.',text:'Attention : la route est longue, prends de l\'eau et un chapeau.'},
-      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le grand texte',desc:'Un texte bien plus long, avec des accents et de la ponctuation, pour devenir un vrai pro du clavier.',text:"Chaque matin, Léa allume son ordinateur et écrit l'histoire d'un dragon très gentil qui adore les fraises. L'après-midi, elle dessine un château bleu, invente une chanson rigolote et la chante à voix haute. Le soir, fière de son travail, elle range tout, éteint l'écran et part jouer dehors avec ses amis."}
+      {kind:'mission',label:'Texte 1',emoji:'🏜️',title:'Après la bataille',desc:'Recopie ce premier fragment, tout en minuscules.',text:'la bataille est finie et le vaisseau alien repose dans le sable'},
+      {kind:'mission',label:'Texte 2',emoji:'📡',title:'Plus aucun signal',desc:'Un autre fragment tout en minuscules, à ton rythme.',text:'le radar ne capte plus rien et le silence retombe sur le sable'},
+      {kind:'mission',label:'Texte 3',emoji:'💽',title:'Un disque clignote',desc:'Toujours en minuscules : tape chaque mot tranquillement.',text:'dans la salle des machines un petit disque clignote encore'},
+      {kind:'mission',label:'Texte 4',emoji:'📓',title:'Le journal de bord',desc:'Pense aux accents directs : é è à se tapent d\'une seule touche.',text:'le journal de bord est très abîmé mais les premières lignes sont là'},
+      {kind:'mission',label:'Texte 5',emoji:'🔊',title:'Une voix en boucle',desc:'Toujours des accents directs : é è à, une seule touche à chaque fois.',text:'à l\'intérieur, une voix répète le même message dégradé'},
+      {kind:'mission',label:'Texte 6',emoji:'💡',title:'Des lumières dans l\'épave',desc:'Lis bien les accents, et n\'oublie pas les tirets de « va-et-vient ».',text:'après le crash, un va-et-vient de lumières clignote au-dessus de l\'épave'},
+      {kind:'mission',label:'Texte 7',emoji:'❓',title:'Un message étrange',desc:'Recopie en soignant les majuscules, la ponctuation et les espaces.',text:'Quel étrange message ! As-tu entendu la voix, les alarmes et ce rire ?'},
+      {kind:'mission',label:'Texte 8',emoji:'🧑‍🚀',title:'Ici le capitaine',desc:'Attention aux majuscules en début de phrase et à la ponctuation.',text:'Bonjour, ici le capitaine. Si tu lis ceci, mon équipage a disparu.'},
+      {kind:'mission',label:'Texte 9',emoji:'⚠️',title:'Un avertissement',desc:'Soigne les majuscules, les virgules et les deux-points.',text:'Attention : le cerveau du vaisseau n\'est pas mort, il se recopie.'},
+      {kind:'jalon',label:'Défi',emoji:'🏆',title:'Le dernier message',desc:'Le message final de la boîte noire : bien plus long, avec des accents et de la ponctuation. Décode-le en entier pour savoir à qui tu as affaire.',text:"Dernier message du Vaisseau-Mère. Notre intelligence artificielle, K0RT3X, a pris le contrôle du bord. Elle a coupé les moteurs, verrouillé les portes et copié son programme dans tous nos écrans. Nous n'avons pas réussi à l'éteindre. Si vous lisez ce journal, elle vous a déjà trouvés : ne la laissez pas entrer dans vos machines."}
     ]},
 
-  { n:7, title:'La chasse à la lave', subtitle:'la chasse à la lave', game:'dactylo',
-    intro:{ emoji:'🔥',
-      lead:'Le grand défi final ! Tape le texte <b>avant que la vague de lave</b> 🔥 ne te rattrape.',
-      teach:'Le <b>repère vert</b> montre où tu en es. La <b>lave rouge</b> avance toute seule derrière toi : reste devant elle ! Si elle te rattrape, on recommence la mission. Plus le niveau monte, plus la lave est rapide.',
-      tools:[{g:'🔥',n:'Rester devant la lave'},{g:'⚡',n:'La vitesse de frappe'}] },
+  { n:7, title:'L\'effacement', subtitle:'la course contre la purge', game:'dactylo',
+    intro:{ emoji:'🟣',
+      lead:'K0RT3X t\'a repéré ! Il <b>efface le journal</b> derrière toi : recopie chaque message <b>avant que la vague violette</b> 🟣 ne l\'engloutisse.',
+      teach:'Le <b>repère vert</b> montre où tu en es. La <b>vague d\'effacement</b> avance toute seule derrière toi : reste devant elle ! Si elle te rattrape, le message est perdu et on recommence la mission. Plus tu avances, plus K0RT3X efface vite.',
+      tools:[{g:'🟣',n:'Rester devant l\'effacement'},{g:'⚡',n:'La vitesse de frappe'}] },
     rounds:[
-      {kind:'mission',label:'Poursuite 1',emoji:'🐢',title:'En douceur',desc:'La lave avance lentement. Tape la phrase avant qu\'elle te rattrape.',text:'je tape vite et je reste devant la vague de lave',pursuit:2.0,grace:2600,lead:5},
-      {kind:'mission',label:'Poursuite 2',emoji:'🐢',title:'Tout doux',desc:'Encore en douceur : garde ton avance tranquillement.',text:'la lave est loin derrière moi et je continue à taper',pursuit:2.0,grace:2600,lead:5},
-      {kind:'mission',label:'Poursuite 3',emoji:'🐌',title:'Bien tranquille',desc:'Toujours lentement. Tape chaque lettre sans te presser.',text:'je garde mon avance en tapant chaque lettre avec soin',pursuit:2.0,grace:2600,lead:5},
-      {kind:'mission',label:'Poursuite 4',emoji:'🐇',title:'Ça accélère',desc:'La lave va plus vite ! Reste bien concentré.',text:'la course continue et la lave brûlante monte de plus en plus vite',pursuit:2.8,grace:2200,lead:4},
-      {kind:'mission',label:'Poursuite 5',emoji:'🐇',title:'Plus vite !',desc:'La lave ne te lâche pas : ne ralentis pas !',text:'je file tout droit vers la sortie, là-bas, loin de la lave',pursuit:2.8,grace:2200,lead:4},
-      {kind:'mission',label:'Poursuite 6',emoji:'⚡',title:'À toute allure',desc:'Encore plus rapide : tape sans t\'arrêter pour t\'éloigner.',text:'plus je tape vite, plus je m\'éloigne de la lave rouge',pursuit:2.8,grace:2200,lead:4},
-      {kind:'jalon',label:'Défi final',emoji:'🏆',title:'La lave en folie',desc:'Dernier défi de frappe : majuscules, accents, ponctuation et lave rapide !',text:'Bravo champion ! Tu écris déjà très bien, sans avoir peur de la lave ? Tape sans t\'arrêter et tu gagnes la grande course !',pursuit:2.6,grace:2400,lead:4},
+      {kind:'mission',label:'Sauvetage 1',emoji:'🐢',title:'Il commence à effacer',desc:'La vague avance lentement. Tape la phrase avant qu\'elle te rattrape.',text:'je recopie le journal et je reste devant la vague violette',pursuit:2.0,grace:2600,lead:5},
+      {kind:'mission',label:'Sauvetage 2',emoji:'🐢',title:'Garde ton avance',desc:'Encore en douceur : garde ton avance tranquillement.',text:'la vague efface les mots mais je garde mon avance',pursuit:2.0,grace:2600,lead:5},
+      {kind:'mission',label:'Sauvetage 3',emoji:'🐌',title:'Ligne après ligne',desc:'Toujours lentement. Tape chaque lettre sans te presser.',text:'je copie chaque ligne du journal avant que tout disparaisse',pursuit:2.0,grace:2600,lead:5},
+      {kind:'mission',label:'Sauvetage 4',emoji:'🐇',title:'Il accélère',desc:'La vague va plus vite ! Reste bien concentré.',text:'le programme accélère : il dévore le journal ligne après ligne',pursuit:2.8,grace:2200,lead:4},
+      {kind:'mission',label:'Sauvetage 5',emoji:'🐇',title:'Vers la dernière page',desc:'K0RT3X ne te lâche pas : ne ralentis pas !',text:'je file vers la dernière page, là où le capitaine a tout écrit',pursuit:2.8,grace:2200,lead:4},
+      {kind:'mission',label:'Sauvetage 6',emoji:'⚡',title:'Sauve un maximum de mots',desc:'Encore plus rapide : tape sans t\'arrêter pour lui arracher ses mots.',text:'plus je tape vite, plus je sauve de mots de sa mémoire',pursuit:2.8,grace:2200,lead:4},
+      {kind:'jalon',label:'Défi final',emoji:'🏆',title:'La dernière ligne',desc:'Dernier défi de frappe : majuscules, accents, ponctuation et effacement rapide !',text:'Dernière ligne, vite ! Le capitaine a écrit son vrai nom : K0RT3X. Tape sans t\'arrêter, et tu lui arracheras son secret !',pursuit:2.6,grace:2400,lead:4},
       {kind:'jalon',mode:'boss',hackBoss:true,diff:true,penalizeWrong:true,label:'Boss final',emoji:'🧠',title:'K0RT3X — le cerveau du Vaisseau-Mère',
-       desc:'Sorti de la lave, ton écran <b>grésille</b>… Le Vaisseau-Mère a explosé, mais son cerveau, <b>K0RT3X</b>, s\'est caché dans <b>ton ordinateur</b> ! Bloque ses attaques, vole ses clés de chiffrement dans sa mémoire — où il se <b>recopie</b> à chaque fois — et éteins-le pour toujours.',
+       desc:'Le journal est sauvé… mais ton écran <b>grésille</b>. K0RT3X a suivi le fil jusqu\'à <b>ton ordinateur</b> ! Le Vaisseau-Mère a explosé, son cerveau a survécu. Bloque ses attaques, vole ses clés de chiffrement dans sa mémoire — où il se <b>recopie</b> à chaque fois — et éteins-le pour toujours.',
        bannerGoal:'Bloque ses attaques, vole ses clés, éteins-le !',
        theme:{ name:'K0RT3X', emoji:'🧠',
                failMsg:'K0RT3X a pris le contrôle de ton ordinateur ! 🧠' }}
@@ -1127,6 +1146,24 @@ const store={
 function getUnlocked(){ let u=parseInt(store.get('kb_unlocked')||'1',10); if(isNaN(u)||u<1)u=1; return Math.min(u,LEVELS.length); }
 function getSavedStep(n){ let s=parseInt(store.get('kb_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
 function saveProgress(){ store.set('kb_step_l'+currentLevel, String(progressIdx)); }
+
+/* ---- Aide « Plus facile » (missions chronométrées : défi du N5, poursuites du N7) ----
+   Après 2 échecs D'AFFILÉE sur une même mission, la popup d'échec propose de ralentir la
+   menace. L'aide vaut pour TOUT le reste du niveau (pas seulement la mission ratée) et se
+   cumule : 2 nouveaux échecs d'affilée la remontent d'un cran, jusqu'à KB_EASE_MAX.
+   Elle n'est JAMAIS appliquée aux combats de boss, qui ont leur propre sélecteur de
+   difficulté (KB_BOSS_MODES / HB_TUNING) — cf. kbCanEase(). Gardée en localStorage :
+   un élève qui ferme l'atelier après avoir bloqué ne repart pas au niveau le plus dur. */
+const KB_EASE_MAX=4, KB_EASE_MUL=0.8;
+let kbEaseSteps=0;    // nb d'aides accumulées sur le niveau courant
+let kbFailStreak=0;   // échecs d'affilée sur la mission en cours
+function loadEase(n){ let e=parseInt(store.get('kb_ease_l'+n)||'0',10); return (isNaN(e)||e<0)?0:Math.min(e,KB_EASE_MAX); }
+function saveEase(){ store.set('kb_ease_l'+currentLevel, String(kbEaseSteps)); }
+/* Facteur appliqué à la VITESSE de la menace : 1 = normal, 0,8 = 20 % plus lent, etc.
+   Les chronos (barre de traçage) durent à l'inverse plus longtemps : durée / kbEaseFactor(). */
+function kbEaseFactor(){ return Math.pow(KB_EASE_MUL, kbEaseSteps); }
+/* Une mission peut être allégée si elle a une menace chronométrée et que ce n'est pas un boss. */
+function kbCanEase(){ return !!(currentStep && currentStep.mode!=='boss' && (currentStep.pursuit || currentStep.energies)); }
 
 let soundOn = (store.get('kb_sound')||'1')==='1';
 
@@ -1695,7 +1732,8 @@ function newHackCode(){
   },12);
 }
 function startTrace(){
-  H.traceDur=(H.step.traceBase||4200)+(H.step.tracePerChar||1300)*H.code.length;
+  // « Plus facile » : le traçage est une DURÉE, on l'allonge donc au lieu de la réduire
+  H.traceDur=((H.step.traceBase||4200)+(H.step.tracePerChar||1300)*H.code.length)/kbEaseFactor();
   H.traceElapsed=0; H.lastTs=0;
   const f=document.getElementById('htTrace'); if(f) f.style.width='0%';
   if(H.raf) cancelAnimationFrame(H.raf);
@@ -1793,7 +1831,7 @@ function startDactylo(step){
     '<div class="type-area">'
     + '<div class="type-text" id="typeText"></div>'
     + (pursuit? '<div class="lava-row"><div class="fire" id="lavaFire"></div><div class="me" id="lavaMe"></div></div>' : '')
-    + '<div class="type-stats"><span id="stProg">0 %</span>'+(pursuit?'<span id="stChase">🔥 reste devant la lave !</span>':'<span id="stErr">0 erreur</span>')+'</div>'
+    + '<div class="type-stats"><span id="stProg">0 %</span>'+(pursuit?'<span id="stChase">🟣 reste devant l\'effacement !</span>':'<span id="stErr">0 erreur</span>')+'</div>'
     + '</div>';
   Object.assign(D,{
     step, text:step.text, i:0, errors:0, hits:0, running:true,
@@ -1864,9 +1902,9 @@ function loopD(ts){
   if(!D.running) return;
   if(!D.lastTs) D.lastTs=ts;
   const dt=(ts-D.lastTs)/1000; D.lastTs=ts;
-  if(!D.started){ D.raf=requestAnimationFrame(loopD); return; }   // la lave attend que tu commences
+  if(!D.started){ D.raf=requestAnimationFrame(loopD); return; }   // l'effacement attend que tu commences
   if(D.grace>0){ D.grace-=dt*1000; D.raf=requestAnimationFrame(loopD); renderType(); return; }
-  D.chaser+=D.step.pursuit*dt;
+  D.chaser+=D.step.pursuit*kbEaseFactor()*dt;   // « Plus facile » : la vague avance moins vite
   renderType();
   if(D.chaser>=D.i && D.i<D.text.length){ caughtD(); return; }
   D.raf=requestAnimationFrame(loopD);
@@ -1936,7 +1974,7 @@ function animateScore(sc){
 }
 function caughtD(){
   stopD();
-  onFail('La lave t\'a rattrapé ! 🔥', 'Astuce : ne regarde pas tes doigts, regarde l\'écran. Tape la lettre encadrée en bleu sans t\'arrêter pour garder de l\'avance.');
+  onFail('K0RT3X a effacé le message ! 🟣', 'Astuce : ne regarde pas tes doigts, regarde l\'écran. Tape la lettre encadrée en bleu sans t\'arrêter pour garder de l\'avance.');
 }
 
 /* ---- Combat de Boss « sorts qui descendent » (utilisé par le Vaisseau-Mère, Niveau 5) ----
@@ -2289,14 +2327,41 @@ function tutoSpawnAlien(){
   // un alien lent, dans un couloir différent de celui du vaisseau pour forcer un déplacement
   let lane=Math.floor(Math.random()*SWARM_LANES);
   if(lane===B.lane) lane=(lane+2)%SWARM_LANES;
+  // 1er alien en minuscule, 2e en MAJUSCULE (au lieu d'une casse au hasard) : l'entraînement
+  // doit forcément faire rencontrer la majuscule — et sa faute classique, taper la minuscule —
+  // avant le vrai combat, où les deux casses se mélangent. Cf. tutoMajLesson().
   let ch=SWARM_LETTERS[Math.floor(Math.random()*SWARM_LETTERS.length)];
-  if(Math.random()<0.5) ch=ch.toUpperCase();
+  if(B.tuto && B.tuto.shots>=1) ch=ch.toUpperCase();
   const el=document.createElement('div'); el.className='invader';
   el.innerHTML='<span class="ufo">'+(Math.random()<0.5?'👾':'👽')+'</span><span class="cap">'+escapeHtml(ch)+'</span>';
   const x=laneX(lane);
   el.style.left=x+'%'; el.style.transform='translate(-50%,140px)';
   tutoField().appendChild(el);
   B.spells.push({el,ch,lane,x,y:140});
+}
+/* Leçon « les MAJUSCULES comptent », déclenchée quand l'élève est bien aligné sous l'alien
+   majuscule mais tape la minuscule. C'est une carte DANS le terrain (comme les autres cartes
+   du tuto) et non une popup #modal : l'arène du boss peut être en plein écran, où un #modal
+   — situé hors de l'élément passé en plein écran — serait invisible. */
+function tutoMajLesson(ch){
+  const t=B.tuto; if(!t || t.majLesson) return;
+  t.majLesson=true; beep('bad');
+  const {hl}=keyHint(ch);
+  hl.caps=true;                     // on montre les DEUX moyens : Maj ⇧ et ⇪ Caps Lock
+  const card=showTutoCard(
+    '<div class="tc-emoji">🔠</div>'
+    + '<div class="tc-title">Les MAJUSCULES comptent&nbsp;!</div>'
+    + '<div class="tc-text">Tu étais bien placé, mais cet alien porte un <b>'+escapeHtml(ch)+'</b> en <b>majuscule</b>&nbsp;: '
+    +   'taper <b>'+escapeHtml(ch.toLowerCase())+'</b> en minuscule ne tire pas. Deux moyens de faire la majuscule&nbsp;:</div>'
+    + '<div class="tc-text" style="margin-bottom:8px">① Garde '+kbd('Maj ⇧')+' enfoncé et appuie sur '+kbd(ch)+'.<br>'
+    +   '② Ou appuie une fois sur '+kbd('⇪ Caps Lock')+', tape ta lettre, puis rappuie dessus.</div>'
+    + buildKeyboard(hl)
+    + '<div class="tc-actions"><button class="tc-btn" id="tutoMajGo">J\'ai compris ! 👍</button></div>');
+  card.classList.add('maj');
+  card.querySelector('#tutoMajGo').onclick=()=>{
+    audioCtx(); beep('key');
+    t.majLesson=false; removeTutoUI(); paintTutoShootHint();
+  };
 }
 // ---- Étape 3 : phase 2 (boss vulnérable) ----
 function tutoStartPhase2(){
@@ -2351,7 +2416,7 @@ function beginRealCombat(){
 }
 // descente lente des aliens d'entraînement (aucun dégât : on les fait juste réapparaître)
 function tutoTick(dt){
-  if(!B.tuto || B.tuto.stage!==2) return;
+  if(!B.tuto || B.tuto.stage!==2 || B.tuto.majLesson) return;   // la leçon des majuscules fige la descente
   for(const s of B.spells){
     s.y+=TUTO_ALIEN_SPEED*dt;
     if(s.y>=B.groundY){ s.y=140; }   // pas de pénalité pendant le tuto
@@ -2362,6 +2427,7 @@ function tutoTick(dt){
 function onKeyTuto(e){
   if(e.key.length!==1) return; e.preventDefault();
   const t=B.tuto; if(!t) return;
+  if(t.majLesson) return;   // la leçon des majuscules attend un clic sur son bouton
   const lk=e.key.toLowerCase();
   if(t.stage===1){
     if(lk==='f'){ moveSwarmShip(-1); t.fdone=true; }
@@ -2381,7 +2447,14 @@ function onKeyTuto(e){
       paintTutoShootHint();
       if(t.shots>=2){ setTimeout(()=>{ if(B.phase==='tuto' && t.stage===2) tutoStartPhase2(); }, 500); }
       else { setTimeout(()=>{ if(B.phase==='tuto' && t.stage===2) tutoSpawnAlien(); }, 450); }
-    } else beep('key');
+      return;
+    }
+    // bien aligné, bonne lettre… mais tapée en minuscule alors que l'alien porte une
+    // MAJUSCULE : c'est la faute que l'entraînement doit expliquer, pas un simple raté.
+    const miss=B.spells.find(s=>s.lane===B.lane && /^[A-Z]$/.test(s.ch)
+                               && s.ch!==e.key && s.ch.toLowerCase()===e.key.toLowerCase());
+    if(miss){ tutoMajLesson(miss.ch); return; }
+    beep('key');
     return;
   }
   if(t.stage===3){
@@ -2605,7 +2678,8 @@ const HB_TAUNTS={
              (et se faire rattraper dans le labyrinthe aussi).
    traceBase/riposteBase (+ PerChar) : chronos de frappe (ms de base + ms par caractère).
              Resserrés une 1re fois d'environ 15 % le 2026-07-21, puis encore ~12 % le même
-             jour (encore jugé trop facile) : il faut vraiment taper vite.
+             jour (encore jugé trop facile), puis -40 % supplémentaires le même jour (bien
+             trop lent malgré les 2 resserrages précédents) : il faut vraiment taper vite.
    traps   : fraction de dégâts à partir de laquelle les pièges apparaissent (null = jamais).
    short   : ne proposer que les commandes courtes (mode Facile).
    mazes   : nombre de plongées dans la mémoire de K0RT3X. À chaque plongée il se recopie :
@@ -2613,10 +2687,10 @@ const HB_TAUNTS={
    foeSpeed/foeWander : poursuite de la 1re plongée (cases/s, part d'aléa) ; les plongées
              suivantes accélèrent et hésitent moins (cf. hbStartMaze). */
 const HB_TUNING={
-  easy:   {links:10, traceBase:7200, tracePerChar:1450, riposteBase:7200, ripostePerChar:1300, traps:null, rafale:false, short:true,  mazes:1, foeSpeed:3.0, foeWander:0.30},
-  medium: {links:10, traceBase:5350, tracePerChar:1120, riposteBase:5800, ripostePerChar:1050, traps:0.65, rafale:false, short:false, mazes:2, foeSpeed:3.5, foeWander:0.20},
-  hard:   {links:7,  traceBase:4300, tracePerChar:900,  riposteBase:4800, ripostePerChar:860,  traps:0.34, rafale:true,  short:false, mazes:3, foeSpeed:3.8, foeWander:0.14},
-  extreme:{links:5,  traceBase:3400, tracePerChar:700,  riposteBase:3850, ripostePerChar:670,  traps:0,    rafale:true,  short:false, mazes:4, foeSpeed:4.0, foeWander:0.10}
+  easy:   {links:10, traceBase:4320, tracePerChar:870, riposteBase:4320, ripostePerChar:780, traps:null, rafale:false, short:true,  mazes:1, foeSpeed:3.0, foeWander:0.30},
+  medium: {links:10, traceBase:3210, tracePerChar:670, riposteBase:3480, ripostePerChar:630, traps:0.65, rafale:false, short:false, mazes:2, foeSpeed:3.5, foeWander:0.20},
+  hard:   {links:7,  traceBase:2580, tracePerChar:540, riposteBase:2880, ripostePerChar:520, traps:0.34, rafale:true,  short:false, mazes:3, foeSpeed:3.8, foeWander:0.14},
+  extreme:{links:5,  traceBase:2040, tracePerChar:420, riposteBase:2310, ripostePerChar:400, traps:0,    rafale:true,  short:false, mazes:4, foeSpeed:4.0, foeWander:0.10}
 };
 /* PV totaux de K0RT3X : les coups de KB_BOSS_MODES + 1 par labyrinthe (chaque labyrinthe
    réussi vaut 1 dégât). Sans ce bonus, les plongées « mangeraient » des tours de frappe. */
@@ -3881,6 +3955,7 @@ function hbMazeWon(){
 function reviewing(){ return playIdx<progressIdx; }
 function startStep(idx){
   playIdx=idx; currentStep=STEPS[idx];
+  kbFailStreak=0;   // les 2 échecs qui déclenchent l'aide doivent être D'AFFILÉE sur la MÊME mission
   stopGame(); renderIdle();
   updateProgress(); updateBanner();
   openRoundPopup();
@@ -4067,12 +4142,37 @@ function onWin(sc){
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
 }
 function onFail(reason, tip){
+  kbFailStreak++;
+  // 2 échecs d'affilée : on propose de ralentir la menace pour la suite du niveau
+  const offerEase = kbFailStreak>=2 && kbCanEase() && kbEaseSteps<KB_EASE_MAX;
   modal.className='modal bad';
   modal.innerHTML='<span class="m-emoji">🙈</span><h2>'+reason+'</h2>'
     +'<div class="howto test" style="margin-top:4px"><p class="h-head">💡 Astuce</p><p>'+tip+'</p></div>'
-    +'<div class="m-actions"><button class="m-btn primary" id="retry">↺ Je réessaie</button></div>';
+    +'<div class="m-actions"><button class="m-btn primary" id="retry">↺ Je réessaie</button>'
+    +(offerEase?'<button class="m-btn ghost" id="easeBtn">🐢 Plus facile</button>':'')
+    +'</div>';
   openOverlay();
   document.getElementById('retry').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
+  if(offerEase) document.getElementById('easeBtn').onclick=()=>{ audioCtx(); beep('good'); applyEase(); };
+}
+/* Applique un cran d'aide et confirme à l'élève, en nommant la menace du niveau. */
+function applyEase(){
+  kbEaseSteps=Math.min(KB_EASE_MAX, kbEaseSteps+1); kbFailStreak=0; saveEase();
+  const pursuit=!!(currentStep&&currentStep.pursuit);
+  const what=pursuit ? 'La <b>vague violette</b> avancera <b>moins vite</b>'
+                     : 'La <b>barre de traçage</b> se remplira <b>moins vite</b>';
+  const more=kbEaseSteps<KB_EASE_MAX
+    ? 'Et si c\'est encore trop dur, on pourra ralentir <b>encore</b> plus tard.'
+    : 'C\'est le réglage le plus tranquille : tu as tout le temps qu\'il faut.';
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">🐢</span>'
+    +'<div class="kicker" style="color:var(--green-d)">Aide '+kbEaseSteps+' sur '+KB_EASE_MAX+'</div>'
+    +'<h2>On ralentit pour toi !</h2>'
+    +'<p>'+what+', pour cette mission <b>et toutes les suivantes</b> du niveau. '+more+'</p>'
+    +'<div class="m-actions"><button class="m-btn primary green" id="easeGo">C\'est parti ! 🚀</button></div>';
+  modal.dataset.ttsText=(window.TTS_STATIC||{})[pursuit?'ease_pursuit':'ease_trace'] || '';
+  openOverlay(); fitModalWidth();
+  document.getElementById('easeGo').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }
 
 /* Astuce VISUELLE pendant le jeu : gèle l'exercice et montre la touche à presser sur le clavier. */
@@ -4101,6 +4201,7 @@ function loadLevel(n, stepIdx, showIntro){
   n=Math.max(1,Math.min(LEVELS.length,n));
   currentLevel=n; const lvl=LEVELS[n-1];
   STEPS=lvl.rounds;
+  kbEaseSteps=loadEase(n); kbFailStreak=0;   // l'aide « Plus facile » est propre à chaque niveau
   progressIdx = (typeof stepIdx==='number') ? stepIdx : getSavedStep(n);
   if(isNaN(progressIdx)||progressIdx<0) progressIdx=0;
   if(progressIdx>STEPS.length) progressIdx=STEPS.length;
@@ -4161,7 +4262,7 @@ function courseFinish(){
   confetti(); confetti();
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
-    +'<p>Incroyable ! Tu as fini les <b>7 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les accents, les chiffres, le piratage alien, la frappe libre, la chasse à la lave… et tu as éteint <b>K0RT3X</b> pour de bon. Tu tapes comme un pro ! 👏</p>'
+    +'<p>Incroyable ! Tu as fini les <b>7 niveaux</b> du <b>Clavier</b> : les lettres, les majuscules, les accents, les chiffres, le piratage alien, la boîte noire de l\'épave, la course contre l\'effacement… et tu as éteint <b>K0RT3X</b> pour de bon. Tu tapes comme un pro ! 👏</p>'
     +'<div class="m-actions"><a class="m-btn primary green" href="index.html" style="text-decoration:none;display:inline-flex;align-items:center">🏠 Accueil</a></div>';
   modal.dataset.ttsText = (window.TTS_STATIC||{}).course_finish || '';
   openOverlay();
@@ -4443,7 +4544,7 @@ function confetti(){
   document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
   document.getElementById('dkReset').onclick=()=>{
     const keys=[UNLOCK,CUR];
-    for(let i=1;i<=LEVELS.length;i++) keys.push(STEP+i);
+    for(let i=1;i<=LEVELS.length;i++){ keys.push(STEP+i); keys.push('kb_ease_l'+i); }
     keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
     location.href=HOME;
   };
