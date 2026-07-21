@@ -702,6 +702,9 @@
   "win_jalon": "Défi réussi ! Bravo, tu maîtrises ! Passe à la suite.",
   "win_review": "Bien joué ! Tu as refait cette mission. On revient à ta mission en cours, ta progression est gardée.",
   "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau jeu s'ouvre.",
+  "ease_mole": "On ralentit pour toi ! Les hamsters resteront plus longtemps dehors, pour cette mission et toutes les suivantes du niveau.",
+  "ease_time": "On ralentit pour toi ! Tu auras plus de temps, pour cette mission et toutes les suivantes du niveau.",
+  "ease_speed": "On ralentit pour toi ! Les cibles iront moins vite, pour cette mission et toutes les suivantes du niveau.",
   "course_finish": "Parcours terminé ! Incroyable, tu as fini les six niveaux de la souris et vaincu le Démon Gardien. Le clic, le glisser-déposer, le double-clic, le clic droit, la sélection et la molette n'ont plus de secret pour toi. Tu es un vrai champion de la souris !",
   "boss_fail": "Le démon t'a vaincu. Tu as perdu tous tes cœurs. Recommence le combat, tu vas y arriver !",
   "boss_gate": "Boss final. Gruk, le Démon Gardien. Te voilà au sommet de la tour : Gruk, le Démon Gardien t'attend ! Clique sur les flammes pour te protéger. Suis les consignes pour chaque phase du boss. Quand tu as besoin, clic droit sur la potion de vie, en bas à gauche, pour récupérer deux cœurs !",
@@ -910,6 +913,28 @@ function getSavedStep(n){ let s=parseInt(store.get('ms_step_l'+n)||'0',10); retu
 function saveProgress(){ store.set('ms_step_l'+currentLevel, String(progressIdx)); }
 function reviewing(){ return playIdx<progressIdx; }
 
+/* ---- Aide « Plus facile » (missions à échec : clic N1, défi du double-clic N3) ----
+   Après 2 échecs D'AFFILÉE sur une même mission, la popup d'échec propose de ralentir.
+   L'aide vaut pour TOUT le reste du niveau et se cumule : 2 nouveaux échecs d'affilée la
+   remontent d'un cran, jusqu'à MS_EASE_MAX. Jamais appliquée au combat de boss, qui a son
+   propre sélecteur de difficulté (BOSS_MODES) — cf. msCanEase(). Gardée en localStorage :
+   un élève qui ferme l'atelier après avoir bloqué ne repart pas au réglage le plus dur.
+   Même dispositif que le « Plus facile » de le-clavier.html (préfixe kb_ là-bas). */
+const MS_EASE_MAX=4, MS_EASE_MUL=0.8;
+let msEaseSteps=0;    // nb d'aides accumulées sur le niveau courant
+let msFailStreak=0;   // échecs d'affilée sur la mission en cours
+function loadEase(n){ let e=parseInt(store.get('ms_ease_l'+n)||'0',10); return (isNaN(e)||e<0)?0:Math.min(e,MS_EASE_MAX); }
+function saveEase(){ store.set('ms_ease_l'+currentLevel, String(msEaseSteps)); }
+/* Facteur appliqué aux VITESSES (cibles mobiles) : 1 = normal, 0,8 = 20 % plus lent.
+   Les DURÉES (chrono, temps de sortie du hamster) sont au contraire divisées : elles durent plus longtemps. */
+function msEaseFactor(){ return Math.pow(MS_EASE_MUL, msEaseSteps); }
+/* Allégeable si la mission peut RÉELLEMENT être perdue (des vies ou un chrono) et hors boss.
+   Les missions sans vies ni chrono ne peuvent pas échouer : rien à alléger. */
+function msCanEase(){
+  const lvl=LEVELS[currentLevel-1];
+  return !!(currentStep && lvl && lvl.game!=='boss' && (currentStep.lives || currentStep.timeMs));
+}
+
 let soundOn = (store.get('ms_sound')||'1')==='1';
 
 /* =========================================================
@@ -1105,10 +1130,13 @@ function startClick(step){
     + (step.timeMs? '<div class="mfield clickfield" id="mfield"><div class="timebar" id="timebar"></div></div>'
                    : '<div class="mfield clickfield" id="mfield"></div>');
   const field=document.getElementById('mfield');
+  // « Plus facile » : durées allongées (chrono, temps de sortie du hamster). On mémorise les
+  // valeurs effectives dans MG — la jauge de temps doit se remplir sur le total ALLÉGÉ.
+  const timeTotal=step.timeMs?Math.round(step.timeMs/msEaseFactor()):0;
   Object.assign(MG,{
     step, field, items:[], cleared:0, lives, maxLives:lives, target:step.target,
     running:true, last:0, nextSpawn:0, raf:0,
-    timeLeft:step.timeMs||0, emoji:step.emoji
+    timeLeft:timeTotal, timeTotal, life:step.life?step.life/msEaseFactor():0, emoji:step.emoji
   });
   setHud(0,step.target,lives,lives);
   // ripple feedback sur clic dans le vide
@@ -1140,7 +1168,7 @@ function spawnTarget(){
   el.innerHTML=(v==='mole'?'<span class="hole"></span>':'')+'<span class="bub" style="--tc:'+color+'">'+emo+'</span>';
   const item={el,x,y,vx:0,vy:0,born:performance.now()};
   if(v==='move'){
-    const sp=step.speed||14, ang=rnd(0,2*Math.PI);
+    const sp=(step.speed||14)*msEaseFactor(), ang=rnd(0,2*Math.PI);   // « Plus facile » : cibles plus lentes
     item.vx=Math.cos(ang)*sp; item.vy=Math.sin(ang)*sp;
   }
   on(el,'click',ev=>{ ev.stopPropagation(); popTarget(item); });
@@ -1172,7 +1200,7 @@ function clickLoop(ts){
   // timer
   if(step.timeMs){
     MG.timeLeft-=dt*1000;
-    const tb=document.getElementById('timebar'); if(tb) tb.style.width=Math.max(0,MG.timeLeft/step.timeMs*100)+'%';
+    const tb=document.getElementById('timebar'); if(tb) tb.style.width=Math.max(0,MG.timeLeft/MG.timeTotal*100)+'%';
     const ht=document.getElementById('hudTimer'); if(ht) ht.textContent='⏱️ '+Math.max(0,Math.ceil(MG.timeLeft/1000))+'s';
     if(MG.timeLeft<=0) return clickFail('Le temps est écoulé !','Clique sans t\'arrêter sur les cibles. Vise d\'abord celles qui sont les plus proches du pointeur.');
   }
@@ -1191,7 +1219,7 @@ function clickLoop(ts){
   }
   // mole expiry
   if(step.variant==='mole'){
-    for(const it of MG.items.slice()){ if(ts-it.born>=step.life) expireMole(it); }
+    for(const it of MG.items.slice()){ if(ts-it.born>=MG.life) expireMole(it); }
   }
   MG.raf=requestAnimationFrame(clickLoop);
 }
@@ -1267,7 +1295,10 @@ function startDbl(step){
   stage.innerHTML=hudHTML({timer:!!step.timeMs})+'<div class="mfield"><div class="desk" id="desk"></div>'
     + (step.timeMs?'<div class="timebar" id="timebar"></div>':'')+'</div>';
   const desk=document.getElementById('desk');
-  Object.assign(MG,{step, opened:0, total:step.target, running:true, last:0, raf:0, timeLeft:step.timeMs||0, singleWarned:false});
+  // « Plus facile » : chrono allongé (cf. startClick pour le même calcul)
+  const timeTotal=step.timeMs?Math.round(step.timeMs/msEaseFactor()):0;
+  Object.assign(MG,{step, opened:0, total:step.target, running:true, last:0, raf:0,
+    timeLeft:timeTotal, timeTotal, singleWarned:false});
   setHud(0,MG.total,0,0);
   step.items.forEach((it,i)=>{
     const el=document.createElement('div'); el.className='icon';
@@ -1294,7 +1325,7 @@ function dblLoop(ts){
   if(!MG.last) MG.last=ts;
   const dt=Math.min(.05,(ts-MG.last)/1000); MG.last=ts;
   MG.timeLeft-=dt*1000;
-  const tb=document.getElementById('timebar'); if(tb) tb.style.width=Math.max(0,MG.timeLeft/MG.step.timeMs*100)+'%';
+  const tb=document.getElementById('timebar'); if(tb) tb.style.width=Math.max(0,MG.timeLeft/MG.timeTotal*100)+'%';
   const ht=document.getElementById('hudTimer'); if(ht) ht.textContent='⏱️ '+Math.max(0,Math.ceil(MG.timeLeft/1000))+'s';
   if(MG.timeLeft<=0){ mgStop(); return onFail('Le temps est écoulé !','Double-clique vite : deux petits clics rapprochés sur chaque élément.'); }
   MG.raf=requestAnimationFrame(dblLoop);
@@ -2814,6 +2845,7 @@ function phaseImprison(ph){
    ========================================================= */
 function startStep(idx){
   playIdx=idx; currentStep=STEPS[idx];
+  msFailStreak=0;   // les 2 échecs qui déclenchent l'aide doivent être D'AFFILÉE sur la MÊME mission
   stopGame(); renderIdle();
   updateProgress(); updateBanner();
   openRoundPopup();
@@ -2983,13 +3015,39 @@ function onWin(){
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
 }
 function onFail(reason, tip){
+  msFailStreak++;
+  // 2 échecs d'affilée : on propose de ralentir pour la suite du niveau
+  const offerEase = msFailStreak>=2 && msCanEase() && msEaseSteps<MS_EASE_MAX;
   modal.className='modal bad';
   modal.innerHTML='<span class="m-emoji">🙈</span><h2>'+reason+'</h2>'
     +'<div class="howto test" style="margin-top:4px"><p class="h-head">💡 Astuce</p><p>'+tip+'</p></div>'
-    +'<div class="m-actions"><button class="m-btn primary" id="retry">↺ Je réessaie</button></div>';
+    +'<div class="m-actions"><button class="m-btn primary" id="retry">↺ Je réessaie</button>'
+    +(offerEase?'<button class="m-btn ghost" id="easeBtn">🐢 Plus facile</button>':'')
+    +'</div>';
   modal.dataset.ttsText = reason + '. ' + tip;   // 🔊 lit le message d'échec + l'astuce (couvre tous les appels)
   openOverlay();
   document.getElementById('retry').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
+  if(offerEase) document.getElementById('easeBtn').onclick=()=>{ audioCtx(); beep('good'); applyEase(); };
+}
+/* Applique un cran d'aide et confirme à l'élève, en nommant ce qui va changer pour lui. */
+function applyEase(){
+  msEaseSteps=Math.min(MS_EASE_MAX, msEaseSteps+1); msFailStreak=0; saveEase();
+  const s=currentStep||{};
+  const what = s.variant==='mole' ? 'Les hamsters resteront <b>plus longtemps</b> dehors'
+             : s.timeMs           ? 'Tu auras <b>plus de temps</b>'
+                                  : 'Les cibles iront <b>moins vite</b>';
+  const more = msEaseSteps<MS_EASE_MAX
+    ? 'Et si c\'est encore trop dur, on pourra ralentir <b>encore</b> plus tard.'
+    : 'C\'est le réglage le plus tranquille : tu as tout le temps qu\'il faut.';
+  modal.className='modal good';
+  modal.innerHTML='<span class="m-emoji">🐢</span>'
+    +'<div class="kicker" style="color:var(--green-d)">Aide '+msEaseSteps+' sur '+MS_EASE_MAX+'</div>'
+    +'<h2>On ralentit pour toi !</h2>'
+    +'<p>'+what+', pour cette mission <b>et toutes les suivantes</b> du niveau. '+more+'</p>'
+    +'<div class="m-actions"><button class="m-btn primary green" id="easeGo">C\'est parti ! 🚀</button></div>';
+  modal.dataset.ttsText=(window.TTS_STATIC||{})[s.variant==='mole'?'ease_mole':s.timeMs?'ease_time':'ease_speed'] || '';
+  openOverlay();
+  document.getElementById('easeGo').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }
 
 /* =========================================================
@@ -2999,6 +3057,7 @@ function loadLevel(n, stepIdx, showIntro){
   n=Math.max(1,Math.min(LEVELS.length,n));
   currentLevel=n; const lvl=LEVELS[n-1];
   STEPS=lvl.rounds;
+  msEaseSteps=loadEase(n); msFailStreak=0;   // l'aide « Plus facile » est propre à chaque niveau
   progressIdx=(typeof stepIdx==='number')?stepIdx:getSavedStep(n);
   if(isNaN(progressIdx)||progressIdx<0) progressIdx=0;
   if(progressIdx>STEPS.length) progressIdx=STEPS.length;
@@ -3293,7 +3352,7 @@ function confetti(){
   });
   document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
   document.getElementById('dkReset').onclick=()=>{
-    const keys=[UNLOCK,CUR]; for(let i=1;i<=LEVELS.length;i++) keys.push(STEP+i);
+    const keys=[UNLOCK,CUR]; for(let i=1;i<=LEVELS.length;i++){ keys.push(STEP+i); keys.push('ms_ease_l'+i); }
     keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
     location.href=HOME;
   };
