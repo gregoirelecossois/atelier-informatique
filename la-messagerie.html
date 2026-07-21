@@ -4438,7 +4438,7 @@ function openRoundPopup(){
     +'<div class="m-actions"><button class="m-btn primary'+(boss?' boss':(exam?' test':' green'))+'" id="goBtn">'
     +(boss?'À l\'attaque ! ⚔️':(game?(s._launched?'Reprendre 🎮':'GO ! 🎮'):'C\'est parti ! 🚀'))+'</button></div>';
   modal.dataset.ttsText = s.title + '. ' + (s.intro||'');
-  openOverlay(); if(!boss) fitModalWidth();   // la popup du boss LE PHISHER garde sa mise en page
+  openOverlay(); fitModalWidth();
   document.getElementById('goBtn').onclick=()=>{
     closeOverlay(); audioCtx();
     if(currentStep && currentStep.kind==='game'){
@@ -4560,8 +4560,8 @@ function openOverlay(){
    scroller pour trouver le bouton « C'est parti ». Plutôt que ça, on l'élargit par paliers
    (jusqu'à 1,6× sa largeur normale, sans dépasser l'écran) : le texte tient sur moins de
    lignes et la popup rentre en hauteur. On n'y touche que si elle déborde vraiment, et on
-   annule si l'élargissement n'a rien arrangé. À n'appeler que juste après openOverlay(), et
-   seulement pour les popups de niveau/mission — jamais pour les popups de boss. */
+   annule si l'élargissement n'a rien arrangé. À n'appeler que juste après openOverlay() —
+   y compris pour le briefing du boss LE PHISHER. */
 function fitModalWidth(){
   modal.style.maxWidth='';
   const ov=modal.parentElement; if(!ov) return;

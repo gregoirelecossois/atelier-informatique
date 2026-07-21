@@ -3460,7 +3460,7 @@ function openBossBriefing(){
           +'<span class="db-tag">'+m.tag+'</span></button>'; }).join('')
     +'</div>';
   modal.dataset.ttsText = (window.TTS_STATIC||{}).boss_briefing || '';
-  openOverlay();
+  openOverlay(); fitModalWidth();
   modal.querySelectorAll('.diff-btn').forEach(b=>b.onclick=()=>{ closeOverlay(); audioCtx(); startBoss(b.getAttribute('data-k')); });
 }
 
@@ -4451,8 +4451,8 @@ function openOverlay(){ modal.style.maxWidth=''; overlay.classList.add('open'); 
    scroller pour trouver le bouton « C'est parti ». Plutôt que ça, on l'élargit par paliers
    (jusqu'à 1,6× sa largeur normale, sans dépasser l'écran) : le texte tient sur moins de
    lignes et la popup rentre en hauteur. On n'y touche que si elle déborde vraiment, et on
-   annule si l'élargissement n'a rien arrangé. À n'appeler que juste après openOverlay(), et
-   seulement pour les popups de niveau/mission — jamais pour les popups de boss. */
+   annule si l'élargissement n'a rien arrangé. À n'appeler que juste après openOverlay() —
+   y compris pour le briefing de CORRUPTUS avec son choix de difficulté. */
 function fitModalWidth(){
   modal.style.maxWidth='';
   const ov=modal.parentElement; if(!ov) return;
