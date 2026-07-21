@@ -6248,8 +6248,7 @@ function openRoundPopup(){
     +'<div class="m-actions"><button class="m-btn primary'+(boss?' boss':(exam?' test':''))+'" id="goBtn">'
     +(boss?'À l\'attaque ! ⚔️':(game?(s._launched?'Reprendre 🎮':'GO ! 🎮'):'C\'est parti ! 🚀'))+'</button></div>';
   modal.dataset.ttsText = s.title + '. ' + (s.intro||'') + ' ' + (s.objectives||[]).map(o=>o.t||'').join(' ');
-  openOverlay();
-  if(!boss && !s.bossmode) fitModalWidth();   // POPZILLA & co gardent leur mise en page
+  openOverlay(); fitModalWidth();
   if(s.bossmode) bindBossModes();
   document.getElementById('goBtn').onclick=()=>{
     closeOverlay(); audioCtx();
@@ -6369,8 +6368,8 @@ let _ovHome=null;
    scroller pour trouver le bouton « C'est parti ». Plutôt que ça, on l'élargit par paliers
    (jusqu'à 1,6× sa largeur normale, sans dépasser l'écran) : le texte tient sur moins de
    lignes et la popup rentre en hauteur. On n'y touche que si elle déborde vraiment, et on
-   annule si l'élargissement n'a rien arrangé. À n'appeler que juste après openOverlay(), et
-   seulement pour les popups de niveau/mission — jamais pour les popups de boss. */
+   annule si l'élargissement n'a rien arrangé. À n'appeler que juste après openOverlay() —
+   y compris pour les briefings de boss (POPZILLA, INFOX) avec leur choix de difficulté. */
 function fitModalWidth(){
   modal.style.maxWidth='';
   const ov=modal.parentElement; if(!ov) return;

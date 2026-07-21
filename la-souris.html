@@ -2900,7 +2900,7 @@ function openBossGate(){
   modal.className='modal test-modal';
   modal.innerHTML=html;
   modal.dataset.ttsText = (window.TTS_STATIC||{}).boss_gate || '';
-  openOverlay();
+  openOverlay(); fitModalWidth();
   if(resume){
     document.getElementById('bossResume').onclick=()=>{ closeOverlay(); audioCtx(); resumeActive(); };
   } else {
@@ -2933,7 +2933,7 @@ function openBossDifficulty(){
     + '<p>Relance le combat contre <b>Gruk</b> en choisissant un nouveau mode :</p>'
     + bossModeChooserHTML();
   modal.dataset.ttsText = (window.TTS_STATIC||{}).boss_difficulty || '';
-  openOverlay();
+  openOverlay(); fitModalWidth();
   bindBossModeChoice();
 }
 function gameHintLine(){
@@ -3166,8 +3166,9 @@ document.getElementById('hintBtn').onclick=()=>{
    scroller pour trouver le bouton « C'est parti ». Plutôt que ça, on l'élargit par paliers
    (jusqu'à 1,6× sa largeur normale, sans dépasser l'écran) : le texte tient sur moins de
    lignes et la popup rentre en hauteur. On n'y touche que si elle déborde vraiment, et on
-   annule si l'élargissement n'a rien arrangé. À n'appeler que juste après openOverlay(), et
-   seulement pour les popups de niveau/mission — jamais pour les popups du boss Gruk. */
+   annule si l'élargissement n'a rien arrangé. À n'appeler que juste après openOverlay() —
+   y compris pour l'arrivée devant Gruk et le choix de difficulté. Les mini-tutos joués DANS
+   le terrain entre les phases (boss-brief) ne sont pas concernés : overlay séparé, pas #modal. */
 function fitModalWidth(){
   modal.style.maxWidth='';
   const ov=modal.parentElement; if(!ov) return;
