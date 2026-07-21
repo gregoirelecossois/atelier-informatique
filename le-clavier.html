@@ -240,6 +240,7 @@
   .newtools{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .newtools li{display:flex;align-items:center;gap:9px;background:#f4f8ff;border:2px solid #dbe7ff;
     border-radius:12px;padding:9px 11px;font-weight:700;font-size:.95rem;color:var(--ink);}
+  .newtools li.wide{grid-column:1 / -1;}
   .ni-glyph{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:30px;
     background:#fff;border:2px solid #c7d8f2;border-radius:8px;font-weight:800;color:var(--blue-d);flex:0 0 auto;font-size:.9rem;}
 
@@ -693,6 +694,18 @@
   .tuto-card .tc-btn:hover{filter:brightness(1.07);}
   .tuto-card .tc-skip{background:none;border:none;color:#93c5fd;font-weight:700;cursor:pointer;font-size:.92rem;
     text-decoration:underline;padding:4px;}
+
+  /* ---------- petite popup d'alerte (entraînement d'ouverture du duel) ---------- */
+  .hb-mini-alert{position:absolute;inset:0;z-index:35;display:flex;align-items:center;justify-content:center;
+    padding:18px;background:rgba(6,10,26,.55);}
+  .hb-mini-box{max-width:320px;background:linear-gradient(#241026,#150a1e);border:2px solid rgba(248,113,113,.55);
+    border-radius:16px;padding:16px 18px;text-align:center;box-shadow:0 16px 40px rgba(0,0,0,.55);animation:tgtIn .2s ease both;}
+  .hb-mini-box .hmb-ic{font-size:1.7rem;line-height:1;display:block;margin-bottom:6px;}
+  .hb-mini-box .hmb-txt{color:#fecaca;font-weight:700;font-size:.96rem;line-height:1.4;margin-bottom:14px;}
+  .hb-mini-box .hmb-ok{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;
+    border:none;border-radius:12px;padding:9px 28px;color:#fff;background:linear-gradient(#f87171,#dc2626);
+    box-shadow:0 8px 18px -6px rgba(220,38,38,.7);}
+  .hb-mini-box .hmb-ok:hover{filter:brightness(1.08);}
 
   /* ---------- Carte de score (Niveaux 6 & 7, hors boss) ---------- */
   .scorecard{margin:2px 0 4px;}
@@ -2591,7 +2604,8 @@ const HB_TAUNTS={
    links   : connexions 📡 = les vies. Généreuses, car TOUTE mauvaise touche en coûte une
              (et se faire rattraper dans le labyrinthe aussi).
    traceBase/riposteBase (+ PerChar) : chronos de frappe (ms de base + ms par caractère).
-             Resserrés d'environ 15 % le 2026-07-21 : il faut taper plus vite qu'avant.
+             Resserrés une 1re fois d'environ 15 % le 2026-07-21, puis encore ~12 % le même
+             jour (encore jugé trop facile) : il faut vraiment taper vite.
    traps   : fraction de dégâts à partir de laquelle les pièges apparaissent (null = jamais).
    short   : ne proposer que les commandes courtes (mode Facile).
    mazes   : nombre de plongées dans la mémoire de K0RT3X. À chaque plongée il se recopie :
@@ -2599,10 +2613,10 @@ const HB_TAUNTS={
    foeSpeed/foeWander : poursuite de la 1re plongée (cases/s, part d'aléa) ; les plongées
              suivantes accélèrent et hésitent moins (cf. hbStartMaze). */
 const HB_TUNING={
-  easy:   {links:10, traceBase:8200, tracePerChar:1650, riposteBase:8200, ripostePerChar:1480, traps:null, rafale:false, short:true,  mazes:1, foeSpeed:3.0, foeWander:0.30},
-  medium: {links:10, traceBase:6100, tracePerChar:1280, riposteBase:6600, ripostePerChar:1200, traps:0.65, rafale:false, short:false, mazes:2, foeSpeed:3.5, foeWander:0.20},
-  hard:   {links:10, traceBase:4900, tracePerChar:1020, riposteBase:5500, ripostePerChar:980,  traps:0.34, rafale:true,  short:false, mazes:3, foeSpeed:3.8, foeWander:0.14},
-  extreme:{links:10, traceBase:3900, tracePerChar:800,  riposteBase:4400, ripostePerChar:760,  traps:0,    rafale:true,  short:false, mazes:4, foeSpeed:4.0, foeWander:0.10}
+  easy:   {links:10, traceBase:7200, tracePerChar:1450, riposteBase:7200, ripostePerChar:1300, traps:null, rafale:false, short:true,  mazes:1, foeSpeed:3.0, foeWander:0.30},
+  medium: {links:10, traceBase:5350, tracePerChar:1120, riposteBase:5800, ripostePerChar:1050, traps:0.65, rafale:false, short:false, mazes:2, foeSpeed:3.5, foeWander:0.20},
+  hard:   {links:7,  traceBase:4300, tracePerChar:900,  riposteBase:4800, ripostePerChar:860,  traps:0.34, rafale:true,  short:false, mazes:3, foeSpeed:3.8, foeWander:0.14},
+  extreme:{links:5,  traceBase:3400, tracePerChar:700,  riposteBase:3850, ripostePerChar:670,  traps:0,    rafale:true,  short:false, mazes:4, foeSpeed:4.0, foeWander:0.10}
 };
 /* PV totaux de K0RT3X : les coups de KB_BOSS_MODES + 1 par labyrinthe (chaque labyrinthe
    réussi vaut 1 dégât). Sans ce bonus, les plongées « mangeraient » des tours de frappe. */
@@ -2656,7 +2670,7 @@ function startHackBoss(step){
     + '<div class="field hackfield hackboss" id="hackField">'
     +   '<div class="scanlines"></div>'
     +   '<div class="hterm" id="hterm">'
-    +     '<div class="ht-head">● ● ●&nbsp;&nbsp;DUEL DE TERMINAL — INTRUS DÉTECTÉ <span class="ht-blink">▊</span></div>'
+    +     '<div class="ht-head" id="htHead">● ● ●&nbsp;&nbsp;DUEL DE TERMINAL — INTRUS DÉTECTÉ <span class="ht-blink">▊</span></div>'
     +     '<div class="hb-alert" id="hbAlert"></div>'
     +     '<div class="ht-log" id="hbLog"></div>'
     +     '<div class="hb-cmdlab" id="hbCmdLab"></div>'
@@ -2680,13 +2694,17 @@ function startHackBoss(step){
       if(HB.ready&&HB.barDur){ HB.lastTs=0; HB.raf=requestAnimationFrame(hbBarLoop); }
       hbMazeResume();
       if(hbBossAudio&&soundOn){ try{ const p=hbBossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } } };
-  const st=hbEl('hbStatus'); st.className='ht-status';
-  hbType(st,'> intrusion détectée dans ton ordinateur…',()=>{
-    hbWait(450,()=>{ hbSay(HB_TAUNTS.intro);
-      // entraînement d'ouverture une seule fois par session : après un échec, on repart
-      // directement au combat plutôt que de refaire le tuto
-      hbWait(1600, kbHbTutoSeen ? hbNextAlert : hbDuelTutoCard); });
-  });
+  // entraînement d'ouverture une seule fois par session : après un échec, on repart
+  // directement au combat plutôt que de refaire le tuto. Pour ce premier passage, on
+  // saute la mise en scène (réplique de K0RT3X, etc.) — le tuto doit rester épuré.
+  if(kbHbTutoSeen){
+    const st=hbEl('hbStatus'); st.className='ht-status';
+    hbType(st,'> intrusion détectée dans ton ordinateur…',()=>{
+      hbWait(450,()=>{ hbSay(HB_TAUNTS.intro); hbWait(1600, hbNextAlert); });
+    });
+  } else {
+    hbDuelTutoCard();
+  }
 }
 function updateHbHud(){
   const lk=hbEl('hbLinks');
@@ -2989,6 +3007,10 @@ function stopHB(){
    Montré une fois par session (kbHbTutoSeen) — pas à chaque réessai après un échec. */
 function hbDuelTutoCard(){
   beep('ding');
+  // épuré : pas de mise en scène (alerte, réplique de K0RT3X) pendant l'entraînement —
+  // juste un en-tête neutre le temps du tuto, restauré dans hbDuelTutoEnd.
+  const head=hbEl('htHead'); if(head) head.innerHTML='● ● ●&nbsp;&nbsp;TUTORIEL';
+  const al=hbEl('hbAlert'); if(al){ al.style.display='none'; al.innerHTML=''; }
   const card=hbTutoCard(
     '<div class="tc-emoji">⌨️</div>'
     + '<div class="tc-title">Deux réflexes avant le duel</div>'
@@ -3005,26 +3027,19 @@ function hbDuelTutoStep1(){
   const c=document.getElementById('hbTutoCard'); if(c) c.remove();
   HB.state='duel-tuto'; HB.tutoStep=1; HB.tutoErr=0; HB.ready=false;
   hbSetPhase('⌨️ Entraînement');
-  const al=hbEl('hbAlert'); al.className='hb-alert';
-  al.innerHTML='<span class="hba-ic">🔥</span><span class="hba-txt">⚠ ALERTE — SURCHAUFFE !</span>';
-  hbLog('> entraînement : ton processeur chauffe trop…');
   hbEl('hbCmdLab').innerHTML='Tape la contre-commande <b>lettre par lettre</b> — la case <b>jaune</b> montre où tu en es :';
   HB.cmd='ventilo+'; HB.pos=0; HB.trap=''; HB.trapPos=0; HB.trapCells=[];
   hbRenderRow(HB.cmd, 700, ()=>{
-    hbStatus('💡 Vise juste : en combat, chaque mauvaise touche coûte une connexion 📡');
+    hbStatus('Vise juste : en combat, chaque mauvaise touche coûte une connexion 📡');
   });
 }
 /* Étape 2 — choisir la bonne commande entre la vraie et le piège */
 function hbDuelTutoStep2(){
   HB.tutoStep=2; HB.ready=false;
-  const al=hbEl('hbAlert'); al.className='hb-alert';
-  al.innerHTML='<span class="hba-ic">📸</span><span class="hba-txt">⚠ ALERTE — WEBCAM !</span>';
-  hbLog('> il allume ta webcam en douce…');
-  hbEl('hbCmdLab').innerHTML='⚠ <b>Deux</b> commandes&nbsp;! Une seule <b>répond à l\'alerte</b>, l\'autre est un <b>piège</b> :';
+  hbEl('hbCmdLab').innerHTML='<b>Deux</b> commandes&nbsp;! Une seule <b>répond à l\'alerte</b>, l\'autre est un <b>piège</b> :';
   HB.cmd='coupe@cam'; HB.trap='filme-moi!'; HB.pos=0; HB.trapPos=0;
-  playHackWarning();
   hbRenderAlertRows(true);
-  hbStatus('💡 Relis l\'alerte : laquelle des deux ARRÊTE la webcam ?');
+  hbStatus('Relis l\'alerte : laquelle des deux commandes y répond vraiment ?');
 }
 function onKeyDuelTuto(e){
   if(e.key.length!==1) return; e.preventDefault();
@@ -3039,27 +3054,25 @@ function onKeyDuelTuto(e){
   hbPaintCur();
 }
 /* faute pendant l'entraînement : on montre la sanction sans jamais l'appliquer */
+/* Pas de glitch/moquerie ici : l'entraînement reste calme, on ne montre QUE la
+   conséquence pédagogique (le coût qu'aurait la faute en vrai combat). */
 function hbDuelTutoBad(){
-  beep('bad'); glitchTerm(false);
+  HB.ready=false; beep('bad');
   const c=HB.cmdCells[HB.pos];
   if(c){ c.classList.remove('bad'); void c.offsetWidth; c.classList.add('bad'); }
   HB.tutoErr++;
   hbFloatAt(c,'📡 −1');
-  hbStatus('✖ Mauvaise touche ! En combat, tu perdrais une connexion 📡','warn');
+  hbMiniAlert('Mauvaise touche ! En combat, tu perdrais une connexion 📡', ()=>{ HB.ready=true; });
 }
 function hbDuelTutoTrapped(){
-  playHackWarning(); glitchTerm(true);
-  hbSay(hbPick(HB_TAUNTS.trap)); hbEyeFlash('laugh');
+  HB.ready=false; beep('bad');
   if(HB.trapBox) HB.trapBox.classList.add('gone');
   HB.trap=''; HB.trapPos=0; HB.trapCells=[];
   hbEl('hbCmdLab').innerHTML='C\'était le <b>piège</b> ! En combat, le traçage aurait bondi. Tape la <b>vraie</b> commande :';
-  hbStatus('✖ Piège ! Celle-là aidait K0RT3X. La bonne bloque l\'alerte.','warn');
-  hbPaintCur();
+  hbMiniAlert('Piège ! Celle-là aidait K0RT3X. La bonne bloque l\'alerte.', ()=>{ hbPaintCur(); HB.ready=true; });
 }
 function hbDuelTutoOk(){
   HB.ready=false;
-  const al=hbEl('hbAlert'); al.className='hb-alert ok';
-  const t=al.querySelector('.hba-txt'); if(t) t.textContent='✔ ATTAQUE BLOQUÉE !';
   playHackBeep(); beep('good');
   if(HB.tutoStep===1){
     hbStatus(HB.tutoErr ? '✔ Bloquée ! Tu vois : chaque touche compte.' : '✔ Parfait — zéro faute !','ok');
@@ -3082,11 +3095,12 @@ function hbDuelTutoDone(){
 function hbDuelTutoEnd(){
   kbHbTutoSeen=true;
   const c=document.getElementById('hbTutoCard'); if(c) c.remove();
+  const head=hbEl('htHead'); if(head) head.innerHTML='● ● ●&nbsp;&nbsp;DUEL DE TERMINAL — INTRUS DÉTECTÉ <span class="ht-blink">▊</span>';
   HB.state='between'; HB.ready=false;
   HB.cmd=''; HB.pos=0; HB.trap=''; HB.trapPos=0; HB.cmdCells=[]; HB.trapCells=[];
   hbEl('hbRows').innerHTML='';
   hbEl('hbCmdLab').textContent='';
-  const al=hbEl('hbAlert'); al.className='hb-alert'; al.innerHTML='';
+  const al=hbEl('hbAlert'); al.className='hb-alert'; al.innerHTML=''; al.style.display='';
   hbSetPhase('🧠 K0RT3X attaque…');
   hbStatus('> le duel commence…');
   hbWait(1100, hbNextAlert);
@@ -3122,14 +3136,22 @@ const HB_MAZE_HOMES=[[8,4],[12,4],[4,4],[15,4]];
 /* Moins de clés à chaque nouvelle plongée : il y a plus de poursuivants, la phase doit
    rester courte et donc jouable. */
 const HB_MAZE_KEYCOUNT=[20,14,12,10];
+/* Clés BLEUES : 2 par plongée, en plus des clés normales, replacées au hasard à chaque
+   fois (cf. hbmAddBlueKeys). Ce sont les SEULES à ralentir les copies de K0RT3X à la
+   récupération (cf. hbmCollect) — les clés normales ne sont qu'un objectif. Distance
+   minimale entre les deux pour éviter qu'elles se retrouvent collées. */
+const HB_MAZE_BLUEKEYS=2, HB_MAZE_BLUEKEYS_MINDIST=6;
 const HBM_HERO_SPEED=5.0;                            // cases/s du joueur (référence)
-/* Secondes de débandade offertes par chaque clé volée. C'est la soupape du mode multi-copies :
-   sans elle, 3 ou 4 poursuivants en plus court chemin dans un labyrinthe de couloirs à une
-   voie ne laissent aucune échappatoire (mesuré : la phase devenait infaisable). */
+/* Secondes de ralentissement (vitesse ×0.5, cf. hbmLoop) offertes par chaque clé BLEUE
+   volée (cf. HB_MAZE_BLUEKEYS). C'est la soupape du mode multi-copies : sans elle, 3 ou
+   4 poursuivants en plus court chemin dans un labyrinthe de couloirs à une voie ne
+   laissent aucune échappatoire (mesuré : la phase devenait infaisable). Elles gardent
+   leur cap, juste plus lentes. */
 const HBM_SCATTER=1.8;
-/* Après une capture les copies regagnent leur nid et y patientent : sans ce répit elles
-   reconvergent aussitôt sur le point de réapparition et enchaînent les captures — mesuré,
-   une seule plongée pouvait coûter toutes les connexions d'un coup. */
+/* Après une capture, les copies sont téléportées à leur nid (cf. hbmCheckCatch) puis
+   repartent aussitôt en chasse, mais ralenties le temps de HBM_REGROUP : sans ce répit
+   elles reconvergent instantanément sur le point de réapparition et enchaînent les
+   captures — mesuré, une seule plongée pouvait coûter toutes les connexions d'un coup. */
 const HBM_REGROUP=2.4;
 const HB_TUTO_MAP=[
   '#############',
@@ -3242,11 +3264,13 @@ const HBM_BRAINS=[
 ];
 /* Une copie choisit sa route à chaque intersection : plus court chemin vers SA cible,
    jamais de demi-tour (sauf cul-de-sac), avec une part d'hésitation selon la difficulté.
-   Pendant la débandade (une clé vient d'être volée) elles refluent vers leur nid. */
+   Pendant la débandade (une clé volée, ou une capture) elles gardent leur cible et leur
+   cap habituels — seule leur vitesse chute (cf. le mul dans hbmLoop) : les faire refluer
+   vers leur nid les amenait à osciller sans but dès qu'elles l'approchaient (le champ de
+   distances est ~plat autour de la cible), ce qui les rendait erratiques ET trop faciles
+   à semer. Ralentir sans changer de cap garde la pression tout en soufflant le joueur. */
 function hbmChaseBrain(cx,cy,f){
-  const target=(HBM.scatter>0)
-    ? (HBM.homes[HBM.foes.indexOf(f)]||[Math.round(HBM.hero.px),Math.round(HBM.hero.py)])
-    : HBM_BRAINS[f.brain%HBM_BRAINS.length](f);
+  const target=HBM_BRAINS[f.brain%HBM_BRAINS.length](f);
   const dist=hbmDistField(target[0], target[1]);
   const opts=[];
   for(let k=0;k<4;k++){
@@ -3277,7 +3301,7 @@ function hbmStart(cfg){
     spawns: cfg.spawns||[cfg.heroAt],
     heroSpeed:cfg.heroSpeed||HBM_HERO_SPEED, wander:cfg.wander||0.15,
     onCatch:cfg.onCatch||null, onKey:cfg.onKey||null, onDone:cfg.onDone||null,
-    onDir:cfg.onDir||null, onTick:cfg.onTick||null,
+    onDir:cfg.onDir||null, onTick:cfg.onTick||null, onBlueKey:cfg.onBlueKey||null,
     freeze:cfg.freeze||0, invuln:0, scatter:0, time:0, last:0, lastDirName:'',
     running:true, paused:false, raf:0,
     board:cfg.board, cv:cfg.board&&cfg.board.querySelector('canvas')
@@ -3295,6 +3319,29 @@ function hbmStart(cfg){
 function hbmStopLoop(){ HBM.running=false; if(HBM.raf){ cancelAnimationFrame(HBM.raf); HBM.raf=0; } }
 function hbmResumeLoop(){ if(!HBM.raf && HBM.cv){ HBM.running=true; HBM.last=0; HBM.raf=requestAnimationFrame(hbmLoop); } }
 function hbmAddKeys(list){ list.forEach(k=>HBM.keys.push({c:k[0], r:k[1], got:false})); HBM.total=HBM.keys.length; }
+/* Place n clés BLEUES sur des cases libres tirées au hasard (jamais sur un mur, une clé
+   déjà posée, le nid d'une copie ou le départ du joueur), en gardant au moins minDist
+   cases entre elles pour qu'elles ne se retrouvent pas collées. */
+function hbmAddBlueKeys(n, minDist){
+  const avoid=HBM.keys.map(k=>[k.c,k.r])
+    .concat([[Math.round(HBM.hero.px),Math.round(HBM.hero.py)]])
+    .concat(HBM.homes||[]);
+  const free=[];
+  for(let r=0;r<HBM.h;r++) for(let c=0;c<HBM.w;c++){
+    if(HBM.grid[r][c]!==0) continue;
+    if(avoid.some(([ac,ar])=>ac===c&&ar===r)) continue;
+    free.push([c,r]);
+  }
+  const picks=[];
+  let guard=0;
+  while(picks.length<n && free.length && guard++<500){
+    const idx=Math.floor(Math.random()*free.length), cand=free[idx];
+    if(picks.some(p=>Math.hypot(p[0]-cand[0], p[1]-cand[1])<minDist)){ continue; }
+    picks.push(cand); free.splice(idx,1);
+  }
+  picks.forEach(([c,r])=>HBM.keys.push({c,r,got:false,blue:true}));
+  HBM.total=HBM.keys.length;
+}
 function hbmAddFoe(c,r,speed,wander,brain){
   const f=hbmActor(c,r); f.brain=brain||0; f.speed=speed; f.corner=HBM.foes.length;
   HBM.foes.push(f); HBM.homes.push([c,r]); HBM.wander=wander;
@@ -3332,8 +3379,11 @@ function hbmCollect(){
   for(const k of HBM.keys){
     if(k.got) continue;
     if(Math.abs(HBM.hero.px-k.c)<0.45 && Math.abs(HBM.hero.py-k.r)<0.45){
-      k.got=true; HBM.got++; beep('good');
-      HBM.scatter=HBM_SCATTER;   // le verrou vacille : répit pour repartir
+      k.got=true; HBM.got++;
+      // seules les clés BLEUES ralentissent les copies (cf. hbmAddBlueKeys) : les clés
+      // normales ne sont plus qu'un objectif, sans effet sur la poursuite.
+      if(k.blue){ beep('good'); HBM.scatter=HBM_SCATTER; if(HBM.onBlueKey) HBM.onBlueKey(); }
+      else beep('good');
       if(HBM.onKey) HBM.onKey(HBM.got, HBM.total);
       // hors boucle : la suite peut relancer le moteur (étape 3 du tuto) sans doubler la rAF
       if(HBM.got>=HBM.total){ hbmStopLoop(); const cb=HBM.onDone; if(cb) setTimeout(cb,0); return; }
@@ -3387,7 +3437,57 @@ function hbmResize(){
   cv.width=Math.round(HBM.cssW*dpr); cv.height=Math.round(HBM.cssH*dpr);
   HBM.ctx=cv.getContext('2d');
   hbmRenderBg();
+  hbmBuildKeySprite();
+  hbmBuildFoeSprites();
   if(!HBM.raf) hbmDraw(performance.now());   // labyrinthe figé : on redessine quand même
+}
+/* Clés et poursuivants ont un halo (shadowBlur) recalculé à chaque frame — sur un PC sans
+   carte graphique, ce flou coûte cher, et une plongée peut aligner jusqu'à 20 clés + 4
+   poursuivants. On ne dessine ce halo qu'une fois, dans un petit canevas hors écran, puis
+   on se contente d'un drawImage (simple copie de pixels) à chaque frame : même rendu, sans
+   recalculer le flou 20+ fois par frame. */
+/* deux teintes : dorée (clés normales, simple objectif) et bleue (HB_MAZE_BLUEKEYS,
+   celles qui ralentissent les copies — cf. hbmCollect) — même forme, seule la couleur
+   change, pour que le joueur les reconnaisse d'un coup d'œil. */
+function hbmBuildKeySprite(){
+  const S=HBM.cell, dpr=HBM.dpr, R=S*0.26, pad=S*0.8;
+  const aX=R*0.55+pad, aY=R*1.07+pad, w=aX+R*0.55+pad, h=aY+R*1.2+pad;
+  const draw=(spr,glow,stroke)=>{
+    spr.width=Math.max(1,Math.round(w*dpr)); spr.height=Math.max(1,Math.round(h*dpr));
+    spr.cssW=w; spr.cssH=h; spr.anchorX=aX; spr.anchorY=aY;
+    const g=spr.getContext('2d');
+    g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h); g.translate(aX,aY);
+    g.shadowColor=glow; g.shadowBlur=S*0.58;
+    g.strokeStyle=stroke; g.lineWidth=Math.max(1.4,S*0.08); g.lineCap='round';
+    g.beginPath(); g.arc(0,-R*0.52,R*0.55,0,Math.PI*2); g.stroke();
+    g.beginPath(); g.moveTo(0,0); g.lineTo(0,R*1.2); g.stroke();
+    g.beginPath(); g.moveTo(0,R*0.6);  g.lineTo(R*0.55,R*0.6);  g.stroke();
+    g.beginPath(); g.moveTo(0,R*1.15); g.lineTo(R*0.42,R*1.15); g.stroke();
+  };
+  draw(HBM.keySprite||(HBM.keySprite=document.createElement('canvas')), 'rgba(250,204,21,.95)', '#fde68a');
+  draw(HBM.keySpriteBlue||(HBM.keySpriteBlue=document.createElement('canvas')), 'rgba(59,130,246,.95)', '#93c5fd');
+}
+/* même principe pour le corps lumineux des poursuivants : un sprite par teinte (+ 1 pour
+   la débandade « fear »), le reste (anneaux, iris, pupille) reste dessiné en direct car
+   ces traits n'utilisent pas shadowBlur et coûtent très peu. */
+function hbmBuildFoeSprites(){
+  const S=HBM.cell, dpr=HBM.dpr, pad=S*1.0;
+  const variants=HBM_FOE_TINT.map((c,i)=>({key:i,c,R:S*0.40}))
+    .concat([{key:'fear',c:HBM_FOE_FEAR,R:S*0.40*0.86}]);
+  HBM.foeSprites={};
+  variants.forEach(v=>{
+    const R=v.R, w=R*2+pad*2, h=w;
+    const spr=document.createElement('canvas');
+    spr.width=Math.max(1,Math.round(w*dpr)); spr.height=Math.max(1,Math.round(h*dpr));
+    spr.cssW=w; spr.cssH=h;
+    const g=spr.getContext('2d');
+    g.setTransform(dpr,0,0,dpr,0,0); g.translate(w/2,h/2);
+    g.shadowColor=v.c.glow; g.shadowBlur=S*0.7;
+    const b=g.createRadialGradient(0,-R*0.2,R*0.08,0,0,R);
+    b.addColorStop(0,v.c.body[0]); b.addColorStop(1,v.c.body[1]);
+    g.fillStyle=b; g.beginPath(); g.arc(0,0,R,0,Math.PI*2); g.fill();
+    HBM.foeSprites[v.key]=spr;
+  });
 }
 /* les murs ne bougent jamais : on les dessine une fois dans un calque hors écran */
 function hbmRenderBg(){
@@ -3424,21 +3524,18 @@ function hbmDraw(ts){
   g.setTransform(HBM.dpr,0,0,HBM.dpr,0,0);
   g.clearRect(0,0,HBM.cssW,HBM.cssH);
   if(HBM.bg) g.drawImage(HBM.bg,0,0,HBM.cssW,HBM.cssH);
-  HBM.keys.forEach((k,i)=>{ if(!k.got) hbmDrawKey(g,(k.c+.5)*S,(k.r+.5)*S,S,t+i*0.7); });
+  HBM.keys.forEach((k,i)=>{ if(!k.got) hbmDrawKey(g,(k.c+.5)*S,(k.r+.5)*S,S,t+i*0.7,k.blue); });
   for(const f of HBM.foes) hbmDrawFoe(g,S,t,f);
   hbmDrawHero(g,S,t);
 }
-/* clé de chiffrement : elle clignote parce que K0RT3X la rafraîchit en boucle */
-function hbmDrawKey(g,x,y,S,t){
-  const p=0.5+0.5*Math.sin(t*4.4), R=S*0.26;
-  g.save(); g.translate(x,y);
+/* clé de chiffrement : elle clignote parce que K0RT3X la rafraîchit en boucle
+   (halo pré-rendu dans HBM.keySprite/keySpriteBlue — cf. hbmBuildKeySprite — pour rester léger) */
+function hbmDrawKey(g,x,y,S,t,blue){
+  const spr=blue?HBM.keySpriteBlue:HBM.keySprite; if(!spr) return;
+  const p=0.5+0.5*Math.sin(t*4.4);
+  g.save();
   g.globalAlpha=0.35+0.65*p;
-  g.shadowColor='rgba(250,204,21,.95)'; g.shadowBlur=S*(0.16+0.42*p);
-  g.strokeStyle='#fde68a'; g.lineWidth=Math.max(1.4, S*0.08); g.lineCap='round';
-  g.beginPath(); g.arc(0,-R*0.52,R*0.55,0,Math.PI*2); g.stroke();
-  g.beginPath(); g.moveTo(0,0); g.lineTo(0,R*1.2); g.stroke();
-  g.beginPath(); g.moveTo(0,R*0.6);  g.lineTo(R*0.55,R*0.6);  g.stroke();
-  g.beginPath(); g.moveTo(0,R*1.15); g.lineTo(R*0.42,R*1.15); g.stroke();
+  g.drawImage(spr, x-spr.anchorX, y-spr.anchorY, spr.cssW, spr.cssH);
   g.restore();
 }
 /* le joueur : un petit programme-flèche cyan, avec sa traînée de données */
@@ -3489,11 +3586,8 @@ function hbmDrawFoe(g,S,t,f){
   });
   g.restore();
   g.save(); g.translate(x,y);
-  g.shadowColor=c.glow; g.shadowBlur=S*0.7;
-  const b=g.createRadialGradient(0,-R*0.2,R*0.08,0,0,R);
-  b.addColorStop(0,c.body[0]); b.addColorStop(1,c.body[1]);
-  g.fillStyle=b; g.beginPath(); g.arc(0,0,R,0,Math.PI*2); g.fill();
-  g.shadowBlur=0;
+  const bspr=HBM.foeSprites && HBM.foeSprites[fear?'fear':(f.brain||0)];
+  if(bspr) g.drawImage(bspr, -bspr.cssW/2, -bspr.cssH/2, bspr.cssW, bspr.cssH);
   g.strokeStyle=c.ring; g.lineWidth=Math.max(1, S*0.05);
   g.beginPath(); g.arc(0,0,R*0.94, t*2.4, t*2.4+Math.PI*0.85); g.stroke();
   g.beginPath(); g.arc(0,0,R*0.94, t*2.4+Math.PI, t*2.4+Math.PI*1.85); g.stroke();
@@ -3596,6 +3690,18 @@ function hbTutoCard(html){
   HB.field.appendChild(card);
   return card;
 }
+/* petite popup d'alerte (entraînement d'ouverture du duel) : bloque la frappe le temps
+   que le joueur clique OK, pour qu'il lise vraiment la conséquence de sa faute. */
+function hbMiniAlert(txt, onOk){
+  const old=document.getElementById('hbMiniAlert'); if(old) old.remove();
+  const wrap=document.createElement('div'); wrap.className='hb-mini-alert'; wrap.id='hbMiniAlert';
+  wrap.innerHTML='<div class="hb-mini-box"><span class="hmb-ic">⚠️</span>'
+    + '<div class="hmb-txt">'+txt+'</div>'
+    + '<button type="button" class="hmb-ok">OK</button></div>';
+  HB.field.appendChild(wrap);
+  wrap.querySelector('.hmb-ok').onclick=()=>{ audioCtx(); beep('key'); wrap.remove(); onOk&&onOk(); };
+  return wrap;
+}
 function hbMazeTutoCard(){
   beep('ding');
   const card=hbTutoCard(
@@ -3641,14 +3747,24 @@ function hbTutoDir(pad){
   }
 }
 function hbTutoKey(got,total){
-  hbmCounter();
-  if(HBT.step===2) hbmHint('🔑 Bien joué&nbsp;! Clés récupérées : <b>'+got+' / '+total+'</b>');
+  if(HBT.step===2){ hbmCounter(); hbmHint('🔑 Bien joué&nbsp;! Clés récupérées : <b>'+got+' / '+total+'</b>'); return; }
+  if(HBT.step===3 && !HBT.blueGot){
+    HBT.blueGot=true;
+    HBT.until=HBM.time+4;   // on prolonge la démo : le temps de bien voir/sentir le ralentissement
+  }
 }
-/* étape 3 : K0RT3X entre en scène — il poursuit, mais ici rien n'est perdu */
+/* étape 3 : K0RT3X entre en scène — il poursuit, mais ici rien n'est perdu.
+   Une clé BLEUE y apparaît aussi : c'est la seule à ralentir ses copies quelques
+   secondes à la récupération (cf. hbmCollect) — les clés normales n'en sont plus
+   capables. On force le joueur à passer dessus pour qu'il VOIE l'effet, comme pour
+   chaque autre geste de ce tuto. */
 function hbTutoStep3(){
-  HBT.step=3; HBT.until=HBM.time+9;
+  HBT.step=3; HBT.blueGot=false; HBT.until=HBM.time+9;
   HBM.keys.length=0; HBM.total=0; HBM.got=0; hbmCounter();
   hbmAddFoe(11,5, 3.0, 0.30);
+  // total volontairement énorme : le compteur générique de fin de plongée ne doit
+  // jamais se déclencher ici, on gère la fin de cette démo nous-mêmes (hbTutoTick)
+  HBM.keys.push({c:8, r:1, got:false, blue:true}); HBM.total=999;
   HBM.freeze=0.6; HBM.onDone=null;
   playHackWarning();
   hbmNote('K0RT3X entre dans la simulation !','warn');
@@ -3657,7 +3773,9 @@ function hbTutoStep3(){
 function hbTutoTick(){
   if(HBT.step!==3) return;
   const left=Math.max(0, HBT.until-HBM.time);
-  hbmHint('🧠 Le voilà&nbsp;! <b>Échappe-toi</b> avec Z Q S D pendant <b>'+Math.ceil(left)+' s</b> — s\'il te touche, tu réapparais ailleurs.');
+  hbmHint(HBT.blueGot
+    ? '🔵 Vu&nbsp;? Il ralentit et vire au bleu quelques secondes ! Profites-en pour <b>t\'échapper</b> avec Z Q S D. <b>'+Math.ceil(left)+' s</b>'
+    : '🧠 Le voilà&nbsp;! Fonce sur la <b>clé bleue</b> 🔵 : elle ralentit ses copies quelques secondes. <b>'+Math.ceil(left)+' s</b>');
   if(left<=0){ hbmStopLoop(); hbMazeTutoDone(); }
 }
 function hbTutoCaught(){
@@ -3670,7 +3788,7 @@ function hbMazeTutoDone(){
   const card=hbTutoCard(
     '<div class="tc-emoji">🔑</div>'
     + '<div class="tc-title">Prêt pour sa mémoire&nbsp;!</div>'
-    + '<div class="tc-text">Tu sais te déplacer avec <b>Z Q S D</b> et récupérer les clés. Cette fois, c\'est pour de vrai : s\'il te <b>rattrape</b>, tu perds une <b>connexion</b> 📡 et tu réapparais à l\'autre bout du labyrinthe. Prends <b>toutes</b> ses clés&nbsp;! 🔑</div>'
+    + '<div class="tc-text">Tu sais te déplacer avec <b>Z Q S D</b> et récupérer les clés. Les clés <b>bleues</b> 🔵 ralentissent ses copies quelques secondes : garde ça en tête si tu es coincé ! Cette fois, c\'est pour de vrai : s\'il te <b>rattrape</b>, tu perds une <b>connexion</b> 📡 et tu réapparais à l\'autre bout du labyrinthe. Prends <b>toutes</b> ses clés&nbsp;! 🔑</div>'
     + '<div class="tc-actions"><button class="tc-btn" id="hbMazeGo">Entrer dans sa mémoire 🧠</button></div>');
   card.querySelector('#hbMazeGo').onclick=()=>{ audioCtx(); beep('key'); hbStartMaze(); };
 }
@@ -3713,8 +3831,10 @@ function hbStartMaze(){
     wander:Math.max(0.04, HB.tune.foeWander - 0.04*wave),
     freeze:1.2+0.3*wave,                       // plus de copies = plus de temps pour souffler
     onKey:()=>{ hbmCounter(); updateHbHud(); },
-    onCatch:hbMazeCaught, onDone:hbMazeCleared
+    onCatch:hbMazeCaught, onDone:hbMazeCleared,
+    onBlueKey:()=>hbmNote('🔵 Clé bleue ! Ses copies ralentissent…','ok')
   });
+  hbmAddBlueKeys(HB_MAZE_BLUEKEYS, HB_MAZE_BLUEKEYS_MINDIST);
   hbmCounter(); updateHbHud();
   hbmNote('Z Q S D pour te déplacer');
   hbFlash('🧠 SA MÉMOIRE ! 🧠', copies>1
@@ -3815,7 +3935,7 @@ function openBossBriefing(s){
       + '<li><span class="ni-glyph">⌨️</span> Tape la contre-commande avant la fin du traçage</li>'
       + '<li><span class="ni-glyph">💥</span> K0RT3X ouvert ? Tape la commande de purge</li>'
       + '<li><span class="ni-glyph">⚠️</span> Deux commandes ? L\'une est un piège !</li>'
-      + '<li><span class="ni-glyph">🔑</span> Dans sa mémoire (<b>Z Q S D</b>) : vole ses clés — il s\'y dédouble !</li>'
+      + '<li class="wide"><span class="ni-glyph">🔑</span> Dans sa mémoire (<b>Z Q S D</b>) : vole ses clés — il s\'y dédouble !</li>'
     : s.swarm
     ? '<li><span class="ni-glyph">🕹️</span> '+kbd('F')+' / '+kbd('J')+' : déplace ton vaisseau</li>'
       + '<li><span class="ni-glyph">🎯</span> Aligne-toi sous un alien, tape sa lettre</li>'
