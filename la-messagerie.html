@@ -844,7 +844,10 @@
   "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau niveau s'ouvre à toi.",
   "boss_win": "Le Phisher est à la corbeille ! Boss final vaincu. Retiens ses ruses pour la vraie vie : adresse louche, urgence, cadeau, argent, mot de passe demandé : poubelle !",
   "course_finish": "Facteur d'or ! Neuf niveaux, et LE PHISHER est à la corbeille. Plus aucun mail n'a de secret pour toi !",
-  "hint_game_fallback": "Suis la consigne affichée sur l'écran !"
+  "hint_game_fallback": "Suis la consigne affichée sur l'écran !",
+  "fault_major": "Attention, fausse manœuvre. Personne ne t'a demandé de faire ça. Relis bien l'objectif en cours : on remet la boîte en ordre et on repart du début.",
+  "fault_minor": "Ce n'était pas l'objectif. Relis bien l'objectif en cours avant d'agir, pour être sûr de faire ce qu'il faut.",
+  "hint_stale": "Tu l'as déjà fait avant qu'on te le demande : ça ne compte pas. Refais le geste maintenant que c'est l'objectif affiché."
 }
 </script>
 <script src="tts/tts-atelier.js"></script>
@@ -1165,10 +1168,24 @@ function seedMail(seed){
 }
 
 /* enregistrement d'un événement de mission + vérification
-   (les mini-jeux arcade écoutent aussi via ARC.onEvt) */
-function fireEvt(){ checkMission(); if(typeof ARC!=='undefined' && ARC.on && !ARC.over && ARC.onEvt) ARC.onEvt(); }
-function evtFlag(k){ M.evt[k]=true; fireEvt(); }
-function evtAdd(k,v){ (M.evt[k]=M.evt[k]||new Set()).add(v); fireEvt(); }
+   (les mini-jeux arcade écoutent aussi via ARC.onEvt)
+
+   `key` = le nom de l'événement. Il sert à deux choses :
+   - repérer si l'action vient de valider l'objectif / l'ordre en cours ;
+   - sinon, la passer à la garde (guardAction) qui décide si c'est une
+     fausse manœuvre à sanctionner. */
+function fireEvt(key){
+  /* le compteur avance à CHAQUE geste du joueur (même sans clé : recherche,
+     saisie, effacement…) — c'est lui qui dit « ceci a été fait après
+     l'affichage de l'objectif ». La clé, elle, ne sert qu'au garde-fou. */
+  M.evt._seq=(M.evt._seq||0)+1;
+  const okMission=checkMission();
+  let okArcade=false;
+  if(typeof ARC!=='undefined' && ARC.on && !ARC.over && ARC.onEvt) okArcade=!!ARC.onEvt();
+  if(key) guardAction(key, okMission||okArcade);
+}
+function evtFlag(k){ M.evt[k]=true; fireEvt(k); }
+function evtAdd(k,v){ (M.evt[k]=M.evt[k]||new Set()).add(v); fireEvt(k); }
 
 /* ---------------------------------------------------------
    5. CONSTRUCTION DE L'ÉCRAN CUI-CUI
@@ -1214,7 +1231,7 @@ function buildScreen(){
   });
   const si=document.getElementById('ccSearch');
   si.addEventListener('input',()=>{ M.search=si.value; renderMain(); refreshSearchX(); fireEvt(); });
-  si.addEventListener('keydown',e=>{ if(e.key==='Enter' && si.value.trim()){ M.evt.searches.push(normText(si.value)); fireEvt(); } });
+  si.addEventListener('keydown',e=>{ if(e.key==='Enter' && si.value.trim()){ M.evt.searches.push(normText(si.value)); fireEvt('searched'); } });
   document.getElementById('ccSearchX').onclick=()=>{ si.value=''; M.search=''; renderMain(); refreshSearchX(); fireEvt(); };
   document.getElementById('btnFilter').onclick=(e)=>{ e.stopPropagation(); menuFilter(e.currentTarget); };
   document.getElementById('btnSort').onclick=(e)=>{ e.stopPropagation(); menuSort(e.currentTarget); };
@@ -2215,7 +2232,7 @@ function sendCompose(){
   toast('📨 Mail envoyé ! Tu le retrouveras dans <b>Envoyés</b>.');
   M.evt.sent.push(rec);
   renderAll();
-  fireEvt();
+  fireEvt('sent');
   if(cb) cb(rec);
 }
 function saveDraft(){
@@ -2266,8 +2283,12 @@ function renderContacts(main){
   main.querySelectorAll('[data-wlist]').forEach(b=>b.onclick=()=>{ beep('click'); openCompose({lists:[b.getAttribute('data-wlist')]}); });
   main.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{ const i=+b.getAttribute('data-edit'); dlgNewContact(M.contacts[i], i); });
   main.querySelectorAll('[data-editlist]').forEach(b=>b.onclick=()=>{ dlgNewList(+b.getAttribute('data-editlist')); });
-  main.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ beep('delete'); M.contacts.splice(+b.getAttribute('data-del'),1); renderMain(); });
-  main.querySelectorAll('[data-dlist]').forEach(b=>b.onclick=()=>{ beep('delete'); M.lists.splice(+b.getAttribute('data-dlist'),1); renderMain(); });
+  main.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ beep('delete');
+    const c=M.contacts.splice(+b.getAttribute('data-del'),1)[0]; renderMain();
+    evtAdd('contactDeleted', (c&&c.addr)||''); });
+  main.querySelectorAll('[data-dlist]').forEach(b=>b.onclick=()=>{ beep('delete');
+    const l=M.lists.splice(+b.getAttribute('data-dlist'),1)[0]; renderMain();
+    evtAdd('listDeleted', (l&&l.name)||''); });
 }
 function dlgNewContact(preset, editIdx){
   beep('click'); preset=preset||{}; const editing=editIdx!=null;
@@ -2369,9 +2390,11 @@ function dlgNewEvent(d){
     +'<label>Titre</label><input class="d-in" id="evTitle" placeholder="Par exemple : Piscine avec la classe" autocomplete="off">'
     +'<label id="evYearlyWrap" style="display:none;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="evYearly" checked style="width:16px;height:16px"> 🔁 Se répète chaque année</label>',
     '<button class="d-btn" id="evCancel">Annuler</button><button class="d-btn grn" id="evOk">Ajouter à l\'agenda</button>');
+  evtAdd('agDayOpened', M.agM+'/'+d);
   const typeSel=document.getElementById('evType');
   function syncYearly(){ document.getElementById('evYearlyWrap').style.display=(typeSel.value==='anniv')?'flex':'none'; }
-  typeSel.onchange=syncYearly; syncYearly();
+  typeSel.onchange=()=>{ syncYearly(); beep('click'); evtAdd('evTypePicked', typeSel.value); };
+  syncYearly();
   document.querySelectorAll('[data-ev]').forEach(b=>b.onclick=(e)=>{ e.stopPropagation();
     M.events=M.events.filter(x=>x.id!==b.getAttribute('data-ev')); beep('delete'); winsBox().innerHTML=''; renderMain(); });
   document.getElementById('evCancel').onclick=()=>{ winsBox().innerHTML=''; };
@@ -2384,7 +2407,7 @@ function dlgNewEvent(d){
     winsBox().innerHTML=''; beep('good');
     toast((ev.type==='devoir'?'📚':'🎈')+' Noté dans l\'agenda : <b>'+esc(t)+'</b> le '+d+' '+MOIS[m]+' !');
     (M.evt.eventAdded=M.evt.eventAdded||[]).push(ev);
-    fireEvt(); renderMain();
+    renderMain(); fireEvt('eventAdded');
   };
 }
 
@@ -2559,12 +2582,28 @@ const G={
   /* agenda */
   eventAdded:(match,hint)=>({spot:'agenda', hint:hint||'Va dans <b>📅 Agenda</b> (en bas à gauche) et clique sur le bon jour pour ajouter ce qu\'on te demande.',
     sel:function(){
+      /* la fenêtre du jour est ouverte : on montre le champ qui manque, puis le bouton vert */
+      const dlg=document.getElementById('evTitle');
+      if(dlg) return dlg.value.trim() ? document.getElementById('evOk') : dlg;
       if(M.view!=='agenda') return document.querySelector('#ccNav [data-view="agenda"]');
-      if(match.m!=null && M.agM!==match.m) return document.querySelector('.cc-agenda');
+      if(match.m!=null && M.agM!==match.m) return document.getElementById(M.agM<match.m?'agNext':'agPrev');
       if(match.d!=null){ const cell=document.querySelector('.ag-day[data-d="'+match.d+'"]'); if(cell) return cell; }
       return document.querySelector('.cc-agenda');
     },
-    test:c=>(c.evt.eventAdded||[]).some(e=>eventMatches(e,match))})
+    test:c=>(c.evt.eventAdded||[]).some(e=>eventMatches(e,match))}),
+  /* agenda, étape par étape : ouvrir le bon jour, PUIS choisir le bon type */
+  agDayOpened:(d,m,label,hint)=>({spot:'agenda',
+    hint:hint||('Dans l\'agenda, place-toi en <b>'+label+'</b> (flèches <b>◀ ▶</b>) et clique la case du <b>'+d+'</b>.'),
+    sel:function(){
+      if(M.view!=='agenda') return document.querySelector('#ccNav [data-view="agenda"]');
+      if(M.agM!==m) return document.getElementById(M.agM<m?'agNext':'agPrev');
+      return document.querySelector('.ag-day[data-d="'+d+'"]')||document.querySelector('.cc-agenda');
+    },
+    test:c=>c.evt.agDayOpened && c.evt.agDayOpened.has(m+'/'+d)}),
+  evTypePicked:(type,label,hint)=>({spot:'agenda',
+    hint:hint||('Dans la petite fenêtre, ouvre la liste « <b>Qu\'est-ce qu\'on note ?</b> » et choisis <b>'+label+'</b>.'),
+    sel:function(){ return document.getElementById('evType')||document.querySelector('.cc-agenda'); },
+    test:c=>c.evt.evTypePicked && c.evt.evTypePicked.has(type)})
 };
 function sentMatches(r, m){
   if(m.to && !m.to.every(a=>r.to.includes(a))) return false;
@@ -2614,24 +2653,121 @@ function bodyAllInFont(fontName){
   return any;
 }
 let _missionDone=false;
+/* test d'un objectif à l'abri d'une exception (sélecteurs DOM absents, etc.) */
+function goalPasses(goal, ctx){ try{ return !!goal.test(ctx); }catch(e){ return false; } }
 function checkMission(){
-  if(!currentStep) return;
-  if(currentStep.kind==='game') return; /* les rounds arcade se vérifient eux-mêmes */
-  if(_missionDone) return;
-  const objs=currentStep.objectives; if(!objs || !objs.length) return;
-  if(currentStep._jalonAnim) return;
+  if(!currentStep) return false;
+  if(currentStep.kind==='game') return false; /* les rounds arcade se vérifient eux-mêmes */
+  if(_missionDone) return false;
+  const objs=currentStep.objectives; if(!objs || !objs.length) return false;
+  if(currentStep._jalonAnim) return false;
   const ctx=buildCtx();
   const i=currentStep._jalonIdx;
-  if(i<objs.length && !currentStep._objDone[i]){
-    if(objs[i].goal.test(ctx)){
-      currentStep._objDone[i]=true; beep('good'); jalonAdvance();
-    }
+  if(i>=objs.length || currentStep._objDone[i]) return false;
+  if(!goalPasses(objs[i].goal, ctx)) return false;
+  /* --- l'ordre est obligatoire ---------------------------------------
+     Un objectif rempli AVANT son affichage ne compte pas : il faut refaire
+     le geste maintenant qu'il est demandé. On le repère en comparant le
+     compteur d'événements à sa valeur au moment où l'objectif est apparu.
+     Exception : les objectifs déjà vrais dès la graine de la mission
+     (rien à faire, sinon la mission se bloquerait). */
+  if(!currentStep._seedSat[i] && currentStep._armSeq!=null && (M.evt._seq||0)<=currentStep._armSeq){
+    currentStep._objStale=i; /* l'astuce le rappellera */
+    return false;
   }
+  currentStep._objStale=-1;
+  currentStep._objDone[i]=true;
+  /* l'objectif suivant comptera tout ce qui vient APRÈS cet instant précis :
+     l'animation de validation dure ~1 s, un geste fait pendant ne doit pas
+     être perdu (les objectifs enchaînés dans une même fenêtre en dépendent) */
+  currentStep._pendingArm=M.evt._seq||0;
+  beep('good'); jalonAdvance();
+  return true;
+}
+
+/* ---------------------------------------------------------
+   9 bis. GARDE-FOU : les actions non demandées
+   ---------------------------------------------------------
+   Une action « notable » qui ne fait pas avancer l'objectif en cours est une
+   fausse manœuvre. Deux niveaux :
+   - MAJEURE : elle abîme la boîte (supprimer, classer, créer un filtre…).
+     Popup rouge + on recommence la mission depuis le début.
+   - MINEURE : elle ne casse rien (envoyer un mail à côté de la plaque, créer
+     un dossier en trop…). Popup orange + on continue.
+   Dans les examens/défis chronométrés, la même faute coûte un bouclier. */
+const FAULT_MAJOR={
+  trashed:'supprimer ce mail', hardDeleted:'supprimer définitivement ce mail',
+  trashEmptied:'vider la corbeille', markedSpam:'classer ce mail en indésirable',
+  unspammed:'sortir ce mail des indésirables', movedTo:'ranger ce mail dans ce dossier',
+  restored:'restaurer ce mail', contactDeleted:'supprimer ce contact',
+  listDeleted:'supprimer cette liste', ruleCreated:'créer un filtre automatique',
+  signatureSet:'changer ta signature'
+};
+const FAULT_MINOR={
+  sent:'envoyer ce mail', folderCreated:'créer ce dossier',
+  contactAdded:'ajouter ce contact', listCreated:'créer cette liste',
+  eventAdded:'noter ça dans l\'agenda'
+};
+/* actions intermédiaires légitimes pour certains objectifs en plusieurs gestes */
+function goalAllows(goal, key){
+  if(!goal) return false;
+  const st=goal.steps; return !!(st && st.indexOf(key)>=0);
+}
+let _faultOpen=false;
+function guardAction(key, consumed){
+  if(consumed || _faultOpen) return;
+  const s=currentStep; if(!s) return;
+  if(s.mode==='boss') return;              /* le boss a son propre décompte */
+  const major=FAULT_MAJOR[key], minor=FAULT_MINOR[key];
+  if(!major && !minor) return;             /* action anodine : navigation, lecture, tri… */
+
+  /* --- examens et défis chronométrés : ça coûte un bouclier --- */
+  if(s.kind==='game'){
+    if(typeof ARC!=='undefined' && ARC.on && !ARC.over) arcMiss('Ce n\'était pas l\'ordre en cours !');
+    return;
+  }
+
+  /* --- missions guidées --- */
+  if(_missionDone || s._jalonAnim) return;
+  const o=activeObj(); if(!o) return;
+  if(goalAllows(o.goal, key)) return;      /* geste intermédiaire attendu */
+  s._faults=s._faults||{major:0,minor:0};
+  if(major){ s._faults.major++; missionFault(true, major); }
+  else     { s._faults.minor++; missionFault(false, minor); }
+}
+function missionFault(isMajor, what){
+  _faultOpen=true;
+  clearSpots(); closeMenus();
+  beep('bad'); screenShake(); redFlash();
+  const o=activeObj();
+  const objTxt=(o && o.t) || '';
+  modal.className='modal'+(isMajor?' warn':' test-modal');
+  modal.innerHTML='<span class="m-emoji">'+(isMajor?'🚨':'🤔')+'</span>'
+    +'<div class="kicker" style="color:var(--'+(isMajor?'red':'amber')+'-d)">'
+    +(isMajor?'Ce n\'était pas ça !':'Pas tout à fait…')+'</div>'
+    +'<h2>'+(isMajor?'Attention, fausse manœuvre':'Ce n\'était pas l\'objectif')+'</h2>'
+    +'<p>Personne ne t\'a demandé de <b>'+what+'</b>.</p>'
+    +'<div class="howto'+(isMajor?'':' test')+'"><p class="h-head">🎯 L\'objectif en cours :</p><p>'+objTxt+'</p></div>'
+    +'<p style="font-size:.95rem;color:var(--muted)">Relis bien l\'objectif avant d\'agir'
+    +(isMajor?' : on remet la boîte en ordre et on repart du début.':'.')+'</p>'
+    +'<div class="m-actions"><button class="m-btn primary'+(isMajor?' boss':' test')+'" id="fltGo">'
+    +(isMajor?'↺ Recommencer la mission':'Continuer')+'</button></div>';
+  modal.dataset.ttsText=(window.TTS_STATIC||{})[isMajor?'fault_major':'fault_minor'] || '';
+  openOverlay(); fitModalWidth();
+  document.getElementById('fltGo').onclick=()=>{
+    closeOverlay(); _faultOpen=false;
+    if(isMajor) startStep(playIdx);
+  };
 }
 function renderJalonObjective(enter){
   const sub=document.getElementById('bSub'); if(!sub) return;
   const s=currentStep, objs=s.objectives||[], i=s._jalonIdx, n=objs.length;
   if(objs[i] && objs[i].goal && objs[i].goal.prep) objs[i].goal.prep();
+  /* repère « à partir d'ici » : tout ce qui a été fait avant ne validera pas cet
+     objectif. On se cale sur la validation de l'objectif précédent (et non sur
+     l'affichage) pour ne pas perdre les gestes faits pendant l'animation. */
+  s._armSeq=(s._pendingArm!=null)?s._pendingArm:(M.evt._seq||0);
+  s._pendingArm=null; s._objStale=-1;
   sub.innerHTML='<div class="jalon-head"><span class="b-goal-label">Objectif '+(Math.min(i+1,n))+' / '+n+'</span></div>'
     +'<div class="jalon-wrap"><div class="jalon-obj blue'+(enter?' entering':'')+'"><span class="jo-check">'+(i+1)+'</span><span class="jo-text">'+(objs[i]&&objs[i].t||'')+'</span></div></div>';
   if(enter) requestAnimationFrame(()=>{ const el=sub.querySelector('.jalon-obj'); if(el) el.classList.remove('entering'); });
@@ -2677,8 +2813,7 @@ function renderQuizDock(){
     const v=inp.value.trim(); if(!v) return;
     const n=normText(v);
     if(q.accepted.some(a=>n===a||n.includes(a)||v===a)){
-      M.evt['quiz_'+q.key]=true;
-      checkMission();
+      evtFlag('quiz_'+q.key);
     } else {
       beep('bad');
       dock.classList.remove('shake'); void dock.offsetWidth; dock.classList.add('shake');
@@ -2922,6 +3057,7 @@ function serieRun(cfg, done){
     if(i>=cfg.steps.length){ hideOrder(); done(); return; }
     const st=cfg.steps[i];
     ARC.saveCfg=st.saveCfg||null;
+    ARC.curStep=st;               /* pour que l'astuce sache quoi faire briller */
     if(st.prep) st.prep();
     showOrder('<span class="oc-n">'+(i+1)+'/'+cfg.steps.length+'</span><span class="oc-ic">'+(st.ic||'📨')+'</span>'
       +'<span class="oc-txt">'+st.ord+(st.sub?'<span class="oc-sub">'+st.sub+'</span>':'')+'</span>');
@@ -2930,9 +3066,11 @@ function serieRun(cfg, done){
     after(120, check);
   }
   function check(){
-    if(ARC.over||checking||i<0||i>=cfg.steps.length) return;
+    /* `true` = « rien à reprocher » : ordre déjà validé, pause de transition,
+       ou série terminée. Évite qu'un geste légitime coûte un bouclier. */
+    if(ARC.over||checking||i<0||i>=cfg.steps.length) return true;
     const st=cfg.steps[i];
-    if(st.test(buildCtx())){
+    if(goalPasses(st, buildCtx())){
       checking=true;
       arcHit(st.pts||15);
       /* st.hold : petite pause pour laisser VOIR le résultat (ex. le mail parti)
@@ -2940,7 +3078,9 @@ function serieRun(cfg, done){
       const wait=st.hold||160;
       if(st.hold) banner('✅ Bien joué !','good');
       after(wait,()=>{ checking=false; next(); });
+      return true;
     }
+    return false;
   }
   ARC.onEvt=check;
   next();
@@ -3727,8 +3867,8 @@ const LEVELS=[
           goal:G.filterUsed('all','Tous les mails')},
         {t:'Maintenant, trie tous les mails <b>par expéditeur</b> (↕️ Trier → Par expéditeur)',
           goal:G.sortUsed('from','Par expéditeur (A → Z)')},
-        {t:'Garde le mail du dentiste sous le coude : marque-le <b>🔵 Non lu</b>',
-          goal:G.markedUnread('m3','Remets le filtre sur <b>📬 Tous les mails</b> si besoin. Ouvre « Pense au dentiste » puis clique <b>🔵 Non lu</b> : son point bleu revient, tu le verras ce soir !')}
+        {t:'Garde le mail de <b>Tata Monica</b> sous le coude : marque-le <b>🔵 Non lu</b>',
+          goal:G.markedUnread('m3','Remets le filtre sur <b>📬 Tous les mails</b> si besoin. Ouvre le mail de <b>Tata Monica</b> puis clique <b>🔵 Non lu</b> : son point bleu revient, tu le verras ce soir !')}
       ]},
     {kind:'mission',label:'Mission 3',emoji:'🪄',title:'Le rangement magique',
       intro:'La Gazette t\'écrit toutes les semaines… Crée un filtre AUTOMATIQUE qui la range tout seul !',
@@ -3827,12 +3967,26 @@ const LEVELS=[
       ]},
       objectives:[
         {t:'Lis les deux mails 📬', goal:G.allRead()},
-        {t:'Note le <b>📚 devoir</b> « Poésie » le <b>19 juin</b>',
+        {t:'Ouvre l\'<b>📅 Agenda</b> (en bas à gauche)',
+          goal:G.flag('openedAgenda','Le bouton <b>📅 Agenda</b> est en bas de la colonne de gauche.','agenda')},
+        /* --- le devoir, geste par geste : le JOUR, puis le TYPE, puis le titre --- */
+        {t:'En <b>juin</b>, clique la case du <b>19</b> (le jour de la poésie)',
+          goal:G.agDayOpened(19,5,'juin')},
+        {t:'Avant d\'écrire quoi que ce soit : dans « <b>Qu\'est-ce qu\'on note ?</b> », choisis <b>📚 Un devoir à rendre</b>',
+          goal:G.evTypePicked('devoir','📚 Un devoir à rendre',
+            'C\'est la <b>liste déroulante</b> tout en haut de la petite fenêtre. Le type se choisit <b>avant</b> le titre !')},
+        {t:'Maintenant écris le titre « <b>Poésie</b> » et clique <b>Ajouter à l\'agenda</b>',
           goal:G.eventAdded({type:'devoir', d:19, m:5, titleIncl:['poesie','poésie','reciter']},
-            'Dans l\'agenda (juin), clique le <b>19</b>, choisis <b>📚 Un devoir à rendre</b> et écris <b>Poésie</b>.')},
-        {t:'Note l\'<b>🎂 anniversaire</b> de Papi le <b>12 août</b> (avance de 2 mois avec ▶ !)',
+            'Dans le champ <b>Titre</b>, écris <b>Poésie</b>, puis clique le bouton vert <b>Ajouter à l\'agenda</b>.')},
+        /* --- anniversaire : même enchaînement, avec un changement de mois --- */
+        {t:'Va en <b>août</b> (flèche ▶ deux fois) et clique la case du <b>12</b>',
+          goal:G.agDayOpened(12,7,'août')},
+        {t:'Choisis le bon type : <b>🎂 Un anniversaire</b> (et laisse coché 🔁 chaque année)',
+          goal:G.evTypePicked('anniv','🎂 Un anniversaire',
+            'Rouvre la liste « <b>Qu\'est-ce qu\'on note ?</b> » et prends <b>🎂 Un anniversaire</b> : une case <b>🔁 Se répète chaque année</b> apparaît.')},
+        {t:'Écris le titre « <b>Papi</b> » et valide',
           goal:G.eventAdded({type:'anniv', d:12, m:7, titleIncl:['papi']},
-            'Flèche <b>▶</b> deux fois pour arriver en <b>août</b>, clique le <b>12</b>, choisis <b>🎂 Un anniversaire</b>, écris <b>Papi</b>.')},
+            'Dans le champ <b>Titre</b>, écris <b>Papi</b>, puis clique <b>Ajouter à l\'agenda</b>.')},
         {t:'Réponds à la question du <b>carnet de mission</b> 📝',
           goal:G.flag('quiz_anniv','Un anniversaire se répète chaque année : l\'agenda le raffichera en 2027, 2028…','quiz'),
           quiz:{key:'anniv', q:'L\'année prochaine, l\'anniversaire de Papi s\'affichera-t-il encore ? (oui / non)', accepted:['oui','yes']}}
@@ -4355,19 +4509,32 @@ function phVictory(){
    15. DÉROULÉ DES MISSIONS
    --------------------------------------------------------- */
 function reviewing(){ return playIdx<progressIdx; }
+let _prevStepIdx=null;
 function startStep(idx){
   clearSpots(); clearTimers(); closeMenus();
   ARC.on=false; ARC.over=false; ARC.onEvt=null;
   clearTimeout(ARC.comboT); arcHudRender();
   PH.over=true; /* stoppe un éventuel boss en cours */
+  _faultOpen=false;
   playIdx=idx; currentStep=STEPS[idx]; _missionDone=false;
-  currentStep._booted=false; currentStep._launched=false; currentStep._hints=0;
+  /* astuces et fautes ne se remettent à zéro qu'en CHANGEANT de mission :
+     recommencer la même (bouton ↺ ou fausse manœuvre) garde la note acquise */
+  if(_prevStepIdx!==idx){ currentStep._hints=0; currentStep._faults={major:0,minor:0}; }
+  _prevStepIdx=idx;
+  currentStep._booted=false; currentStep._launched=false;
+  currentStep._faults=currentStep._faults||{major:0,minor:0};
   currentStep._gen=(currentStep._gen||0)+1;
   currentStep._objDone=(currentStep.objectives||[]).map(()=>false);
   currentStep._jalonIdx=0; currentStep._jalonAnim=false;
+  currentStep._objStale=-1; currentStep._pendingArm=null;
   buildScreen();
   seedMail(currentStep.seed||{});
   if(currentStep.onSendHook) M.onSend=currentStep.onSendHook;
+  /* objectifs déjà satisfaits par la graine : ceux-là n'exigent pas de geste
+     neuf, sinon la mission resterait bloquée (voir checkMission) */
+  const ctx0=buildCtx();
+  currentStep._seedSat=(currentStep.objectives||[]).map(o=>goalPasses(o.goal, ctx0));
+  currentStep._armSeq=M.evt._seq||0;
   renderAll();
   updateProgress(); updateBanner();
   openRoundPopup();
@@ -4460,7 +4627,14 @@ function onMissionWin(){
     openOverlay(); document.getElementById('bk').onclick=()=>{ closeOverlay(); startStep(progressIdx); };
     return;
   }
-  const guidedStars=Math.max(1, 3-Math.min(2, currentStep._hints||0));
+  /* note : on part de 3 ⭐ et on retire 1 par écart — astuce demandée,
+     action non demandée (mineure), fausse manœuvre (majeure). Plancher à 1 ⭐. */
+  const _f=currentStep._faults||{major:0,minor:0};
+  const _hi=currentStep._hints||0;
+  const guidedStars=Math.max(1, 3-_hi-_f.minor-_f.major);
+  const starWhy=(_f.major||_f.minor)
+    ? 'Vise le <b>parcours net</b> : chaque action non demandée coûte une ⭐.'
+    : (_hi ? 'Sans l\'astuce 💡, c\'est ⭐⭐⭐ !' : 'Nickel, facteur. Mission suivante !');
   if(currentStep.kind!=='game') saveStars(starKey(), guidedStars);
   const last=playIdx===STEPS.length-1;
   if(last){ progressIdx=STEPS.length; saveProgress(); return levelComplete(); }
@@ -4469,7 +4643,7 @@ function onMissionWin(){
   modal.innerHTML='<span class="m-emoji">✅</span>'
     +'<h2>Mission réussie !</h2>'
     +starLineHtml(guidedStars)
-    +'<p>'+(guidedStars<3?'Sans l\'astuce 💡, c\'est ⭐⭐⭐ !':'Nickel, facteur. Mission suivante !')+'</p>'
+    +'<p>'+starWhy+'</p>'
     +'<div class="m-actions"><button class="m-btn primary green" id="next">Continuer →</button></div>';
   modal.dataset.ttsText = (window.TTS_STATIC||{}).win_mission || '';
   openOverlay();
@@ -4603,35 +4777,62 @@ function confetti(){
    17. ASTUCES (surbrillance des bons éléments)
    --------------------------------------------------------- */
 let _spots=[], _spotT=null;
-function spotEl(el){ if(el){ el.classList.add('spot'); _spots.push(el); } }
+function spotEl(el){
+  if(!el || _spots.indexOf(el)>=0) return;
+  el.classList.add('spot'); _spots.push(el);
+  try{ el.scrollIntoView({block:'nearest', inline:'nearest', behavior:'smooth'}); }catch(e){}
+}
 function clearSpots(){ clearTimeout(_spotT); _spots.forEach(el=>el.classList.remove('spot')); _spots=[]; }
+/* traduit un « spot » large en élément de l'écran */
+function spotZone(spot){
+  const q=s=>document.querySelector(s);
+  if(spot==='list')          return q('#mailList');
+  if(spot==='folders')       return q('#ccFolders');
+  if(spot==='addfolder')     return q('#btnAddFolder');
+  if(spot==='reader')        return q('#rdActions')||q('#reader');
+  if(spot==='search')        return q('#ccSearchBox');
+  if(spot==='filter')        return q('#btnFilter');
+  if(spot==='sort')          return q('#btnSort');
+  if(spot==='settings')      return q('#btnSettings');
+  if(spot==='quiz')          return q('#quizDock');
+  if(spot==='toolbar')       return q('#cmpTools')||q('#btnNew');
+  if(spot==='compose')       return q('#cmpWin')||q('#btnNew');
+  if(spot==='contacts')      return q('#ccNav [data-view="contacts"]');
+  if(spot==='agenda')        return M.view==='agenda'?q('.cc-agenda'):q('#ccNav [data-view="agenda"]');
+  return null;
+}
+/* dernier recours : on fait toujours briller QUELQUE CHOSE d'utile, jamais rien.
+   Une fenêtre ouverte passe avant le reste (c'est là que ça se joue). */
+function spotFallback(){
+  const q=s=>document.querySelector(s);
+  return q('.ccdlg')||q('#cmpWin')||q('.ccwin')
+    ||(M.view==='agenda'?q('.cc-agenda'):null)
+    ||(M.view==='contacts'?q('#ccMain'):null)
+    ||q('#rdActions')||q('#mailList')||q('#ccapp');
+}
 function highlightForStep(){
   clearSpots();
+  const s=currentStep; if(!s) return;
+  /* --- examens et défis : on éclaire l'ordre en cours et sa zone d'action --- */
+  if(s.kind==='game'){
+    const st=(typeof ARC!=='undefined' && ARC.on && !ARC.over) ? ARC.curStep : null;
+    let el=null;
+    if(st && st.sel){ try{ el = typeof st.sel==='function' ? st.sel() : document.querySelector(st.sel); }catch(e){ el=null; } }
+    if(!el && st && st.spot) el=spotZone(st.spot);
+    spotEl(document.getElementById('ahOrder'));
+    spotEl(el||spotFallback());
+    if(_spots.length) _spotT=setTimeout(clearSpots, 8000);
+    return;
+  }
   const o=activeObj(); if(!o || !o.goal) return;
-  const q=s=>document.querySelector(s);
-  /* priorité au sélecteur précis du bon bouton (goal.sel) ; le "spot" large ne sert plus que de repli */
+  /* priorité au sélecteur précis du bon bouton (goal.sel) ; le "spot" large sert de repli */
   let el=null;
   if(o.goal.sel){
-    try{ el = typeof o.goal.sel==='function' ? o.goal.sel() : q(o.goal.sel); }catch(e){ el=null; }
+    try{ el = typeof o.goal.sel==='function' ? o.goal.sel() : document.querySelector(o.goal.sel); }catch(e){ el=null; }
   }
-  if(!el){
-    const spot=o.goal.spot;
-    if(spot==='list')          el=q('#mailList');
-    else if(spot==='folders')  el=q('#ccFolders');
-    else if(spot==='addfolder')el=q('#btnAddFolder');
-    else if(spot==='reader')   el=q('#rdActions')||q('#reader');
-    else if(spot==='search')   el=q('#ccSearchBox');
-    else if(spot==='filter')   el=q('#btnFilter');
-    else if(spot==='sort')     el=q('#btnSort');
-    else if(spot==='settings') el=q('#btnSettings');
-    else if(spot==='quiz')     el=q('#quizDock');
-    else if(spot==='toolbar')  el=q('#cmpTools')||q('#btnNew');
-    else if(spot==='compose')  el=q('#cmpWin')||q('#btnNew');
-    else if(spot==='contacts') el=q('#ccNav [data-view="contacts"]');
-    else if(spot==='agenda')   el=M.view==='agenda'?q('.cc-agenda'):q('#ccNav [data-view="agenda"]');
-  }
-  spotEl(el);
-  if(_spots.length) _spotT=setTimeout(clearSpots, 6000);
+  if(!el) el=spotZone(o.goal.spot);
+  spotEl(el||spotFallback());
+  if(_spots.length) _spotT=setTimeout(clearSpots, 8000);
 }
 function onHint(){
   if(overlay.classList.contains('open')) return;
@@ -4639,19 +4840,31 @@ function onHint(){
   s._hints=(s._hints||0)+1;
   const game=s.kind==='game';
   const ao=activeObj();
-  const hintTxt=game
-    ? (s.hint||'Suis la consigne affichée sur l\'écran !')
+  const st=(game && typeof ARC!=='undefined' && ARC.on && !ARC.over) ? ARC.curStep : null;
+  let hintTxt=game
+    ? ((st && (st.hint||st.sub)) || s.hint || 'Suis la consigne affichée sur l\'écran !')
     : ((ao && ao.goal && ao.goal.hint) ? ao.goal.hint : stripTags((ao&&ao.t)||''));
+  /* cas « déjà fait trop tôt » : on explique qu'il faut refaire le geste maintenant.
+     À l'écran on garde AUSSI la marche à suivre ; la voix, elle, lit le clip
+     pré-généré qui explique le pourquoi (l'audio doit rester un clip connu). */
+  const stale=(!game && s._objStale===s._jalonIdx);
+  const baseHint=hintTxt;
+  if(stale){
+    hintTxt='Tu l\'as déjà fait <b>avant</b> qu\'on te le demande : ça ne compte pas. '
+      +'Refais le geste maintenant que c\'est l\'objectif affiché.<br><br>'+hintTxt;
+  }
   const hintTitle=s.title||'Astuce';
   modal.className='modal test-modal';
   modal.innerHTML='<span class="m-emoji">💡</span><div class="kicker" style="color:var(--amber-d)">Astuce</div>'
     +'<h2>'+hintTitle+'</h2>'
     +'<div class="howto test"><p class="h-head">👉 Comment faire :</p><p>'+hintTxt+'</p></div>'
-    +(game?'':'<p style="font-size:.95rem;color:var(--muted)">Les éléments importants vont <b>briller en jaune</b> ✨ sur l\'écran.</p>')
-    +'<div class="m-actions"><button class="m-btn primary test" id="hintGo">'+(game?'Compris !':'Montre-moi ✨')+'</button></div>';
-  modal.dataset.ttsText = hintTitle + '. ' + hintTxt;
+    +'<p style="font-size:.95rem;color:var(--muted)">Les éléments importants vont <b>briller en jaune</b> ✨ sur l\'écran.</p>'
+    +'<div class="m-actions"><button class="m-btn primary test" id="hintGo">Montre-moi ✨</button></div>';
+  modal.dataset.ttsText = stale
+    ? ((window.TTS_STATIC||{}).hint_stale || '')
+    : (hintTitle + '. ' + baseHint);
   openOverlay();
-  document.getElementById('hintGo').onclick=()=>{ closeOverlay(); if(!game) highlightForStep(); };
+  document.getElementById('hintGo').onclick=()=>{ closeOverlay(); highlightForStep(); };
 }
 
 /* boutons de la page */

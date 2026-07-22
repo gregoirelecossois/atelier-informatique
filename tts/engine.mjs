@@ -62,7 +62,12 @@ export function generateClips(base, outDir, wanted){
   const cacheDir = path.join(outDir, '.tts-cache');
   fs.mkdirSync(cacheDir, { recursive:true });
 
-  const PY = resolvePython();
+  /* Python n'est requis que pour GÉNÉRER un clip manquant. On le résout à la
+     demande : ainsi une reconstruction entièrement servie par le cache réussit
+     sur un poste sans edge-tts, et l'erreur ne remonte que si un clip manque
+     vraiment (c'est-à-dire quand l'audio serait réellement périmé). */
+  let _py = null;
+  const PY = () => (_py || (_py = resolvePython()));
   const FF = hasFfmpeg();
   const ext = FF ? 'ogg' : 'mp3';
   const mime = FF ? 'audio/ogg' : 'audio/mpeg';
@@ -73,7 +78,7 @@ export function generateClips(base, outDir, wanted){
     const out = path.join(cacheDir, key + '.' + ext);
     if (!fs.existsSync(out)){
       const tmp = path.join(cacheDir, key + '.src.mp3');
-      execFileSync(PY, ['-m','edge_tts','--voice',VOICE,'--text',text,'--write-media',tmp],
+      execFileSync(PY(), ['-m','edge_tts','--voice',VOICE,'--text',text,'--write-media',tmp],
                    {stdio:['ignore','ignore','inherit']});
       if (FF){   // compression Opus mono ~24 kbps : nette pour la parole, très léger
         execFileSync('ffmpeg', ['-y','-i',tmp,'-c:a','libopus','-b:a','24k','-ac','1','-application','voip',out], {stdio:'ignore'});
