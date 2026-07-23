@@ -88,7 +88,12 @@ export function extractWanted(html, { ttsKey, ttsNormalize, extractStatic }){
     }
   }
   for (const txt of Object.values(HINTS)) add(txt);          // « comment jouer » par type de jeu
-  for (const ph of PHASES) add((ph.banner||'') + '. ' + (ph.brief || ph.sub || '')); // astuce pendant le combat de boss
+  for (const ph of PHASES){
+    add((ph.banner||'') + '. ' + (ph.brief || ph.sub || ''));   // astuce pendant le combat de boss
+    // briefing de phase (carte .boss-brief, hors #modal) : ttsDecorateCard concatène
+    // .bf-story / .bf-title / .bf-how avec « . », en sautant les parties absentes.
+    add([ph.story, ph.banner, ph.brief || ph.sub].filter(Boolean).join('. '));
+  }
   for (const txt of FAILS) add(txt);                          // messages d'échec (littéraux)
   for (const v of Object.values(STATIC)) add(v);              // réussite, déblocage, fin, boss…
 

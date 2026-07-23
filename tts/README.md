@@ -15,6 +15,8 @@ nécessite aucune connexion.
 | Fichier | Rôle |
 |---|---|
 | `tts-atelier.js` | Runtime (partagé par tous les fichiers) : injecte le 🔊, gère clic/lecture/arrêt, repli voix navigateur. |
+| ↳ `ttsDecorateModal` | Popups classiques : lit `modal.dataset.ttsText`. |
+| ↳ `ttsDecorateCard` | Cartes **hors `#modal`** (tutoriels de boss dessinés dans le terrain) : déduit le texte lu des sélecteurs passés. |
 | `engine.mjs` | Moteur de build partagé : génération edge-tts, compression ffmpeg (Opus), cache, écriture `<page>.clips.js` + manifest. |
 | `build-tts.mjs` | Dispatcher : trouve l'extracteur du fichier demandé (`extractors/<base>.mjs`) et appelle le moteur. |
 | `extractors/<page>.mjs` | Un par fichier de l'atelier : sait extraire SES textes lus (structure de popups propre à chaque jeu). |
@@ -70,13 +72,40 @@ Pré-requis : Python + `pip install edge-tts` + ffmpeg + internet (au build uniq
 
 Confirmations (recommencer, mode dyslexique), sélecteur de niveaux, dialogues d'outils
 secondaires, contenu strictement dynamique (score, nom de fichier tapé, propriétés
-live d'un fichier), et — spécifique à `naviguer-internet.html` — les tutoriels détaillés
-de boss (overlay séparé, hors `#modal`) et le contenu web simulé. Ces éléments basculent
-sur le repli voix du navigateur s'ils sont survolés/cliqués malgré tout.
+live d'un fichier), et — spécifique à `naviguer-internet.html` — le contenu web simulé.
+Ces éléments basculent sur le repli voix du navigateur s'ils sont survolés/cliqués
+malgré tout.
+
+## Tutoriels de boss
+
+Les cartes de tutoriel/briefing des boss ne vivent **pas** dans `#modal` : chaque jeu les
+dessine dans son terrain. Elles passent donc par `ttsDecorateCard(carte, sélecteurHôte,
+[sélecteursDeTexte])`, qui **déduit le texte lu du contenu affiché** — aucune carte ne
+duplique son texte, il suit automatiquement le HTML.
+
+| Fichier | Carte | Sélecteurs lus |
+|---|---|---|
+| `le-clavier.html` | `showTutoCard` / `hbTutoCard` | `.tc-title` + `.tc-text` |
+| `la-souris.html` | `showBriefing` (`.boss-brief`) | `.bf-story` + `.bf-title` + `.bf-how` |
+| `naviguer-internet.html` | `pzTutorial` (`.pz-tuto`), `pzPhaseCard` | `.pt-t`+`.pt-s`, `.pc-t`+`.pc-s` |
+| `la-messagerie.html` | `phWaveIntro` / `phWaveFailed` (`.ph-wavecard`) | `.wc-t` + `.wc-s` |
+| `dossiers-fichiers.html` | `showPhaseBriefing` | (dans `#modal`, voie normale) |
+
+⚠️ Le texte lu est la concaténation des sélecteurs joints par `« . »`, chaque sélecteur
+rassemblant **tous** ses éléments (`querySelectorAll`) joints par un espace. Les
+extracteurs doivent reproduire exactement cette formule, sinon le hash ne correspond pas
+et la carte retombe sur la voix du navigateur.
+
+Comme ces cartes se ferment sans passer par `closeOverlay()`, le runtime coupe l'audio
+tout seul dès que le bouton 🔊 quitte le DOM.
 
 ## Poids
 
-Clips compressés en Opus mono ~24 kbps (déjà optimisé). Poids par fichier (2026-07-10) :
-le-clavier 4,4 Mo (152 clips), la-souris 1,9 Mo (64), dossiers-fichiers 3,6 Mo (113),
+Clips compressés en Opus mono ~24 kbps (déjà optimisé). Poids par fichier (2026-07-22) :
+le-clavier 6,7 Mo (189 clips), la-souris 1,9 Mo (68), dossiers-fichiers 4,9 Mo (142),
 traitement-texte 10,2 Mo (197 — le plus gros, 94 définitions de mission),
-naviguer-internet 3,5 Mo (112). Cache partagé dédupliqué : 19 Mo (617 clips uniques).
+naviguer-internet 3,6 Mo (117), la-messagerie 8,2 Mo (201).
+
+`le-clavier` a gonflé de 4,4 à 6,7 Mo en équipant les tutoriels de boss : la leçon
+« Les MAJUSCULES comptent ! » est rendue **par lettre** (26 variantes d'un texte long).
+Si le poids devient gênant, c'est le premier candidat à repenser (texte générique).

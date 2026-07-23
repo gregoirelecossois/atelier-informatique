@@ -4175,6 +4175,7 @@ function pzPhaseCard(title, sub, cb){
   c.innerHTML='<div class="pc-ic">🪟</div><div class="pc-t">'+title+'</div><div class="pc-s">'+sub+'</div>'
     +'<button class="m-btn primary boss" id="pzCardGo" style="margin-top:12px">J\'ai compris ! 🎮</button>';
   s.appendChild(c); beep('open');
+  if(window.ttsDecorateCard) ttsDecorateCard(c,null,['.pc-t','.pc-s']);   // 🔊 lit la carte de phase (repli sans tuto)
   c.querySelector('#pzCardGo').onclick=function(){ this.onclick=null; c.style.pointerEvents='none'; c.classList.add('out'); after(380,function(){ try{c.remove();}catch(e){} cb&&cb(); }); };
 }
 function pzAnnouncePhase(name, cb){
@@ -4199,6 +4200,7 @@ function pzTutorial(name, cb){
     +'<div class="pt-hint" id="ptHint"></div>'
     +'<div class="pt-stage" id="ptStage"></div>';
   s.appendChild(ov); beep('open');
+  if(window.ttsDecorateCard) ttsDecorateCard(ov,null,['.pt-t','.pt-s']);   // 🔊 lit le tutoriel de phase
   const t={ov:ov, hint:ov.querySelector('#ptHint'), stage:ov.querySelector('#ptStage'), _done:false};
   info.build(t, cb);
 }
@@ -5425,7 +5427,7 @@ const IX_ADVICE=[
 let IX=null, ixAudio=null;
 function ixMusic(rate){
   try{
-    if(!ixAudio){ ixAudio=new Audio('musics/musique_corruptus.mp3'); ixAudio.loop=true; ixAudio.volume=.5; }
+    if(!ixAudio){ ixAudio=new Audio('musics/infox.mp3'); ixAudio.loop=true; ixAudio.volume=.5; }
     ixAudio.playbackRate=rate||1;
     if(soundOn&&ixAudio.paused){ const p=ixAudio.play(); if(p&&p.catch) p.catch(function(){}); }
   }catch(e){}
