@@ -45,12 +45,20 @@
 
   // ----- lecteur audio (un seul à la fois) --------------------------------
   const PLAY_ICON = '🔊', STOP_ICON = '⏹';
-  let curAudio = null, curBtn = null;
+  let curAudio = null, curBtn = null, curWatch = null;
   function setIcon(btn, ch){ if(btn) btn.textContent = ch; }
   function stopCurrent(){
+    if (curWatch){ clearInterval(curWatch); curWatch=null; }
     if (curAudio){ try{ curAudio.pause(); }catch(e){} curAudio=null; }
     if (window.speechSynthesis){ try{ speechSynthesis.cancel(); }catch(e){} }
     if (curBtn){ curBtn.classList.remove('playing'); setIcon(curBtn, PLAY_ICON); curBtn=null; }
+  }
+  // Les cartes de tutoriel de boss vivent hors de #modal : elles ne passent pas par
+  // closeOverlay(), donc rien n'appellerait ttsStopCurrent() à leur fermeture. On coupe
+  // l'audio dès que le bouton qui l'a lancé quitte le DOM (carte retirée par le jeu).
+  function watchDetach(btn){
+    if (curWatch) clearInterval(curWatch);
+    curWatch = setInterval(()=>{ if (!btn.isConnected) stopCurrent(); }, 400);
   }
   function pickFrenchVoice(){
     if (!window.speechSynthesis) return null;
@@ -69,7 +77,7 @@
   }
   function play(text, btn){
     stopCurrent();
-    curBtn = btn; if (btn) btn.classList.add('playing');
+    curBtn = btn; if (btn){ btn.classList.add('playing'); watchDetach(btn); }
     const clip = window.TTS_CLIPS && window.TTS_CLIPS[ttsKey(text)];
     if (clip){
       const a = new Audio(clip); curAudio = a;
@@ -122,6 +130,24 @@
     btn.addEventListener('mouseenter', ()=>{ if (btn.classList.contains('playing')) setIcon(btn, STOP_ICON); });
     btn.addEventListener('mouseleave', ()=>{ if (btn.classList.contains('playing')) setIcon(btn, PLAY_ICON); });
     modal.appendChild(btn);
+  };
+
+  // Variante pour les cartes dessinées HORS de #modal : les tutoriels de boss, qui
+  // s'affichent dans le terrain de jeu et ne passent donc pas par openOverlay().
+  // `sel` (optionnel) cible le sous-élément qui porte le 🔊 (la boîte visible de la
+  // carte), le conteneur étant souvent un calque plein écran transparent.
+  // Le texte lu est déduit des sélecteurs `parts` (titre, consigne…) : aucune carte
+  // n'a besoin de répéter son texte, il suit automatiquement le contenu affiché.
+  window.ttsDecorateCard = function(card, sel, parts){
+    if (!card) return;
+    const host = sel ? card.querySelector(sel) : card;
+    if (!host) return;
+    const text = (parts||[]).map(p=>
+      [...card.querySelectorAll(p)].map(el=>el.innerHTML).filter(Boolean).join(' ')
+    ).filter(Boolean).join('. ');
+    if (!ttsNormalize(text)) return;
+    host.dataset.ttsText = text;
+    window.ttsDecorateModal(host);
   };
 
   // Exposée pour que le jeu coupe l'audio quand la popup qui l'a lancé se ferme.

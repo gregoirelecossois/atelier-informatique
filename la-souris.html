@@ -2148,6 +2148,7 @@ function showBriefing(ph){
   html+='<div class="bf-title">'+ph.banner+'</div>';
   html+='<div class="bf-how">'+(ph.brief||ph.sub||'')+'</div>';
   ov.innerHTML=html; B.field.appendChild(ov); B.brief=ov; beep('ding');
+  if(window.ttsDecorateCard) ttsDecorateCard(ov,null,['.bf-story','.bf-title','.bf-how']);   // 🔊 lit le briefing de phase
   const start=()=>{ closeBriefing(); if(!B.stopped) ph.start(ph); };
   const builder=BRIEF_TUTOS[ph.tuto];
   if(builder) builder(ov, ph, start);

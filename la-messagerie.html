@@ -847,7 +847,8 @@
   "hint_game_fallback": "Suis la consigne affichée sur l'écran !",
   "fault_major": "Attention, fausse manœuvre. Personne ne t'a demandé de faire ça. Relis bien l'objectif en cours : on remet la boîte en ordre et on repart du début.",
   "fault_minor": "Ce n'était pas l'objectif. Relis bien l'objectif en cours avant d'agir, pour être sûr de faire ce qu'il faut.",
-  "hint_stale": "Tu l'as déjà fait avant qu'on te le demande : ça ne compte pas. Refais le geste maintenant que c'est l'objectif affiché."
+  "hint_stale": "Tu l'as déjà fait avant qu'on te le demande : ça ne compte pas. Refais le geste maintenant que c'est l'objectif affiché.",
+  "boss_wave_failed": "Plus de cœurs !. LE PHISHER a eu ta boîte cette fois… Relis les indices : l'adresse, l'urgence, les cadeaux, l'argent, le mot de passe."
 }
 </script>
 <script src="tts/tts-atelier.js"></script>
@@ -987,6 +988,16 @@ function saveProgress(){ store.set('ml_step_l'+currentLevel, String(progressIdx)
    --------------------------------------------------------- */
 let actx=null;
 function audioCtx(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } } return actx; }
+/* ---- musique du combat de boss LE PHISHER (boucle) ---- */
+let phMusic=null;
+function startPhMusic(){
+  if(!phMusic){ phMusic=new Audio('musics/le-phisher.mp3'); phMusic.loop=true; phMusic.volume=0.45; }
+  if(!soundOn) return;
+  try{ phMusic.currentTime=0; const p=phMusic.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+}
+function stopPhMusic(){ if(phMusic){ try{ phMusic.pause(); phMusic.currentTime=0; }catch(e){} } }
+function pausePhMusic(){ if(phMusic){ try{ phMusic.pause(); }catch(e){} } }
+function resumePhMusic(){ if(phMusic && soundOn){ try{ const p=phMusic.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
 function beep(kind){
   if(!soundOn) return; const a=audioCtx(); if(!a) return; const now=a.currentTime;
   function tone(freq,dur,type,vol,delay){
@@ -1008,7 +1019,7 @@ function beep(kind){
   else if(kind==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f,.18,'triangle',.12,i*.09)); }
 }
 function refreshSoundBtn(){ document.getElementById('soundBtn').textContent=(soundOn?'🔊':'🔈')+' Son'; }
-document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('ml_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); } };
+document.getElementById('soundBtn').onclick=()=>{ soundOn=!soundOn; store.set('ml_sound', soundOn?'1':'0'); refreshSoundBtn(); if(soundOn){ audioCtx(); beep('good'); if(!PH.over) resumePhMusic(); } else { pausePhMusic(); } };
 
 /* ---------------------------------------------------------
    3. LES PERSONNAGES + AIDES
@@ -4102,7 +4113,7 @@ const PH_TOOLS=[
     desc:'Un clic : les fautes d\'orthographe s\'allument. Les arnaqueurs en font plein !',
     unlock:'LE PHISHER embauche des sosies pleins de fautes !'},
   {id:'addr', ic:'🕵️', name:'Radar d\'adresses', price:40,
-    desc:'Clique l\'adresse de l\'expéditeur : le radar dit si elle est officielle ou sosie.',
+    desc:'1 scan par manche : clique l\'adresse de l\'expéditeur, le radar dit si elle est officielle ou sosie.',
     unlock:'LE PHISHER imite tes proches… le radar veille !'},
   {id:'phone', ic:'☎️', name:'Téléphone rouge', price:60,
     desc:'1 appel par manche : on vérifie le mail affiché auprès du VRAI expéditeur.',
@@ -4138,6 +4149,45 @@ function phPool(){
     { phish:false, from:'gazette@ecole.fr', name:'La Gazette', sub:'La gazette de la semaine',
       body:'<p>Au sommaire : le potager de la classe de CE2, les résultats du tournoi d\'échecs, et la recette du chef ! 📰</p>',
       why:'La gazette habituelle du collège. Rien de louche.' },
+    { phish:false, from:'secretariat@erea.fr', name:'Le secrétariat', sub:'Photo de classe : mardi 14',
+      body:'<p>Bonjour,</p><p>La photo de classe aura lieu <b>mardi 14 à 10h</b>. Tenue correcte, et surtout : le sourire ! 😄</p><p>Le secrétariat</p>',
+      why:'Une info d\'organisation du collège, envoyée depuis l\'adresse officielle. Rien à signaler.' },
+    { phish:false, from:'tata.monica@cuicui.fr', name:'Tata Monica', sub:'Tu viens dimanche ?',
+      body:'<p>Coucou !</p><p>On fait un grand repas dimanche midi. Tu viens avec ta cousine ? Réponds-moi quand tu peux, rien ne presse.</p><p>Bisous, Tata Monica</p>',
+      why:'Un message de famille, sur l\'adresse habituelle, sans urgence ni demande d\'argent.' },
+    { phish:false, from:'contact@piscine-municipale.fr', name:'Piscine municipale', sub:'Fermeture technique jeudi',
+      body:'<p>Bonjour,</p><p>La piscine sera <b>fermée jeudi</b> pour l\'entretien des bassins. Réouverture vendredi aux horaires habituels.</p>',
+      why:'Un service de la ville qui informe. Pas de lien, pas de demande : honnête.' },
+    { phish:false, from:'cdi@erea.fr', name:'Le CDI', sub:'Ton livre est à rendre',
+      body:'<p>Bonjour,</p><p>Le livre <b>« L\'île aux mille couleurs »</b> est à rapporter au CDI avant vendredi. Merci !</p>',
+      why:'Un simple rappel du CDI depuis l\'adresse du collège. Aucun piège.' },
+    { phish:false, from:'infos@cuicui.fr', name:'Cui-Cui', sub:'Nouveauté : les dossiers de couleur',
+      body:'<p>Bonjour !</p><p>Tu peux désormais donner une couleur à tes dossiers pour mieux t\'y retrouver. Bonne exploration ! 🐦</p><p>L\'équipe Cui-Cui</p>',
+      why:'La vraie adresse cuicui.fr, une annonce de nouveauté : ni mot de passe demandé, ni menace.' },
+    { phish:false, from:'entraineur@basket-club.fr', name:'Coach Sofia', sub:'Match samedi : rendez-vous 9h30',
+      body:'<p>Salut l\'équipe !</p><p>Match samedi au gymnase. Rendez-vous <b>9h30</b> avec le maillot vert et une gourde.</p><p>Coach Sofia</p>',
+      why:'Le club de basket, une info d\'entraînement banale. Légitime.' },
+    { phish:false, from:'mairie@ville.fr', name:'La mairie', sub:'Fête du quartier samedi',
+      body:'<p>Bonjour,</p><p>La fête du quartier se tiendra samedi place du Marché : jeux, musique et stands. Entrée libre !</p>',
+      why:'La mairie de la ville, une invitation publique sans aucune demande personnelle.' },
+    { phish:false, from:'maman@cuicui.fr', name:'Maman', sub:'Les courses de ce soir',
+      body:'<p>Coucou mon grand,</p><p>Pense à sortir le pain du congélateur en rentrant. Je passe te chercher à 18h.</p><p>Bisous</p>',
+      why:'Un message de Maman, adresse habituelle, contenu tout simple du quotidien.' },
+    { phish:false, from:'atelier@musee-ville.fr', name:'Le musée', sub:'Confirmation de ton inscription',
+      body:'<p>Bonjour,</p><p>Ton inscription à l\'atelier <b>fossiles</b> du mercredi est confirmée. Rendez-vous à l\'accueil du musée.</p>',
+      why:'Une confirmation d\'inscription faite pour de vrai : adresse officielle, pas de paiement demandé.' },
+    { phish:false, from:'vetos@clinique-desanimaux.fr', name:'Clinique vétérinaire', sub:'Rappel de vaccin pour Filou',
+      body:'<p>Bonjour,</p><p>Le rappel de vaccin de <b>Filou</b> est à prévoir ce mois-ci. Appelez la clinique pour choisir un créneau.</p>',
+      why:'Un rappel classique du vétérinaire. Il ne demande ni code ni paiement par mail.' },
+    { phish:false, from:'lucas.b@cuicui.fr', name:'Lucas', sub:'Tu me passes tes notes de maths ?',
+      body:'<p>Salut ! J\'étais absent lundi, tu peux me prêter tes notes de maths ? Je te rends ça demain. Merci ! 😅</p>',
+      why:'Un copain de classe, sur son adresse cuicui.fr, avec une demande normale entre élèves.' },
+    { phish:false, from:'billetterie@cinema-etoile.fr', name:'Cinéma L\'Étoile', sub:'Le programme de la semaine',
+      body:'<p>Cette semaine à L\'Étoile : deux dessins animés et un documentaire sur les volcans. 🎬</p><p>Vous recevez ce mail car vous êtes abonné au programme.</p>',
+      why:'Une lettre d\'information à laquelle on est abonné. Aucun piège.' },
+    { phish:false, from:'contact@ludotheque-ville.fr', name:'La ludothèque', sub:'Ton jeu est réservé',
+      body:'<p>Bonjour,</p><p>Le jeu <b>« Les bâtisseurs »</b> est mis de côté à ton nom jusqu\'à samedi. À bientôt !</p>',
+      why:'La ludothèque de la ville, une réservation normale : rien de suspect.' },
     /* ---- pièges (base) ---- */
     { phish:true, from:'loterie@grand-gagnant.biz', name:'LOTERIE NATIONALE', sub:'🎉 DERNIER RAPPEL : votre MILLION vous attend !!!',
       body:'<p>FÉLICITATIONS !!! Vous êtes notre GRAND GAGNANT !</p><p>Envoyez votre adresse et votre date de naissance <b>dans l\'heure</b> pour recevoir 1 000 000 € !!!</p>',
@@ -4157,6 +4207,42 @@ function phPool(){
     { phish:true, from:'support-technique@repare-pc.info', name:'Support Windows', sub:'🔴 VIRUS DÉTECTÉ sur votre ordinateur',
       body:'<p>Notre système a détecté <b>3 VIRUS</b> sur votre machine !</p><p>Appelez immédiatement le 08 99 99 99 99 (4 €/min) pour désinfection d\'urgence.</p>',
       why:'Personne ne peut « détecter des virus » chez toi par mail. Numéro payant + panique = arnaque au faux support.' },
+    { phish:true, from:'service-client@banque-de-france.top', name:'VOTRE BANQUE', sub:'Opération suspecte : confirmez votre carte',
+      body:'<p>Une opération de 349 € a été détectée sur votre compte.</p><p>Pour l\'annuler, renvoyez <b>le numéro de votre carte et son code</b> immédiatement.</p>',
+      why:'Aucune banque ne demande un numéro de carte par mail. Adresse en .top et panique organisée : arnaque.' },
+    { phish:true, from:'admin@cuicui-securite-compte.net', name:'Cui-Cui Admin', sub:'Vérifiez votre identité sous 2 heures',
+      body:'<p>Activité inhabituelle détectée.</p><p>Cliquez ici et saisissez votre <b>identifiant et mot de passe</b> pour éviter le blocage.</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/login">Vérifier mon compte</a></p>',
+      why:'Le vrai Cui-Cui, c\'est cuicui.fr. Ici on veut ton mot de passe : jamais, au grand jamais.' },
+    { phish:true, from:'direction@erea-administration.info', name:'Direction du collège', sub:'Amende de cantine impayée : 45 €',
+      body:'<p>Votre famille doit <b>45 €</b> à la cantine.</p><p>Payez sous 48h par carte en ligne, sinon l\'accès à la cantine sera coupé.</p>',
+      why:'Le collège n\'est pas en .info et ne réclame pas d\'argent par carte en ligne avec une menace. C\'est un faux.' },
+    { phish:true, from:'concours@super-console-gratuite.biz', name:'SUPER CONCOURS', sub:'🎮 Tu as GAGNÉ une console dernier cri !!!',
+      body:'<p>TU ES LE GAGNANT DU JOUR !!!</p><p>Donne ton nom, ton adresse et le numéro de carte de tes parents pour la livraison !</p>',
+      why:'Un concours qu\'on n\'a jamais joué, un cadeau énorme, une carte bancaire demandée : triple signal d\'alarme.' },
+    { phish:true, from:'compte@netflox-abonnement.co', name:'NETFLOX', sub:'Votre abonnement expire ce soir',
+      body:'<p>Votre paiement a échoué. Votre abonnement sera <b>annulé ce soir à minuit</b>.</p><p>Mettez à jour vos coordonnées bancaires ici.</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/paiement2">Mettre à jour</a></p>',
+      why:'Un service qu\'on imite (Netflox), un compte à rebours, une carte bancaire à saisir : le trio de l\'arnaque.' },
+    { phish:true, from:'noreply@impots-remboursement.info', name:'IMPÔTS', sub:'Remboursement de 128 € en attente',
+      body:'<p>Vous avez droit à un remboursement de <b>128 €</b>.</p><p>Saisissez vos coordonnées bancaires sous 24h, sinon la somme sera perdue.</p>',
+      why:'De l\'argent offert + un délai serré + un RIB à donner. Les impôts ne fonctionnent jamais comme ça.' },
+    { phish:true, from:'aide@amiis-en-detresse.net', name:'Un ami', sub:'Je suis coincé à l\'étranger, aide-moi',
+      body:'<p>C\'est moi ! J\'ai perdu mon portefeuille en voyage.</p><p>Envoie-moi <b>200 €</b> par virement, je te rembourse dès mon retour. Ne dis rien à personne !</p>',
+      why:'De l\'argent, du secret et un ami qui ne se nomme pas : l\'arnaque à l\'ami en détresse.' },
+    { phish:true, from:'livraison@chronopost-suivi.top', name:'Chronopost', sub:'Nouvelle tentative de livraison : 2,50 €',
+      body:'<p>Le livreur n\'a pas pu vous remettre le colis.</p><p>Reprogrammez la livraison en payant <b>2,50 €</b> de frais.</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/relivraison">Reprogrammer</a></p>',
+      why:'Une petite somme pour endormir la méfiance, un domaine en .top : c\'est le faux colis, encore lui.' },
+    { phish:true, from:'contact@ma-super-crypto.biz', name:'CRYPTO BOOST', sub:'Multiplie ton argent de poche par 10 !',
+      body:'<p>Investis <b>20 €</b> aujourd\'hui, récupère <b>200 €</b> vendredi. Garanti sans risque !!!</p><p>Places limitées, réponds vite !</p>',
+      why:'Un placement « sans risque » qui multiplie l\'argent : ça n\'existe pas. C\'est une arnaque.' },
+    { phish:true, from:'sondage@cadeaux-express.info', name:'Sondage Express', sub:'3 questions = 1 téléphone offert 📱',
+      body:'<p>Répondez à 3 petites questions et repartez avec un téléphone !</p><p>Il suffit d\'indiquer votre nom, votre adresse et votre date de naissance.</p>',
+      why:'Un cadeau démesuré contre des informations personnelles : le but, c\'est de collecter tes données.' },
+    { phish:true, from:'moderation@cuicui-support.co', name:'Modération Cui-Cui', sub:'Votre boîte va être bloquée (dernier avis)',
+      body:'<p>Des messages interdits ont été envoyés depuis votre boîte.</p><p>Répondez avec votre <b>mot de passe</b> pour prouver que c\'est bien vous.</p>',
+      why:'Prouver son identité en donnant son mot de passe, ça n\'a aucun sens. Et l\'adresse n\'est pas cuicui.fr.' },
+    { phish:true, from:'urgent@heritage-notaire-international.biz', name:'Maître Dubois', sub:'Un héritage de 4 millions vous attend',
+      body:'<p>Un lointain parent vous a légué <b>4 000 000 €</b>.</p><p>Envoyez une avance de <b>150 €</b> de frais de dossier pour débloquer la somme.</p>',
+      why:'Un héritage surprise qui demande de payer d\'abord : l\'arnaque la plus vieille du monde.' },
     /* ---- pièges & honnêtes débloqués par les OUTILS ---- */
     { phish:true, req:'scan', from:'photo-club@rigolo-photos.net', name:'Le club photo', sub:'Tes photos de classe en pièce jointe',
       body:'<p>Bonjour ! Voici les photos de ta classe, comme promis. Ouvre vite la pièce jointe !</p>',
@@ -4166,24 +4252,79 @@ function phPool(){
       body:'<p>Bonjour, voici les paroles de la chanson du spectacle à apprendre. Bonne répétition !</p>',
       atts:[{n:'chanson-spectacle.pdf', s:140, ic:'📄', trap:false}],
       why:'Un PDF sain envoyé par le professeur : le scanner confirme.' },
+    { phish:true, req:'scan', from:'facture@service-abonnements.info', name:'Service abonnements', sub:'Votre facture du mois',
+      body:'<p>Bonjour, veuillez trouver votre facture ci-jointe. Ouvrez-la vite pour éviter des frais de retard.</p>',
+      atts:[{n:'facture-mai.pdf.exe', s:1800, ic:'📄', trap:true}],
+      why:'Une « facture » qui se termine par <b>.exe</b> : c\'est un programme piégé, pas un document.' },
+    { phish:true, req:'scan', from:'jeux@mods-gratuits.biz', name:'Mods Gratuits', sub:'Ton mod est prêt à installer !',
+      body:'<p>Salut ! Voici le mod que tout le monde s\'arrache. Installe-le et amuse-toi ! 🎮</p>',
+      atts:[{n:'super-mod.scr', s:3100, ic:'📦', trap:true}],
+      why:'Un fichier <b>.scr</b> envoyé par un inconnu : le scanner confirme, la pièce jointe est piégée.' },
+    { phish:false, req:'scan', from:'secretariat@erea.fr', name:'Le secrétariat', sub:'L\'autorisation de sortie à signer',
+      body:'<p>Bonjour,</p><p>Merci de faire signer l\'autorisation ci-jointe et de la rapporter avant vendredi.</p>',
+      atts:[{n:'autorisation-sortie.pdf', s:210, ic:'📄', trap:false}],
+      why:'Un PDF du secrétariat du collège : le scanner le déclare sain.' },
+    { phish:false, req:'scan', from:'tata.monica@cuicui.fr', name:'Tata Monica', sub:'La recette du gâteau',
+      body:'<p>Comme promis, la recette du gâteau au chocolat ! Régale-toi. 🍫</p><p>Tata Monica</p>',
+      atts:[{n:'recette-gateau.pdf', s:180, ic:'📄', trap:false}],
+      why:'Un PDF de la famille, adresse officielle, contenu inoffensif : rien à craindre.' },
     { phish:true, req:'link', from:'cadeaux@cuicui-anniversaire.net', name:'Cui-Cui Cadeaux', sub:'Un cadeau pour ton anniversaire 🎁',
       body:'<p>Joyeux anniversaire en avance ! Cui-Cui t\'offre un cadeau.</p><p>Récupère-le ici : <a class="mlk" data-real="www.piege-du-phisher.biz/vole-tes-codes">www.cuicui.fr/cadeau</a></p>',
       why:'Le lien AFFICHE cuicui.fr… mais mène vers piege-du-phisher.biz ! Le Vérif-Liens l\'a démasqué.' },
     { phish:false, req:'link', from:'bibliotheque@ville.fr', name:'La bibliothèque', sub:'Le programme des vacances',
       body:'<p>Ateliers BD, chasse au trésor littéraire… le programme de l\'été est en ligne :</p><p><a class="mlk" data-real="www.ville.fr/bibliotheque/ete">www.ville.fr/bibliotheque/ete</a></p>',
       why:'Le lien mène exactement où il le dit : www.ville.fr. Honnête.' },
+    { phish:true, req:'link', from:'assistance@cuicui-aide.net', name:'Aide Cui-Cui', sub:'Récupère l\'accès à ta boîte',
+      body:'<p>Tu as demandé une nouvelle clé d\'accès ? Suis ce lien :</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/faux-cuicui">www.cuicui.fr/aide/acces</a></p>',
+      why:'Le lien dit cuicui.fr mais atterrit chez piege-du-phisher.biz. Le Vérif-Liens ne se laisse pas berner.' },
+    { phish:true, req:'link', from:'ville@espace-famille.co', name:'Espace Famille', sub:'Inscription cantine à confirmer',
+      body:'<p>Confirmez l\'inscription cantine de votre enfant avant lundi :</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/cantine">www.ville.fr/espace-famille</a></p>',
+      why:'Une belle façade « ville.fr » collée sur un lien qui mène au piège. Toujours vérifier la VRAIE destination.' },
+    { phish:false, req:'link', from:'gazette@ecole.fr', name:'La Gazette', sub:'La gazette en ligne',
+      body:'<p>Le numéro de la semaine est en ligne, avec les photos du tournoi :</p><p><a class="mlk" data-real="www.ecole.fr/gazette">www.ecole.fr/gazette</a></p>',
+      why:'Le lien affiché et la vraie destination sont identiques : www.ecole.fr. Aucun mensonge.' },
+    { phish:false, req:'link', from:'atelier@musee-ville.fr', name:'Le musée', sub:'Le programme des ateliers',
+      body:'<p>Tous les ateliers de l\'été sont détaillés ici :</p><p><a class="mlk" data-real="www.musee-ville.fr/ateliers">www.musee-ville.fr/ateliers</a></p>',
+      why:'Le lien mène bien au site du musée qu\'il annonce. Honnête.' },
     { phish:true, req:'typo', from:'service@colissim0-livraison.net', name:'Colissimo', sub:'Votre colis et areter a la douane',
       body:'<p>Bonjour, votre <span class="ph-typo">colit</span> a été <span class="ph-typo">areter</span> à la douane.</p><p>Vous devez <span class="ph-typo">pailler</span> 3 € de frais pour le <span class="ph-typo">récupérée</span>.</p>',
       why:'« colit », « areter », « pailler »… un vrai transporteur ne fait pas 4 fautes par ligne. Et regarde le zéro dans colissim0 !' },
     { phish:false, req:'typo', from:'expedition@colissimo.fr', name:'Colissimo', sub:'Votre colis est en cours d\'acheminement',
       body:'<p>Bonjour,</p><p>Votre colis n° 6C 4471 0092 a quitté notre centre de tri et sera livré <b>jeudi</b>.</p><p>Merci de votre confiance.</p>',
       why:'Orthographe impeccable, adresse officielle colissimo.fr : le vrai.' },
+    { phish:true, req:'typo', from:'banq@securite-comptes.biz', name:'Votre banque', sub:'Votre conte va etre bloqué',
+      body:'<p>Chére client, votre <span class="ph-typo">conte</span> va <span class="ph-typo">etre</span> bloqué.</p><p>Merci de nous <span class="ph-typo">envoiyer</span> vos <span class="ph-typo">codes secrét</span> aujourd\'hui.</p>',
+      why:'« conte », « envoiyer », « codes secrét »… une banque écrit sans fautes, et ne demande jamais tes codes.' },
+    { phish:true, req:'typo', from:'gain@tombola-magique.info', name:'Tombola Magique', sub:'Vous aver gagner un vellow',
+      body:'<p>Bravo ! Vous <span class="ph-typo">aver</span> <span class="ph-typo">gagner</span> un <span class="ph-typo">vellow</span> tout neuf !</p><p><span class="ph-typo">Envoyer</span> vite vos <span class="ph-typo">coordoné</span> pour la livrezon.</p>',
+      why:'Un lot énorme annoncé dans un français cassé : la loupe allume presque toute la phrase.' },
+    { phish:false, req:'typo', from:'cantine@ecole.fr', name:'La cantine', sub:'Changement de menu jeudi',
+      body:'<p>Bonjour,</p><p>Le poisson de jeudi est remplacé par un gratin de légumes. Bon appétit à tous !</p>',
+      why:'Pas une faute, une adresse officielle du collège : la loupe ne trouve rien, et pour cause.' },
+    { phish:false, req:'typo', from:'club.nature@asso.fr', name:'Le Club Nature', sub:'Liste du matériel pour samedi',
+      body:'<p>Bonjour à tous,</p><p>Pour samedi : bottes, gourde et carnet de notes. Rendez-vous à 14h à l\'entrée du bois.</p>',
+      why:'Une orthographe soignée et une info banale du club : rien à signaler.' },
     { phish:true, req:'addr', from:'papi.marcel@cuicuii.fr', name:'Papi Marcel', sub:'Aide-moi vite mon grand',
       body:'<p>Mon grand, c\'est Papi. Je suis bloqué loin de la maison, envoie-moi vite le code de la carte de Tata Monica, c\'est urgent !!</p>',
       why:'Regarde l\'adresse au radar : cuicu<b>ii</b>.fr avec DEUX i — un sosie de Papi ! Et le vrai Papi ne demanderait jamais ça.' },
     { phish:false, req:'addr', from:'papi.marcel@cuicui.fr', name:'Papi Marcel', sub:'Dimanche prochain ?',
       body:'<p>Mon grand, je passe dimanche avec une tarte aux pommes. Dis-moi si tu es là ! 🍎</p><p>Papi</p>',
-      why:'Le radar est formel : papi.marcel@cuicui.fr, l\'adresse officielle de Papi. Et une tarte aux pommes, ça ne se refuse pas.' }
+      why:'Le radar est formel : papi.marcel@cuicui.fr, l\'adresse officielle de Papi. Et une tarte aux pommes, ça ne se refuse pas.' },
+    { phish:true, req:'addr', from:'m.leco@erea-professeurs.net', name:'M. Leco', sub:'Ton bulletin est en ligne',
+      body:'<p>Bonjour, ton bulletin est disponible. Renvoie-moi ton identifiant et ton mot de passe du collège pour que je le débloque.</p><p>M. Leco</p>',
+      why:'Le vrai professeur écrit depuis erea.fr, pas erea-professeurs.net. Et aucun professeur ne demande ton mot de passe.' },
+    { phish:true, req:'addr', from:'tata.monica@cuicui-mail.net', name:'Tata Monica', sub:'Petit service urgent',
+      body:'<p>Coucou, je ne peux pas payer en ligne depuis chez moi. Tu peux m\'envoyer le code de la carte de tes parents ? Ne leur dis rien, c\'est une surprise !</p>',
+      why:'Le radar le voit : cuicui-<b>mail</b>.net n\'est pas cuicui.fr. Un sosie de Tata, avec le secret en prime.' },
+    { phish:true, req:'addr', from:'infos@cuicui-officiel.co', name:'Cui-Cui', sub:'Ton espace de stockage est plein',
+      body:'<p>Ta boîte est saturée. Confirme ton identifiant et ton mot de passe pour recevoir 10 Go gratuits.</p>',
+      why:'Cui-Cui, c\'est cuicui.fr. « cuicui-officiel.co » n\'a d\'officiel que le nom : le radar le démasque.' },
+    { phish:false, req:'addr', from:'m.leco@erea.fr', name:'M. Leco', sub:'Bravo pour ton exposé',
+      body:'<p>Bonjour,</p><p>Ton exposé sur les volcans était très clair, bravo ! Pense à rendre la fiche de lecture lundi.</p><p>M. Leco</p>',
+      why:'Le radar confirme erea.fr, l\'adresse officielle du professeur. Un vrai message d\'encouragement.' },
+    { phish:false, req:'addr', from:'maman@cuicui.fr', name:'Maman', sub:'Rendez-vous chez le dentiste',
+      body:'<p>Coucou, tu as le dentiste mercredi à 16h. Je te note ça sur le frigo aussi !</p><p>Bisous</p>',
+      why:'Adresse familiale vérifiée par le radar, message du quotidien : parfaitement légitime.' }
   ];
 }
 const PH_WAVES=[
@@ -4195,8 +4336,9 @@ const PH_WAVES=[
 function phisherRun(){
   PH.wave=0; PH.credits=0; PH.lives=3; PH.streak=0; PH.mistakes=0; PH.total=0;
   PH.tools={scan:false,link:false,typo:false,addr:false,phone:false};
-  PH.phoneLeft=0; PH.over=false;
+  PH.phoneLeft=0; PH.addrLeft=0; PH.seen={}; PH.over=false;
   buildPhArena();
+  startPhMusic();
   phWaveIntro();
 }
 function buildPhArena(){
@@ -4243,6 +4385,7 @@ function renderPhTools(){
     let cls='ph-toolbtn '+(owned?((t.id==='typo'||t.id==='phone')?'usable':'active'):'locked');
     let extra='';
     if(owned && t.id==='phone') extra=' ('+PH.phoneLeft+')';
+    if(owned && t.id==='addr'){ extra=' ('+PH.addrLeft+')'; cls='ph-toolbtn '+(PH.addrLeft>0?'usable':'locked'); }
     return '<button class="'+cls+'" data-t="'+t.id+'" '+(owned?'':'disabled')+' title="'+esc(t.desc)+'">'
       +'<span class="pt-ic2">'+t.ic+'</span><span>'+t.name+extra+(owned?'':' 🔒')+'</span></button>';
   }).join('');
@@ -4255,26 +4398,36 @@ function renderPhTools(){
 }
 /* construit la file d'une manche : moitié pièges, avec les mails
    « spéciaux » réservés aux outils achetés */
+function phKey(m){ return m.from+'|'+m.sub; }
 function phBuildQueue(){
   const pool=phPool();
   const owned=id=>PH.tools[id];
+  if(!PH.seen) PH.seen={};
   const ok=pool.filter(m=>!m.req && !m.phish);
   const ko=pool.filter(m=>!m.req && m.phish);
   const gatedOk=pool.filter(m=>m.req && owned(m.req) && !m.phish);
   const gatedKo=pool.filter(m=>m.req && owned(m.req) && m.phish);
   const n=PH_WAVES[PH.wave].n;
   const nKo=Math.ceil(n/2), nOk=n-nKo;
-  function pick(arr, count){
-    const a=arr.slice().sort(()=>Math.random()-.5);
-    const out=[]; let i=0;
-    while(out.length<count && a.length){ out.push(a[i%a.length]); i++; if(i>=a.length) break; }
-    while(out.length<count) out.push(a[Math.floor(Math.random()*a.length)]);
+  const shuffle=a=>a.slice().sort(()=>Math.random()-.5);
+  /* jamais deux fois le meme mail : on tire d abord parmi les jamais vus,
+     puis seulement en dernier recours parmi les deja vus. */
+  function pick(arr, count, taken){
+    const out=[];
+    const fresh=shuffle(arr.filter(m=>!PH.seen[phKey(m)] && !taken[phKey(m)]));
+    const used =shuffle(arr.filter(m=>PH.seen[phKey(m)]  && !taken[phKey(m)]));
+    for(const m of fresh.concat(used)){
+      if(out.length>=count) break;
+      out.push(m); taken[phKey(m)]=1;
+    }
     return out;
   }
+  const taken={};
   /* priorité aux mails spéciaux fraîchement débloqués */
-  const kos=pick(gatedKo, Math.min(gatedKo.length, Math.max(0,nKo-2))).concat(pick(ko, 99)).slice(0,nKo);
-  const oks=pick(gatedOk, Math.min(gatedOk.length, Math.max(0,nOk-2))).concat(pick(ok, 99)).slice(0,nOk);
-  PH.queue=kos.concat(oks).sort(()=>Math.random()-.5);
+  const kos=pick(gatedKo, Math.max(0,nKo-2), taken).concat(pick(ko, nKo, taken)).slice(0,nKo);
+  const oks=pick(gatedOk, Math.max(0,nOk-2), taken).concat(pick(ok, nOk, taken)).slice(0,nOk);
+  PH.queue=shuffle(kos.concat(oks));
+  PH.queue.forEach(m=>{ PH.seen[phKey(m)]=1; });
   PH.hp=PH.queue.length; PH.hpMax=PH.queue.length;
   PH.waveMistakes=0;
 }
@@ -4289,6 +4442,7 @@ function phWaveIntro(){
     +'<span class="wc-s" style="color:#fde047">✅ LÉGITIME = on laisse passer · 🚫 INDÉSIRABLE = à la poubelle !</span>'
     +'<button class="sh-go" id="wcGo">Au contrôle ! 🔍</button>';
   a.appendChild(c);
+  if(window.ttsDecorateCard) ttsDecorateCard(c,null,['.wc-t','.wc-s']);   // 🔊 lit la consigne de la manche
   document.getElementById('wcGo').onclick=()=>{ beep('open'); c.remove(); phNextMail(); };
 }
 function phNextMail(){
@@ -4308,7 +4462,7 @@ function renderPhMail(){
   z.innerHTML='<div class="ph-mail" id="phMail">'
     +'<div class="ph-mh">'
     +  '<div class="mh-row"><span class="mh-k">De :</span><span class="mh-from">'+esc(m.name)+'</span>'
-    +    '<span class="mh-addr'+(PH.tools.addr?' scan" title="🕵️ Clique : le radar analyse cette adresse':'"')+'" id="phAddr">&lt;'+esc(m.from)+'&gt;</span></div>'
+    +    '<span class="mh-addr'+(PH.tools.addr&&PH.addrLeft>0?' scan" title="🕵️ Clique : le radar analyse cette adresse (1 seul scan par manche !)':'"')+'" id="phAddr">&lt;'+esc(m.from)+'&gt;</span></div>'
     +  '<div class="mh-row"><span class="mh-k">À :</span><span>toi@cuicui.fr</span></div>'
     +  '<div class="mh-row"><span class="mh-k">Objet :</span><span class="mh-sub">'+esc(m.sub)+'</span></div>'
     +'</div>'
@@ -4325,12 +4479,16 @@ function renderPhMail(){
     b.remove();
   });
   /* outil : radar d'adresses */
-  if(PH.tools.addr){
+  if(PH.tools.addr && PH.addrLeft>0){
     const ad=document.getElementById('phAddr');
     ad.onclick=()=>{
+      if(PH.addrLeft<=0){ phTaunt('🕵️ RADAR déchargé : plus de scan avant la manche suivante !', '#92400e'); return; }
+      PH.addrLeft--;
       beep('click');
-      const sosie=m.phish && (m.req==='addr' || /0|\.biz|\.net|\.co$|\.info|cuicuii|colissim0|p0ste/.test(m.from));
+      const sosie=('badAddr' in m)?m.badAddr:m.phish;
       phTaunt(sosie?'🕵️ RADAR : « '+esc(m.from)+' » n\'est PAS une adresse officielle. Sosie détecté !':'🕵️ RADAR : adresse officielle, connue et vérifiée. ✔️', sosie?'#b91c1c':'#15803d');
+      ad.classList.remove('scan'); ad.onclick=null;
+      phHudRender();
     };
   }
   /* outil : vérif-liens (survol) */
@@ -4433,9 +4591,11 @@ function phWaveFailed(){
     +'<span class="wc-s">LE PHISHER a eu ta boîte cette fois… Relis les indices : l\'adresse, l\'urgence, les cadeaux, l\'argent, le mot de passe.</span>'
     +'<button class="sh-go" id="wfRetry">↺ Recommencer la manche</button>';
   a.appendChild(c);
+  if(window.ttsDecorateCard) ttsDecorateCard(c,null,['.wc-t','.wc-s']);   // 🔊 lit l'échec de la manche
   document.getElementById('wfRetry').onclick=()=>{
     c.remove(); PH.lives=3;
     if(PH.tools.phone) PH.phoneLeft=1;
+    if(PH.tools.addr) PH.addrLeft=1;
     phBuildQueue(); phHudRender(); phNextMail();
   };
 }
@@ -4471,6 +4631,7 @@ function phShop(){
       if(PH.credits<t.price){ beep('bad'); toast('Pas assez de crédits ! Tamponne juste pour en gagner.'); return; }
       PH.credits-=t.price; PH.tools[t.id]=true;
       if(t.id==='phone') PH.phoneLeft=1;
+      if(t.id==='addr') PH.addrLeft=1;
       beep('coin'); confetti();
       toast('⚡ <b>'+t.name+'</b> acheté ! '+esc(t.unlock));
       s.innerHTML=shopHtml(); bind();
@@ -4479,6 +4640,7 @@ function phShop(){
       beep('open'); s.remove();
       PH.wave++;
       if(PH.tools.phone) PH.phoneLeft=1;
+      if(PH.tools.addr) PH.addrLeft=1;
       phWaveIntro();
     };
   }
@@ -4486,6 +4648,7 @@ function phShop(){
 }
 function phVictory(){
   PH.over=true;
+  stopPhMusic();
   _missionDone=true;
   progressIdx=STEPS.length; saveProgress();
   const stars=(PH.mistakes===0)?3:(PH.mistakes<=3?2:1);
@@ -4514,7 +4677,7 @@ function startStep(idx){
   clearSpots(); clearTimers(); closeMenus();
   ARC.on=false; ARC.over=false; ARC.onEvt=null;
   clearTimeout(ARC.comboT); arcHudRender();
-  PH.over=true; /* stoppe un éventuel boss en cours */
+  PH.over=true; stopPhMusic(); /* stoppe un éventuel boss en cours */
   _faultOpen=false;
   playIdx=idx; currentStep=STEPS[idx]; _missionDone=false;
   /* astuces et fautes ne se remettent à zéro qu'en CHANGEANT de mission :
@@ -4710,6 +4873,7 @@ function openLevelSelector(){
 }
 
 function loadLevel(n, stepIdx, showIntro){
+  PH.over=true; stopPhMusic();   /* changer de niveau coupe le boss ET sa musique, même si l'intro diffère startStep */
   currentLevel=n;
   store.set('ml_curlevel', String(n));
   STEPS=LEVELS[n-1].rounds;

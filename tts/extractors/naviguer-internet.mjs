@@ -1,8 +1,8 @@
 /* Extracteur de textes lus pour naviguer-internet.html :
- * LEVELS (intro/objectives.t/goal.hint/round intro+goal+hint) + PZ_PHASE_META (astuce POPZILLA).
- * HORS PÉRIMÈTRE (assumé) : tutoriels détaillés POPZILLA/INFOX (overlays séparés, pas #modal),
- * contenu web simulé (pages/résultats de recherche fictifs), écrans de victoire/défaite de boss
- * (score dynamique). Voir tts/README.md. */
+ * LEVELS (intro/objectives.t/goal.hint/round intro+goal+hint) + PZ_PHASE_META (astuce POPZILLA)
+ * + PZ_TUTOS (tutoriels de phase POPZILLA, overlay .pz-tuto hors #modal).
+ * HORS PÉRIMÈTRE (assumé) : contenu web simulé (pages/résultats de recherche fictifs),
+ * écrans de victoire/défaite de boss (score dynamique). Voir tts/README.md. */
 import vm from 'node:vm';
 import { extractBalanced } from '../engine.mjs';
 
@@ -47,9 +47,21 @@ function extractPzPhaseMeta(html){
   return ctx.__M;
 }
 
+// PZ_TUTOS : les tutoriels de phase de POPZILLA. Seul `intro` est lu (le reste est du
+// `build` interactif) ; les corps de fonction ne s'exécutent pas à la définition, donc
+// un contexte auto-stub suffit à évaluer l'objet.
+function extractPzTutos(html){
+  const m = html.match(/const\s+PZ_TUTOS\s*=\s*\{/);
+  if (!m) return {};
+  const ctx = autoStubContext();
+  vm.runInContext('var __T = ' + extractBalanced(html, m.index + m[0].length - 1) + ';', ctx);
+  return ctx.__T;
+}
+
 export function extractWanted(html, { ttsKey, ttsNormalize, extractStatic }){
   const LEVELS = extractCore(html);
   const PZ = extractPzPhaseMeta(html);
+  const TUTOS = extractPzTutos(html);
   const STATIC = extractStatic(html);
 
   const wanted = new Map();
@@ -65,8 +77,11 @@ export function extractWanted(html, { ttsKey, ttsNormalize, extractStatic }){
       for (const o of (r.objectives||[])) if (o.goal && o.goal.hint) add(o.goal.hint);
     }
   }
-  for (const meta of Object.values(PZ)){
-    if (meta.tut) add((meta.tut.title||'') + '. ' + (meta.tut.sub||''));
+  for (const [name, meta] of Object.entries(PZ)){
+    if (!meta.tut) continue;
+    add((meta.tut.title||'') + '. ' + (meta.tut.sub||''));          // carte de phase (repli sans tuto)
+    const t = TUTOS[name];
+    if (t && typeof t.intro === 'string') add((meta.tut.title||'') + '. ' + t.intro);   // tutoriel de phase (.pz-tuto)
   }
   for (const v of Object.values(STATIC)) add(v);
 

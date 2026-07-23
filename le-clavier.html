@@ -2280,6 +2280,7 @@ function showTutoCard(html){
   const card=document.createElement('div'); card.className='tuto-card'; card.id='tutoCard';
   card.innerHTML='<div class="tc-inner">'+html+'</div>';
   tutoField().appendChild(card);
+  if(window.ttsDecorateCard) ttsDecorateCard(card,'.tc-inner',['.tc-title','.tc-text']);   // 🔊 lit la carte de tuto
   return card;
 }
 function setTutoHint(txt, prog){
@@ -3724,7 +3725,7 @@ function hbMazeKey(e){
 /* Annonce de chaque plongée au-delà de la première : à chaque fois il s'est recopié, et la
    nouvelle copie a une façon de chasser bien à elle (cf. HBM_BRAINS, même ordre). */
 const HB_MAZE_WAVE=[
-  null,   // 1re plongée : c'est le tuto guidé qui présente la mécanique
+  null,   // 1re plongée : le tuto guidé presente la mecanique (pas d apostrophe : extracteur TTS)
   {emoji:'🧠🧠', title:'IL SE DÉDOUBLE !',
    txt:'K0RT3X a <b>copié son programme</b> : vous êtes maintenant <b>deux</b> à te courir après ! La copie <b style="color:#fb923c">orange</b> ne te suit pas bêtement : elle vise là où tu <b>vas arriver</b> pour te couper la route. Récupère quand même toutes ses clés 🔑&nbsp;!'},
   {emoji:'🧠🧠🧠', title:'UNE TROISIÈME COPIE !',
@@ -3762,6 +3763,7 @@ function hbTutoCard(html){
   const card=document.createElement('div'); card.className='tuto-card'; card.id='hbTutoCard';
   card.innerHTML='<div class="tc-inner">'+html+'</div>';
   HB.field.appendChild(card);
+  if(window.ttsDecorateCard) ttsDecorateCard(card,'.tc-inner',['.tc-title','.tc-text']);   // 🔊 lit la carte de tuto
   return card;
 }
 /* petite popup d'alerte (entraînement d'ouverture du duel) : bloque la frappe le temps
