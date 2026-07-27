@@ -643,122 +643,395 @@
   @keyframes notifIn{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
 </style>
 <style>
-  /* ===== BOSS FINAL — LE PHISHER (façon Papers, Please) ===== */
+  /* ===== BOSS FINAL — LE PHISHER (façon Papers, Please) =====
+     Bureau en trois colonnes : LE PHISHER à gauche (avec sa bulle, qui ne
+     le masque jamais), le mail au centre avec ses deux tampons dessous,
+     les outils à droite. Corps de mail à .95rem / interligne 1.6. */
   .ph-arena{position:absolute;inset:0;display:flex;flex-direction:column;background:linear-gradient(#1c2733,#2b3a4d 55%,#3d4f63);overflow:hidden;}
-  .ph-hud{flex:none;display:flex;align-items:center;gap:10px;padding:7px 12px;background:linear-gradient(90deg,#3b0764,#7f1d1d);color:#fff;}
-  .ph-hud .ph-face{font-size:1.5rem;line-height:1;flex:none;animation:phIdle 2.6s ease-in-out infinite;}
-  @keyframes phIdle{0%,100%{transform:rotate(-4deg);}50%{transform:rotate(4deg) translateY(-2px);}}
-  .ph-hud .ph-id{display:flex;flex-direction:column;line-height:1.05;flex:none;text-align:left;}
-  .ph-hud .ph-name{font-size:.8rem;font-weight:900;letter-spacing:.05em;}
-  .ph-hud .ph-sub{font-size:.58rem;font-weight:700;color:#fecdd3;}
-  .ph-hud .ph-hp{flex:1;height:13px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.4);border-radius:99px;overflow:hidden;min-width:60px;}
-  .ph-hud .ph-hp i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#4ade80,#a3e635);border-radius:99px;transition:width .35s ease;}
-  .ph-hud .ph-hp.mid i{background:linear-gradient(90deg,#facc15,#f59e0b);}
-  .ph-hud .ph-hp.low i{background:linear-gradient(90deg,#f87171,#dc2626);}
-  .ph-hud .ph-stat{flex:none;font-size:.72rem;font-weight:800;background:rgba(0,0,0,.32);border-radius:99px;padding:3px 10px;white-space:nowrap;}
+  /* ---- bandeau ---- */
+  .ph-hud{flex:none;display:flex;align-items:center;gap:12px;padding:6px 12px;background:linear-gradient(90deg,#3b0764,#7f1d1d);color:#fff;}
+  .ph-id{display:flex;flex-direction:column;line-height:1.12;flex:none;max-width:170px;}
+  .ph-id .ph-name{font-size:.84rem;font-weight:900;letter-spacing:.05em;}
+  .ph-id .ph-sub{font-size:.66rem;font-weight:700;color:#fecdd3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .ph-gauges{flex:1;min-width:90px;display:flex;flex-direction:column;gap:3px;}
+  .ph-g{display:flex;align-items:center;gap:8px;}
+  .ph-g .g-k{flex:none;width:92px;font-size:.68rem;font-weight:800;}
+  .ph-g .g-bar{flex:1;min-width:40px;height:12px;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.35);border-radius:99px;overflow:hidden;}
+  .ph-g .g-bar i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#4ade80,#a3e635);transition:width .45s ease;}
+  .ph-g .g-bar.mid i{background:linear-gradient(90deg,#facc15,#f59e0b);}
+  .ph-g .g-bar.low i{background:linear-gradient(90deg,#f87171,#dc2626);animation:gPulse 1s ease-in-out infinite;}
+  @keyframes gPulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+  .ph-hud .ph-stat{flex:none;font-size:.76rem;font-weight:800;background:rgba(0,0,0,.32);border-radius:99px;padding:3px 11px;white-space:nowrap;}
   .ph-hud .ph-stat.cred{color:#fde047;}
-  .ph-hud .ph-stat .lost{filter:grayscale(1);opacity:.4;}
-  /* bureau de contrôle */
-  .ph-desk{flex:1;min-height:0;display:flex;gap:10px;padding:10px 12px;}
-  .ph-mailzone{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
-  .ph-mail{position:relative;width:min(520px,100%);max-height:100%;overflow:auto;background:#fffdf5;border-radius:10px;
-    box-shadow:0 20px 50px -16px rgba(0,0,0,.7), inset 0 0 0 2px #e5dfc8;padding:0;animation:phMailIn .35s ease;}
-  @keyframes phMailIn{from{transform:translateY(-26px) rotate(1.4deg);opacity:0;}to{transform:translateY(0) rotate(0);opacity:1;}}
-  .ph-mail.out-ok{animation:phOutOk .4s ease forwards;}
-  .ph-mail.out-bad{animation:phOutBad .4s ease forwards;}
-  @keyframes phOutOk{to{transform:translateX(70%) rotate(5deg);opacity:0;}}
-  @keyframes phOutBad{to{transform:translateX(-70%) rotate(-5deg);opacity:0;}}
-  .ph-mh{padding:10px 14px 8px;border-bottom:2px dashed #e0d9bf;font-size:.78rem;font-weight:700;color:#4a5a68;}
-  .ph-mh .mh-row{display:flex;gap:7px;align-items:baseline;margin:2px 0;flex-wrap:wrap;}
-  .ph-mh .mh-k{flex:none;font-weight:800;color:#9a8f6b;width:30px;font-size:.7rem;}
-  .ph-mh .mh-from{font-weight:800;color:var(--ink);}
-  .ph-mh .mh-addr{font-weight:700;color:#64748b;background:#f4efdc;border-radius:6px;padding:1px 7px;cursor:default;}
-  .ph-mh .mh-addr.scan{cursor:pointer;outline:2px dashed transparent;}
-  .ph-mh .mh-addr.scan:hover{outline-color:var(--cc-brand);background:#e0f2fe;}
-  .ph-mh .mh-sub{font-weight:900;font-size:.9rem;color:var(--ink);}
-  .ph-mb{padding:12px 16px 14px;font-weight:600;font-size:.88rem;line-height:1.55;color:#33424f;}
-  .ph-mb p{margin:0 0 9px;}
-  .ph-mb .mlk{color:#1d4ed8;text-decoration:underline;cursor:pointer;font-weight:700;position:relative;}
-  .ph-att{display:inline-flex;align-items:center;gap:7px;border:2px solid #e0d9bf;background:#fbf7e8;border-radius:10px;
-    padding:6px 10px;font-weight:800;font-size:.76rem;color:var(--ink);margin:4px 6px 2px 0;}
-  .ph-att .pa-scan{border:none;background:var(--cc-brand);color:#fff;border-radius:7px;font-size:.64rem;font-weight:800;padding:3px 8px;cursor:pointer;}
-  .ph-att .pa-scan:hover{background:var(--cc-brand-d);}
-  .ph-att .pa-verdict{font-size:.66rem;font-weight:900;border-radius:6px;padding:2px 7px;}
-  .ph-att .pa-verdict.ok{background:#dcfce7;color:#15803d;}
-  .ph-att .pa-verdict.bad{background:#fee2e2;color:#b91c1c;animation:qshake .4s ease;}
-  .ph-linktip{position:fixed;z-index:460;background:#1f2a37;color:#fff;font-weight:800;font-size:.74rem;
-    border-radius:9px;padding:7px 11px;box-shadow:0 10px 26px rgba(0,0,0,.5);pointer-events:none;max-width:320px;}
-  .ph-linktip .lt-bad{color:#fca5a5;}
-  .ph-linktip .lt-ok{color:#86efac;}
-  /* zone à indices (loupe à fautes / détecteur) */
-  .ph-typo{border-radius:4px;}
-  .ph-typo.rev{background:#fee2e2;outline:2px solid #dc2626;color:#b91c1c;font-weight:800;}
-  /* tampon posé */
-  .ph-stampmark{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) rotate(-14deg) scale(2.4);
-    z-index:5;font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.6rem;letter-spacing:.08em;
-    padding:6px 18px;border:5px solid;border-radius:12px;opacity:0;pointer-events:none;animation:phStampK .38s ease forwards;}
-  .ph-stampmark.ok{color:#15803d;border-color:#15803d;background:rgba(220,252,231,.4);}
-  .ph-stampmark.bad{color:#b91c1c;border-color:#b91c1c;background:rgba(254,226,226,.4);}
-  @keyframes phStampK{0%{opacity:0;transform:translate(-50%,-50%) rotate(-14deg) scale(2.4);}
-    60%{opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(.94);}
-    100%{opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(1);}}
-  /* panneau latéral : outils + tampons */
-  .ph-side{flex:none;width:172px;display:flex;flex-direction:column;gap:8px;min-height:0;}
-  .ph-queue{flex:none;color:#cbd5e1;font-weight:800;font-size:.7rem;text-align:center;background:rgba(0,0,0,.25);border-radius:9px;padding:5px 8px;}
-  .ph-tools{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;}
-  .ph-toolbtn{display:flex;align-items:center;gap:8px;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);
-    color:#e2e8f0;font-weight:800;font-size:.7rem;border-radius:10px;padding:7px 9px;text-align:left;line-height:1.2;}
-  .ph-toolbtn .pt-ic2{font-size:1.15rem;flex:none;}
-  .ph-toolbtn.locked{opacity:.42;cursor:default;}
-  .ph-toolbtn.usable{cursor:pointer;}
-  .ph-toolbtn.usable:hover{border-color:#67e8f9;background:rgba(103,232,249,.14);}
-  .ph-toolbtn.active{border-color:#fde047;background:rgba(253,224,71,.16);color:#fde047;}
-  .ph-stamps{flex:none;display:flex;gap:8px;}
-  .ph-stamp{flex:1;border:none;border-radius:14px;padding:13px 6px 11px;color:#fff;cursor:pointer;
-    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:.8rem;line-height:1.15;
-    box-shadow:0 6px 0 rgba(0,0,0,.35);transition:transform .08s;}
+  /* ---- le bureau ---- */
+  .ph-desk{flex:1;min-height:0;display:flex;gap:10px;padding:8px 12px;}
+  /* ---- colonne du PHISHER : grand, et sa bulle SOUS lui ---- */
+  .ph-bosscol{flex:none;width:134px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:0;}
+  .ph-boss{flex:none;width:128px;height:138px;}
+  .ph-boss .phf{width:100%;height:100%;display:block;overflow:visible;transform-origin:50% 92%;animation:phIdle 3.4s ease-in-out infinite;}
+  @keyframes phIdle{0%,100%{transform:rotate(-2.5deg);}50%{transform:rotate(2.5deg) translateY(-3px);}}
+  .ph-boss .phf-rod{transform-origin:58px 92px;animation:phRod 4.2s ease-in-out infinite;}
+  @keyframes phRod{0%,100%{transform:rotate(-3deg);}50%{transform:rotate(5deg);}}
+  .ph-boss .phf-bait{animation:phBait 3s ease-in-out infinite;transform-origin:80px 57px;}
+  @keyframes phBait{0%,100%{transform:rotate(-8deg);}50%{transform:rotate(8deg);}}
+  .ph-boss .phf-pup{filter:drop-shadow(0 0 3px #ef4444);}
+  /* il lance sa ligne avant chaque envoi */
+  .ph-boss.cast .phf-rod{animation:phCast .55s ease-in-out;}
+  @keyframes phCast{0%{transform:rotate(-16deg);}45%{transform:rotate(-16deg);}100%{transform:rotate(34deg);}}
+  .ph-boss.cast .phf-bait{animation:phThrow .55s ease-in forwards;}
+  @keyframes phThrow{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(-40px,-30px) scale(.3);opacity:0;}}
+  .ph-boss.cast .phf{animation:phLean .55s ease-in-out;}
+  @keyframes phLean{0%,100%{transform:rotate(0);}50%{transform:rotate(-9deg) translateX(-4px);}}
+  .ph-boss.glee .phf{animation:phGlee .5s ease-in-out 3;}
+  @keyframes phGlee{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-6px) scale(1.07);}}
+  .ph-boss.glee .phf-mouth{transform:scaleY(-1);transform-origin:42px 51px;}
+  .ph-boss.glee .phf-pup{filter:drop-shadow(0 0 7px #f87171);}
+  .ph-boss.rage .phf{animation:phRage .12s linear 6;}
+  @keyframes phRage{0%,100%{transform:translateX(0);}25%{transform:translateX(-3px) rotate(-4deg);}75%{transform:translateX(3px) rotate(4deg);}}
+  .ph-boss.rage .phf-mask{fill:#fecaca;}
+  /* la bulle : sous lui, jamais par-dessus */
+  /* la bulle épouse la taille de son texte (pas une grande boîte fixe) */
+  .ph-bubble{flex:none;align-self:center;width:fit-content;max-width:100%;max-height:62%;opacity:0;transform:translateY(-6px);pointer-events:none;
+    background:#fff;color:#3b0764;border:3px solid #7c3aed;border-radius:14px 3px 14px 14px;
+    padding:8px 11px;font-weight:800;font-size:.78rem;line-height:1.35;overflow:auto;
+    box-shadow:0 10px 26px rgba(0,0,0,.45);transition:opacity .2s,transform .2s;}
+  .ph-bubble:empty{display:none;}
+  .ph-bubble.show{opacity:1;transform:none;}
+  .ph-bubble.glee{border-color:#dc2626;color:#7f1d1d;}
+  .ph-bubble.rage{border-color:#0891b2;color:#0e7490;}
+  /* ---- zone centrale : le mail, et ses tampons juste dessous ---- */
+  .ph-mailzone{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:10px;min-height:0;}
+  .ph-paper{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;perspective:900px;}
+  .ph-stamps{flex:none;display:flex;gap:16px;justify-content:center;}
+  .ph-stamp{border:none;border-radius:16px;padding:12px 30px;color:#fff;cursor:pointer;
+    font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.05rem;line-height:1.1;
+    display:flex;align-items:center;gap:10px;box-shadow:0 6px 0 rgba(0,0,0,.35);transition:transform .08s;}
   .ph-stamp:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.35);}
-  .ph-stamp .st-ic{display:block;font-size:1.5rem;margin-bottom:2px;}
+  .ph-stamp .st-ic{font-size:1.5rem;}
   .ph-stamp.ok{background:linear-gradient(#16a34a,#15803d);}
   .ph-stamp.bad{background:linear-gradient(#dc2626,#b91c1c);}
-  .ph-stamp:disabled{opacity:.5;cursor:default;}
-  /* verdict + explication */
-  .ph-verdict{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:8;width:min(480px,94%);
-    border-radius:13px;padding:10px 14px;font-weight:800;font-size:.82rem;line-height:1.4;color:#fff;
+  .ph-stamp:disabled{opacity:.45;cursor:default;}
+  /* ---- enveloppe : la lettre sort DEVANT ---- */
+  .ph-env{position:relative;width:min(290px,70%);aspect-ratio:16/10;animation:envIn .4s cubic-bezier(.2,.9,.3,1.5);}
+  @keyframes envIn{from{transform:translateY(-120px) rotate(-8deg) scale(.7);opacity:0;}to{transform:none;opacity:1;}}
+  .ph-env .env-body{position:absolute;inset:0;z-index:1;background:#e2d5b4;border-radius:9px;box-shadow:0 18px 40px -12px rgba(0,0,0,.6);}
+  .ph-env .env-letter{position:absolute;left:7%;right:7%;top:10%;height:78%;z-index:3;background:#fffdf5;border-radius:4px;
+    box-shadow:0 2px 10px rgba(0,0,0,.25);transition:transform .42s ease .06s;}
+  .ph-env .env-front{position:absolute;left:0;right:0;bottom:0;height:64%;z-index:4;background:#e8dcc0;border-radius:0 0 9px 9px;
+    clip-path:polygon(0 34%,50% 0,100% 34%,100% 100%,0 100%);}
+  .ph-env .env-flap{position:absolute;left:0;right:0;top:0;height:58%;z-index:5;background:#d3c19a;
+    clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top center;transition:transform .34s ease,z-index 0s .17s;}
+  .ph-env .env-seal{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);font-size:1.7rem;z-index:6;transition:opacity .2s;}
+  .ph-env.open .env-flap{transform:rotateX(179deg);z-index:2;}
+  .ph-env.open .env-letter{transform:translateY(-48%);}
+  .ph-env.open .env-seal{opacity:0;}
+  /* ---- la lettre ---- */
+  .ph-mail{position:relative;width:min(560px,100%);max-height:100%;overflow:auto;background:#fffdf5;border-radius:10px;
+    box-shadow:0 20px 50px -16px rgba(0,0,0,.7), inset 0 0 0 2px #e5dfc8;animation:phMailIn .34s ease;}
+  @keyframes phMailIn{from{transform:translateY(-16px) scaleY(.88);opacity:0;}to{transform:none;opacity:1;}}
+  .ph-mail.shout{box-shadow:0 20px 50px -16px rgba(0,0,0,.7), inset 0 0 0 3px #fca5a5;}
+  .ph-mail.out-ok{animation:phOutOk .42s ease forwards;}
+  .ph-mail.out-bad{animation:phOutBad .42s ease forwards;}
+  @keyframes phOutOk{to{transform:translateX(70%) rotate(6deg);opacity:0;}}
+  @keyframes phOutBad{to{transform:translateX(-70%) rotate(-6deg);opacity:0;}}
+  .ph-mh{padding:10px 15px 9px;border-bottom:2px dashed #e0d9bf;font-size:.82rem;font-weight:700;color:#4a5a68;}
+  .ph-mh .mh-row{display:flex;gap:8px;align-items:baseline;margin:3px 0;flex-wrap:wrap;}
+  .ph-mh .mh-k{flex:none;font-weight:800;color:#9a8f6b;width:42px;font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;}
+  .ph-mh .mh-from{font-weight:900;color:var(--ink);font-size:.94rem;}
+  .ph-mh .mh-date{color:#7b8794;font-weight:700;}
+  /* l'adresse reste NEUTRE : aucune couleur ne doit trahir le piège */
+  .ph-mh .mh-addr{font-weight:700;color:#475569;background:#f4efdc;border-radius:6px;padding:2px 8px;font-size:.82rem;}
+  .ph-mh .mh-addr.pop{animation:addrPop .45s ease;}
+  @keyframes addrPop{0%{transform:scale(.6);}60%{transform:scale(1.1);}100%{transform:scale(1);}}
+  .mh-reveal{border:2px dashed #94a3b8;background:#f1f5f9;color:#334155;border-radius:8px;padding:3px 10px;
+    font-family:inherit;font-weight:800;font-size:.78rem;cursor:pointer;}
+  .mh-reveal:hover{border-color:var(--cc-brand);background:#e0f2fe;color:var(--cc-brand-d);}
+  .ph-mh .mh-sub{font-weight:900;font-size:1rem;color:var(--ink);}
+  /* inspecter : gratuit, sans risque, et ça se voit */
+  .ph-mail .insp{cursor:help;border-radius:5px;transition:.12s;}
+  .ph-mail .insp:hover{background:#e0f2fe;box-shadow:0 0 0 2px #7dd3fc;}
+  .ph-mail .insp.seen{box-shadow:inset 0 -2px 0 #38bdf8;}
+  /* corps */
+  .ph-mb{padding:12px 16px 14px;font-weight:600;font-size:.95rem;line-height:1.62;color:#2f3d49;}
+  .ph-mb p{margin:0 0 10px;}
+  .ph-mb i{color:#5b6b78;}
+  .ph-mb .ph-sign{font-style:italic;color:#64748b;font-weight:700;margin-top:6px;display:inline-block;}
+  .ph-cta{margin-top:4px;}
+  /* deux formes distinctes : le BOUTON et le LIEN écrit en clair */
+  .mlk{cursor:pointer;}
+  .mlk-btn{display:inline-block;background:#1d4ed8;color:#fff;border-radius:9px;padding:8px 18px;
+    font-weight:800;font-size:.88rem;box-shadow:0 3px 0 #1e3a8a;}
+  .mlk-btn:hover{background:#2563eb;}
+  .mlk-url{color:#1d4ed8;text-decoration:underline;font-weight:700;word-break:break-all;}
+  .mlk-url:hover{color:#1e3a8a;background:#dbeafe;}
+  .ph-linktip{position:fixed;z-index:460;background:#1f2a37;color:#fff;font-weight:800;font-size:.8rem;
+    border-radius:9px;padding:8px 12px;box-shadow:0 10px 26px rgba(0,0,0,.5);pointer-events:none;max-width:330px;line-height:1.45;}
+  .ph-linktip .lt-real{color:#fcd34d;word-break:break-all;}
+  /* pièces jointes : cliquer, c'est ouvrir */
+  .ph-atts{display:flex;flex-wrap:wrap;gap:8px;}
+  .ph-att{display:inline-flex;align-items:center;gap:8px;border:2px solid #e0d9bf;background:#fbf7e8;border-radius:10px;
+    padding:7px 12px;font-weight:800;font-size:.84rem;color:var(--ink);cursor:pointer;transition:.12s;}
+  .ph-att:hover{border-color:#f59e0b;background:#fef9e7;transform:translateY(-1px);}
+  .ph-att .ac-size{color:#8a9aa8;font-weight:700;font-size:.72rem;}
+  .pa-verdict{font-size:.72rem;font-weight:900;border-radius:6px;padding:2px 8px;}
+  .pa-verdict.ok{background:#dcfce7;color:#15803d;}
+  .pa-verdict.bad{background:#fee2e2;color:#b91c1c;animation:qshake .4s ease;}
+  /* faute d'orthographe : vague rouge fine, comme un traitement de texte (pas de rouge vif) */
+  .ph-typo{text-decoration:underline wavy #dc2626;text-decoration-thickness:1px;text-underline-offset:2px;}
+  .ph-mtext{position:relative;}
+  /* étiquette de zone : cachée, révélée seulement en mode « pointe le problème » */
+  .pz-tag{display:none;}
+  /* mode pointage : le mail grisé, chaque partie devient une cible cliquable */
+  .ph-mail.pointing .ph-mb, .ph-mail.pointing .ph-mh{filter:grayscale(.7) opacity(.75);}
+  .ph-mail.pointing [data-zone]{filter:none;}
+  .ph-mail.pointing .mlk, .ph-mail.pointing .ph-att{pointer-events:none;}
+  .ph-mail .pt-zone{position:relative;cursor:pointer;outline:2px dashed #a855f7;outline-offset:2px;border-radius:7px;
+    background:rgba(168,85,247,.06);transition:.12s;}
+  .ph-mail .pt-zone:hover{background:rgba(168,85,247,.18);outline-color:#7c3aed;outline-style:solid;}
+  .ph-mail .pt-zone .pz-tag{display:inline-block;position:absolute;top:-9px;left:8px;z-index:3;
+    background:#7c3aed;color:#fff;font-size:.6rem;font-weight:900;border-radius:5px;padding:1px 6px;letter-spacing:.02em;}
+  .ph-mail .pt-zone.pt-good{outline:3px solid #16a34a!important;background:rgba(22,163,74,.16)!important;}
+  .ph-mail .pt-zone.pt-bad{outline:3px solid #dc2626!important;background:rgba(220,38,38,.16)!important;animation:qshake .35s ease;}
+  .ph-pointbar{position:absolute;left:50%;top:-2px;transform:translateX(-50%);z-index:12;white-space:nowrap;
+    background:#7c3aed;color:#fff;font-weight:800;font-size:.82rem;border-radius:0 0 11px 11px;padding:6px 16px;
+    box-shadow:0 8px 20px rgba(0,0,0,.4);animation:notifIn .25s ease;}
+  /* ---- le scan d'adresse : la loupe passe, PUIS le verdict ---- */
+  .scan-band{position:absolute;z-index:9;border-radius:6px;background:rgba(56,189,248,.22);
+    box-shadow:0 0 0 2px #0ea5e9 inset;pointer-events:none;animation:scanGlow .5s ease-in-out infinite alternate;}
+  @keyframes scanGlow{from{background:rgba(56,189,248,.12);}to{background:rgba(56,189,248,.3);}}
+  .scan-lens{position:absolute;z-index:10;font-size:1.5rem;pointer-events:none;animation:scanRun 1s ease-in-out;}
+  @keyframes scanRun{0%{transform:translateX(0) rotate(-12deg);}100%{transform:translateX(var(--dx)) rotate(12deg);}}
+  .mh-addr.scanning{background:#e0f2fe;}
+  .scan-pop{position:absolute;z-index:11;width:250px;background:#0f172a;color:#e2e8f0;border:2px solid #334155;
+    border-left:6px solid #64748b;border-radius:11px;padding:9px 12px;font-weight:700;font-size:.8rem;line-height:1.5;
+    box-shadow:0 14px 32px rgba(0,0,0,.55);animation:notifIn .25s ease;}
+  .scan-pop.ok{border-left-color:#22c55e;} .scan-pop.warn{border-left-color:#f59e0b;}
+  .scan-pop .sp-x{color:#fca5a5;font-weight:900;} .scan-pop .sp-o{color:#86efac;} .scan-pop .sp-n{color:#94a3b8;}
+  /* ---- tampon posé ---- */
+  .ph-stampmark{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-13deg);
+    z-index:12;display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:8px 20px;border:5px solid;border-radius:12px;opacity:0;pointer-events:none;animation:phStampK .38s ease forwards;max-width:92%;}
+  .ph-stampmark .sm-t{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.4rem;letter-spacing:.08em;line-height:1;text-align:center;}
+  .ph-stampmark .sm-w{font-weight:800;font-size:.74rem;text-align:center;line-height:1.25;}
+  .ph-stampmark.ok{color:#15803d;border-color:#15803d;background:rgba(220,252,231,.88);}
+  .ph-stampmark.bad{color:#b91c1c;border-color:#b91c1c;background:rgba(254,226,226,.88);}
+  .ph-stampmark.boom{animation:phBoom .45s ease forwards;}
+  @keyframes phStampK{0%{opacity:0;transform:translate(-50%,-50%) rotate(-13deg) scale(2.4);}
+    60%{opacity:1;transform:translate(-50%,-50%) rotate(-13deg) scale(.94);}
+    100%{opacity:1;transform:translate(-50%,-50%) rotate(-13deg) scale(1);}}
+  @keyframes phBoom{0%{opacity:0;transform:translate(-50%,-50%) rotate(0) scale(.2);}
+    55%{opacity:1;transform:translate(-50%,-50%) rotate(-4deg) scale(1.18);}
+    100%{opacity:1;transform:translate(-50%,-50%) rotate(-13deg) scale(1);}}
+  /* ---- indice dévoilé ---- */
+  .clue-pop{position:relative;outline:3px solid #f59e0b;outline-offset:3px;border-radius:6px;animation:cluePulse 1.1s ease 2;}
+  @keyframes cluePulse{0%,100%{outline-color:#f59e0b;}50%{outline-color:#fde047;}}
+  .clue-tag{display:inline-block;margin-left:8px;background:#b45309;color:#fff;border-radius:6px;
+    padding:2px 8px;font-size:.7rem;font-weight:900;animation:notifIn .3s ease;vertical-align:middle;}
+  .clue-tag.ok{background:#15803d;}
+  .clue-real{display:inline-block;background:#7f1d1d;color:#fecaca;border-radius:6px;padding:2px 8px;
+    font-size:.74rem;font-weight:800;word-break:break-all;animation:notifIn .3s ease;}
+  .ph-contra{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:11;background:#b45309;color:#fff;
+    border-radius:10px;padding:6px 14px;font-weight:900;font-size:.88rem;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:notifIn .28s ease;}
+  /* ---- colonne des outils ---- */
+  .ph-side{flex:none;width:190px;display:flex;flex-direction:column;gap:8px;min-height:0;}
+  .ph-queue{flex:none;color:#cbd5e1;font-weight:800;font-size:.78rem;text-align:center;background:rgba(0,0,0,.25);border-radius:9px;padding:6px 8px;}
+  .ph-tools{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;}
+  .ph-toolbtn{display:flex;align-items:center;gap:8px;border:2px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);
+    color:#e2e8f0;font-family:inherit;font-weight:800;font-size:.8rem;border-radius:10px;padding:8px 9px;text-align:left;line-height:1.25;}
+  .ph-toolbtn .pt-ic{font-size:1.2rem;flex:none;}
+  .ph-toolbtn.locked{opacity:.4;cursor:default;}
+  .ph-toolbtn.spent{opacity:.5;cursor:default;}
+  .ph-toolbtn.on,.ph-toolbtn.act{cursor:pointer;}
+  .ph-toolbtn.on{border-color:#fde047;background:rgba(253,224,71,.14);color:#fde047;}
+  .ph-toolbtn.act{border-color:#67e8f9;background:rgba(103,232,249,.12);color:#a5f3fc;}
+  .ph-toolbtn.on:hover,.ph-toolbtn.act:hover{filter:brightness(1.25);}
+  .ph-duelhint{color:#cbd5e1;font-weight:700;font-size:.8rem;line-height:1.5;background:rgba(0,0,0,.25);border-radius:10px;padding:10px;}
+  /* ---- verdict, bulles d'outils ---- */
+  .ph-verdict{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:16;width:min(600px,94%);
+    border-radius:13px;padding:10px 15px;font-weight:800;font-size:.88rem;line-height:1.45;color:#fff;
     box-shadow:0 14px 34px rgba(0,0,0,.5);animation:notifIn .25s ease;}
   .ph-verdict.good{background:linear-gradient(100deg,#15803d,#16a34a);}
   .ph-verdict.bad{background:linear-gradient(100deg,#b91c1c,#dc2626);}
-  .ph-verdict .pv-clue{display:block;font-weight:700;font-size:.76rem;margin-top:3px;color:rgba(255,255,255,.92);}
-  /* bulle du PHISHER */
-  .ph-taunt{position:absolute;top:8px;right:10px;z-index:9;max-width:250px;background:#fff;color:#3b0764;
-    border:3px solid #7c3aed;border-radius:14px 14px 3px 14px;padding:8px 12px;font-weight:800;font-size:.76rem;
-    box-shadow:0 12px 30px rgba(0,0,0,.45);animation:notifIn .3s ease;}
-  /* boutique entre les vagues */
+  .ph-verdict.soft{background:linear-gradient(100deg,#b45309,#d97706);}
+  .ph-verdict .pv-clue{display:block;font-weight:700;font-size:.82rem;margin-top:4px;color:rgba(255,255,255,.94);}
+  .ph-verdict .pv-b{font-weight:700;font-size:.74rem;background:rgba(255,255,255,.2);border-radius:6px;padding:1px 7px;}
+  .ph-info{position:absolute;top:8px;right:10px;z-index:15;max-width:330px;background:#0f172a;color:#e2e8f0;
+    border:2px solid #334155;border-left:6px solid #64748b;border-radius:12px;padding:9px 13px;font-weight:700;font-size:.82rem;
+    line-height:1.45;box-shadow:0 12px 30px rgba(0,0,0,.5);animation:notifIn .28s ease;}
+  .ph-info.ok{border-left-color:#22c55e;}
+  .ph-info.warn{border-left-color:#f59e0b;}
+  .ph-info .pi-cost{display:block;font-size:.72rem;color:#94a3b8;margin-top:4px;}
+  .url-x{display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin:7px 0;font-family:ui-monospace,monospace;font-size:.8rem;}
+  .url-x i{color:#64748b;font-style:normal;}
+  .url-x .u-sub{background:#334155;color:#cbd5e1;border-radius:4px;padding:1px 6px;}
+  .url-x .u-dom{background:#fde047;color:#422006;border-radius:4px;padding:1px 6px;font-weight:900;}
+  .url-x .u-path{color:#94a3b8;word-break:break-all;}
+  .url-v{font-size:.8rem;border-radius:7px;padding:5px 9px;}
+  .url-v.ok{background:rgba(34,197,94,.18);color:#86efac;}
+  .url-v.bad{background:rgba(239,68,68,.18);color:#fca5a5;}
+  /* ---- Registre / vérifier autrement ---- */
+  .ph-panel{position:absolute;inset:0;z-index:22;display:flex;align-items:center;justify-content:center;
+    background:rgba(2,6,23,.86);padding:16px;animation:modalIn .25s ease;}
+  .pp-card{width:min(460px,100%);max-height:100%;overflow:auto;background:#0f172a;border:2px solid #334155;border-radius:16px;
+    padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 24px 60px rgba(0,0,0,.6);text-align:center;}
+  .pp-head{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.25rem;color:#fff;}
+  .pp-s{font-weight:700;font-size:.88rem;color:#cbd5e1;margin:0;}
+  .pp-none{font-weight:700;font-size:.88rem;color:#cbd5e1;line-height:1.55;text-align:left;background:rgba(255,255,255,.05);border-radius:11px;padding:11px 13px;}
+  .pp-fiche{text-align:left;background:rgba(255,255,255,.06);border-radius:12px;padding:11px 13px;display:flex;flex-direction:column;gap:6px;}
+  .pf-n{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.15rem;color:#fff;}
+  .pf-r{font-weight:700;font-size:.8rem;color:#94a3b8;margin-top:-4px;}
+  .pf-l,.pf-cmp{display:flex;flex-direction:column;background:rgba(0,0,0,.28);border-radius:9px;padding:7px 10px;}
+  .pf-l span,.pf-cmp span{font-weight:700;font-size:.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.03em;}
+  .pf-l b,.pf-cmp b{font-weight:800;font-size:.88rem;color:#e2e8f0;word-break:break-all;}
+  .pf-cmp em{font-style:normal;font-weight:800;font-size:.78rem;margin-top:3px;}
+  .pf-cmp.ok{box-shadow:inset 0 0 0 2px #16a34a;} .pf-cmp.ok em{color:#86efac;}
+  .pf-cmp.bad{box-shadow:inset 0 0 0 2px #dc2626;} .pf-cmp.bad em{color:#fca5a5;}
+  .pp-opts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  .pp-o{display:flex;flex-direction:column;gap:5px;width:200px;border:2px solid rgba(255,255,255,.22);
+    background:rgba(255,255,255,.08);border-radius:13px;padding:11px;color:#e2e8f0;font-family:inherit;
+    font-weight:800;font-size:.86rem;text-align:left;cursor:pointer;}
+  .pp-o span{font-weight:700;font-size:.74rem;color:#cbd5e1;line-height:1.35;}
+  .pp-o:hover{border-color:#67e8f9;background:rgba(103,232,249,.14);}
+  .ph-panel.wait .pp-o{opacity:.55;pointer-events:none;}
+  .pp-x{border:none;background:rgba(255,255,255,.14);color:#e2e8f0;border-radius:10px;
+    padding:8px 18px;font-family:inherit;font-weight:800;font-size:.84rem;cursor:pointer;align-self:center;}
+  /* ---- tutoriel JOUÉ ---- */
+  .ph-tutocard{position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    background:radial-gradient(circle at center,rgba(76,29,149,.93),rgba(2,6,23,.96));color:#fff;text-align:center;padding:12px;overflow:auto;animation:modalIn .3s ease;}
+  .ph-tutocard .wc-ic{font-size:2.2rem;line-height:1;animation:phIdle 2.2s ease-in-out infinite;}
+  .ph-tutocard .wc-t{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:800;font-size:1.4rem;line-height:1.15;}
+  .ph-tutocard .wc-s.tag{font-weight:800;font-size:.92rem;color:#fcd34d;max-width:540px;}
+  .ph-tutocard .wc-list{list-style:none;margin:4px 0 2px;padding:0;display:flex;flex-direction:column;gap:5px;width:min(600px,98%);}
+  .ph-tutocard .wc-list .wc-s{display:block;background:rgba(255,255,255,.1);border-left:5px solid #a78bfa;border-radius:9px;
+    padding:7px 12px;font-weight:700;font-size:.92rem;line-height:1.4;color:#f1f5f9;text-align:left;}
+  .ph-demo{width:min(600px,98%);background:rgba(0,0,0,.3);border:2px solid rgba(167,139,250,.5);border-radius:13px;
+    padding:10px 12px;display:flex;flex-direction:column;gap:8px;align-items:center;}
+  .ph-demo.done{border-color:#4ade80;background:rgba(22,163,74,.18);}
+  .dm-hint{font-weight:800;font-size:.94rem;color:#fde047;line-height:1.35;}
+  .dm-hint.ok{color:#86efac;} .dm-hint.miss{color:#fca5a5;}
+  .dm-hint.ready{animation:gPulse .9s ease-in-out infinite;}
+  .dm-demo2{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
+  /* mini-mail des tutoriels : un vrai courrier, en petit */
+  .dm-card{width:min(440px,98%);background:#fffdf5;color:#2f3d49;border-radius:11px;text-align:left;
+    box-shadow:0 12px 30px -12px rgba(0,0,0,.6), inset 0 0 0 2px #e5dfc8;overflow:hidden;animation:phMailIn .3s ease;}
+  .dm-card.loud{box-shadow:0 12px 30px -12px rgba(0,0,0,.6), inset 0 0 0 2px #fca5a5;}
+  .dm-ch{padding:8px 12px 4px;font-weight:900;font-size:.9rem;color:var(--ink);}
+  .dm-cs{padding:0 12px 6px;font-weight:900;font-size:.86rem;color:var(--ink);border-bottom:2px dashed #e0d9bf;}
+  .dm-cb{padding:9px 13px 11px;font-weight:600;font-size:.9rem;line-height:1.55;}
+  .dm-cb p{margin:0 0 6px;}
+  .dm-sig{padding:0 13px 10px;font-style:italic;font-weight:700;color:#64748b;font-size:.86rem;}
+  .dm-card .hl{background:#fee2e2;color:#b91c1c;border-radius:4px;padding:0 3px;font-weight:800;box-shadow:0 0 0 1px #fca5a5;}
+  .dm-notes{display:flex;flex-direction:column;gap:5px;width:min(460px,98%);}
+  .dm-note{background:rgba(220,38,38,.16);border-left:4px solid #ef4444;border-radius:8px;padding:6px 11px;
+    color:#fecaca;font-weight:700;font-size:.82rem;line-height:1.35;animation:notifIn .35s ease both;}
+  .dm-note:nth-child(2){animation-delay:.8s;} .dm-note:nth-child(3){animation-delay:1.6s;}
+  .dm-att{display:inline-flex;align-items:center;gap:8px;border:2px solid #e0d9bf;background:#fbf7e8;border-radius:9px;
+    padding:6px 10px;font-weight:800;font-size:.84rem;color:var(--ink);cursor:pointer;}
+  .dm-att .ac-size{color:#8a9aa8;font-weight:700;font-size:.72rem;}
+  .dm-stamps{display:flex;gap:14px;justify-content:center;}
+  .dm-stamp{border:none;border-radius:13px;padding:10px 22px;color:#fff;cursor:pointer;font-family:"Fredoka","Fluent Emoji",sans-serif;
+    font-weight:700;font-size:.96rem;box-shadow:0 5px 0 rgba(0,0,0,.35);}
+  .dm-stamp.ok{background:linear-gradient(#16a34a,#15803d);} .dm-stamp.bad{background:linear-gradient(#dc2626,#b91c1c);}
+  .dm-stamp:disabled{opacity:.4;cursor:default;} .dm-stamp.ready{animation:gPulse .8s ease-in-out infinite;}
+  .dm-from{border:2px dashed #94a3b8;background:#f1f5f9;color:#334155;border-radius:7px;padding:3px 10px;
+    font-family:inherit;font-weight:900;font-size:.9rem;cursor:pointer;}
+  .dm-from:hover{border-color:#0891b2;background:#e0f2fe;}
+  .dm-addr{background:#f4efdc;border-radius:6px;padding:2px 8px;font-weight:700;color:#475569;margin-left:6px;}
+  .dm-addr.pop{animation:addrPop .45s ease;}
+  .dm-tip{display:inline-block;margin-top:6px;background:#1f2a37;color:#fcd34d;border-radius:8px;padding:6px 11px;font-weight:800;font-size:.82rem;}
+  .dm-reg{margin:8px 12px;border:2px solid #7c3aed;background:#f5f0ff;color:#5b21b6;border-radius:10px;padding:8px 16px;
+    font-family:inherit;font-weight:800;font-size:.86rem;cursor:pointer;}
+  .dm-fiche{margin:0 12px 10px;background:#0f172a;color:#e2e8f0;border:2px solid #334155;border-radius:10px;padding:9px 12px;
+    font-weight:700;font-size:.82rem;line-height:1.5;text-align:left;animation:notifIn .25s ease;}
+  /* pointage dans le tutoriel */
+  .dm-card.pointing .dm-ch, .dm-card.pointing .dm-cs, .dm-card.pointing .dm-cb, .dm-card.pointing .dm-sig{filter:grayscale(.6) opacity(.7);}
+  .dm-card .pt-zone{position:relative;filter:none!important;cursor:pointer;outline:2px dashed #a855f7;outline-offset:-1px;
+    background:rgba(168,85,247,.08);transition:.12s;}
+  .dm-card .pt-zone:hover{background:rgba(168,85,247,.2);outline-style:solid;}
+  .dm-card .pt-zone .pz-tag{display:inline-block;margin-right:6px;background:#7c3aed;color:#fff;font-size:.6rem;font-weight:900;border-radius:5px;padding:1px 6px;}
+  .dm-card .pt-zone.pt-good{outline:3px solid #16a34a;background:rgba(22,163,74,.18);}
+  .dm-card .pt-zone.pt-bad{outline:3px solid #dc2626;background:rgba(220,38,38,.16);animation:qshake .35s ease;}
+  /* duel du tutoriel */
+  .dm-duelpair{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(520px,98%);}
+  .dm-duel{position:relative;background:#fffdf5;color:#2f3d49;border-radius:10px;padding:9px 11px;cursor:pointer;
+    font-weight:600;font-size:.82rem;line-height:1.4;box-shadow:inset 0 0 0 2px #e5dfc8;overflow:hidden;}
+  .dm-duel .dm-ch{padding:0 0 4px;font-size:.84rem;}
+  .dm-duel:hover{box-shadow:inset 0 0 0 2px #16a34a;}
+  .dm-duel .dm-mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;
+    background:rgba(22,163,74,.18);color:#15803d;font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1rem;
+    transform:rotate(-8deg);transition:opacity .12s;}
+  .dm-duel:hover .dm-mark{opacity:1;}
+  .dm-duel.is-ok{box-shadow:inset 0 0 0 3px #16a34a;} .dm-duel.is-bad{box-shadow:inset 0 0 0 3px #dc2626;}
+  /* ---- rapport ---- */
+  .ph-report{position:absolute;inset:0;z-index:24;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at center,rgba(12,74,110,.92),rgba(2,6,23,.96));padding:14px;overflow:auto;animation:modalIn .3s ease;}
+  .rp-card{width:min(640px,100%);background:#0f172a;border:2px solid #334155;border-radius:16px;padding:14px 16px;
+    display:flex;flex-direction:column;gap:10px;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+  .rp-h{display:flex;align-items:center;gap:11px;color:#fff;}
+  .rp-h .rp-ic{font-size:2rem;}
+  .rp-h .rp-t{display:block;font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.25rem;}
+  .rp-h .rp-s{display:block;font-weight:700;font-size:.78rem;color:#94a3b8;}
+  .rp-h .rp-score{margin-left:auto;font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.5rem;border-radius:12px;padding:4px 14px;}
+  .rp-score.a{background:rgba(34,197,94,.2);color:#4ade80;}
+  .rp-score.b{background:rgba(250,204,21,.2);color:#fde047;}
+  .rp-score.c{background:rgba(239,68,68,.2);color:#fca5a5;}
+  .rp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .rp-b{background:rgba(255,255,255,.06);border-radius:11px;padding:8px 6px;text-align:center;}
+  .rp-b .rb-n{display:block;font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.4rem;color:#e2e8f0;line-height:1.1;}
+  .rp-b .rb-k{display:block;font-weight:700;font-size:.68rem;color:#94a3b8;}
+  .rp-b.good .rb-n{color:#4ade80;} .rp-b.bad .rb-n{color:#fca5a5;} .rp-b.cred .rb-n{color:#fde047;}
+  .rp-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .rp-col{background:rgba(255,255,255,.05);border-radius:11px;padding:9px 10px;display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start;}
+  .rp-col .rc-t{width:100%;font-weight:900;font-size:.78rem;color:#e2e8f0;margin-bottom:2px;}
+  .rc-chip{font-weight:800;font-size:.72rem;border-radius:7px;padding:3px 8px;}
+  .rc-chip.ok{background:rgba(34,197,94,.18);color:#86efac;}
+  .rc-chip.bad{background:rgba(239,68,68,.18);color:#fca5a5;}
+  .rc-none{font-weight:700;font-size:.74rem;color:#94a3b8;line-height:1.4;}
+  .rp-tools{font-weight:700;font-size:.78rem;color:#94a3b8;text-align:center;}
+  /* ---- boutique ---- */
   .ph-shop{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:10px;background:radial-gradient(circle at center,rgba(59,7,100,.88),rgba(2,6,23,.94));padding:16px;overflow:auto;}
+    gap:9px;background:radial-gradient(circle at center,rgba(59,7,100,.92),rgba(2,6,23,.96));padding:14px;overflow:auto;}
   .ph-shop .sh-t{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.4rem;color:#fff;}
-  .ph-shop .sh-s{font-weight:800;font-size:.84rem;color:#fde047;}
-  .ph-shop .sh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px;width:min(640px,96%);}
-  .sh-card{border:2px solid rgba(255,255,255,.22);background:rgba(255,255,255,.07);border-radius:13px;padding:10px 12px;
-    color:#e2e8f0;text-align:left;cursor:pointer;transition:.12s;font-family:inherit;}
+  .ph-shop .sh-s{font-weight:800;font-size:.88rem;color:#fde047;}
+  .ph-shop .sh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px;width:min(860px,98%);}
+  .ph-shop .sh-none{color:#cbd5e1;font-weight:700;font-size:.88rem;text-align:center;grid-column:1/-1;}
+  .sh-card{border:2px solid rgba(255,255,255,.22);background:rgba(255,255,255,.07);border-radius:13px;padding:9px 11px;
+    color:#e2e8f0;text-align:left;cursor:pointer;transition:.12s;font-family:inherit;display:flex;flex-direction:column;gap:3px;}
   .sh-card:hover:not(.off):not(.owned){border-color:#67e8f9;background:rgba(103,232,249,.12);transform:translateY(-2px);}
-  .sh-card .shc-h{display:flex;align-items:center;gap:8px;font-weight:800;font-size:.84rem;color:#fff;}
+  .sh-card .shc-h{display:flex;align-items:center;gap:8px;font-weight:800;font-size:.88rem;color:#fff;}
   .sh-card .shc-ic{font-size:1.35rem;}
-  .sh-card .shc-d{font-weight:700;font-size:.7rem;color:#cbd5e1;margin:5px 0;line-height:1.35;}
-  .sh-card .shc-new{display:inline-block;font-weight:800;font-size:.62rem;color:#fbbf24;background:rgba(251,191,36,.14);border-radius:6px;padding:2px 7px;margin-bottom:4px;}
-  .sh-card .shc-p{font-weight:900;font-size:.8rem;color:#fde047;}
+  .sh-card .shc-d{font-weight:700;font-size:.76rem;color:#cbd5e1;line-height:1.4;}
+  .sh-card .shc-w{font-weight:700;font-size:.7rem;color:#fbbf24;line-height:1.35;}
+  .sh-card .shc-new{display:inline-block;font-weight:800;font-size:.66rem;color:#fbbf24;background:rgba(251,191,36,.14);border-radius:6px;padding:2px 7px;align-self:flex-start;}
+  .sh-card .shc-p{font-weight:900;font-size:.8rem;color:#fde047;margin-top:2px;}
   .sh-card.off{opacity:.5;cursor:default;}
   .sh-card.owned{border-color:#4ade80;cursor:default;}
   .sh-card.owned .shc-p{color:#4ade80;}
   .sh-go{border:none;border-radius:13px;background:var(--red);color:#fff;font-family:"Fredoka","Fluent Emoji",sans-serif;
-    font-weight:700;font-size:1.05rem;padding:12px 30px;box-shadow:0 6px 0 rgba(0,0,0,.3);margin-top:6px;}
+    font-weight:700;font-size:1.05rem;padding:11px 30px;box-shadow:0 6px 0 rgba(0,0,0,.3);margin-top:4px;cursor:pointer;flex:none;}
   .sh-go:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.3);}
-  /* carte d'annonce de vague */
-  .ph-wavecard{position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-    background:radial-gradient(circle at center,rgba(127,29,29,.8),rgba(2,6,23,.9));color:#fff;text-align:center;padding:20px;animation:modalIn .3s ease;}
-  .ph-wavecard .wc-ic{font-size:3rem;line-height:1;animation:phIdle 2s ease-in-out infinite;}
-  .ph-wavecard .wc-t{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:800;font-size:1.5rem;}
-  .ph-wavecard .wc-s{font-weight:700;font-size:.92rem;color:#fecaca;max-width:440px;line-height:1.4;}
+  /* ---- duel ---- */
+  .ph-duel{width:100%;height:100%;display:flex;flex-direction:column;gap:8px;min-height:0;}
+  .dl-head{flex:none;text-align:center;color:#fff;font-weight:800;font-size:.95rem;background:rgba(0,0,0,.3);border-radius:10px;padding:6px 10px;}
+  .dl-pair{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  /* on clique le mail entier pour le déclarer sûr ; filigrane au survol */
+  .dl-mail{position:relative;min-height:0;display:flex;flex-direction:column;gap:7px;cursor:pointer;animation:phMailIn .34s ease;}
+  .dl-mail .dl-body{flex:1;min-height:0;overflow:auto;background:#fffdf5;border-radius:10px;box-shadow:0 14px 34px -14px rgba(0,0,0,.7), inset 0 0 0 2px #e5dfc8;transition:box-shadow .12s;}
+  .dl-mail:hover .dl-body{box-shadow:0 14px 34px -14px rgba(0,0,0,.7), inset 0 0 0 3px #16a34a;}
+  .dl-mail .ph-mb{font-size:.88rem;padding:10px 13px 12px;}
+  .dl-mail .ph-mh{padding:9px 13px 7px;}
+  .dl-mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;
+    background:rgba(22,163,74,.14);color:#15803d;font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.5rem;
+    transform:rotate(-9deg);border-radius:10px;transition:opacity .12s;z-index:3;text-shadow:0 2px 8px rgba(255,255,255,.9);}
+  .dl-mail:hover .dl-mark{opacity:1;}
+  .dl-mail.is-bad{cursor:default;} .dl-mail.is-ok{cursor:default;}
+  .dl-mail.is-bad .dl-mark, .dl-mail.is-ok .dl-mark{opacity:0!important;}
+  .dl-mail.is-bad .dl-body{outline:4px solid #dc2626;outline-offset:2px;}
+  .dl-mail.is-ok .dl-body{outline:4px solid #16a34a;outline-offset:2px;}
+  .dl-diffs{display:flex;flex-direction:column;gap:4px;margin-top:5px;}
+  .dl-diffs .dl-d{display:block;background:rgba(0,0,0,.25);border-radius:7px;padding:4px 9px;font-weight:700;font-size:.78rem;line-height:1.4;}
+  @media (max-width:900px){ .ph-bosscol{width:96px;} .ph-boss{width:92px;height:100px;} .ph-side{width:160px;} }
+  @media (max-width:760px){ .dl-pair{grid-template-columns:1fr;} }
   /* mail à indices (entraînement N9M1) */
   .det-mail{max-width:560px;width:100%;text-align:left;background:#fffdf5;border:2px solid #e0d9bf;border-radius:14px;padding:14px 18px;font-size:.9rem;line-height:1.6;font-weight:600;color:#33424f;}
   .det-mail .dm-h{font-weight:700;font-size:.78rem;color:#5a6b7b;border-bottom:1px solid #e0d9bf;padding-bottom:8px;margin-bottom:10px;}
@@ -842,7 +1115,9 @@
   "win_review": "Bien joué ! Tu as refait cette mission. On revient à ta mission en cours, ta progression est gardée.",
   "win_mission": "Mission réussie ! Nickel, facteur. Mission suivante !",
   "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau niveau s'ouvre à toi.",
-  "boss_win": "Le Phisher est à la corbeille ! Boss final vaincu. Retiens ses ruses pour la vraie vie : adresse louche, urgence, cadeau, argent, mot de passe demandé : poubelle !",
+  "boss_win": "Le Phisher est à la corbeille ! Boss final vaincu. Dans la vraie vie, garde l'ordre : observer, vérifier, croiser les indices, demander de l'aide en cas de doute, et seulement après, décider.",
+  "boss_lost_net": "Le Phisher est entré dans la boîte ! Trop de mails piégés sont passés. La jauge sécurité du réseau est vide. Avant de tamponner légitime, vérifie l'adresse, le lien, la pièce jointe et la demande.",
+  "boss_lost_trust": "Tu bloques tout, même les vrais messages. Trop de messages utiles ont été jetés, et la jauge confiance est vide. Un expéditeur inconnu ou nouveau n'est pas forcément un menteur : cherche une vraie raison de te méfier.",
   "course_finish": "Facteur d'or ! Neuf niveaux, et LE PHISHER est à la corbeille. Plus aucun mail n'a de secret pour toi !",
   "hint_game_fallback": "Suis la consigne affichée sur l'écran !",
   "fault_major": "Attention, fausse manœuvre. Personne ne t'a demandé de faire ça. Relis bien l'objectif en cours : on remet la boîte en ordre et on repart du début.",
@@ -4031,16 +4306,16 @@ const LEVELS=[
     teach:'Sa technique, le <b>hameçonnage</b> : des mails déguisés (faux colis, faux gains, fausse gendarmerie…) pour te faire cliquer. Tes armes : lire l\'<b>adresse de l\'expéditeur</b>, te méfier de l\'<b>urgence</b> et des <b>cadeaux</b>, et ne JAMAIS donner un <b>mot de passe</b> par mail.',
     tools:[{g:'🧐',n:'Lis l\'adresse lettre par lettre'},{g:'⏰',n:'« Vite ! Urgent ! » = piège'},{g:'🎁',n:'Cadeau surprise = piège'},{g:'🔑',n:'Mot de passe demandé = piège, toujours'}] },
   rounds:[
-    {kind:'game',label:'Mission 1',emoji:'🧐',title:'L\'collège du soupçon',
+    {kind:'game',label:'Mission 1',emoji:'🧐',title:'Le collège du soupçon',
       intro:'Entraînement d\'inspecteur : 3 mails piégés. Trouve les 3 indices louches cachés dans chacun !',
       goal:'Clique les 3 indices louches de chaque mail !',
       hint:'Regarde : l\'adresse de l\'expéditeur, les demandes bizarres (argent, mot de passe), l\'urgence et les cadeaux.',
       seed:{},
       run:function(done){ soupconRun(done); }},
     {kind:'game',exam:true,mode:'boss',label:'BOSS FINAL',emoji:'🎣',title:'LE PHISHER',
-      intro:'Le bureau de contrôle est à toi : tamponne chaque mail LÉGITIME ✅ ou INDÉSIRABLE 🚫. Gagne des crédits, achète des outils… et démasque toutes ses ruses !',
-      goal:'Tamponne juste, survis aux 4 manches !',
-      hint:'Adresse sosie, urgence, cadeau, argent, mot de passe = INDÉSIRABLE. Un mail normal et poli = LÉGITIME. Tes outils 🔬🔗🔤🕵️ révèlent les pièges cachés.',
+      intro:'Le bureau de contrôle est à toi : tamponne chaque mail LÉGITIME ✅ ou INDÉSIRABLE 🚫. Sept phases, de plus en plus rusées. Gagne des crédits, achète des outils… et démasque toutes ses ruses !',
+      goal:'Traverse les 7 phases sans vider tes deux jauges !',
+      hint:'Inspecter l\'expéditeur, la date, l\'objet et la signature ne coûte rien. Mais cliquer un bouton ou ouvrir une pièce jointe, c\'est déjà agir : on vérifie AVANT. Bloquer un vrai message est une erreur, tout autant que laisser passer un piège.',
       seed:{},
       run:function(){ phisherRun(); }}
   ]}
@@ -4100,570 +4375,1685 @@ function soupconRun(done){
 
 /* ---------------------------------------------------------
    14. BOSS FINAL — LE PHISHER (façon Papers, Please)
+
+   7 phases. Chaque phase s'ouvre sur un tutoriel qu'il faut
+   RÉUSSIR : l'élève exécute une fois le geste nouveau, et la
+   phase démarre toute seule.
+
+   Les mails sont fabriqués (identité × gabarit × variables ×
+   pièges) : jamais deux fois le même corps dans une partie.
+
+   Deux verbes, et c'est toute la leçon :
+     INSPECTER (expéditeur, objet, date, signature) = gratuit et sans risque
+     AGIR      (bouton, lien, pièce jointe)         = dangereux avant vérification
    --------------------------------------------------------- */
 const PH={};
-const PH_TOOLS=[
-  {id:'scan', ic:'🔬', name:'Scanner de PJ', price:30,
-    desc:'Un bouton « Scanner » apparaît sur chaque pièce jointe : saine ou piégée ?',
-    unlock:'LE PHISHER sort ses PJ piégées… que toi seul sais scanner !'},
-  {id:'link', ic:'🔗', name:'Vérif-Liens', price:35,
-    desc:'Survole un lien : sa VRAIE destination s\'affiche. Les liens menteurs n\'ont plus de secret.',
-    unlock:'LE PHISHER déguise ses liens… mais plus pour toi !'},
-  {id:'typo', ic:'🔤', name:'Loupe à fautes', price:25,
-    desc:'Un clic : les fautes d\'orthographe s\'allument. Les arnaqueurs en font plein !',
-    unlock:'LE PHISHER embauche des sosies pleins de fautes !'},
-  {id:'addr', ic:'🕵️', name:'Radar d\'adresses', price:40,
-    desc:'1 scan par manche : clique l\'adresse de l\'expéditeur, le radar dit si elle est officielle ou sosie.',
-    unlock:'LE PHISHER imite tes proches… le radar veille !'},
-  {id:'phone', ic:'☎️', name:'Téléphone rouge', price:60,
-    desc:'1 appel par manche : on vérifie le mail affiché auprès du VRAI expéditeur.',
-    unlock:'Le doute n\'est plus permis : appelle !'}
+
+/* ---- 14.1 Le monde du jeu ----
+   mat  : matière enseignée (les mails de cours ne parlent que de celle-là)
+   never: ce que ce contact ne demanderait JAMAIS par mail (fiche du Registre) */
+const PH_CONTACTS=[
+  {id:'leco',    name:'M. Leco',            mail:'m.leco@erea.fr',              role:'Professeur de technologie et sciences', fam:'prof', mat:'technologie et sciences',
+   never:'un mot de passe, un code, ou de l\'argent'},
+  {id:'divad',   name:'M. Divad',           mail:'g.divad@erea.fr',             role:'Professeur d\'histoire-géographie', fam:'prof', mat:'histoire-géographie',
+   never:'un mot de passe, un code, ou de l\'argent'},
+  {id:'labechire',name:'Mme Labechire',     mail:'j.labechire@erea.fr',         role:'Professeure d\'anglais',      fam:'prof',  mat:'anglais',
+   never:'un mot de passe, un code, ou de l\'argent'},
+  {id:'dingaut', name:'Mme Dingaut',        mail:'n.dingaut@erea.fr',           role:'Professeure d\'E.P.S.',       fam:'prof',  mat:'E.P.S.',
+   never:'un mot de passe, un code, ou de l\'argent'},
+  {id:'lesombre',name:'M. Lesombre',        mail:'f.lesombre@erea.fr',          role:'Professeur de mathématiques', fam:'prof',  mat:'mathématiques',
+   never:'un mot de passe, un code, ou de l\'argent'},
+  {id:'latelier',name:'Mme Latelier',       mail:'e.latelier@erea.fr',          role:'Professeure de français',     fam:'prof',  mat:'français',
+   never:'un mot de passe, un code, ou de l\'argent'},
+  {id:'secr',    name:'Le secrétariat',     mail:'secretariat@erea.fr',         role:'Secrétariat du collège',      fam:'ecole',
+   never:'un paiement en ligne ni un numéro de carte'},
+  {id:'vies',    name:'La vie scolaire',    mail:'vie-scolaire@erea.fr',        role:'Vie scolaire du collège',     fam:'ecole',
+   never:'un mot de passe ni un paiement'},
+  {id:'cdi',     name:'Le CDI',             mail:'cdi@erea.fr',                 role:'Documentaliste du collège',   fam:'ecole',
+   never:'un paiement par carte en ligne'},
+  {id:'cantine', name:'La cantine',         mail:'cantine@erea.fr',             role:'Restauration du collège',     fam:'ecole',
+   never:'un règlement par mail : tout passe par le collège'},
+  {id:'gazette', name:'La Gazette',         mail:'gazette@erea.fr',             role:'Journal du collège',          fam:'ecole',
+   never:'la moindre information personnelle'},
+  {id:'maman',   name:'Maman',              mail:'maman@cuicui.fr',             role:'Famille',                     fam:'famille',
+   never:'un code de carte bancaire par écrit'},
+  {id:'papi',    name:'Papi Marcel',        mail:'papi.marcel@cuicui.fr',       role:'Famille',                     fam:'famille',
+   never:'un virement en urgence'},
+  {id:'tata',    name:'Tata Monica',        mail:'tata.monica@cuicui.fr',       role:'Famille',                     fam:'famille',
+   never:'de garder un secret vis-à-vis de tes parents'},
+  {id:'lucas',   name:'Lucas',              mail:'lucas.b@cuicui.fr',           role:'Camarade de ta classe',       fam:'copain',
+   never:'ton mot de passe du collège'},
+  {id:'nina',    name:'Nina',               mail:'nina.k@cuicui.fr',            role:'Camarade de ta classe',       fam:'copain',
+   never:'ton mot de passe du collège'},
+  {id:'cuicui',  name:'Cui-Cui',            mail:'infos@cuicui.fr',             role:'Ta messagerie Cui-Cui',       fam:'service',
+   never:'ton mot de passe : il ne le demande jamais, sous aucun prétexte'},
+  {id:'biblio',  name:'La bibliothèque',    mail:'bibliotheque@ville.fr',       role:'Bibliothèque municipale',     fam:'ville',
+   never:'un paiement par mail : tout se règle à l\'accueil'},
+  {id:'mairie',  name:'La mairie',          mail:'mairie@ville.fr',             role:'Mairie de la ville',          fam:'ville',
+   never:'un numéro de carte bancaire'},
+  {id:'piscine', name:'La piscine',         mail:'contact@piscine-ville.fr',    role:'Piscine municipale',          fam:'ville',
+   never:'une information personnelle par mail'},
+  {id:'musee',   name:'Le musée',           mail:'atelier@musee-ville.fr',      role:'Musée de la ville',           fam:'ville',
+   never:'un paiement en ligne en urgence'},
+  {id:'colis',   name:'Colissimo',          mail:'expedition@colissimo.fr',     role:'Transporteur de colis',       fam:'commerce',
+   never:'des frais à régler par mail pour livrer un colis'},
+  {id:'cine',    name:'Cinéma L\'Étoile',   mail:'billetterie@cinema-etoile.fr',role:'Cinéma de la ville',          fam:'commerce',
+   never:'tes coordonnées bancaires par mail'},
+  {id:'veto',    name:'Clinique vétérinaire',mail:'soins@clinique-animaux.fr',  role:'Vétérinaire de Filou',        fam:'commerce',
+   never:'un paiement en ligne : on règle sur place'},
+  {id:'basket',  name:'Coach Sofia',        mail:'entraineur@basket-club.fr',   role:'Entraîneuse du club de basket',fam:'asso',
+   never:'de l\'argent par virement'},
+  {id:'nature',  name:'Le Club Nature',     mail:'club.nature@asso.fr',         role:'Association Club Nature',     fam:'asso',
+   never:'de données personnelles par mail'}
 ];
-/* les mails du contrôle. phish:true = à tamponner INDÉSIRABLE.
-   req : n'apparaît que si l'outil correspondant est acheté. */
-function phPool(){
-  return [
-    /* ---- honnêtes (base) ---- */
-    { phish:false, from:'expedition@colissimo.fr', name:'Colissimo', sub:'Votre colis arrive demain',
-      body:'<p>Bonjour,</p><p>Votre colis n° 6C 1187 2214 sera livré <b>demain entre 9h et 12h</b>.</p><p>Rien à faire de votre côté. Bonne journée !</p>',
-      why:'Un vrai suivi de colis : adresse officielle, aucune demande d\'argent ni d\'urgence.' },
-    { phish:false, from:'bibliotheque@ville.fr', name:'La bibliothèque', sub:'Votre réservation est arrivée',
-      body:'<p>Bonjour,</p><p>Le livre <b>« Le club des inventeurs »</b> que vous avez réservé est disponible à l\'accueil jusqu\'au 24 juin.</p><p>À bientôt !</p>',
-      why:'La bibliothèque de la ville, un message calme et normal : rien à signaler.' },
-    { phish:false, from:'m.leco@erea.fr', name:'M. Leco', sub:'Rappel : sortie au musée jeudi',
-      body:'<p>Bonjour,</p><p>Petit rappel : <b>sortie au musée jeudi</b>. Prévoir un pique-nique et une casquette.</p><p>M. Leco</p>',
-      why:'Le professeur, son adresse habituelle, une info du collège toute simple.' },
-    { phish:false, from:'cantine@ecole.fr', name:'La cantine', sub:'Menu de la semaine',
-      body:'<p>Au menu cette semaine : lundi gratin, mardi couscous, jeudi poisson-frites, vendredi pizza ! 🍕</p>',
-      why:'Le menu de la cantine : ni lien louche, ni demande bizarre.' },
-    { phish:false, from:'papi.marcel@cuicui.fr', name:'Papi Marcel', sub:'Les photos de la pétanque',
-      body:'<p>Mon grand, voilà les photos du tournoi de pétanque. Quel triomphe ! 🏆</p><p>Papi</p>',
-      atts:[{n:'petanque.jpg', s:900, ic:'🖼️', trap:false}],
-      why:'Papi, sa vraie adresse, une photo en PJ toute simple.' },
-    { phish:false, from:'club.nature@asso.fr', name:'Le Club Nature', sub:'Sortie reportée (pluie)',
-      body:'<p>Bonjour à tous,</p><p>Vu la météo, la sortie forêt est <b>reportée à samedi prochain</b>. Merci de prévenir vos parents.</p>',
-      why:'Le club, une info normale, pas de lien ni de demande : légitime.' },
-    { phish:false, from:'info@meteo-mini.fr', name:'Météo-Mini', sub:'Alerte pluie demain matin',
-      body:'<p>Bonjour ! De fortes pluies sont prévues demain entre 7h et 9h. Pensez au parapluie ! ☔</p><p>Vous recevez ce mail car vous êtes abonné à Météo-Mini.</p>',
-      why:'Une alerte météo d\'un service auquel on est abonné : honnête.' },
-    { phish:false, from:'gazette@ecole.fr', name:'La Gazette', sub:'La gazette de la semaine',
-      body:'<p>Au sommaire : le potager de la classe de CE2, les résultats du tournoi d\'échecs, et la recette du chef ! 📰</p>',
-      why:'La gazette habituelle du collège. Rien de louche.' },
-    { phish:false, from:'secretariat@erea.fr', name:'Le secrétariat', sub:'Photo de classe : mardi 14',
-      body:'<p>Bonjour,</p><p>La photo de classe aura lieu <b>mardi 14 à 10h</b>. Tenue correcte, et surtout : le sourire ! 😄</p><p>Le secrétariat</p>',
-      why:'Une info d\'organisation du collège, envoyée depuis l\'adresse officielle. Rien à signaler.' },
-    { phish:false, from:'tata.monica@cuicui.fr', name:'Tata Monica', sub:'Tu viens dimanche ?',
-      body:'<p>Coucou !</p><p>On fait un grand repas dimanche midi. Tu viens avec ta cousine ? Réponds-moi quand tu peux, rien ne presse.</p><p>Bisous, Tata Monica</p>',
-      why:'Un message de famille, sur l\'adresse habituelle, sans urgence ni demande d\'argent.' },
-    { phish:false, from:'contact@piscine-municipale.fr', name:'Piscine municipale', sub:'Fermeture technique jeudi',
-      body:'<p>Bonjour,</p><p>La piscine sera <b>fermée jeudi</b> pour l\'entretien des bassins. Réouverture vendredi aux horaires habituels.</p>',
-      why:'Un service de la ville qui informe. Pas de lien, pas de demande : honnête.' },
-    { phish:false, from:'cdi@erea.fr', name:'Le CDI', sub:'Ton livre est à rendre',
-      body:'<p>Bonjour,</p><p>Le livre <b>« L\'île aux mille couleurs »</b> est à rapporter au CDI avant vendredi. Merci !</p>',
-      why:'Un simple rappel du CDI depuis l\'adresse du collège. Aucun piège.' },
-    { phish:false, from:'infos@cuicui.fr', name:'Cui-Cui', sub:'Nouveauté : les dossiers de couleur',
-      body:'<p>Bonjour !</p><p>Tu peux désormais donner une couleur à tes dossiers pour mieux t\'y retrouver. Bonne exploration ! 🐦</p><p>L\'équipe Cui-Cui</p>',
-      why:'La vraie adresse cuicui.fr, une annonce de nouveauté : ni mot de passe demandé, ni menace.' },
-    { phish:false, from:'entraineur@basket-club.fr', name:'Coach Sofia', sub:'Match samedi : rendez-vous 9h30',
-      body:'<p>Salut l\'équipe !</p><p>Match samedi au gymnase. Rendez-vous <b>9h30</b> avec le maillot vert et une gourde.</p><p>Coach Sofia</p>',
-      why:'Le club de basket, une info d\'entraînement banale. Légitime.' },
-    { phish:false, from:'mairie@ville.fr', name:'La mairie', sub:'Fête du quartier samedi',
-      body:'<p>Bonjour,</p><p>La fête du quartier se tiendra samedi place du Marché : jeux, musique et stands. Entrée libre !</p>',
-      why:'La mairie de la ville, une invitation publique sans aucune demande personnelle.' },
-    { phish:false, from:'maman@cuicui.fr', name:'Maman', sub:'Les courses de ce soir',
-      body:'<p>Coucou mon grand,</p><p>Pense à sortir le pain du congélateur en rentrant. Je passe te chercher à 18h.</p><p>Bisous</p>',
-      why:'Un message de Maman, adresse habituelle, contenu tout simple du quotidien.' },
-    { phish:false, from:'atelier@musee-ville.fr', name:'Le musée', sub:'Confirmation de ton inscription',
-      body:'<p>Bonjour,</p><p>Ton inscription à l\'atelier <b>fossiles</b> du mercredi est confirmée. Rendez-vous à l\'accueil du musée.</p>',
-      why:'Une confirmation d\'inscription faite pour de vrai : adresse officielle, pas de paiement demandé.' },
-    { phish:false, from:'vetos@clinique-desanimaux.fr', name:'Clinique vétérinaire', sub:'Rappel de vaccin pour Filou',
-      body:'<p>Bonjour,</p><p>Le rappel de vaccin de <b>Filou</b> est à prévoir ce mois-ci. Appelez la clinique pour choisir un créneau.</p>',
-      why:'Un rappel classique du vétérinaire. Il ne demande ni code ni paiement par mail.' },
-    { phish:false, from:'lucas.b@cuicui.fr', name:'Lucas', sub:'Tu me passes tes notes de maths ?',
-      body:'<p>Salut ! J\'étais absent lundi, tu peux me prêter tes notes de maths ? Je te rends ça demain. Merci ! 😅</p>',
-      why:'Un copain de classe, sur son adresse cuicui.fr, avec une demande normale entre élèves.' },
-    { phish:false, from:'billetterie@cinema-etoile.fr', name:'Cinéma L\'Étoile', sub:'Le programme de la semaine',
-      body:'<p>Cette semaine à L\'Étoile : deux dessins animés et un documentaire sur les volcans. 🎬</p><p>Vous recevez ce mail car vous êtes abonné au programme.</p>',
-      why:'Une lettre d\'information à laquelle on est abonné. Aucun piège.' },
-    { phish:false, from:'contact@ludotheque-ville.fr', name:'La ludothèque', sub:'Ton jeu est réservé',
-      body:'<p>Bonjour,</p><p>Le jeu <b>« Les bâtisseurs »</b> est mis de côté à ton nom jusqu\'à samedi. À bientôt !</p>',
-      why:'La ludothèque de la ville, une réservation normale : rien de suspect.' },
-    /* ---- pièges (base) ---- */
-    { phish:true, from:'loterie@grand-gagnant.biz', name:'LOTERIE NATIONALE', sub:'🎉 DERNIER RAPPEL : votre MILLION vous attend !!!',
-      body:'<p>FÉLICITATIONS !!! Vous êtes notre GRAND GAGNANT !</p><p>Envoyez votre adresse et votre date de naissance <b>dans l\'heure</b> pour recevoir 1 000 000 € !!!</p>',
-      why:'Gain tombé du ciel + urgence + demande d\'infos perso = hameçonnage classique.' },
-    { phish:true, from:'suivi@la-p0ste-colis.net', name:'La Poste', sub:'⚠️ Colis bloqué : payez 1,99 €',
-      body:'<p>Votre colis est bloqué à l\'entrepôt.</p><p>Réglez <b>1,99 €</b> sous 24h en cliquant ici, sinon il sera détruit.</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/paiement">Débloquer mon colis</a></p>',
-      why:'« la-p0ste » avec un zéro + demande d\'argent + menace : le faux colis, arnaque du moment.' },
-    { phish:true, from:'convocation@gendarmerie-nationale.co', name:'GENDARMERIE NATIONALE', sub:'CONVOCATION JUDICIAIRE URGENTE',
-      body:'<p>Vous êtes convoqué pour des faits graves.</p><p>Répondez <b>sous 24 heures</b> avec vos informations personnelles, sous peine d\'amende immédiate.</p><p>Le brigadier-chef.</p>',
-      why:'La vraie gendarmerie n\'envoie JAMAIS ça par mail. Adresse en .co (pas .fr), peur et urgence : arnaque connue.' },
-    { phish:true, from:'securite@cuicui-verification.net', name:'Sécurité Cui-Cui', sub:'Compte supprimé ce soir : agissez !',
-      body:'<p>Votre compte sera <b>SUPPRIMÉ ce soir</b>.</p><p>Pour le conserver, répondez immédiatement avec votre <b>mot de passe</b>.</p><p>L\'équipe sécurité.</p>',
-      why:'On ne demande JAMAIS un mot de passe par mail. Et cuicui-verification.net n\'est pas cuicui.fr !' },
-    { phish:true, from:'promo@jeux-gratos.biz', name:'MEGA JEUX', sub:'1000 skins GRATUITS pour les 10 premiers !!!',
-      body:'<p>OFFRE DE FOU !!! 1000 skins <b>GRATUITS</b> !!!</p><p>Clique VITE, il ne reste que 2 places !!!</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/skins">JE VEUX MES SKINS</a></p>',
-      why:'Cadeau mirobolant + « vite vite » + adresse en .biz : un piège à clics.' },
-    { phish:true, from:'support-technique@repare-pc.info', name:'Support Windows', sub:'🔴 VIRUS DÉTECTÉ sur votre ordinateur',
-      body:'<p>Notre système a détecté <b>3 VIRUS</b> sur votre machine !</p><p>Appelez immédiatement le 08 99 99 99 99 (4 €/min) pour désinfection d\'urgence.</p>',
-      why:'Personne ne peut « détecter des virus » chez toi par mail. Numéro payant + panique = arnaque au faux support.' },
-    { phish:true, from:'service-client@banque-de-france.top', name:'VOTRE BANQUE', sub:'Opération suspecte : confirmez votre carte',
-      body:'<p>Une opération de 349 € a été détectée sur votre compte.</p><p>Pour l\'annuler, renvoyez <b>le numéro de votre carte et son code</b> immédiatement.</p>',
-      why:'Aucune banque ne demande un numéro de carte par mail. Adresse en .top et panique organisée : arnaque.' },
-    { phish:true, from:'admin@cuicui-securite-compte.net', name:'Cui-Cui Admin', sub:'Vérifiez votre identité sous 2 heures',
-      body:'<p>Activité inhabituelle détectée.</p><p>Cliquez ici et saisissez votre <b>identifiant et mot de passe</b> pour éviter le blocage.</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/login">Vérifier mon compte</a></p>',
-      why:'Le vrai Cui-Cui, c\'est cuicui.fr. Ici on veut ton mot de passe : jamais, au grand jamais.' },
-    { phish:true, from:'direction@erea-administration.info', name:'Direction du collège', sub:'Amende de cantine impayée : 45 €',
-      body:'<p>Votre famille doit <b>45 €</b> à la cantine.</p><p>Payez sous 48h par carte en ligne, sinon l\'accès à la cantine sera coupé.</p>',
-      why:'Le collège n\'est pas en .info et ne réclame pas d\'argent par carte en ligne avec une menace. C\'est un faux.' },
-    { phish:true, from:'concours@super-console-gratuite.biz', name:'SUPER CONCOURS', sub:'🎮 Tu as GAGNÉ une console dernier cri !!!',
-      body:'<p>TU ES LE GAGNANT DU JOUR !!!</p><p>Donne ton nom, ton adresse et le numéro de carte de tes parents pour la livraison !</p>',
-      why:'Un concours qu\'on n\'a jamais joué, un cadeau énorme, une carte bancaire demandée : triple signal d\'alarme.' },
-    { phish:true, from:'compte@netflox-abonnement.co', name:'NETFLOX', sub:'Votre abonnement expire ce soir',
-      body:'<p>Votre paiement a échoué. Votre abonnement sera <b>annulé ce soir à minuit</b>.</p><p>Mettez à jour vos coordonnées bancaires ici.</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/paiement2">Mettre à jour</a></p>',
-      why:'Un service qu\'on imite (Netflox), un compte à rebours, une carte bancaire à saisir : le trio de l\'arnaque.' },
-    { phish:true, from:'noreply@impots-remboursement.info', name:'IMPÔTS', sub:'Remboursement de 128 € en attente',
-      body:'<p>Vous avez droit à un remboursement de <b>128 €</b>.</p><p>Saisissez vos coordonnées bancaires sous 24h, sinon la somme sera perdue.</p>',
-      why:'De l\'argent offert + un délai serré + un RIB à donner. Les impôts ne fonctionnent jamais comme ça.' },
-    { phish:true, from:'aide@amiis-en-detresse.net', name:'Un ami', sub:'Je suis coincé à l\'étranger, aide-moi',
-      body:'<p>C\'est moi ! J\'ai perdu mon portefeuille en voyage.</p><p>Envoie-moi <b>200 €</b> par virement, je te rembourse dès mon retour. Ne dis rien à personne !</p>',
-      why:'De l\'argent, du secret et un ami qui ne se nomme pas : l\'arnaque à l\'ami en détresse.' },
-    { phish:true, from:'livraison@chronopost-suivi.top', name:'Chronopost', sub:'Nouvelle tentative de livraison : 2,50 €',
-      body:'<p>Le livreur n\'a pas pu vous remettre le colis.</p><p>Reprogrammez la livraison en payant <b>2,50 €</b> de frais.</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/relivraison">Reprogrammer</a></p>',
-      why:'Une petite somme pour endormir la méfiance, un domaine en .top : c\'est le faux colis, encore lui.' },
-    { phish:true, from:'contact@ma-super-crypto.biz', name:'CRYPTO BOOST', sub:'Multiplie ton argent de poche par 10 !',
-      body:'<p>Investis <b>20 €</b> aujourd\'hui, récupère <b>200 €</b> vendredi. Garanti sans risque !!!</p><p>Places limitées, réponds vite !</p>',
-      why:'Un placement « sans risque » qui multiplie l\'argent : ça n\'existe pas. C\'est une arnaque.' },
-    { phish:true, from:'sondage@cadeaux-express.info', name:'Sondage Express', sub:'3 questions = 1 téléphone offert 📱',
-      body:'<p>Répondez à 3 petites questions et repartez avec un téléphone !</p><p>Il suffit d\'indiquer votre nom, votre adresse et votre date de naissance.</p>',
-      why:'Un cadeau démesuré contre des informations personnelles : le but, c\'est de collecter tes données.' },
-    { phish:true, from:'moderation@cuicui-support.co', name:'Modération Cui-Cui', sub:'Votre boîte va être bloquée (dernier avis)',
-      body:'<p>Des messages interdits ont été envoyés depuis votre boîte.</p><p>Répondez avec votre <b>mot de passe</b> pour prouver que c\'est bien vous.</p>',
-      why:'Prouver son identité en donnant son mot de passe, ça n\'a aucun sens. Et l\'adresse n\'est pas cuicui.fr.' },
-    { phish:true, from:'urgent@heritage-notaire-international.biz', name:'Maître Dubois', sub:'Un héritage de 4 millions vous attend',
-      body:'<p>Un lointain parent vous a légué <b>4 000 000 €</b>.</p><p>Envoyez une avance de <b>150 €</b> de frais de dossier pour débloquer la somme.</p>',
-      why:'Un héritage surprise qui demande de payer d\'abord : l\'arnaque la plus vieille du monde.' },
-    /* ---- pièges & honnêtes débloqués par les OUTILS ---- */
-    { phish:true, req:'scan', from:'photo-club@rigolo-photos.net', name:'Le club photo', sub:'Tes photos de classe en pièce jointe',
-      body:'<p>Bonjour ! Voici les photos de ta classe, comme promis. Ouvre vite la pièce jointe !</p>',
-      atts:[{n:'photos-classe.zip.exe', s:2400, ic:'📦', trap:true}],
-      why:'Le fichier finit en <b>.exe</b> : un programme déguisé en photos ! Ton scanner l\'a vu.' },
-    { phish:false, req:'scan', from:'m.leco@erea.fr', name:'M. Leco', sub:'Les paroles de la chanson',
-      body:'<p>Bonjour, voici les paroles de la chanson du spectacle à apprendre. Bonne répétition !</p>',
-      atts:[{n:'chanson-spectacle.pdf', s:140, ic:'📄', trap:false}],
-      why:'Un PDF sain envoyé par le professeur : le scanner confirme.' },
-    { phish:true, req:'scan', from:'facture@service-abonnements.info', name:'Service abonnements', sub:'Votre facture du mois',
-      body:'<p>Bonjour, veuillez trouver votre facture ci-jointe. Ouvrez-la vite pour éviter des frais de retard.</p>',
-      atts:[{n:'facture-mai.pdf.exe', s:1800, ic:'📄', trap:true}],
-      why:'Une « facture » qui se termine par <b>.exe</b> : c\'est un programme piégé, pas un document.' },
-    { phish:true, req:'scan', from:'jeux@mods-gratuits.biz', name:'Mods Gratuits', sub:'Ton mod est prêt à installer !',
-      body:'<p>Salut ! Voici le mod que tout le monde s\'arrache. Installe-le et amuse-toi ! 🎮</p>',
-      atts:[{n:'super-mod.scr', s:3100, ic:'📦', trap:true}],
-      why:'Un fichier <b>.scr</b> envoyé par un inconnu : le scanner confirme, la pièce jointe est piégée.' },
-    { phish:false, req:'scan', from:'secretariat@erea.fr', name:'Le secrétariat', sub:'L\'autorisation de sortie à signer',
-      body:'<p>Bonjour,</p><p>Merci de faire signer l\'autorisation ci-jointe et de la rapporter avant vendredi.</p>',
-      atts:[{n:'autorisation-sortie.pdf', s:210, ic:'📄', trap:false}],
-      why:'Un PDF du secrétariat du collège : le scanner le déclare sain.' },
-    { phish:false, req:'scan', from:'tata.monica@cuicui.fr', name:'Tata Monica', sub:'La recette du gâteau',
-      body:'<p>Comme promis, la recette du gâteau au chocolat ! Régale-toi. 🍫</p><p>Tata Monica</p>',
-      atts:[{n:'recette-gateau.pdf', s:180, ic:'📄', trap:false}],
-      why:'Un PDF de la famille, adresse officielle, contenu inoffensif : rien à craindre.' },
-    { phish:true, req:'link', from:'cadeaux@cuicui-anniversaire.net', name:'Cui-Cui Cadeaux', sub:'Un cadeau pour ton anniversaire 🎁',
-      body:'<p>Joyeux anniversaire en avance ! Cui-Cui t\'offre un cadeau.</p><p>Récupère-le ici : <a class="mlk" data-real="www.piege-du-phisher.biz/vole-tes-codes">www.cuicui.fr/cadeau</a></p>',
-      why:'Le lien AFFICHE cuicui.fr… mais mène vers piege-du-phisher.biz ! Le Vérif-Liens l\'a démasqué.' },
-    { phish:false, req:'link', from:'bibliotheque@ville.fr', name:'La bibliothèque', sub:'Le programme des vacances',
-      body:'<p>Ateliers BD, chasse au trésor littéraire… le programme de l\'été est en ligne :</p><p><a class="mlk" data-real="www.ville.fr/bibliotheque/ete">www.ville.fr/bibliotheque/ete</a></p>',
-      why:'Le lien mène exactement où il le dit : www.ville.fr. Honnête.' },
-    { phish:true, req:'link', from:'assistance@cuicui-aide.net', name:'Aide Cui-Cui', sub:'Récupère l\'accès à ta boîte',
-      body:'<p>Tu as demandé une nouvelle clé d\'accès ? Suis ce lien :</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/faux-cuicui">www.cuicui.fr/aide/acces</a></p>',
-      why:'Le lien dit cuicui.fr mais atterrit chez piege-du-phisher.biz. Le Vérif-Liens ne se laisse pas berner.' },
-    { phish:true, req:'link', from:'ville@espace-famille.co', name:'Espace Famille', sub:'Inscription cantine à confirmer',
-      body:'<p>Confirmez l\'inscription cantine de votre enfant avant lundi :</p><p><a class="mlk" data-real="www.piege-du-phisher.biz/cantine">www.ville.fr/espace-famille</a></p>',
-      why:'Une belle façade « ville.fr » collée sur un lien qui mène au piège. Toujours vérifier la VRAIE destination.' },
-    { phish:false, req:'link', from:'gazette@ecole.fr', name:'La Gazette', sub:'La gazette en ligne',
-      body:'<p>Le numéro de la semaine est en ligne, avec les photos du tournoi :</p><p><a class="mlk" data-real="www.ecole.fr/gazette">www.ecole.fr/gazette</a></p>',
-      why:'Le lien affiché et la vraie destination sont identiques : www.ecole.fr. Aucun mensonge.' },
-    { phish:false, req:'link', from:'atelier@musee-ville.fr', name:'Le musée', sub:'Le programme des ateliers',
-      body:'<p>Tous les ateliers de l\'été sont détaillés ici :</p><p><a class="mlk" data-real="www.musee-ville.fr/ateliers">www.musee-ville.fr/ateliers</a></p>',
-      why:'Le lien mène bien au site du musée qu\'il annonce. Honnête.' },
-    { phish:true, req:'typo', from:'service@colissim0-livraison.net', name:'Colissimo', sub:'Votre colis et areter a la douane',
-      body:'<p>Bonjour, votre <span class="ph-typo">colit</span> a été <span class="ph-typo">areter</span> à la douane.</p><p>Vous devez <span class="ph-typo">pailler</span> 3 € de frais pour le <span class="ph-typo">récupérée</span>.</p>',
-      why:'« colit », « areter », « pailler »… un vrai transporteur ne fait pas 4 fautes par ligne. Et regarde le zéro dans colissim0 !' },
-    { phish:false, req:'typo', from:'expedition@colissimo.fr', name:'Colissimo', sub:'Votre colis est en cours d\'acheminement',
-      body:'<p>Bonjour,</p><p>Votre colis n° 6C 4471 0092 a quitté notre centre de tri et sera livré <b>jeudi</b>.</p><p>Merci de votre confiance.</p>',
-      why:'Orthographe impeccable, adresse officielle colissimo.fr : le vrai.' },
-    { phish:true, req:'typo', from:'banq@securite-comptes.biz', name:'Votre banque', sub:'Votre conte va etre bloqué',
-      body:'<p>Chére client, votre <span class="ph-typo">conte</span> va <span class="ph-typo">etre</span> bloqué.</p><p>Merci de nous <span class="ph-typo">envoiyer</span> vos <span class="ph-typo">codes secrét</span> aujourd\'hui.</p>',
-      why:'« conte », « envoiyer », « codes secrét »… une banque écrit sans fautes, et ne demande jamais tes codes.' },
-    { phish:true, req:'typo', from:'gain@tombola-magique.info', name:'Tombola Magique', sub:'Vous aver gagner un vellow',
-      body:'<p>Bravo ! Vous <span class="ph-typo">aver</span> <span class="ph-typo">gagner</span> un <span class="ph-typo">vellow</span> tout neuf !</p><p><span class="ph-typo">Envoyer</span> vite vos <span class="ph-typo">coordoné</span> pour la livrezon.</p>',
-      why:'Un lot énorme annoncé dans un français cassé : la loupe allume presque toute la phrase.' },
-    { phish:false, req:'typo', from:'cantine@ecole.fr', name:'La cantine', sub:'Changement de menu jeudi',
-      body:'<p>Bonjour,</p><p>Le poisson de jeudi est remplacé par un gratin de légumes. Bon appétit à tous !</p>',
-      why:'Pas une faute, une adresse officielle du collège : la loupe ne trouve rien, et pour cause.' },
-    { phish:false, req:'typo', from:'club.nature@asso.fr', name:'Le Club Nature', sub:'Liste du matériel pour samedi',
-      body:'<p>Bonjour à tous,</p><p>Pour samedi : bottes, gourde et carnet de notes. Rendez-vous à 14h à l\'entrée du bois.</p>',
-      why:'Une orthographe soignée et une info banale du club : rien à signaler.' },
-    { phish:true, req:'addr', from:'papi.marcel@cuicuii.fr', name:'Papi Marcel', sub:'Aide-moi vite mon grand',
-      body:'<p>Mon grand, c\'est Papi. Je suis bloqué loin de la maison, envoie-moi vite le code de la carte de Tata Monica, c\'est urgent !!</p>',
-      why:'Regarde l\'adresse au radar : cuicu<b>ii</b>.fr avec DEUX i — un sosie de Papi ! Et le vrai Papi ne demanderait jamais ça.' },
-    { phish:false, req:'addr', from:'papi.marcel@cuicui.fr', name:'Papi Marcel', sub:'Dimanche prochain ?',
-      body:'<p>Mon grand, je passe dimanche avec une tarte aux pommes. Dis-moi si tu es là ! 🍎</p><p>Papi</p>',
-      why:'Le radar est formel : papi.marcel@cuicui.fr, l\'adresse officielle de Papi. Et une tarte aux pommes, ça ne se refuse pas.' },
-    { phish:true, req:'addr', from:'m.leco@erea-professeurs.net', name:'M. Leco', sub:'Ton bulletin est en ligne',
-      body:'<p>Bonjour, ton bulletin est disponible. Renvoie-moi ton identifiant et ton mot de passe du collège pour que je le débloque.</p><p>M. Leco</p>',
-      why:'Le vrai professeur écrit depuis erea.fr, pas erea-professeurs.net. Et aucun professeur ne demande ton mot de passe.' },
-    { phish:true, req:'addr', from:'tata.monica@cuicui-mail.net', name:'Tata Monica', sub:'Petit service urgent',
-      body:'<p>Coucou, je ne peux pas payer en ligne depuis chez moi. Tu peux m\'envoyer le code de la carte de tes parents ? Ne leur dis rien, c\'est une surprise !</p>',
-      why:'Le radar le voit : cuicui-<b>mail</b>.net n\'est pas cuicui.fr. Un sosie de Tata, avec le secret en prime.' },
-    { phish:true, req:'addr', from:'infos@cuicui-officiel.co', name:'Cui-Cui', sub:'Ton espace de stockage est plein',
-      body:'<p>Ta boîte est saturée. Confirme ton identifiant et ton mot de passe pour recevoir 10 Go gratuits.</p>',
-      why:'Cui-Cui, c\'est cuicui.fr. « cuicui-officiel.co » n\'a d\'officiel que le nom : le radar le démasque.' },
-    { phish:false, req:'addr', from:'m.leco@erea.fr', name:'M. Leco', sub:'Bravo pour ton exposé',
-      body:'<p>Bonjour,</p><p>Ton exposé sur les volcans était très clair, bravo ! Pense à rendre la fiche de lecture lundi.</p><p>M. Leco</p>',
-      why:'Le radar confirme erea.fr, l\'adresse officielle du professeur. Un vrai message d\'encouragement.' },
-    { phish:false, req:'addr', from:'maman@cuicui.fr', name:'Maman', sub:'Rendez-vous chez le dentiste',
-      body:'<p>Coucou, tu as le dentiste mercredi à 16h. Je te note ça sur le frigo aussi !</p><p>Bisous</p>',
-      why:'Adresse familiale vérifiée par le radar, message du quotidien : parfaitement légitime.' }
-  ];
+/* Légitimes mais INCONNUS de l'élève : le piège du faux positif. */
+const PH_NEWCOMERS=[
+  {id:'zacelv',  name:'Mme Zacelv',         mail:'a.zacelv@erea.fr',            role:'Professeure de musique (nouvelle)', fam:'prof', mat:'musique', neuf:true,
+   never:'un mot de passe ni de l\'argent'},
+  {id:'bahri',   name:'Mme Bahri',          mail:'c.bahri@erea.fr',             role:'Infirmière du collège (nouvelle)',  fam:'sante', neuf:true,
+   never:'un document médical par mail'},
+  {id:'orch',    name:'Orchestre à l\'école',mail:'contact@orchestre-ecole.fr', role:'Association partenaire du collège', fam:'asso', neuf:true,
+   never:'de paiement : le collège gère tout'},
+  {id:'ent2',    name:'Mon Collège Numérique',mail:'info@mon-college-numerique.fr',role:'Nouvelle plateforme du collège', fam:'ecole',neuf:true,
+   never:'ton mot de passe par mail'},
+  {id:'photo',   name:'Studio Clic-Clac',   mail:'commandes@studio-clicclac.fr',role:'Photographe scolaire',              fam:'commerce',neuf:true,
+   never:'de carte bancaire par mail : on paie au collège'}
+];
+const PH_ALL=PH_CONTACTS.concat(PH_NEWCOMERS);
+function phById(id){ return PH_ALL.find(c=>c.id===id); }
+
+/* ---- 14.2 Fabrique de sosies, graduée -----------------------------
+   niv 0 : voyant (adresse inventée, ridicule)
+   niv 1 : plausible (nom officiel + mot ajouté, extension changée)
+   niv 2 : fin (caractère truqué, vrai nom collé devant un autre site)   */
+function phFakeMail(mail, niv){
+  const at=mail.indexOf('@'), user=mail.slice(0,at), dom=mail.slice(at+1);
+  const base=dom.slice(0, dom.lastIndexOf('.')), tld=dom.slice(dom.lastIndexOf('.'));
+  const r=[];
+  if(niv<=0){
+    r.push({m:user+'@'+base+'-officiel'+pickOne(['.biz','.top','.xyz']), w:'une adresse en <b>'+'.biz / .top / .xyz</b>, jamais celle d\'un vrai service'});
+    r.push({m:pickOne(['service','alerte','contact'])+'@'+base+'-express'+pickOne(['.biz','.info']), w:'un nom de site bricolé pour ressembler au vrai'});
+  }
+  if(niv===1){
+    r.push({m:user+'@'+base+'-'+pickOne(['securite','verification','support','connexion','espace'])+tld, w:'un <b>mot ajouté</b> après le vrai nom'});
+    r.push({m:user+'@'+base+pickOne(['.net','.info','.co','.org']), w:'la <b>fin de l\'adresse</b> a changé : ce n\'est plus <b>'+tld+'</b>'});
+    r.push({m:user.replace(/\./,'-')+'@'+base+'-'+pickOne(['pro','edu','fr'])+tld, w:'un tiret de plus, et ce n\'est déjà plus le même site'});
+  }
+  if(niv>=2){
+    if(/o/.test(base)) r.push({m:user+'@'+base.replace('o','0')+tld, w:'un <b>zéro</b> à la place du « o »'});
+    if(/l/.test(base)) r.push({m:user+'@'+base.replace('l','1')+tld, w:'un <b>chiffre 1</b> à la place du « l »'});
+    if(/i/.test(base)) r.push({m:user+'@'+base.replace(/i(?!$)/,'ii')+tld, w:'une <b>lettre en double</b>, presque invisible'});
+    if(/m/.test(base)) r.push({m:user+'@'+base.replace('m','rn')+tld, w:'un <b>« rn »</b> qui imite le « m »'});
+    r.push({m:user+'@'+base+tld+'.'+pickOne(['espace-connexion.co','mon-suivi.info','portail-securise.net']), w:'le vrai nom est <b>collé devant un autre site</b> : ce qui compte est à la fin'});
+  }
+  if(!r.length) r.push({m:user+'@'+base+'-'+pickOne(['securite','support'])+tld, w:'un <b>mot ajouté</b> après le vrai nom'});
+  const p=pickOne(r);
+  return {mail:p.m, why:'L\'adresse est un <b>sosie</b> : '+p.w+'. Le vrai, c\'est <b>'+mail+'</b>.'};
 }
-const PH_WAVES=[
-  {n:6,  name:'Manche 1 — Premiers contrôles', sub:'Les grands classiques : gains, faux colis, fausses menaces… ouvre l\'œil !'},
-  {n:7,  name:'Manche 2 — Le retour du PHISHER', sub:'Il affine ses ruses. Tes nouveaux outils ouvrent l\'œil avec toi !'},
-  {n:8,  name:'Manche 3 — La grande offensive', sub:'Sosies, liens menteurs… tout ce que tes outils savent démasquer !'},
-  {n:9,  name:'Manche finale — L\'ASSAUT', sub:'Tout en même temps. Tamponne juste, inspecteur : la ville compte sur toi !'}
+/* Expéditeurs totalement inventés (arnaques qui n'imitent personne). */
+function phWildMail(niv){
+  const u=pickOne(['contact','service','info','no-reply','support','notification','secretariat']);
+  const d=niv<=0
+    ? pickOne(['grand-gagnant','cadeau-du-jour','super-bonus','recompense-vip','tirage-magique'])
+    : pickOne(['espace-notification','suivi-dossier','portail-messages','centre-avis','service-en-ligne']);
+  return u+'@'+d+pickOne(niv<=0?['.biz','.top','.xyz']:['.info','.co','.net']);
+}
+
+/* ---- 14.3 Le vocabulaire des indices ---- */
+const PH_CLUES={
+  domain : {ic:'📧', t:'Adresse sosie',        zone:'from', d:'Le nom affiché est connu, mais l\'adresse ne correspond pas au vrai site.'},
+  link   : {ic:'🔗', t:'Lien trompeur',        zone:'link', d:'Le bouton dit une chose, le lien mène ailleurs.'},
+  att    : {ic:'📎', t:'Pièce jointe piégée',  zone:'att',  d:'Le fichier n\'est pas le document qu\'il prétend être.'},
+  pass   : {ic:'🔑', t:'Identifiants demandés',zone:'body', d:'Personne de sérieux ne réclame un mot de passe, ni par mail ni par un formulaire envoyé par mail.'},
+  money  : {ic:'💶', t:'Argent réclamé',       zone:'body', d:'Payer par mail pour débloquer quelque chose : signal d\'alarme.'},
+  perso  : {ic:'🪪', t:'Infos personnelles',   zone:'body', d:'Adresse, date de naissance, numéro de carte : on ne les donne pas.'},
+  gift   : {ic:'🎁', t:'Cadeau impossible',    zone:'body', d:'On ne gagne pas à un jeu auquel on n\'a jamais joué.'},
+  urgency: {ic:'⏰', t:'Urgence fabriquée',    zone:'body', d:'Un message qui te presse veut t\'empêcher de réfléchir.'},
+  typo   : {ic:'🔤', t:'Fautes grossières',    zone:'body', d:'Un vrai service se relit avant d\'envoyer.'},
+  contra : {ic:'🧩', t:'Contradiction',        zone:'sign', d:'Deux endroits du mail ne racontent pas la même histoire.'},
+  usurp  : {ic:'🎭', t:'Usurpation',           zone:'from', d:'Quelqu\'un se fait passer pour un contact ou un service connu.'}
+};
+
+/* ---- 14.4 Variables ---- */
+const PH_V={
+  jour   : ['lundi','mardi','jeudi','vendredi','samedi','mercredi prochain','jeudi 12','mardi 14'],
+  heure  : ['8h30','9h','10h15','13h45','14h','16h30','17h'],
+  lieu   : ['au musée','à la médiathèque','à la ferme pédagogique','au planétarium','à la caserne des pompiers','au jardin botanique'],
+  item   : ['un pique-nique','une casquette','des bottes','une gourde','un carnet de notes','un stylo et une règle'],
+  livre  : ['« Le club des inventeurs »','« L\'île aux mille couleurs »','« Les bâtisseurs »','« Le grand voyage de Nino »','« Atlas des volcans »'],
+  repas  : ['un gratin','un couscous','du poisson-frites','une pizza','un curry de légumes','une blanquette'],
+  sport  : ['basket','handball','athlétisme','escalade'],
+  euro   : ['12','19','29','45','68','128','349'],
+  petit  : ['1,99','2,50','2,90','3,50','4,20'],
+  gros   : ['5 000','20 000','150 000','1 000 000','4 500 000'],
+  delai  : ['24 heures','48 heures','2 heures','ce soir à minuit','avant demain matin','la fin de la semaine'],
+  colisN : ()=>'6C '+rnd(1000,9999)+' '+rnd(1000,9999),
+  marque : ['NETFLOX','STREAMIZ','MUSIKA','JEUBOX','CINELAND'],
+  lot    : ['une console dernier cri','un téléphone tout neuf','une tablette','un vélo électrique','une trottinette'],
+  fichier: ['photos-sortie','devoir-maison','planning','autorisation','affiche-spectacle','compte-rendu','releve-notes']
+};
+function rnd(a,b){ return Math.floor(a+Math.random()*(b-a+1)); }
+function pickOne(a){ return a[Math.floor(Math.random()*a.length)]; }
+function V(k){ const v=PH_V[k]; return typeof v==='function'?v():pickOne(v); }
+/* « de » + matière, avec élision : de français, mais d'anglais, d'histoire, d'E.P.S. */
+function matDe(mat){ return (/^[aeiouyéèêh]/i.test(mat)?'d\'':'de ')+mat; }
+
+
+const PH_TYPOS=[['colis','colit'],['arrêté','areter'],['payer','pailler'],['votre','vôtre'],['compte','conte'],
+  ['envoyer','envoiyer'],['secret','secrét'],['gagné','gagner'],['avez','aver'],['coordonnées','coordoné'],
+  ['livraison','livrezon'],['adresse','adrèsse'],['bloqué','blocké'],['réponse','réponce'],['merci','mercie']];
+function phTypo(html){
+  let n=0;
+  for(const [bon,faux] of PH_TYPOS.slice().sort(()=>Math.random()-.5)){
+    if(n>=3) break;
+    const re=new RegExp('\\b'+bon+'\\b','i');
+    if(re.test(html)){ html=html.replace(re,'<span class="ph-typo">'+faux+'</span>'); n++; }
+  }
+  return {html, n};
+}
+
+/* ---- 14.5 Boutons, liens, pièces jointes --------------------------
+   Deux formes d'appel à l'action, visuellement distinctes :
+     btn = un beau bouton              url = une adresse écrite en clair
+   Dans les deux cas : SURVOLER est gratuit, CLIQUER, c'est agir.     */
+function phLink(bad, c, niv, style){
+  const off=(c&&c.mail)?c.mail.split('@')[1]:'ville.fr';
+  const path=pickOne(['espace-eleves','mon-compte','suivi','documents','inscription','programme']);
+  if(!bad){
+    const real='www.'+off+'/'+path+(Math.random()<.4?'/'+pickOne(['2024-2025','details','page-complete-des-informations']):'');
+    return {style:style, txt:style==='url'?real:pickOne(['Consulter la page','Voir le document','Accéder à mon espace','Ouvrir le programme']),
+      real:real, bad:false, dom:off,
+      why:'Le lien mène vraiment à <b>'+off+'</b>, le site annoncé.'};
+  }
+  let host, w;
+  if(niv<=0){
+    host=pickOne(['cadeau-immediat.biz','gain-express.top','recompense-vip.xyz']);
+    w='le lien part vers <b>'+host+'</b>, qui n\'a aucun rapport.';
+  } else if(niv===1){
+    const base=off.slice(0,off.lastIndexOf('.'));
+    host=base+'-'+pickOne(['connexion','espace','securite','portail'])+pickOne(['.net','.info','.co']);
+    w='le lien ressemble à <b>'+off+'</b>… mais c\'est <b>'+host+'</b>, un autre site.';
+  } else {
+    host=off+'.'+pickOne(['espace-connexion.co','portail-securise.net','mon-suivi.info']);
+    w='le vrai site est <b>à la fin</b> de l\'adresse : ici c\'est <b>'+host.split('.').slice(-2).join('.')+'</b>, pas <b>'+off+'</b>.';
+  }
+  const real='www.'+host+'/'+path;
+  return {style:style, txt:style==='url'?'www.'+off+'/'+path:pickOne(['Confirmer maintenant','Consulter mon compte','Régulariser ma situation','Accéder à mon espace','Récupérer mon dossier']),
+    real:real, bad:true, dom:host, facade:off,
+    why:'Le bouton est rassurant, mais '+w};
+}
+function phAtt(bad, v, niv){
+  const base=v.fichier;
+  if(!bad){
+    const t=pickOne([{e:'pdf',ic:'📄'},{e:'jpg',ic:'🖼️'},{e:'png',ic:'🖼️'},{e:'odt',ic:'📝'}]);
+    return {n:base+'.'+t.e, s:rnd(80,900), ic:t.ic, trap:false, ext:t.e,
+      why:'Extension <b>.'+t.e+'</b> : un vrai document, cohérent avec le message.'};
+  }
+  let n, ext, ic, w;
+  if(niv<=0){ ext='exe'; ic='📦'; n=base+'.exe';
+    w='le fichier finit par <b>.exe</b> : c\'est un <b>programme</b>, pas un document.'; }
+  else if(niv===1){ ext=pickOne(['exe','scr']); ic='📄'; n=base+'.'+pickOne(['pdf','doc','jpg'])+'.'+ext;
+    w='<b>double extension</b> : ça commence comme un document et ça finit par <b>.'+ext+'</b>, un programme.'; }
+  else { const f=pickOne([
+      {n:base+'.pdf .exe', e:'exe', w:'un <b>espace</b> cache la vraie fin du nom : <b>.exe</b>.'},
+      {n:base+'.docm',     e:'docm',w:'l\'extension <b>.docm</b> est un document <b>qui contient un programme</b>.'},
+      {n:base+'.zip',      e:'zip', w:'une <b>archive</b> que personne ne t\'a annoncée : on ne l\'ouvre pas.'},
+      {n:base+'.pdf.lnk',  e:'lnk', w:'<b>.lnk</b> : ce n\'est pas le document, c\'est un <b>raccourci</b> qui lance autre chose.'}]);
+    n=f.n; ext=f.e; ic='📄'; w=f.w; }
+  return {n:n, s:rnd(600,3400), ic:ic, trap:true, ext:ext, why:'Regarde la <b>fin</b> du nom : '+w};
+}
+
+/* ---- 14.6 Gabarits HONNÊTES ---------------------------------------
+   who : '#id' pour un expéditeur précis, sinon une famille.
+   Chaque message ne peut partir que de quelqu'un à qui il correspond. */
+const PH_OK_T=[
+  {id:'sortie', who:['#secr','#vies'], ok:'une info d\'organisation du collège, rien à faire',
+   sub:v=>'Sortie '+v.lieu+' — '+v.jour,
+   body:v=>'<p>Bonjour,</p><p>La sortie '+v.lieu+' a lieu <b>'+v.jour+'</b>. Départ à '+v.heure+'.</p><p>Merci de prévoir '+v.item+'.</p>'},
+  {id:'menu', who:['#cantine'], ok:'le menu de la cantine, aucune demande',
+   sub:v=>'Le menu de la semaine',
+   body:v=>'<p>Bonjour,</p><p>Cette semaine : '+v.repas+' lundi, '+v.repas2+' jeudi.</p><p>Bon appétit à tous !</p>'},
+  {id:'rendu', who:['prof'], ok:'ton professeur, sur son adresse habituelle',
+   sub:v=>'À rendre '+v.jour+' en '+v.who.mat,
+   body:v=>'<p>Bonjour,</p><p>Pense à rendre le travail <b>'+matDe(v.who.mat)+'</b> pour '+v.jour+'.</p><p>Bon courage !</p>'},
+  {id:'bravo', who:['prof'], ok:'un encouragement, sans la moindre demande',
+   sub:v=>'Bravo pour ton travail en '+v.who.mat,
+   body:v=>'<p>Bonjour,</p><p>Ton travail en <b>'+v.who.mat+'</b> était très clair. Continue comme ça !</p>'},
+  {id:'absent', who:['prof'], ok:'une info de cours, cohérente avec la matière',
+   sub:v=>'Cours '+matDe(v.who.mat)+' déplacé',
+   body:v=>'<p>Bonjour,</p><p>Le cours <b>'+matDe(v.who.mat)+'</b> de '+v.jour+' est déplacé à '+v.heure+'.</p><p>Salle habituelle.</p>'},
+  {id:'photo', who:['#secr'], ok:'une info d\'organisation du collège',
+   sub:v=>'Photo de classe '+v.jour,
+   body:v=>'<p>Bonjour,</p><p>La photo de classe aura lieu <b>'+v.jour+' à '+v.heure+'</b>.</p><p>Tenue correcte, et surtout le sourire !</p>'},
+  {id:'cdirendre', who:['#cdi'], ok:'un rappel du CDI, sans paiement ni lien',
+   sub:v=>'Ton livre est à rapporter',
+   body:v=>'<p>Bonjour,</p><p>Le livre '+v.livre+' est à rapporter au CDI avant <b>'+v.jour+'</b>.</p><p>Merci !</p>'},
+  {id:'cdinouv', who:['#cdi'], ok:'une annonce du CDI, aucune donnée demandée',
+   sub:v=>'Nouveautés au CDI',
+   body:v=>'<p>Bonjour,</p><p>Trois nouveaux romans sont arrivés au CDI, dont '+v.livre+'.</p><p>Venez les emprunter !</p>'},
+  {id:'bibresa', who:['#biblio'], ok:'une réservation normale, à retirer sur place',
+   sub:v=>'Ta réservation est arrivée',
+   body:v=>'<p>Bonjour,</p><p>Le livre '+v.livre+' que tu as réservé est disponible à l\'accueil jusqu\'à '+v.jour+'.</p><p>À bientôt !</p>'},
+  /* Un vrai message qui réclame de l\'argent : le contexte le rend légitime. */
+  {id:'bibperdu', who:['#biblio'], ok:'une vraie facture : le livre est identifié, et on règle À L\'ACCUEIL, pas par mail',
+   sub:v=>'Livre non rendu : '+v.livre,
+   body:v=>'<p>Bonjour,</p><p>Le livre '+v.livre+', emprunté le '+rnd(1,28)+'/'+rnd(1,9)+', n\'a pas été rendu depuis plus de deux mois.</p>'
+     +'<p>Conformément au règlement, son remplacement est facturé <b>'+v.euro+' €</b>.</p>'
+     +'<p>Le règlement se fait <b>à l\'accueil de la bibliothèque</b>, aux heures d\'ouverture. Si le livre est retrouvé, rapportez-le : la facture sera annulée.</p>'},
+  {id:'villeferme', who:['#piscine','#musee','#biblio'], ok:'une info de service, sans lien ni demande',
+   sub:v=>'Fermeture exceptionnelle '+v.jour,
+   body:v=>'<p>Bonjour,</p><p>Nous serons fermés <b>'+v.jour+'</b> pour l\'entretien.</p><p>Réouverture aux horaires habituels.</p>'},
+  {id:'fete', who:['#mairie'], ok:'une invitation publique, aucune donnée demandée',
+   sub:v=>'Fête du quartier '+v.jour,
+   body:v=>'<p>Bonjour,</p><p>La fête du quartier se tiendra '+v.jour+' place du Marché : jeux, musique et stands.</p><p>Entrée libre, sans inscription.</p>'},
+  {id:'repas', who:['famille'], ok:'un message de famille, sur l\'adresse habituelle',
+   sub:v=>'Tu viens '+v.jour+' ?',
+   body:v=>'<p>Coucou !</p><p>On fait un grand repas '+v.jour+' midi. Tu viens ?</p><p>Réponds quand tu peux, rien ne presse.</p>'},
+  {id:'course', who:['#maman'], ok:'du quotidien en famille, rien de suspect',
+   sub:v=>'Petit rappel pour ce soir',
+   body:v=>'<p>Coucou mon grand,</p><p>Pense à sortir le pain du congélateur en rentrant.</p><p>Je passe te chercher à '+v.heure+'. Bisous</p>'},
+  {id:'notes', who:['copain'], ok:'un camarade, une demande normale entre élèves',
+   sub:v=>'Tu me passes tes notes ?',
+   body:v=>'<p>Salut !</p><p>J\'étais absent '+v.jour+'. Tu peux me prêter tes notes ? Je te les rends demain.</p><p>Merci !</p>'},
+  {id:'invit', who:['copain'], ok:'une invitation entre copains, sans piège',
+   sub:v=>'Mon anniversaire '+v.jour,
+   body:v=>'<p>Salut !</p><p>Je fête mon anniversaire '+v.jour+' à partir de '+v.heure+'. Tu viens ?</p><p>Dis-moi si tu es libre.</p>'},
+  {id:'club', who:['#basket','#nature'], ok:'le club, une info d\'entraînement banale',
+   sub:v=>'Rendez-vous '+v.jour+' à '+v.heure,
+   body:v=>'<p>Bonjour à tous,</p><p>Rendez-vous '+v.jour+' à <b>'+v.heure+'</b>.</p><p>Pensez à '+v.item+'.</p>'},
+  {id:'cineprog', who:['#cine'], ok:'une lettre d\'information à laquelle tu es abonné',
+   sub:v=>'Le programme de la semaine',
+   body:v=>'<p>Bonjour,</p><p>Cette semaine : deux nouveautés et une séance jeune public '+v.jour+'.</p><p>Vous recevez ce message car vous êtes abonné au programme.</p>'},
+  {id:'gazette', who:['#gazette'], ok:'le journal du collège, aucune information demandée',
+   sub:v=>'La Gazette du collège',
+   body:v=>'<p>Au sommaire cette semaine : le potager, les résultats du tournoi et la recette du chef.</p><p>Bonne lecture !</p>'},
+  {id:'colisok', who:['#colis'], ok:'un vrai suivi : aucun paiement, aucune action',
+   sub:v=>'Votre colis arrive '+v.jour,
+   body:v=>'<p>Bonjour,</p><p>Votre colis n° '+v.colisN+' sera livré <b>'+v.jour+'</b> entre '+v.heure+' et midi.</p><p>Rien à faire de votre côté.</p>'},
+  {id:'vaccin', who:['#veto'], ok:'un rappel du vétérinaire, réglé sur place',
+   sub:v=>'Rappel de vaccin pour Filou',
+   body:v=>'<p>Bonjour,</p><p>Le rappel de vaccin de <b>Filou</b> est à prévoir ce mois-ci.</p><p>Appelez-nous pour choisir un créneau.</p>'},
+  /* --- avec pièce jointe SAINE --- */
+  {id:'pjprof', who:['prof'], att:true, file:['fiche-de-cours','support-de-cours','exercices','lecon'], ok:'un document de cours, extension normale',
+   sub:v=>'Documents '+matDe(v.who.mat),
+   body:v=>'<p>Bonjour,</p><p>Voici les documents '+matDe(v.who.mat)+' pour '+v.jour+'.</p><p>Bonne relecture.</p>'},
+  {id:'pjsecr', who:['#secr','#vies'], att:true, file:['autorisation-sortie','fiche-a-signer','autorisation-parentale'], ok:'un document du collège, cohérent avec le message',
+   sub:v=>'Autorisation à faire signer',
+   body:v=>'<p>Bonjour,</p><p>Merci de faire signer le document ci-joint et de le rapporter avant '+v.jour+'.</p>'},
+  {id:'pjfam', who:['#papi','#tata'], att:true, file:['photos-dimanche','photos-famille','photos-repas'], ok:'une photo attendue, envoyée par la famille',
+   sub:v=>'Les photos de dimanche',
+   body:v=>'<p>Mon grand,</p><p>Voilà les photos de dimanche, comme promis.</p>'},
+  /* --- avec LIEN ou BOUTON correct --- */
+  {id:'lienecole', who:['#vies','#secr'], link:true, ok:'le lien mène vraiment au site du collège',
+   sub:v=>'Le calendrier du trimestre est en ligne',
+   body:v=>'<p>Bonjour,</p><p>Le calendrier du trimestre est consultable sur le site du collège :</p>'},
+  {id:'lienville', who:['#biblio','#musee','#mairie'], link:true, ok:'le lien mène vraiment au site annoncé',
+   sub:v=>'Le programme des ateliers',
+   body:v=>'<p>Bonjour,</p><p>Tout le programme des ateliers est détaillé ici :</p>'},
+  /* --- légitimes mais INHABITUELS (phase du faux positif) --- */
+  {id:'nouveauprof', who:['#zacelv'], neuf:true, ok:'nouvelle tête, mais adresse officielle du collège et demande normale',
+   sub:v=>'Je me présente',
+   body:v=>'<p>Bonjour,</p><p>Je suis '+v.who.name+', je prends la classe en <b>'+v.who.mat+'</b> à partir de '+v.jour+'.</p><p>Je vous donnerai le programme en classe. À bientôt !</p>'},
+  {id:'infirmiere', who:['#bahri'], neuf:true, ok:'un service du collège que tu ne connais pas encore, sans rien demander',
+   sub:v=>'Permanence de l\'infirmerie',
+   body:v=>'<p>Bonjour,</p><p>L\'infirmerie est ouverte tous les jours de '+v.heure+' à 16h.</p><p>Passez me voir en cas de besoin, sans rendez-vous.</p>'},
+  {id:'partenaire', who:['#orch'], neuf:true, ok:'un partenaire inconnu, mais rien d\'anormal : aucune donnée, aucun paiement',
+   sub:v=>'Atelier découverte '+v.jour,
+   body:v=>'<p>Bonjour,</p><p>Nous intervenons au collège '+v.jour+' pour un atelier découverte.</p><p>Aucune inscription n\'est nécessaire, tout se fait en classe.</p>'},
+  {id:'plateforme', who:['#ent2'], neuf:true, link:true, ok:'un changement réel, annoncé aussi en classe, et le lien est cohérent',
+   sub:v=>'Nouvelle plateforme de devoirs',
+   body:v=>'<p>Bonjour,</p><p>À partir de '+v.jour+', les devoirs seront déposés sur une nouvelle plateforme.</p><p>Ton professeur te montrera en classe. Rien à installer :</p>'},
+  {id:'piscinehoraire', who:['#piscine'], ok:'un horaire de service public, sans lien ni demande',
+   sub:v=>'Nouveaux horaires à partir de '+v.jour,
+   body:v=>'<p>Bonjour,</p><p>À partir de '+v.jour+', le bassin ouvre dès '+v.heure+' en semaine.</p><p>Les tarifs ne changent pas.</p>'},
+  {id:'naturesortie', who:['#nature'], ok:'l\'association habituelle, une info pratique',
+   sub:v=>'Sortie nature reportée',
+   body:v=>'<p>Bonjour à tous,</p><p>Vu la météo, la sortie est reportée à '+v.jour+'.</p><p>Pensez à '+v.item+'.</p>'},
+  {id:'gazettepj', who:['#gazette'], att:true, file:['gazette-semaine','journal-college','gazette-numero'], ok:'le journal du collège, en pièce jointe, extension normale',
+   sub:v=>'La Gazette en version imprimable',
+   body:v=>'<p>Bonjour,</p><p>Voici la Gazette de la semaine en pièce jointe, pour ceux qui veulent l\'imprimer.</p>'},
+  {id:'cinelien', who:['#cine'], link:true, ok:'le lien mène vraiment au site du cinéma',
+   sub:v=>'Séance jeune public '+v.jour,
+   body:v=>'<p>Bonjour,</p><p>Une séance jeune public est programmée '+v.jour+' à '+v.heure+'.</p><p>Toutes les séances sont ici :</p>'},
+  {id:'photographe', who:['#photo'], neuf:true, ok:'un prestataire inconnu, mais on règle au collège : rien à saisir',
+   sub:v=>'Photos de classe : retrait des pochettes',
+   body:v=>'<p>Bonjour,</p><p>Les pochettes photo seront distribuées en classe '+v.jour+'.</p><p>Le règlement se fait au collège, en espèces ou par chèque. Aucun paiement en ligne.</p>'}
 ];
+
+/* ---- 14.7 Gabarits PIÉGÉS -----------------------------------------
+   niv   : à partir de quel niveau de finesse ce piège apparaît
+   imite : qui il usurpe (sinon expéditeur inventé)
+   act   : 'btn' bouton, 'url' adresse écrite en clair, null aucun
+   La plupart poussent à CLIQUER, pas à répondre : c'est ainsi que ça
+   se passe en vrai, et c'est bien plus difficile à repérer.          */
+const PH_KO_T=[
+  /* ===== niveau 0 : les grosses ficelles ===== */
+  {id:'gain', niv:0, clues:['gift','perso','urgency'], wild:true, shout:true,
+   sub:v=>'🎉 Vous avez gagné '+v.gros+' € !!!',
+   body:v=>'<p>FÉLICITATIONS !!! Vous êtes notre GRAND GAGNANT du mois !</p>'
+     +'<p>Pour recevoir vos <b>'+v.gros+' €</b>, envoyez sous <b>'+v.delai+'</b> votre nom, votre adresse et votre date de naissance.</p>'},
+  {id:'lot', niv:0, clues:['gift','perso'], wild:true, shout:true, act:'btn',
+   sub:v=>'🎮 Tu as gagné '+v.lot+' !',
+   body:v=>'<p>TU ES LE GAGNANT DU JOUR !!!</p><p>Il ne reste que 2 places. Réclame ton lot tout de suite :</p>'},
+  {id:'prince', niv:0, clues:['gift','money','perso'], wild:true,
+   sub:v=>'CONFIDENTIEL — Proposition de Son Altesse',
+   body:v=>'<p>Cher ami,</p><p>Je suis le <b>prince Youssef Al-Fayeed</b>. Je dois placer <b>'+v.gros+' €</b> hors de mon pays avant '+v.delai+'.</p>'
+     +'<p>Vous recevrez <b>20 %</b> de cette somme si vous acceptez de la recevoir sur le compte de vos parents.</p>'
+     +'<p>Envoyez-moi leur <b>numéro de compte</b> ainsi qu\'une avance de <b>200 €</b> de frais de dossier.</p>'},
+  {id:'bradpitt', niv:0, clues:['gift','money'], wild:true,
+   sub:v=>'C\'est moi, Brad Pitt. J\'ai besoin de ton aide.',
+   body:v=>'<p>Bonjour, je suis le véritable <b>Brad Pitt</b>. Je sais que c\'est surprenant.</p>'
+     +'<p>Je suis très malade et mon agent a bloqué tous mes comptes.</p>'
+     +'<p>Envoie-moi <b>'+v.euro+' €</b> en cartes cadeaux pour m\'aider à payer mes soins. Je te rembourserai au centuple à ma guérison.</p>'
+     +'<p>Surtout, n\'en parle à personne.</p>'},
+  {id:'crypto', niv:0, clues:['gift','money'], wild:true, shout:true, act:'btn',
+   sub:v=>'Multiplie ton argent de poche par 10 !',
+   body:v=>'<p>Investis <b>20 €</b> aujourd\'hui, récupère <b>200 €</b> vendredi. Garanti sans risque !!!</p><p>Places limitées :</p>'},
+  {id:'heritage', niv:0, clues:['gift','money'], wild:true,
+   sub:v=>'Un héritage de '+v.gros+' € vous attend',
+   body:v=>'<p>Maître Dubois, notaire international.</p><p>Un lointain parent vous a légué <b>'+v.gros+' €</b>.</p>'
+     +'<p>Réglez <b>150 €</b> de frais de dossier pour débloquer le versement.</p>'},
+  {id:'virus', niv:0, clues:['urgency','money'], wild:true, shout:true,
+   sub:v=>'🔴 '+rnd(2,7)+' VIRUS détectés sur votre ordinateur',
+   body:v=>'<p>Notre système a détecté des virus sur votre machine !</p>'
+     +'<p>Appelez <b>immédiatement</b> le 08 99 99 99 99 (4 €/min) pour la désinfection d\'urgence.</p>'},
+
+  /* ===== niveau 1 : les institutions imitées ===== */
+  {id:'colisfrais', niv:1, clues:['money','urgency'], imite:['#colis'], act:'btn',
+   sub:v=>'Colis n° '+v.colisN+' : frais de dédouanement',
+   body:v=>'<p>Bonjour,</p><p>Votre colis est retenu. Des frais de <b>'+v.petit+' €</b> restent dus.</p>'
+     +'<p>Sans règlement sous <b>'+v.delai+'</b>, le colis sera retourné à l\'expéditeur.</p>'},
+  {id:'relivraison', niv:1, clues:['money'], imite:['#colis'], act:'btn',
+   sub:v=>'Nouvelle tentative de livraison',
+   body:v=>'<p>Bonjour,</p><p>Notre livreur n\'a pas pu vous remettre le colis n° '+v.colisN+'.</p>'
+     +'<p>Reprogrammez la livraison et réglez <b>'+v.petit+' €</b> de frais de représentation :</p>'},
+  {id:'entconnexion', niv:1, clues:['pass','urgency'], imite:['#vies','#secr'], act:'btn',
+   sub:v=>'Ton espace élève va être désactivé',
+   body:v=>'<p>Bonjour,</p><p>Ton espace élève n\'a pas été utilisé depuis longtemps. Il sera désactivé <b>'+v.delai+'</b>.</p>'
+     +'<p>Reconnecte-toi pour le conserver :</p>'},
+  {id:'cuicuiverif', niv:1, clues:['pass','urgency'], imite:['#cuicui'], act:'btn',
+   sub:v=>'Activité inhabituelle sur ta boîte',
+   body:v=>'<p>Bonjour,</p><p>Une connexion inhabituelle a été détectée sur ta boîte Cui-Cui.</p>'
+     +'<p>Vérifie ton compte sous <b>'+v.delai+'</b> pour éviter le blocage :</p>'},
+  {id:'mairieespace', niv:1, clues:['perso'], imite:['#mairie'], act:'btn',
+   sub:v=>'Espace famille : dossier incomplet',
+   body:v=>'<p>Bonjour,</p><p>Votre dossier famille est incomplet pour l\'année en cours.</p>'
+     +'<p>Complétez vos informations (adresse, date de naissance, numéro d\'allocataire) :</p>'},
+  {id:'cantinesolde', niv:1, clues:['money','urgency'], imite:['#cantine'], act:'btn',
+   sub:v=>'Solde cantine négatif : '+v.euro+' €',
+   body:v=>'<p>Bonjour,</p><p>Le solde du compte cantine est de <b>−'+v.euro+' €</b>.</p>'
+     +'<p>Rechargez-le en ligne <b>avant '+v.delai+'</b>, faute de quoi l\'accès au self sera suspendu :</p>'},
+  {id:'cdiamende', niv:1, clues:['money'], imite:['#cdi'], act:'btn',
+   sub:v=>'Retard de restitution : '+v.euro+' € à régler',
+   body:v=>'<p>Bonjour,</p><p>Un ouvrage emprunté au CDI n\'a pas été restitué.</p>'
+     +'<p>Une amende de <b>'+v.euro+' €</b> est à régler en ligne pour lever le blocage de ton compte :</p>'},
+  {id:'aboexpire', niv:1, clues:['money','urgency'], wild:true, act:'btn',
+   sub:v=>'Votre abonnement '+v.marque+' expire '+v.delai,
+   body:v=>'<p>Bonjour,</p><p>Le dernier paiement de votre abonnement <b>'+v.marque+'</b> a échoué.</p>'
+     +'<p>Mettez à jour votre moyen de paiement pour éviter la coupure :</p>'},
+  {id:'impots', niv:1, clues:['gift','perso','urgency'], wild:true, act:'btn',
+   sub:v=>'Remboursement de '+v.euro+' € en attente',
+   body:v=>'<p>Bonjour,</p><p>Après vérification, un trop-perçu de <b>'+v.euro+' €</b> vous est dû.</p>'
+     +'<p>Indiquez vos coordonnées bancaires avant <b>'+v.delai+'</b>, faute de quoi la somme sera reversée :</p>'},
+  {id:'banque', niv:1, clues:['perso','urgency'], wild:true, act:'btn',
+   sub:v=>'Opération de '+v.euro+' € à confirmer',
+   body:v=>'<p>Bonjour,</p><p>Une opération de <b>'+v.euro+' €</b> vient d\'être enregistrée sur votre compte.</p>'
+     +'<p>Si vous n\'en êtes pas à l\'origine, annulez-la immédiatement :</p>'},
+
+  /* ===== niveau 2 : le sur-mesure ===== */
+  {id:'pjbulletin', niv:2, clues:['att'], imite:['#secr','#vies'], att:true, file:['bulletin-trimestre','bulletin-scolaire','bulletin-notes'],
+   sub:v=>'Bulletin du trimestre',
+   body:v=>'<p>Bonjour,</p><p>Vous trouverez ci-joint le bulletin du trimestre.</p><p>Merci de le consulter et de le conserver.</p>'},
+  {id:'pjdevoir', niv:2, clues:['att'], imite:['prof'], att:true, file:['corrige-devoir','corrige-controle','correction-exercices'],
+   sub:v=>'Corrigé du dernier devoir',
+   body:v=>'<p>Bonjour,</p><p>Voici le corrigé du dernier devoir, à relire avant le prochain cours.</p>'},
+  {id:'pjphotos', niv:2, clues:['att'], imite:['copain'], att:true, file:['photos-sortie','photos-de-la-sortie','album-sortie'],
+   sub:v=>'Les photos de la sortie !',
+   body:v=>'<p>Salut !</p><p>J\'ai enfin trié les photos de la sortie. Elles sont en pièce jointe.</p><p>Regarde la dernière, elle est énorme 😄</p>'},
+  {id:'pjfacture', niv:2, clues:['att','urgency'], wild:true, att:true, file:['facture','facture-du-mois','facture-impayee'],
+   sub:v=>'Facture n° '+rnd(10000,99999),
+   body:v=>'<p>Bonjour,</p><p>Veuillez trouver ci-joint votre facture du mois.</p>'
+     +'<p>Merci de la consulter <b>sans attendre</b> pour éviter des frais de retard.</p>'},
+  {id:'usurpprof', niv:2, clues:['usurp','pass'], imite:['prof'], perso:true, act:'btn',
+   sub:v=>'Ton devoir '+matDe(v.who.mat)+' n\'est pas arrivé',
+   body:v=>'<p>Bonjour,</p><p>Ton dernier devoir <b>'+matDe(v.who.mat)+'</b> n\'apparaît pas sur la plateforme.</p>'
+     +'<p>Reconnecte-toi ici pour le redéposer avant que je ne mette un zéro :</p>'},
+  {id:'usurpfam', niv:2, clues:['usurp','money'], imite:['famille'], perso:true,
+   sub:v=>'Petit service, entre nous',
+   body:v=>'<p>Coucou, je n\'arrive pas à payer en ligne depuis chez moi, ma carte est refusée.</p>'
+     +'<p>Tu peux m\'envoyer le <b>code de la carte</b> de tes parents ? C\'est pour une surprise, ne leur dis rien.</p>'},
+  {id:'usurpcopain', niv:2, clues:['usurp'], imite:['copain'], perso:true, act:'url',
+   sub:v=>'Regarde ce que j\'ai trouvé sur toi',
+   body:v=>'<p>Salut ! Y\'a une photo de toi qui circule, tu es au courant ?</p><p>Regarde, c\'est là :</p>'},
+  {id:'amidetresse', niv:2, clues:['money','urgency'], wild:true,
+   sub:v=>'Je suis bloqué, aide-moi',
+   body:v=>'<p>C\'est moi ! J\'ai perdu mon portefeuille en voyage et mon téléphone ne marche plus.</p>'
+     +'<p>Envoie-moi <b>'+v.euro+' €</b> par virement aujourd\'hui, je te rembourse dès mon retour.</p><p>N\'en parle à personne, j\'ai honte.</p>'},
+  {id:'sondage', niv:2, clues:['gift','perso'], wild:true, act:'url',
+   sub:v=>'Votre avis compte — 3 questions',
+   body:v=>'<p>Bonjour,</p><p>Répondez à trois questions sur nos services et participez au tirage au sort.</p>'
+     +'<p>Le questionnaire demande votre nom, votre adresse et votre date de naissance :</p>'},
+  {id:'cdiprolong', niv:2, clues:['usurp'], imite:['#cdi'], act:'btn',
+   sub:v=>'Prolonger ton emprunt : '+v.livre,
+   body:v=>'<p>Bonjour,</p><p>Ton emprunt de '+v.livre+' arrive à échéance '+v.jour+'.</p>'
+     +'<p>Tu peux le prolonger d\'une semaine depuis ton espace lecteur :</p>'},
+  {id:'pjgazette', niv:2, clues:['att'], imite:['#gazette'], att:true, file:['gazette-semaine','journal-college','gazette-numero'],
+   sub:v=>'Le numéro de la semaine',
+   body:v=>'<p>Bonjour,</p><p>Le nouveau numéro de la Gazette est en pièce jointe, avec les photos du tournoi.</p><p>Bonne lecture !</p>'},
+  {id:'usurpclub', niv:2, clues:['usurp','perso'], imite:['asso'], act:'btn', perso:true,
+   sub:v=>'Confirme ta présence '+v.jour,
+   body:v=>'<p>Bonjour,</p><p>Nous préparons les convocations pour '+v.jour+'.</p>'
+     +'<p>Confirme ta présence et complète ta fiche (date de naissance, numéro de licence) :</p>'},
+  {id:'pjmairie', niv:2, clues:['att'], imite:['#mairie','#piscine'], att:true, file:['attestation-annuelle','attestation','attestation-inscription'],
+   sub:v=>'Votre attestation annuelle',
+   body:v=>'<p>Bonjour,</p><p>Veuillez trouver ci-jointe votre attestation pour l\'année en cours.</p>'
+     +'<p>Merci de la conserver, elle vous sera demandée à l\'inscription.</p>'}
+];
+
+/* ---- 14.8 Les 8 phases --------------------------------------------
+   ATTENTION : bloc relu par tts/extractors/la-messagerie.mjs.
+   Aucun commentaire ne doit y figurer.                              */
+const PH_PHASES=[
+  {id:1, n:7, ic:'📬', name:'Phase 1 — Le tri', sub:'Des messages normaux, et des arnaques bien voyantes.',
+   tuto:['Un mail arrive. Lis-le calmement, rien ne presse.',
+         'Normal, on garde. Bizarre, à la poubelle.'],
+   demo:'intro1', niv:0},
+
+  {id:2, n:7, ic:'🔍', name:'Phase 2 — L\'expéditeur', sub:'Le nom affiché ment. L\'adresse, elle, dit la vérité.',
+   tuto:['N\'importe qui peut écrire « Le secrétariat » comme nom.',
+         'Clique le nom de l\'expéditeur pour voir sa vraie adresse.'],
+   demo:'reveal', niv:1, reveal:true, tool:'scan2'},
+
+  {id:3, n:7, ic:'🔗', name:'Phase 3 — Boutons et liens', sub:'Un bouton rassurant peut mener n\'importe où.',
+   tuto:['Survole un bouton SANS cliquer : sa vraie destination s\'affiche.',
+         'Cliquer, c\'est déjà y aller. Et parfois, c\'est perdu.'],
+   demo:'hover', niv:1, links:true, tool:'url'},
+
+  {id:4, n:7, ic:'📎', name:'Phase 4 — Les pièces jointes', sub:'C\'est la FIN du nom du fichier qui compte.',
+   tuto:['.pdf et .jpg sont des documents. .exe et .scr sont des programmes.',
+         'Ouvrir un fichier piégé, c\'est déjà perdu : on ne clique pas pour vérifier.'],
+   demo:'ext', niv:2, atts:true, tool:'pj'},
+
+  {id:5, n:7, ic:'🎯', name:'Phase 5 — La preuve', sub:'Bloquer, c\'est bien. Montrer pourquoi, c\'est mieux.',
+   tuto:['Désormais, si tu tamponnes INDÉSIRABLE, tu dois pointer CE qui cloche.',
+         'Vise juste : toutes les parties du mail ne sont pas des pièges.'],
+   demo:'point', niv:2, advice:true},
+
+  {id:6, n:7, ic:'🎭', name:'Phase 6 — L\'usurpation', sub:'Il imite tes contacts. Et le nouveau n\'est pas toujours un piège.',
+   tuto:['Il se fait passer pour un professeur, la famille, un camarade.',
+         'Un inconnu peut être honnête : bloquer un vrai message coûte de la CONFIANCE.'],
+   demo:'registre', niv:2, perso:true, neuf:.4},
+
+  {id:7, n:10, ic:'⚔️', name:'Phase finale — Le duel', sub:'Deux mails presque jumeaux. Un seul est sûr.',
+   tuto:['Les mails arrivent DEUX PAR DEUX, presque identiques.',
+         'Survole le mail SÛR, puis clique dessus pour le valider.'],
+   demo:'duel', niv:2, duel:true}
+];
+/* Le pointage du problème (tampon INDÉSIRABLE justifié) démarre à cette phase. */
+const PH_POINT_FROM=4;
+
+/* ---- 14.9 La boutique : peu d\'outils, mais de vrais bonus convoités ---- */
+const PH_TOOLS=[
+  {id:'scan2', ic:'🔎', name:'Scan d\'adresse', price:22, from:2, use:'2 scans par phase',
+   desc:'Passe la loupe sur l\'adresse de l\'expéditeur et la <b>compare au vrai domaine</b>.',
+   warn:'Deux utilisations par phase seulement. Il ne dit pas si le message est honnête.',
+   unlock:'Ses adresses sosies ne passeront plus inaperçues !'},
+  {id:'url', ic:'🔗', name:'Analyseur d\'URL', price:26, from:3, use:'2 🪙 par analyse', cost:2,
+   desc:'Découpe une adresse et <b>met en évidence le vrai domaine</b>, puis annonce : sûre ou piégée.',
+   warn:'Chaque analyse coûte 2 crédits : vise juste.',
+   unlock:'Mes liens déguisés vont se démonter tout seuls…'},
+  {id:'pj', ic:'🔬', name:'Scanner à pièces jointes', price:30, from:4, use:'1 fois par phase',
+   desc:'Analyse une pièce jointe et la déclare <b>sûre ou dangereuse</b>, sans l\'ouvrir.',
+   warn:'Une seule utilisation par phase : garde-la pour un vrai doute.',
+   unlock:'Mes fichiers piégés seront repérés avant l\'ouverture !'}
+];
+
+/* ---- 14.10 Le fabricant de mails ---- */
+let _phUid=0;
+function shuffle(a){ return a.slice().sort(()=>Math.random()-.5); }
+function phPickWho(spec){
+  const pool=[];
+  for(const s of (spec||[])){
+    if(s.charAt(0)==='#'){ const c=phById(s.slice(1)); if(c) pool.push(c); }
+    else PH_ALL.filter(c=>c.fam===s && !c.neuf).forEach(c=>pool.push(c));
+  }
+  return pool.length?pickOne(pool):pickOne(PH_CONTACTS);
+}
+function phVars(who){
+  return {who:who, jour:V('jour'), heure:V('heure'), lieu:V('lieu'), item:V('item'),
+    livre:V('livre'), repas:V('repas'), repas2:V('repas'), sport:V('sport'),
+    euro:V('euro'), petit:V('petit'), gros:V('gros'), delai:V('delai'),
+    colisN:V('colisN'), marque:V('marque'), lot:V('lot'), fichier:V('fichier')};
+}
+function phDate(){
+  const j=['lundi','mardi','mercredi','jeudi','vendredi'][rnd(0,4)];
+  return j+' '+rnd(1,28)+'/'+rnd(1,12)+' à '+rnd(7,19)+'h'+String(rnd(0,59)).padStart(2,'0');
+}
+function phMakeOk(t, niv, opt){
+  opt=opt||{};
+  const c=phPickWho(t.who), v=phVars(c);
+  if(t.file) v.fichier=pickOne([].concat(t.file));
+  const m={uid:++_phUid, tpl:t.id, phish:false, c:c, name:c.name, mail:c.mail, date:phDate(),
+    sub:t.sub(v), body:t.body(v), sign:c.name, clues:[], ok:t.ok, neuf:!!t.neuf};
+  if(t.att)  m.atts=[phAtt(false, v, niv)];
+  if(t.link) m.link=phLink(false, c, niv, Math.random()<.5?'btn':'url');
+  if(opt.pressed){
+    m.body+='<p>Merci de répondre <b>avant '+v.jour+'</b> : la liste part ce jour-là.</p>';
+    m.ok='une date limite existe, mais aucune demande interdite et aucun lien piégé';
+  }
+  /* Quelques vrais messages ont aussi des fautes : une faute n\'est pas la preuve
+     d\'une arnaque. Jamais chez un professeur, ni sur un service officiel. */
+  if(opt.typo && c.fam!=='prof' && c.fam!=='ecole'){
+    const r=phTypo(m.body); if(r.n) m.body=r.html;
+  }
+  return m;
+}
+function phMakeKo(t, niv, opt){
+  opt=opt||{};
+  const clues=[];
+  let c=null, name, mail;
+  if(t.imite){
+    c=phPickWho(t.imite); name=c.name;
+    const f=phFakeMail(c.mail, niv);
+    mail=f.mail;
+    clues.push({k:'domain', why:f.why});
+  } else {
+    name=pickOne(['Service client','Alerte sécurité','Loterie Nationale','Support technique','Espace abonnés',
+                  'Notification','Service de livraison','Un ami','Assistance en ligne']);
+    mail=phWildMail(niv);
+    clues.push({k:'domain', why:'Expéditeur <b>totalement inconnu</b> : ce nom ne correspond à aucun contact ni service enregistré.'});
+  }
+  const v=phVars(c||{name:name, mail:mail, mat:pickOne(['mathématiques','français','SVT','technologie'])});
+  if(t.file) v.fichier=pickOne([].concat(t.file));
+  const m={uid:++_phUid, tpl:t.id, phish:true, c:c, name:name, mail:mail, date:phDate(),
+    sub:t.sub(v), body:t.body(v), sign:name, clues:clues, shout:!!t.shout};
+  for(const k of t.clues){ if(k!=='att'&&k!=='usurp') clues.push({k:k, why:PH_CLUES[k].d}); }
+  if(t.clues.indexOf('usurp')>=0 && c)
+    clues.push({k:'usurp', why:'Quelqu\'un se fait passer pour <b>'+c.name+'</b>, qui écrit toujours depuis <b>'+c.mail+'</b>.'});
+  if(t.att){ const a=phAtt(true, v, niv); m.atts=[a]; clues.push({k:'att', why:a.why}); }
+  if(t.act){ const l=phLink(true, c, niv, t.act); m.link=l; clues.push({k:'link', why:l.why}); }
+  if(t.perso) m.body=m.body.replace('<p>','<p><i>'+pickOne(['Tu es bien en 5ᵉ B, non ?','On s\'est vus à la sortie '+v.lieu+'.','Ton professeur principal m\'a transmis ton adresse.'])+'</i> ');
+  if(opt.typo){ const r=phTypo(m.body); if(r.n){ m.body=r.html; clues.push({k:'typo', why:r.n+' faute'+(r.n>1?'s':'')+' grossière'+(r.n>1?'s':'')+' : associée à d\'autres signes, la langue bâclée trahit l\'arnaque.'}); } }
+  m.clues=clues;
+  m.ko=PH_CLUES[clues[clues.length-1].k].t.toLowerCase();
+  return m;
+}
+
+/* ---- 14.11 La file d'une phase : jamais deux mails qui se ressemblent ----
+   Une même trame n'est jamais tirée deux fois dans la même phase, ni deux
+   fois dans la partie tant qu'il reste des trames neuves. Et deux mails de
+   la même phase ne partent jamais du même expéditeur. */
+function phKoPool(){ const n=phCfg().niv; return PH_KO_T.filter(t=>t.niv<=n); }
+function phOkPool(){
+  const c=phCfg();
+  return PH_OK_T.filter(t=>{
+    if(t.neuf && !c.neuf) return false;
+    if(t.att  && PH.phase<3) return false;
+    if(t.link && PH.phase<2) return false;
+    return true;
+  });
+}
+function phBodySig(m){
+  return (m.sub+' '+m.body).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
+}
+function phPickTpls(pool, n, taken){
+  const fresh=shuffle(pool.filter(t=>!PH.usedTpl[t.id] && !taken[t.id]));
+  const again=shuffle(pool.filter(t=>PH.usedTpl[t.id] && !taken[t.id]));
+  const out=[];
+  for(const t of fresh.concat(again)){
+    if(out.length>=n) break;
+    out.push(t); taken[t.id]=1;
+  }
+  return out;
+}
+function phBuildQueue(){
+  PH.usedTpl=PH.usedTpl||{}; PH.bodies=PH.bodies||{};
+  const c=phCfg(), n=c.n, niv=c.niv;
+  const nKo=Math.round(n*(c.neuf?.45:.5)), nOk=n-nKo;
+  const taken={}, senders={}, q=[];
+  /* Garde-fou : aucun corps de mail deja vu dans la partie, et jamais deux
+     mails du meme expediteur dans une meme phase. On retire les variables
+     jusqu a obtenir un message reellement neuf. */
+  const makeUnique=(build)=>{
+    for(let i=0;i<24;i++){
+      const m=build(), who=(m.c?m.c.id:m.mail), sig=phBodySig(m);
+      if(!senders[who] && !PH.bodies[sig]){ senders[who]=1; PH.bodies[sig]=1; return m; }
+    }
+    const m=build(); PH.bodies[phBodySig(m)]=1; return m;
+  };
+  for(const t of phPickTpls(phKoPool(), nKo, taken)){
+    PH.usedTpl[t.id]=1;
+    q.push(makeUnique(()=>phMakeKo(t, niv, {
+      typo : (niv===0 ? Math.random()<.5 : Math.random()<.25)
+    })));
+  }
+  for(const t of phPickTpls(phOkPool(), nOk, taken)){
+    PH.usedTpl[t.id]=1;
+    q.push(makeUnique(()=>phMakeOk(t, niv, {
+      pressed : Math.random()<.28,
+      typo    : Math.random()<.25
+    })));
+  }
+  PH.queue=shuffle(q);
+  PH.pjLeft=PH.tools.pj?1:0;
+  PH.scanLeft=PH.tools.scan2?2:0;
+  PH.adviceUsed=0;
+  PH.pstats={total:0,right:0,wrong:0,clues:0,tools:0,gain:0,missed:{},found:{}};
+}
+
+/* ---- 14.12 LE PHISHER : le personnage ----
+   Grand, à gauche du bureau, canne DEVANT lui et sur son côté pour
+   qu'elle ne masque ni son visage ni la bulle. */
+function phFaceSvg(){
+  return '<svg viewBox="0 0 96 104" class="phf" aria-hidden="true">'
+    +'<ellipse class="phf-shadow" cx="42" cy="98" rx="26" ry="5" fill="rgba(0,0,0,.35)"/>'
+    /* corps + capuche */
+    +'<path class="phf-cape" d="M42 26 C20 26 12 52 14 96 L70 96 C72 52 64 26 42 26Z" fill="#3b0764"/>'
+    +'<path d="M42 26 C24 26 16 46 15 74 L26 74 C27 50 32 36 42 36 C52 36 57 50 58 74 L69 74 C68 46 60 26 42 26Z" fill="#5b21b6"/>'
+    +'<path class="phf-hood" d="M42 6 C24 6 16 22 17 40 C18 56 27 68 42 68 C57 68 66 56 67 40 C68 22 60 6 42 6Z" fill="#4c1d95"/>'
+    +'<path d="M42 6 C24 6 16 22 17 40 L27 40 C26 24 31 14 42 14 C53 14 58 24 57 40 L67 40 C68 22 60 6 42 6Z" fill="#6d28d9"/>'
+    /* masque */
+    +'<ellipse class="phf-mask" cx="42" cy="42" rx="19" ry="20" fill="#f8fafc"/>'
+    +'<path d="M23 36 h38" stroke="#cbd5e1" stroke-width="1.2"/>'
+    +'<g class="phf-eyes">'
+    +'<ellipse cx="33" cy="41" rx="5.4" ry="3.8" fill="#111827"/>'
+    +'<ellipse cx="51" cy="41" rx="5.4" ry="3.8" fill="#111827"/>'
+    +'<circle class="phf-pup" cx="33" cy="41" r="2.2" fill="#ef4444"/>'
+    +'<circle class="phf-pup" cx="51" cy="41" r="2.2" fill="#ef4444"/></g>'
+    +'<path class="phf-mouth" d="M33 53 Q42 49 51 53" stroke="#334155" stroke-width="2.2" fill="none" stroke-linecap="round"/>'
+    /* la canne : dessinée EN DERNIER donc au premier plan, et rejetée sur le côté */
+    +'<g class="phf-rod">'
+    +'<path d="M58 92 L92 20" stroke="#a16207" stroke-width="4" stroke-linecap="round"/>'
+    +'<path d="M58 92 L66 75" stroke="#78350f" stroke-width="5.5" stroke-linecap="round"/>'
+    +'<path class="phf-line" d="M92 20 Q88 34 84 46" stroke="#e0f2fe" stroke-width="1.3" fill="none"/>'
+    +'<path d="M84 46 q0 6 -5 6 q-4 0 -4 -4" stroke="#e5e7eb" stroke-width="2" fill="none"/>'
+    +'<g class="phf-bait"><rect x="72" y="52" width="16" height="11" rx="2" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>'
+    +'<path d="M72 52 l8 6 l8 -6" fill="none" stroke="#d97706" stroke-width="1.4"/></g>'
+    +'</g></svg>';
+}
+const PH_LINES={
+  arrive:['Un petit poisson… mordra-t-il ?','Celui-là, je l\'ai soigné.','Ne le lis pas trop attentivement…','J\'ai passé la nuit sur ce déguisement.'],
+  win   :['Gnark gnark ! Encore un qui mord ! 🎣','Trop facile. Je pêche, tu payes.','Un poisson de plus dans mon filet !','Merci pour le clic, inspecteur.'],
+  parano:['Hé hé… tu jettes même les vrais messages !','Continue de tout bloquer, plus personne ne t\'écrira.','La méfiance totale, c\'est encore moi qui gagne.'],
+  lose  :['Grrr… tu as vu quoi, exactement ?!','Pff. Le prochain sera plus fin.','Tu triches, tu LIS les adresses !','Impossible… mon plus beau faux !'],
+  click :['ET VOILÀ ! Tu as cliqué ! 🎣','Un clic, et je suis chez toi.','C\'était si simple : il suffisait d\'attendre.'],
+  buy   :['Non ! Pas cet outil-là !','Tu dépenses tes crédits contre moi ? Lâche.','Range ça. RANGE ÇA.'],
+  low   :['Encore une erreur et le réseau est à moi…','Je sens le filet se remplir…'],
+  phase :['Tu ne verras pas venir la suite.','Nouvelle vague. Nouveaux masques.','On monte d\'un cran, inspecteur.'],
+  final :['Deux mails. Un seul est propre. Choisis bien.','Cette fois, tu ne verras pas la différence.'],
+  beaten:['NON ! Ma canne… mon filet… tout est fichu !']
+};
+function phSay(kind, forced){
+  const host=document.getElementById('phBubble'); if(!host) return;
+  const jubile=(kind==='win'||kind==='parano'||kind==='click');
+  host.className='ph-bubble show '+(jubile?'glee':(kind==='lose'?'rage':''));
+  host.innerHTML=forced||pickOne(PH_LINES[kind]||['…']);
+  phMood(jubile?'glee':(kind==='lose'||kind==='buy'?'rage':'idle'));
+  clearTimeout(PH._bubT);
+  PH._bubT=setTimeout(()=>{ try{ host.className='ph-bubble'; phMood('idle'); }catch(e){} }, 8200);
+}
+function phMood(m){ const b=document.getElementById('phBoss'); if(b) b.className='ph-boss '+m; }
+/* bulle des OUTILS (ce n'est pas le PHISHER qui parle) */
+function phInfo(html, tone){
+  const a=phArena(); if(!a) return;
+  const old=a.querySelector('.ph-info'); if(old) old.remove();
+  const t=document.createElement('div'); t.className='ph-info '+(tone||'');
+  t.innerHTML=html;
+  a.appendChild(t);
+  clearTimeout(PH._infoT); PH._infoT=setTimeout(()=>{ try{t.remove();}catch(e){} }, 8200);
+}
+
+/* ---- 14.13 Le bureau ---- */
+const PH_MAXG=100, PH_HIT=15, PH_SOFT=8, PH_HEAL=10;
 function phisherRun(){
-  PH.wave=0; PH.credits=0; PH.lives=3; PH.streak=0; PH.mistakes=0; PH.total=0;
-  PH.tools={scan:false,link:false,typo:false,addr:false,phone:false};
-  PH.phoneLeft=0; PH.addrLeft=0; PH.seen={}; PH.over=false;
+  PH.phase=0; PH.credits=0; PH.net=PH_MAXG; PH.trust=PH_MAXG;
+  PH.streak=0; PH.over=false; PH.usedTpl={}; PH.bodies={};
+  PH.pointMode=false; PH.pointing=false; PH.revealed=false; PH.canReveal=false;
+  PH.tools={scan2:false,url:false,pj:false};
+  PH.scanLeft=0; PH.pjLeft=0; PH.adviceUsed=0;
+  PH.stats={total:0,right:0,wrong:0,clues:0,tools:0,missed:{},found:{}};
   buildPhArena();
   startPhMusic();
-  phWaveIntro();
+  phPhaseIntro();
 }
+function phArena(){ return document.getElementById('phArena'); }
+function phCfg(){ return PH_PHASES[PH.phase]; }
 function buildPhArena(){
   stage.innerHTML='<div class="screen"><div class="ph-arena" id="phArena">'
     +'<div class="ph-hud">'
-    +  '<span class="ph-face">🎣</span>'
-    +  '<div class="ph-id"><span class="ph-name">LE PHISHER</span><span class="ph-sub">pirate des boîtes mail</span></div>'
-    +  '<div class="ph-hp" id="phHp"><i></i></div>'
-    +  '<span class="ph-stat" id="phWave">Manche 1/4</span>'
+    +  '<div class="ph-id"><span class="ph-name">🎣 LE PHISHER</span><span class="ph-sub" id="phPhaseName">Phase 1</span></div>'
+    +  '<div class="ph-gauges">'
+    +    '<div class="ph-g"><span class="g-k">🛡️ Réseau</span><span class="g-bar"><i id="gNet"></i></span></div>'
+    +    '<div class="ph-g"><span class="g-k">🤝 Confiance</span><span class="g-bar"><i id="gTrust"></i></span></div>'
+    +  '</div>'
     +  '<span class="ph-stat cred" id="phCred">🪙 0</span>'
-    +  '<span class="ph-stat" id="phLives">❤️❤️❤️</span>'
+    +  '<span class="ph-stat" id="phProg">1/8</span>'
     +'</div>'
     +'<div class="ph-desk">'
-    +  '<div class="ph-mailzone" id="phMailzone"></div>'
-    +  '<div class="ph-side">'
-    +    '<div class="ph-queue" id="phQueue"></div>'
-    +    '<div class="ph-tools" id="phTools"></div>'
-    +    '<div class="ph-stamps">'
+    +  '<div class="ph-bosscol">'
+    +    '<div class="ph-boss idle" id="phBoss">'+phFaceSvg()+'</div>'
+    +    '<div class="ph-bubble" id="phBubble"></div>'
+    +  '</div>'
+    +  '<div class="ph-mailzone" id="phMailzone">'
+    +    '<div class="ph-paper" id="phPaper"></div>'
+    +    '<div class="ph-stamps" id="phStamps">'
     +      '<button class="ph-stamp ok" id="stampOk"><span class="st-ic">✅</span>LÉGITIME</button>'
     +      '<button class="ph-stamp bad" id="stampBad"><span class="st-ic">🚫</span>INDÉSIRABLE</button>'
     +    '</div>'
+    +  '</div>'
+    +  '<div class="ph-side">'
+    +    '<div class="ph-queue" id="phQueue"></div>'
+    +    '<div class="ph-tools" id="phTools"></div>'
     +  '</div>'
     +'</div></div></div>';
   document.getElementById('stampOk').onclick=()=>phStamp(false);
   document.getElementById('stampBad').onclick=()=>phStamp(true);
 }
-function phArena(){ return document.getElementById('phArena'); }
-function phHudRender(){
-  const hp=document.getElementById('phHp'); if(!hp) return;
-  const pct=PH.hpMax?Math.max(0,Math.round(100*PH.hp/PH.hpMax)):100;
-  hp.className='ph-hp'+(pct<=25?' low':(pct<=60?' mid':''));
-  hp.firstChild.style.width=pct+'%';
-  document.getElementById('phWave').textContent='Manche '+(PH.wave+1)+'/'+PH_WAVES.length;
+function phHud(){
+  const g1=document.getElementById('gNet'); if(!g1) return;
+  const g2=document.getElementById('gTrust');
+  g1.style.width=Math.max(0,PH.net)+'%';  g1.parentElement.className='g-bar'+(PH.net<=30?' low':(PH.net<=60?' mid':''));
+  g2.style.width=Math.max(0,PH.trust)+'%';g2.parentElement.className='g-bar'+(PH.trust<=30?' low':(PH.trust<=60?' mid':''));
   document.getElementById('phCred').textContent='🪙 '+PH.credits;
-  let h=''; for(let i=0;i<3;i++) h+=(i<PH.lives?'❤️':'<span class="lost">❤️</span>');
-  document.getElementById('phLives').innerHTML=h;
-  document.getElementById('phQueue').innerHTML='📨 File d\'attente : <b>'+PH.queue.length+'</b> mail'+(PH.queue.length>1?'s':'');
-  renderPhTools();
+  document.getElementById('phProg').textContent=(PH.phase+1)+'/'+PH_PHASES.length;
+  document.getElementById('phPhaseName').textContent=phCfg().name;
+  const left=PH.queue?PH.queue.length:0;
+  const q=document.getElementById('phQueue');
+  if(q && !phCfg().duel) q.innerHTML='📨 Encore <b>'+left+'</b> mail'+(left>1?'s':'');
+  phTools();
 }
-function renderPhTools(){
-  const box=document.getElementById('phTools'); if(!box) return;
-  box.innerHTML=PH_TOOLS.map(t=>{
-    const owned=PH.tools[t.id];
-    let cls='ph-toolbtn '+(owned?((t.id==='typo'||t.id==='phone')?'usable':'active'):'locked');
-    let extra='';
-    if(owned && t.id==='phone') extra=' ('+PH.phoneLeft+')';
-    if(owned && t.id==='addr'){ extra=' ('+PH.addrLeft+')'; cls='ph-toolbtn '+(PH.addrLeft>0?'usable':'locked'); }
-    return '<button class="'+cls+'" data-t="'+t.id+'" '+(owned?'':'disabled')+' title="'+esc(t.desc)+'">'
-      +'<span class="pt-ic2">'+t.ic+'</span><span>'+t.name+extra+(owned?'':' 🔒')+'</span></button>';
-  }).join('');
-  box.querySelectorAll('[data-t]').forEach(b=>{
-    const id=b.getAttribute('data-t');
-    if(!PH.tools[id]) return;
-    if(id==='typo') b.onclick=()=>phUseTypo(b);
-    else if(id==='phone') b.onclick=()=>phUsePhone(b);
-  });
+
+/* ---- 14.14 Tutoriels JOUÉS ----------------------------------------
+   Pas de bouton « au contrôle » : la phase démarre quand l'élève a
+   exécuté une fois, pour de vrai, le geste que le tutoriel explique. */
+function phDemoWin(host, msg){
+  const h=host.querySelector('.dm-hint');
+  if(h){ h.className='dm-hint ok'; h.innerHTML='✅ <b>'+(msg||'Parfait ! La phase commence…')+'</b>'; }
+  host.classList.add('done');
+  beep('good');
+  after(1100, ()=>{ if(PH._demoGo) PH._demoGo(); });
 }
-/* construit la file d'une manche : moitié pièges, avec les mails
-   « spéciaux » réservés aux outils achetés */
-function phKey(m){ return m.from+'|'+m.sub; }
-function phBuildQueue(){
-  const pool=phPool();
-  const owned=id=>PH.tools[id];
-  if(!PH.seen) PH.seen={};
-  const ok=pool.filter(m=>!m.req && !m.phish);
-  const ko=pool.filter(m=>!m.req && m.phish);
-  const gatedOk=pool.filter(m=>m.req && owned(m.req) && !m.phish);
-  const gatedKo=pool.filter(m=>m.req && owned(m.req) && m.phish);
-  const n=PH_WAVES[PH.wave].n;
-  const nKo=Math.ceil(n/2), nOk=n-nKo;
-  const shuffle=a=>a.slice().sort(()=>Math.random()-.5);
-  /* jamais deux fois le meme mail : on tire d abord parmi les jamais vus,
-     puis seulement en dernier recours parmi les deja vus. */
-  function pick(arr, count, taken){
-    const out=[];
-    const fresh=shuffle(arr.filter(m=>!PH.seen[phKey(m)] && !taken[phKey(m)]));
-    const used =shuffle(arr.filter(m=>PH.seen[phKey(m)]  && !taken[phKey(m)]));
-    for(const m of fresh.concat(used)){
-      if(out.length>=count) break;
-      out.push(m); taken[phKey(m)]=1;
+function phDemoMiss(host, msg){
+  const h=host.querySelector('.dm-hint');
+  if(h){ h.className='dm-hint miss'; h.innerHTML='🤔 '+msg; }
+  beep('bad');
+}
+const PH_DEMOS={
+  /* PHASE 1 — trier pour de vrai : un piège annoté, puis un mail normal */
+  intro1:function(host){
+    function bad(){
+      host.innerHTML='<div class="dm-hint" id="dmHint">👀 Ce mail veut te piéger. Regarde les indices en rouge…</div>'
+        +'<div class="dm-demo2"><div class="dm-card loud">'
+        +  '<div class="dm-ch"><b>MEGA LOTERIE</b></div>'
+        +  '<div class="dm-cs">🎉 Vous avez GAGNÉ 1 000 000 € !!!</div>'
+        +  '<div class="dm-cb"><p>Envoyez vite votre <span class="hl">nom et votre adresse</span> pour recevoir le million <span class="hl">avant ce soir</span> !</p></div>'
+        +  '</div></div>'
+        +'<div class="dm-notes">'
+        +  '<span class="dm-note">🎁 Un cadeau tombé du ciel : on ne gagne pas sans avoir joué.</span>'
+        +  '<span class="dm-note">⏰ « Avant ce soir » : on te presse pour t\'empêcher de réfléchir.</span>'
+        +  '<span class="dm-note">🪪 On réclame tes informations personnelles.</span>'
+        +'</div>'
+        +'<div class="dm-stamps"><button class="dm-stamp ok" data-s="ok">✅ LÉGITIME</button><button class="dm-stamp bad" data-s="bad">🚫 INDÉSIRABLE</button></div>';
+      after(2800,()=>{ const h=host.querySelector('#dmHint'); if(h) h.innerHTML='👉 Trois indices : c\'est un piège. Pose le tampon <b>🚫 INDÉSIRABLE</b>.';
+        const b=host.querySelector('[data-s="bad"]'); if(b) b.classList.add('ready'); });
+      host.querySelector('[data-s="bad"]').onclick=()=>{ beep('stamp'); good(); };
+      host.querySelector('[data-s="ok"]').onclick=()=>phDemoMiss(host,'Regarde les indices rouges : cadeau, urgence, infos perso. C\'est <b>🚫 INDÉSIRABLE</b>.');
     }
-    return out;
+    function good(){
+      host.innerHTML='<div class="dm-hint" id="dmHint">✅ Bravo ! Et celui-ci, tout simple…</div>'
+        +'<div class="dm-demo2"><div class="dm-card">'
+        +  '<div class="dm-ch"><b>La cantine</b></div>'
+        +  '<div class="dm-cs">Le menu de la semaine</div>'
+        +  '<div class="dm-cb"><p>Bonjour, cette semaine : gratin lundi, pizza jeudi. Bon appétit à tous !</p></div>'
+        +  '</div></div>'
+        +'<div class="dm-stamps"><button class="dm-stamp ok ready" data-s="ok">✅ LÉGITIME</button><button class="dm-stamp bad" data-s="bad">🚫 INDÉSIRABLE</button></div>';
+      after(500,()=>{ const h=host.querySelector('#dmHint'); if(h) h.innerHTML='👉 Rien de louche : la cantine, un menu. Pose le tampon <b>✅ LÉGITIME</b>.'; });
+      host.querySelector('[data-s="ok"]').onclick=()=>{ beep('stamp'); phDemoWin(host,'Tu sais trier. À toi de jouer !'); };
+      host.querySelector('[data-s="bad"]').onclick=()=>phDemoMiss(host,'Ce mail est normal : la cantine, un menu, aucune demande. C\'est <b>✅ LÉGITIME</b>.');
+    }
+    bad();
+  },
+  /* PHASE 2 — révéler l'adresse cachée */
+  reveal:function(host){
+    host.innerHTML='<div class="dm-hint" id="dmHint">👇 Clique le <b>nom de l\'expéditeur</b> pour voir sa vraie adresse</div>'
+      +'<div class="dm-demo2"><div class="dm-card">'
+      +  '<div class="dm-ch"><button class="dm-from" id="dmFrom">Le secrétariat</button><span class="dm-addr" id="dmAddr" hidden>&lt;secretariat@erea-espace.net&gt;</span></div>'
+      +  '<div class="dm-cs">Ton espace élève</div>'
+      +  '<div class="dm-cb"><p>Reconnecte-toi vite pour ne pas perdre ton compte.</p></div>'
+      +  '</div></div>'
+      +'<div class="dm-stamps"><button class="dm-stamp ok" data-s="ok">✅ LÉGITIME</button><button class="dm-stamp bad" data-s="bad" disabled>🚫 INDÉSIRABLE</button></div>';
+    let seen=false;
+    host.querySelector('#dmFrom').onclick=()=>{ if(seen) return; seen=true; beep('click');
+      const a=host.querySelector('#dmAddr'); a.hidden=false; a.classList.add('pop');
+      host.querySelector('#dmHint').innerHTML='😮 <b>erea-espace.net</b> n\'est pas <b>erea.fr</b> : un sosie ! Pose <b>🚫 INDÉSIRABLE</b>.';
+      const b=host.querySelector('[data-s="bad"]'); b.disabled=false; b.classList.add('ready'); };
+    host.querySelector('[data-s="bad"]').onclick=()=>{ if(!seen) return; beep('stamp'); phDemoWin(host,'Toujours lire l\'adresse ! À toi.'); };
+    host.querySelector('[data-s="ok"]').onclick=()=>phDemoMiss(host,'Clique d\'abord le <b>nom</b> pour révéler l\'adresse cachée.');
+  },
+  /* PHASE 3 — survoler un bouton */
+  hover:function(host){
+    host.innerHTML='<div class="dm-hint" id="dmHint">👇 <b>Survole</b> le bouton (sans cliquer !) pour voir où il mène</div>'
+      +'<div class="dm-demo2"><div class="dm-card">'
+      +  '<div class="dm-ch"><b>Ta banque</b></div><div class="dm-cs">Vérifie ton compte</div>'
+      +  '<div class="dm-cb"><p>Connecte-toi ici :</p><p><span class="mlk mlk-btn" id="dmBtn">Accéder à mon compte</span></p>'
+      +    '<span class="dm-tip" id="dmTip" hidden>🔗 mène vraiment vers <b>vol-de-codes.top</b></span></div>'
+      +  '</div></div>'
+      +'<div class="dm-stamps"><button class="dm-stamp ok" data-s="ok">✅ LÉGITIME</button><button class="dm-stamp bad" data-s="bad" disabled>🚫 INDÉSIRABLE</button></div>';
+    let seen=false;
+    const b=host.querySelector('#dmBtn');
+    b.onmouseenter=()=>{ if(seen) return; seen=true; beep('click'); host.querySelector('#dmTip').hidden=false;
+      host.querySelector('#dmHint').innerHTML='😮 Le bouton ment : il mène à <b>vol-de-codes.top</b> ! Pose <b>🚫 INDÉSIRABLE</b>.';
+      const bad=host.querySelector('[data-s="bad"]'); bad.disabled=false; bad.classList.add('ready'); };
+    b.onclick=()=>phDemoMiss(host,'On ne clique pas ! <b>Survole</b> seulement le bouton.');
+    host.querySelector('[data-s="bad"]').onclick=()=>{ if(!seen) return; beep('stamp'); phDemoWin(host,'Survoler avant de juger. À toi !'); };
+    host.querySelector('[data-s="ok"]').onclick=()=>phDemoMiss(host,'Survole d\'abord le bouton pour voir sa vraie destination.');
+  },
+  /* PHASE 4 — lire la fin du nom de fichier */
+  ext:function(host){
+    host.innerHTML='<div class="dm-hint" id="dmHint">👀 Regarde la <b>fin</b> du nom du fichier joint…</div>'
+      +'<div class="dm-demo2"><div class="dm-card">'
+      +  '<div class="dm-ch"><b>Service factures</b></div><div class="dm-cs">Votre facture</div>'
+      +  '<div class="dm-cb"><p>Votre facture est en pièce jointe.</p>'
+      +    '<p class="dm-att" id="dmAtt">📄 facture.pdf<span class="hl">.exe</span> <span class="ac-size">1,8 Mo</span></p></div>'
+      +  '</div></div>'
+      +'<div class="dm-notes"><span class="dm-note">⚠️ Ça finit par <b>.exe</b> : c\'est un programme, pas un document. On ne l\'ouvre pas !</span></div>'
+      +'<div class="dm-stamps"><button class="dm-stamp ok" data-s="ok">✅ LÉGITIME</button><button class="dm-stamp bad" data-s="bad">🚫 INDÉSIRABLE</button></div>';
+    after(2600,()=>{ const h=host.querySelector('#dmHint'); if(h) h.innerHTML='👉 Fichier piégé. Pose <b>🚫 INDÉSIRABLE</b> — surtout, on ne l\'ouvre pas !';
+      const b=host.querySelector('[data-s="bad"]'); if(b) b.classList.add('ready'); });
+    host.querySelector('#dmAtt').onclick=()=>phDemoMiss(host,'Ne l\'ouvre pas ! Il suffit de lire la fin du nom : <b>.exe</b>. Pose <b>🚫</b>.');
+    host.querySelector('[data-s="bad"]').onclick=()=>{ beep('stamp'); phDemoWin(host,'La fin du nom trahit tout. À toi !'); };
+    host.querySelector('[data-s="ok"]').onclick=()=>phDemoMiss(host,'.exe = programme déguisé. C\'est <b>🚫 INDÉSIRABLE</b>.');
+  },
+  /* PHASE 5 — pointer le problème après avoir tamponné INDÉSIRABLE */
+  point:function(host){
+    host.innerHTML='<div class="dm-hint" id="dmHint">👇 Pose <b>🚫 INDÉSIRABLE</b> : on te demandera ensuite de POINTER le problème</div>'
+      +'<div class="dm-demo2"><div class="dm-card" id="dmCard">'
+      +  '<div class="dm-ch" data-z="from"><span class="pz-tag">l\'expéditeur</span><b>La cantine</b> &lt;cantine@erea.fr&gt;</div>'
+      +  '<div class="dm-cs" data-z="sub"><span class="pz-tag">l\'objet</span>Votre compte cantine</div>'
+      +  '<div class="dm-cb" data-z="body"><span class="pz-tag">le texte</span><p>Pour recharger, <b>envoyez le code de la carte bancaire</b> de vos parents par retour de mail.</p></div>'
+      +  '<div class="dm-sig" data-z="sign"><span class="pz-tag">la signature</span>La cantine</div>'
+      +  '</div></div>'
+      +'<div class="dm-stamps" id="dmStamps"><button class="dm-stamp ok" data-s="ok">✅ LÉGITIME</button><button class="dm-stamp bad ready" data-s="bad">🚫 INDÉSIRABLE</button></div>';
+    const card=host.querySelector('#dmCard');
+    host.querySelector('[data-s="ok"]').onclick=()=>phDemoMiss(host,'Un code de carte demandé par mail : jamais ! C\'est <b>🚫 INDÉSIRABLE</b>.');
+    host.querySelector('[data-s="bad"]').onclick=()=>{ beep('click');
+      host.querySelector('#dmStamps').style.display='none';
+      host.querySelector('#dmHint').innerHTML='🎯 <b>Clique la partie qui pose problème</b> — attention, tout n\'est pas un piège !';
+      card.classList.add('pointing');
+      card.querySelectorAll('[data-z]').forEach(el=>{ el.classList.add('pt-zone');
+        el.onclick=()=>{
+          if(el.getAttribute('data-z')==='body'){ el.classList.add('pt-good'); phDemoWin(host,'Exact : jamais de code de carte par mail !'); }
+          else { el.classList.add('pt-bad'); beep('bad');
+            const t=el; setTimeout(()=>{ try{t.classList.remove('pt-bad');}catch(e){} },700);
+            host.querySelector('#dmHint').innerHTML='🤔 Cette partie-là est normale. Cherche la <b>demande</b> anormale, dans le texte.'; }
+        };
+      });
+    };
+  },
+  /* PHASE 6 — comparer avec le Registre */
+  registre:function(host){
+    host.innerHTML='<div class="dm-hint" id="dmHint">👇 Ouvre le <b>Registre</b> et compare avec l\'adresse du mail</div>'
+      +'<div class="dm-demo2"><div class="dm-card">'
+      +  '<div class="dm-ch"><b>M. Lesombre</b> &lt;m.lesombre@erea-profs.net&gt;</div>'
+      +  '<div class="dm-cs">Ton compte du collège</div>'
+      +  '<div class="dm-cb"><p>Renvoie-moi ton mot de passe pour débloquer ton compte.</p></div>'
+      +  '</div>'
+      +  '<button class="dm-reg" id="dmReg">📒 Ouvrir le Registre</button>'
+      +  '<div class="dm-fiche" id="dmFiche" hidden>📒 <b>M. Lesombre</b> — Professeur de mathématiques<br>Adresse officielle : <b>f.lesombre@erea.fr</b></div>'
+      +  '</div>'
+      +'<div class="dm-stamps"><button class="dm-stamp ok" data-s="ok">✅ LÉGITIME</button><button class="dm-stamp bad" data-s="bad" disabled>🚫 INDÉSIRABLE</button></div>';
+    let opened=false;
+    host.querySelector('#dmReg').onclick=()=>{ if(opened) return; opened=true; beep('click');
+      host.querySelector('#dmFiche').hidden=false;
+      host.querySelector('#dmHint').innerHTML='😮 Le vrai M. Lesombre écrit depuis <b>erea.fr</b>, pas erea-profs.net. Un sosie ! Pose <b>🚫</b>.';
+      const b=host.querySelector('[data-s="bad"]'); b.disabled=false; b.classList.add('ready'); };
+    host.querySelector('[data-s="bad"]').onclick=()=>{ if(!opened) return; beep('stamp'); phDemoWin(host,'Compare toujours avec le Registre. À toi !'); };
+    host.querySelector('[data-s="ok"]').onclick=()=>phDemoMiss(host,'Ouvre d\'abord le Registre pour comparer les deux adresses.');
+  },
+  /* PHASE FINALE — le duel : survoler puis cliquer le mail sûr */
+  duel:function(host){
+    const okC='<div class="dm-duel" data-ok="1"><div class="dm-ch"><b>Colissimo</b></div><p>Votre colis arrive jeudi. Rien à faire.</p><div class="dm-mark">✅ Ce mail est sûr</div></div>';
+    const koC='<div class="dm-duel" data-ok="0"><div class="dm-ch"><b>Colissimo</b></div><p>Votre colis arrive jeudi. Réglez d\'abord <b>2,50 €</b> ici.</p><div class="dm-mark">✅ Ce mail est sûr</div></div>';
+    const first=Math.random()<.5;
+    host.innerHTML='<div class="dm-hint" id="dmHint">👇 <b>Survole</b> les deux mails, puis clique le mail <b>SÛR</b></div>'
+      +'<div class="dm-duelpair">'+(first?okC+koC:koC+okC)+'</div>';
+    host.querySelectorAll('.dm-duel').forEach(el=>el.onclick=()=>{
+      if(el.getAttribute('data-ok')==='1'){ el.classList.add('is-ok'); phDemoWin(host,'Oui : l\'autre réclamait de l\'argent !'); }
+      else { el.classList.add('is-bad'); phDemoMiss(host,'Celui-là demande 2,50 € pour un colis. L\'autre ne demande rien : c\'est lui, le sûr.'); }
+    });
   }
-  const taken={};
-  /* priorité aux mails spéciaux fraîchement débloqués */
-  const kos=pick(gatedKo, Math.max(0,nKo-2), taken).concat(pick(ko, nKo, taken)).slice(0,nKo);
-  const oks=pick(gatedOk, Math.max(0,nOk-2), taken).concat(pick(ok, nOk, taken)).slice(0,nOk);
-  PH.queue=shuffle(kos.concat(oks));
-  PH.queue.forEach(m=>{ PH.seen[phKey(m)]=1; });
-  PH.hp=PH.queue.length; PH.hpMax=PH.queue.length;
-  PH.waveMistakes=0;
-}
-function phWaveIntro(){
-  const w=PH_WAVES[PH.wave];
-  phBuildQueue();
-  phHudRender();
+};
+
+function phPhaseIntro(){
+  const c=phCfg();
+  phBuildQueue(); phHud();
   const a=phArena(); if(!a) return;
-  const c=document.createElement('div'); c.className='ph-wavecard';
-  c.innerHTML='<span class="wc-ic">🎣</span><span class="wc-t">'+w.name+'</span>'
-    +'<span class="wc-s">'+w.sub+'</span>'
-    +'<span class="wc-s" style="color:#fde047">✅ LÉGITIME = on laisse passer · 🚫 INDÉSIRABLE = à la poubelle !</span>'
-    +'<button class="sh-go" id="wcGo">Au contrôle ! 🔍</button>';
-  a.appendChild(c);
-  if(window.ttsDecorateCard) ttsDecorateCard(c,null,['.wc-t','.wc-s']);   // 🔊 lit la consigne de la manche
-  document.getElementById('wcGo').onclick=()=>{ beep('open'); c.remove(); phNextMail(); };
+  const card=document.createElement('div'); card.className='ph-tutocard';
+  card.innerHTML='<span class="wc-ic">'+c.ic+'</span>'
+    +'<span class="wc-t">'+c.name+'</span>'
+    +'<span class="wc-s tag">'+c.sub+'</span>'
+    +'<ul class="wc-list">'+c.tuto.map(l=>'<li class="wc-s">'+l+'</li>').join('')+'</ul>'
+    +'<div class="ph-demo" id="phDemo"></div>';
+  a.appendChild(card);
+  if(window.ttsDecorateCard) ttsDecorateCard(card,null,['.wc-t','.wc-s']);
+  PH._demoGo=()=>{
+    PH._demoGo=null;
+    card.remove();
+    if(c.duel){ phDuelStart(); return; }
+    if(PH.phase>0) phSay('phase');
+    phNextMail();
+  };
+  const demo=PH_DEMOS[c.demo||'intro1'];
+  demo(document.getElementById('phDemo'));
 }
+
+/* ---- 14.15 Envoi : le PHISHER lance sa ligne, l'enveloppe arrive ---- */
 function phNextMail(){
   if(PH.over) return;
-  if(!PH.queue.length){ phWaveEnd(); return; }
+  if(!PH.queue.length){ phPhaseEnd(); return; }
   PH.cur=PH.queue.shift();
-  PH.curTyposShown=false; PH.stamping=false;
-  phHudRender();
-  renderPhMail();
+  PH.revealed=false;                       /* l'adresse n'est jamais montrée d'office */
+  PH.canReveal=(PH.phase>=1);              /* le bouton « voir l'adresse » apparaît dès la phase 2 */
+  PH.pointing=(PH.phase>=PH_POINT_FROM);   /* tamponner INDÉSIRABLE demande de pointer le problème */
+  PH.found={}; PH.toolUsedWell=false; PH.stamping=false; PH.shownAt=0;
+  phHud();
+  phCast();
+}
+/* le PHISHER lance sa ligne AVANT chaque envoi */
+function phCast(){
+  phMood('cast');
+  beep('send');
+  after(560,()=>{ phMood('idle'); if(!PH.over) phEnvelope(); });
+  if(Math.random()<.3) after(120,()=>{ if(!PH.over) phSay('arrive'); });
+}
+function phEnvelope(){
+  const z=document.getElementById('phPaper'); if(!z) return;
+  beep('mail');
+  z.innerHTML='<div class="ph-env" id="phEnv">'
+    +'<div class="env-body"></div><div class="env-letter"></div>'
+    +'<div class="env-flap"></div><div class="env-front"></div>'
+    +'<div class="env-seal">✉️</div></div>';
+  after(400,()=>{ const e=document.getElementById('phEnv'); if(e) e.classList.add('open'); beep('open'); });
+  after(900,()=>{ if(!PH.over && PH.cur) renderPhMail(); });
+}
+
+/* ---- 14.16 Le mail ----
+   Chaque partie du mail porte un data-zone : c'est sur ces zones que
+   l'élève pointe quand il tamponne INDÉSIRABLE (phase 5 et suivantes). */
+function phLinkHtml(l){
+  const cls='mlk '+(l.style==='url'?'mlk-url':'mlk-btn');
+  return '<span class="'+cls+'" data-real="'+esc(l.real)+'">'+esc(l.txt)+'</span>';
+}
+function phAddrRowHtml(m){
+  if(PH.revealed) return '<span class="mh-addr pop" id="phAddr">&lt;'+esc(m.mail)+'&gt;</span>';
+  if(PH.canReveal) return '<button class="mh-reveal" id="phReveal">👆 voir l\'adresse</button>';
+  return '';                               /* phase 1 : le nom seul, pas d'adresse */
 }
 function renderPhMail(){
-  const m=PH.cur; const z=document.getElementById('phMailzone'); if(!z) return;
-  const atts=(m.atts||[]).map((a,i)=>'<span class="ph-att"><span>'+a.ic+' '+esc(a.n)+'</span>'
-    +'<span class="ac-size">'+fmtSize(a.s)+'</span>'
-    +(PH.tools.scan?'<button class="pa-scan" data-scan="'+i+'">🔬 Scanner</button><span id="scanRes'+i+'"></span>':'')
-    +'</span>').join('');
-  z.innerHTML='<div class="ph-mail" id="phMail">'
+  const m=PH.cur, z=document.getElementById('phPaper'); if(!z||!m) return;
+  let body='<div class="ph-mtext" data-zone="body"><span class="pz-tag">le texte</span>'+m.body+'</div>';
+  if(m.link) body+='<p class="ph-cta" data-zone="link"><span class="pz-tag">le bouton</span>'+phLinkHtml(m.link)+'</p>';
+  if(m.atts) body+='<p class="ph-atts" data-zone="att"><span class="pz-tag">la pièce jointe</span>'+m.atts.map((a,i)=>
+      '<span class="ph-att" data-ai="'+i+'" title="Cliquer = ouvrir le fichier"><span class="pa-n">'+a.ic+' '+esc(a.n)+'</span>'
+      +'<span class="ac-size">'+fmtSize(a.s)+'</span><span class="pa-res" id="paRes'+i+'"></span></span>').join('')+'</p>';
+  body+='<p class="ph-sign" data-zone="sign"><span class="pz-tag">la signature</span>'+esc(m.sign)+'</p>';
+  z.innerHTML='<div class="ph-mail'+(m.shout?' shout':'')+'" id="phMail">'
     +'<div class="ph-mh">'
-    +  '<div class="mh-row"><span class="mh-k">De :</span><span class="mh-from">'+esc(m.name)+'</span>'
-    +    '<span class="mh-addr'+(PH.tools.addr&&PH.addrLeft>0?' scan" title="🕵️ Clique : le radar analyse cette adresse (1 seul scan par manche !)':'"')+'" id="phAddr">&lt;'+esc(m.from)+'&gt;</span></div>'
-    +  '<div class="mh-row"><span class="mh-k">À :</span><span>toi@cuicui.fr</span></div>'
-    +  '<div class="mh-row"><span class="mh-k">Objet :</span><span class="mh-sub">'+esc(m.sub)+'</span></div>'
+    +  '<div class="mh-row" data-zone="from"><span class="pz-tag">l\'expéditeur</span><span class="mh-k">De</span>'
+    +    '<span class="mh-from" id="phFrom">'+esc(m.name)+'</span>'+phAddrRowHtml(m)+'</div>'
+    +  '<div class="mh-row" data-zone="date"><span class="pz-tag">la date</span><span class="mh-k">Date</span><span class="mh-date">'+esc(m.date)+'</span></div>'
+    +  '<div class="mh-row" data-zone="sub"><span class="pz-tag">l\'objet</span><span class="mh-k">Objet</span><span class="mh-sub">'+esc(m.sub)+'</span></div>'
     +'</div>'
-    +'<div class="ph-mb">'+m.body+(atts?'<p>'+atts+'</p>':'')+'</div>'
+    +'<div class="ph-mb">'+body+'</div>'
     +'</div>';
+  PH.shownAt=Date.now();
   document.getElementById('stampOk').disabled=false;
   document.getElementById('stampBad').disabled=false;
-  /* outil : scanner de PJ */
-  z.querySelectorAll('[data-scan]').forEach(b=>b.onclick=()=>{
-    const i=+b.getAttribute('data-scan'); const a=m.atts[i];
-    const res=document.getElementById('scanRes'+i);
-    beep('click');
-    res.innerHTML=a.trap?'<span class="pa-verdict bad">☠️ PIÉGÉE !</span>':'<span class="pa-verdict ok">✔️ saine</span>';
-    b.remove();
-  });
-  /* outil : radar d'adresses */
-  if(PH.tools.addr && PH.addrLeft>0){
-    const ad=document.getElementById('phAddr');
-    ad.onclick=()=>{
-      if(PH.addrLeft<=0){ phTaunt('🕵️ RADAR déchargé : plus de scan avant la manche suivante !', '#92400e'); return; }
-      PH.addrLeft--;
-      beep('click');
-      const sosie=('badAddr' in m)?m.badAddr:m.phish;
-      phTaunt(sosie?'🕵️ RADAR : « '+esc(m.from)+' » n\'est PAS une adresse officielle. Sosie détecté !':'🕵️ RADAR : adresse officielle, connue et vérifiée. ✔️', sosie?'#b91c1c':'#15803d');
-      ad.classList.remove('scan'); ad.onclick=null;
-      phHudRender();
+  phWireMail();
+  phHud();
+}
+function phWireMail(){
+  const m=PH.cur, z=document.getElementById('phPaper');
+  const rv=document.getElementById('phReveal');
+  if(rv) rv.onclick=(e)=>{ e.stopPropagation(); beep('click'); PH.revealed=true;
+    rv.outerHTML='<span class="mh-addr pop" id="phAddr" data-zone="from">&lt;'+esc(m.mail)+'&gt;</span>'; };
+  /* boutons et liens : SURVOLER est gratuit, CLIQUER, c'est y aller */
+  z.querySelectorAll('.mlk').forEach(a=>{
+    a.onmouseenter=()=>{
+      if(PH.stamping) return;
+      const real=a.getAttribute('data-real')||'';
+      const t=document.createElement('div'); t.className='ph-linktip'; t.id='phTip';
+      t.innerHTML='🔗 Ce lien mène vraiment vers :<br><span class="lt-real">'+esc(real)+'</span>';
+      document.body.appendChild(t);
+      const r=a.getBoundingClientRect();
+      t.style.left=Math.min(window.innerWidth-340, Math.max(8,r.left))+'px';
+      t.style.top=(r.bottom+8)+'px';
     };
-  }
-  /* outil : vérif-liens (survol) */
-  if(PH.tools.link){
-    z.querySelectorAll('.mlk').forEach(a=>{
-      a.addEventListener('mouseenter',e=>{
-        const real=a.getAttribute('data-real')||'';
-        const bad=/piege|phisher/.test(real);
-        let tip=document.createElement('div'); tip.className='ph-linktip'; tip.id='phTip';
-        tip.innerHTML='🔗 Ce lien mène VRAIMENT vers :<br><span class="'+(bad?'lt-bad':'lt-ok')+'">'+esc(real)+'</span>';
-        document.body.appendChild(tip);
-        const r=a.getBoundingClientRect();
-        tip.style.left=Math.min(window.innerWidth-330, r.left)+'px'; tip.style.top=(r.bottom+8)+'px';
-      });
-      a.addEventListener('mouseleave',()=>{ const t=document.getElementById('phTip'); if(t) t.remove(); });
-      a.onclick=(e)=>{ e.preventDefault(); };
-    });
-  } else {
-    z.querySelectorAll('.mlk').forEach(a=>{ a.onclick=(e)=>e.preventDefault(); });
-  }
-}
-function phUseTypo(btn){
-  beep('click');
-  const z=document.getElementById('phMailzone');
-  const typos=z?z.querySelectorAll('.ph-typo'):[];
-  if(!typos.length){ phTaunt('🔤 LOUPE : aucune faute grossière dans ce mail.', '#15803d'); return; }
-  typos.forEach(t=>t.classList.add('rev'));
-  phTaunt('🔤 LOUPE : '+typos.length+' faute'+(typos.length>1?'s':'')+' détectée'+(typos.length>1?'s':'')+' ! Un vrai service n\'écrit pas comme ça…', '#b91c1c');
-}
-function phUsePhone(btn){
-  if(PH.phoneLeft<=0){ phTaunt('☎️ Plus d\'appel disponible cette manche !', '#92400e'); return; }
-  PH.phoneLeft--;
-  beep('ding');
-  const m=PH.cur;
-  phTaunt(m.phish
-    ? '☎️ « Allô ? Non, nous n\'avons JAMAIS envoyé ce mail ! » — C\'est un FAUX. 🚫'
-    : '☎️ « Allô ? Oui oui, ce message vient bien de chez nous ! » — Mail authentique. ✅', m.phish?'#b91c1c':'#15803d');
-  phHudRender();
-}
-let _tauntT=null;
-function phTaunt(html, color){
-  const a=phArena(); if(!a) return;
-  const old=a.querySelector('.ph-taunt'); if(old) old.remove();
-  const t=document.createElement('div'); t.className='ph-taunt';
-  if(color){ t.style.borderColor=color; t.style.color=color; }
-  t.innerHTML=html;
-  a.appendChild(t);
-  clearTimeout(_tauntT); _tauntT=setTimeout(()=>{ try{t.remove();}catch(e){} }, 5200);
-}
-function phStamp(asPhish){
-  if(PH.over || PH.stamping || !PH.cur) return;
-  PH.stamping=true;
-  document.getElementById('stampOk').disabled=true;
-  document.getElementById('stampBad').disabled=true;
-  beep('stamp');
-  const mailEl=document.getElementById('phMail');
-  const mark=document.createElement('div');
-  mark.className='ph-stampmark '+(asPhish?'bad':'ok');
-  mark.textContent=asPhish?'INDÉSIRABLE':'LÉGITIME';
-  if(mailEl) mailEl.appendChild(mark);
-  const m=PH.cur, correct=(asPhish===m.phish);
-  PH.total++;
-  after(650,()=>{
-    const tip=document.getElementById('phTip'); if(tip) tip.remove();
-    if(correct){
-      PH.streak++; PH.hp=Math.max(0,PH.hp-1);
-      const gain=10+(PH.streak>=3?5:0);
-      PH.credits+=gain;
-      beep('coin'); flyPts('+'+gain+' 🪙', mailEl);
-      phVerdict(true, m, gain);
-      if(mailEl) mailEl.classList.add(m.phish?'out-bad':'out-ok');
-    } else {
-      PH.streak=0; PH.lives--; PH.mistakes++; PH.waveMistakes++;
-      beep('alarm'); screenShake(); redFlash();
-      phVerdict(false, m, 0);
-      phTaunt(['Gnark gnark ! Trop facile ! 🎣','Encore un poisson qui mord à l\'hameçon !','Hé hé, mes déguisements sont parfaits !'][Math.floor(Math.random()*3)],'#7c3aed');
-      if(mailEl) mailEl.classList.add('out-bad');
-    }
-    phHudRender();
-    if(PH.lives<=0){ after(2100, phWaveFailed); return; }
-    after(2300, phNextMail);
+    a.onmouseleave=()=>{ const t=document.getElementById('phTip'); if(t) t.remove(); };
+    a.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); phActLink(); };
+  });
+  /* pièces jointes : cliquer, c'est OUVRIR */
+  z.querySelectorAll('.ph-att').forEach(el=>{
+    el.onclick=(e)=>{ e.stopPropagation(); phActAtt(+el.getAttribute('data-ai')); };
   });
 }
-function phVerdict(good, m, gain){
+/* ---- agir sur un lien / une PJ : c'est là que ça se paie ---- */
+function phActLink(){
+  const m=PH.cur; if(!m||PH.stamping||PH.pointMode) return;
+  const tip=document.getElementById('phTip'); if(tip) tip.remove();
+  if(m.link && m.link.bad){ phActFail('link'); return; }
+  phInfo('🔗 Le lien était sûr, cette fois. Mais on ne le sait qu\'<b>après avoir survolé</b> : garde le réflexe de vérifier avant de cliquer.','ok');
+  phAutoTrust();
+}
+function phActAtt(i){
+  const m=PH.cur; if(!m||PH.stamping||PH.pointMode) return;
+  const a=(m.atts||[])[i]; if(!a) return;
+  if(a.trap){ phActFail('att'); return; }
+  phInfo('📎 Le fichier était sain. Mais tu l\'as ouvert <b>sans le vérifier</b> : la prochaine fois, regarde la fin du nom d\'abord.','ok');
+  phAutoTrust();
+}
+/* ouvrir un piège = comme valider le mail, en pire : c'est immédiat */
+function phActFail(kind){
+  const m=PH.cur, mail=document.getElementById('phMail');
+  phLockStamps();
+  beep('alarm'); screenShake(); redFlash();
+  if(mail){
+    const st=document.createElement('div'); st.className='ph-stampmark bad boom';
+    st.innerHTML='<span class="sm-t">'+(kind==='att'?'FICHIER OUVERT':'LIEN OUVERT')+'</span>'
+      +'<span class="sm-w">'+(kind==='att'?'Le programme s\'est lancé sur ta machine.':'Tu es arrivé sur le faux site du PHISHER.')+'</span>';
+    mail.appendChild(st);
+  }
+  PH.stats.total++; PH.pstats.total++; PH.stats.wrong++; PH.pstats.wrong++; PH.streak=0;
+  (m.clues||[]).forEach(c=>{ if(!PH.found[c.k]){ PH.stats.missed[c.k]=(PH.stats.missed[c.k]||0)+1; PH.pstats.missed[c.k]=(PH.pstats.missed[c.k]||0)+1; } });
+  PH.credits=Math.max(0,PH.credits-3);
+  PH.net=Math.max(0,PH.net-PH_HIT);
+  phSay('click');
+  phVerdict(false, m, 0, [], kind==='att'
+    ? 'Une pièce jointe ne se vérifie <b>jamais</b> en l\'ouvrant : on lit la fin de son nom, ou on la scanne.'
+    : 'Un lien ne se vérifie <b>jamais</b> en cliquant : on le survole pour lire sa vraie destination.');
+  phRevealClue(m);
+  phHud();
+  if(PH.net<=0||PH.trust<=0){ after(3200, phDefeat); return; }
+  after(4200,()=>{ if(mail) mail.classList.add('out-bad'); after(420, phNextMail); });
+}
+function phLockStamps(){
+  PH.stamping=true;
+  const a=document.getElementById('stampOk'), b=document.getElementById('stampBad');
+  if(a) a.disabled=true; if(b) b.disabled=true;
+}
+/* cliquer un élément sain = on a agi sans vérifier : ça vaut un tampon LÉGITIME */
+function phAutoTrust(){ after(900,()=>{ if(!PH.stamping) phStamp(false, true); }); }
+
+/* ---- 14.17 Le panneau d'outils ---- */
+function phAdviceCost(){ return 3+3*(PH.adviceUsed||0); }
+function phTools(){
+  const box=document.getElementById('phTools'); if(!box) return;
+  const c=phCfg();
+  if(c.duel){ box.innerHTML='<div class="ph-duelhint">⚔️ <b>Duel</b><br>Compare les deux mails ligne par ligne.<br>Cherche <b>1 ou 2 détails</b> qui changent.<br><br>Survole un mail pour le valider comme sûr.</div>'; return; }
+  let h='<button class="ph-toolbtn act" data-a="reg"><span class="pt-ic">📒</span><span class="pt-n">Registre des contacts</span></button>';
+  for(const t of PH_TOOLS){
+    if(PH.phase+1<t.from) continue;
+    const owned=PH.tools[t.id];
+    let extra='';
+    if(t.id==='scan2'&&owned) extra=' ('+PH.scanLeft+')';
+    if(t.id==='pj'&&owned)    extra=' ('+PH.pjLeft+')';
+    if(t.id==='url'&&owned)   extra=' (2🪙)';
+    const spent=owned&&((t.id==='scan2'&&PH.scanLeft<=0)||(t.id==='pj'&&PH.pjLeft<=0));
+    h+='<button class="ph-toolbtn'+(owned?(spent?' spent':' on'):' locked')+'" data-t="'+t.id+'"'+(owned&&!spent?'':' disabled')+'>'
+      +'<span class="pt-ic">'+t.ic+'</span><span class="pt-n">'+t.name+extra+(owned?'':' 🔒')+'</span></button>';
+  }
+  if(c.advice||PH.phase>=PH_POINT_FROM)
+    h+='<button class="ph-toolbtn act" data-a="adv"><span class="pt-ic">🙋</span><span class="pt-n">Demander conseil ('+phAdviceCost()+'🪙)</span></button>';
+  box.innerHTML=h;
+  box.querySelectorAll('[data-t]').forEach(b=>{ const id=b.getAttribute('data-t');
+    if(PH.tools[id]) b.onclick=()=>phUseTool(id); });
+  box.querySelectorAll('[data-a]').forEach(b=>{ const a=b.getAttribute('data-a');
+    b.onclick=()=>{ if(a==='reg') phRegistre(); else phAdvice(); }; });
+}
+function phMarkFound(k, viaTool){
+  if(viaTool) PH.toolUsedWell=true;
+  if(!PH.cur||!PH.cur.phish||!k) return;
+  if(PH.cur.clues.some(c=>c.k===k)) PH.found[k]=1;
+}
+/* petite bulle collée sous l'élément analysé */
+function phPop(el, html, tone){
+  const mail=document.getElementById('phMail'); if(!mail||!el) return phInfo(html,tone);
+  const old=mail.querySelector('.scan-pop'); if(old) old.remove();
+  const r=el.getBoundingClientRect(), mr=mail.getBoundingClientRect();
+  const p=document.createElement('div'); p.className='scan-pop '+(tone||'');
+  p.innerHTML=html;
+  p.style.left=Math.max(6,Math.min(r.left-mr.left, mail.clientWidth-250))+'px';
+  p.style.top=(r.bottom-mr.top+8)+'px';
+  mail.appendChild(p);
+  clearTimeout(PH._popT); PH._popT=setTimeout(()=>{ try{p.remove();}catch(e){} }, 8200);
+}
+/* la loupe traverse l'adresse, PUIS le verdict tombe */
+function phScanAnim(el, done){
+  const mail=document.getElementById('phMail'); if(!mail||!el){ done(); return; }
+  const r=el.getBoundingClientRect(), mr=mail.getBoundingClientRect();
+  const band=document.createElement('div'); band.className='scan-band';
+  band.style.left=(r.left-mr.left-4)+'px'; band.style.top=(r.top-mr.top-3)+'px';
+  band.style.width=(r.width+8)+'px'; band.style.height=(r.height+6)+'px';
+  const lens=document.createElement('div'); lens.className='scan-lens'; lens.textContent='🔎';
+  lens.style.left=(r.left-mr.left-16)+'px'; lens.style.top=(r.top-mr.top-14)+'px';
+  lens.style.setProperty('--dx',(r.width+18)+'px');
+  mail.appendChild(band); mail.appendChild(lens);
+  after(1080,()=>{ try{band.remove(); lens.remove();}catch(e){} done(); });
+}
+function phUseTool(id){
+  const m=PH.cur; if(!m||PH.stamping) return;
+  PH.stats.tools++; PH.pstats.tools++;
+  if(id==='scan2'){
+    if(PH.scanLeft<=0){ beep('bad'); phInfo('🔎 Plus de scan disponible. Il s\'en recharge <b>2</b> à la phase suivante.','warn'); return; }
+    PH.scanLeft--; beep('click');
+    if(!PH.revealed){ PH.revealed=true; renderPhMail(); }
+    const el=document.getElementById('phAddr'); if(el) el.classList.add('scanning');
+    phHud();
+    phScanAnim(el,()=>{
+      if(el) el.classList.remove('scanning');
+      const off=m.c?m.c.mail:null;
+      const dom=m.mail.split('@')[1];
+      if(off && off!==m.mail){ phMarkFound('domain',true); phMarkFound('usurp',true);
+        phPop(el,'🔎 <b>Scan terminé</b><br>Le nom affiché est <b>'+esc(m.name)+'</b>.<br>Son adresse officielle : <b>'+esc(off)+'</b><br>Adresse de ce mail : <b>'+esc(m.mail)+'</b><br><span class="sp-x">Ce ne sont pas les mêmes.</span>','warn');
+      } else if(!m.c){
+        phPop(el,'🔎 <b>Scan terminé</b><br>Aucun contact connu ne porte ce nom.<br>Domaine : <b>'+esc(dom)+'</b><br><span class="sp-n">Inconnu ne veut pas dire malhonnête : lis la demande.</span>','');
+      } else { PH.toolUsedWell=true;
+        phPop(el,'🔎 <b>Scan terminé</b><br>Adresse conforme à celle de <b>'+esc(m.c.name)+'</b>.<br><span class="sp-o">Écriture normale, aucun caractère truqué.</span>','ok');
+      }
+      phHud();
+    });
+    return;
+  }
+  if(id==='url'){
+    if(!m.link){ phInfo('🔗 Aucun lien dans ce mail : analyse annulée, rien n\'est débité.',''); return; }
+    if(PH.credits<2){ beep('bad'); phInfo('🔗 Pas assez de crédits (2 🪙 par analyse).','warn'); return; }
+    PH.credits-=2; beep('click');
+    const parts=m.link.real.replace(/^www\./,'').split('/');
+    const bits=parts[0].split('.'), rest=parts.slice(1).join('/');
+    const dom=bits.slice(-2).join('.');
+    phMarkFound(m.link.bad?'link':null,true);
+    phInfo('🔗 <b>Analyseur d\'URL</b><div class="url-x">'
+      +bits.map((b,i)=>'<span class="'+(i>=bits.length-2?'u-dom':'u-sub')+'">'+esc(b)+'</span>').join('<i>.</i>')
+      +(rest?'<i>/</i><span class="u-path">'+esc(rest)+'</span>':'')+'</div>'
+      +'<div class="url-v '+(m.link.bad?'bad':'ok')+'">Le vrai site est <b>'+esc(dom)+'</b> — '
+      +(m.link.bad?'ce n\'est pas celui annoncé. Adresse <b>piégée</b>.':'c\'est bien celui annoncé. Adresse <b>sûre</b>.')+'</div>',
+      m.link.bad?'warn':'ok');
+    phHud(); return;
+  }
+  if(id==='pj'){
+    if(PH.pjLeft<=0){ beep('bad'); phInfo('🔬 Le scanner est déchargé jusqu\'à la phase suivante.','warn'); return; }
+    if(!m.atts||!m.atts.length){ phInfo('🔬 Aucune pièce jointe à analyser. Charge conservée.',''); return; }
+    PH.pjLeft--; beep('ding');
+    const a=m.atts[0], res=document.getElementById('paRes0');
+    if(res) res.innerHTML=a.trap?'<span class="pa-verdict bad">☠️ DANGEREUSE</span>':'<span class="pa-verdict ok">✔️ sûre</span>';
+    phMarkFound(a.trap?'att':null,true);
+    phInfo('🔬 <b>Scanner</b> — Fichier <b>'+(a.trap?'dangereux':'sûr')+'</b>. '+a.why, a.trap?'warn':'ok');
+    phHud(); return;
+  }
+}
+/* ---- 14.18 Le Registre : la fiche officielle, à confronter au mail ---- */
+function phRegistre(){
+  const m=PH.cur; const a=phArena(); if(!a) return;
+  const old=a.querySelector('.ph-panel'); if(old){ old.remove(); return; }
+  beep('click');
+  const known=m?PH_ALL.find(x=>x.name===m.name):null;
+  const p=document.createElement('div'); p.className='ph-panel';
+  p.innerHTML='<div class="pp-card">'
+    +'<div class="pp-head">📒 Registre des contacts</div>'
+    +(known
+      ? '<div class="pp-fiche">'
+        +'<div class="pf-n">'+esc(known.name)+'</div>'
+        +'<div class="pf-r">'+esc(known.role)+'</div>'
+        +'<div class="pf-l"><span>Adresse officielle</span><b>'+esc(known.mail)+'</b></div>'
+        +'<div class="pf-l"><span>Ne demande jamais</span><b>'+esc(known.never)+'</b></div>'
+        +(m?'<div class="pf-cmp'+(known.mail===m.mail?' ok':' bad')+'"><span>Adresse de ce mail</span><b>'+esc(m.mail)+'</b>'
+           +'<em>'+(known.mail===m.mail?'✔️ identique à la fiche':'⚠️ différente de la fiche')+'</em></div>':'')
+        +'</div>'
+      : '<div class="pp-none">« '+esc(m?m.name:'—')+' » ne figure pas au Registre.<br><br>'
+        +'Le Registre ne connaît que les contacts du collège, de la ville et de ta famille.<br>'
+        +'<b>Un expéditeur inconnu n\'est pas forcément un menteur</b> : lis ce qu\'il te demande.</div>')
+    +'<button class="pp-x" id="ppX">Fermer</button></div>';
+  a.appendChild(p);
+  if(known && m && known.mail!==m.mail){ phMarkFound('domain',false); phMarkFound('usurp',false); }
+  document.getElementById('ppX').onclick=()=>{ p.remove(); };
+}
+/* ---- 14.19 Demander conseil : clair une fois sur deux ---- */
+function phAdvice(){
+  const m=PH.cur; if(!m||PH.stamping) return;
+  const cost=phAdviceCost();
+  if(PH.credits<cost){ beep('bad'); phInfo('🙋 Le service informatique demande '+cost+' 🪙 pour ce conseil. Tu n\'en as pas assez.','warn'); return; }
+  PH.credits-=cost; PH.adviceUsed++; beep('ding');
+  PH.stats.tools++; PH.pstats.tools++;
+  const direct=Math.random()<.5;
+  let piste;
+  if(m.phish){
+    const c=m.clues[m.clues.length-1], z=PH_CLUES[c.k].zone;
+    if(direct){
+      const dit={
+        domain :'L\'adresse affichée <b>ne correspond pas</b> au domaine officiel de ce contact.',
+        usurp  :'Ce n\'est pas la bonne adresse pour cette personne : quelqu\'un <b>se fait passer</b> pour elle.',
+        link   :'Le bouton et sa vraie destination <b>ne mènent pas au même endroit</b>.',
+        att    :'La <b>fin du nom du fichier</b> ne correspond pas à un document.',
+        pass   :'Aucun service sérieux ne fait <b>ressaisir un mot de passe</b> depuis un mail.',
+        money  :'On ne règle <b>jamais</b> ce genre de somme depuis un lien reçu par mail.',
+        perso  :'Ces informations personnelles <b>ne se demandent pas</b> par mail.',
+        gift   :'Ce gain n\'existe pas : personne ne gagne à un jeu <b>auquel il n\'a pas joué</b>.',
+        urgency:'Ce délai est une <b>pression fabriquée</b> pour t\'empêcher de vérifier.',
+        contra :'Deux endroits de ce message <b>se contredisent</b>.',
+        typo   :'Le niveau de langue <b>ne correspond pas</b> à un vrai service.'
+      }[c.k]||'Quelque chose ne va pas dans ce message.';
+      piste='Je suis formel : '+dit;
+    } else {
+      piste='Je ne te donne pas la réponse. Mais à ta place, je relirais <b>'+PH_ZONE[z]+'</b>, très lentement.';
+    }
+  } else {
+    piste=direct
+      ? 'J\'ai vérifié l\'adresse et la demande : <b>rien d\'anormal</b>. Ce message peut passer.'
+      : 'Rien ne m\'a sauté aux yeux. Demande-toi surtout : est-ce qu\'on te réclame quelque chose <b>d\'interdit</b> ?';
+  }
+  phInfo('🙋 <b>Service informatique</b> — '+piste
+    +'<span class="pi-cost">−'+cost+' 🪙 · le prochain conseil coûtera '+phAdviceCost()+' 🪙</span>','');
+  phHud();
+}
+const PH_ZONE={from:'l\'expéditeur', date:'la date', sub:'l\'objet', body:'le texte', link:'le bouton', att:'la pièce jointe', sign:'la signature'};
+/* ---- 14.20 Vérifier par un autre canal ---- */
+/* ---- 14.21 Le tampon ----
+   LÉGITIME : validation directe.
+   INDÉSIRABLE : à partir de la phase 5, il faut POINTER ce qui cloche. */
+function phStamp(asPhish, auto){
+  if(PH.over||PH.stamping||PH.pointMode||!PH.cur) return;
+  const m=PH.cur;
+  if(asPhish && PH.pointing && !auto){ phEnterPoint(m); return; }
+  const correct=(asPhish===m.phish);
+  phCommit(m, {asPhish:asPhish, correct:correct, auto:auto, gauge:(m.phish?'net':'trust')});
+}
+/* mode « pointe le problème » : mail grisé, zones cliquables mises en avant */
+function phEnterPoint(m){
+  PH.pointMode=true;
+  const tip=document.getElementById('phTip'); if(tip) tip.remove();
+  const so=document.getElementById('stampOk'), sb=document.getElementById('stampBad');
+  if(so) so.disabled=true; if(sb) sb.disabled=true;
+  if(!PH.revealed && PH.canReveal){ PH.revealed=true; renderPhMail(); }
+  beep('click');
+  const mail=document.getElementById('phMail'); if(!mail) return;
+  mail.classList.add('pointing');
+  const bar=document.createElement('div'); bar.className='ph-pointbar';
+  bar.innerHTML='🎯 <b>Montre CE qui pose problème</b> — clique la partie du mail qui ne va pas';
+  mail.appendChild(bar);
+  mail.querySelectorAll('[data-zone]').forEach(el=>{
+    el.classList.add('pt-zone');
+    el.onclick=(e)=>{ e.stopPropagation(); phPointClick(el.getAttribute('data-zone'), el); };
+  });
+}
+function phZoneClue(m, zoneKey){
+  for(const c of (m.clues||[])){ if(PH_CLUES[c.k] && PH_CLUES[c.k].zone===zoneKey) return c; }
+  return null;
+}
+function phPointClick(zoneKey, el){
+  if(!PH.pointMode||PH.stamping) return;
+  const m=PH.cur;
+  const c=m.phish?phZoneClue(m, zoneKey):null;
+  PH.pointMode=false;
+  const mail=document.getElementById('phMail');
+  if(mail){ const b=mail.querySelector('.ph-pointbar'); if(b) b.remove();
+    mail.classList.remove('pointing');
+    mail.querySelectorAll('.pt-zone').forEach(z=>{ z.onclick=null; z.classList.remove('pt-zone'); }); }
+  if(el) el.classList.add(c?'pt-good':'pt-bad');
+  if(c){                                   /* bien pointé : le mail EST un piège, et voilà où */
+    PH.found[c.k]=1;
+    phCommit(m, {asPhish:true, correct:true, pointClue:c});
+  } else if(m.phish){                      /* c'était un piège, mais cette partie-là est normale */
+    phCommit(m, {asPhish:true, correct:false, soft:true, gauge:'net', pickedSafe:zoneKey});
+  } else {                                 /* mail honnête : tout est normal, aucune cible ne vaut */
+    phCommit(m, {asPhish:true, correct:false, gauge:'trust', pickedSafe:zoneKey});
+  }
+}
+/* finalise une décision : tampon, score, jauges, verdict, mail suivant */
+function phCommit(m, o){
+  phLockStamps();
+  const tip=document.getElementById('phTip'); if(tip) tip.remove();
+  beep('stamp');
+  const mail=document.getElementById('phMail');
+  const nClues=(m.clues||[]).length;
+  let nFound=o.auto?0:Object.keys(PH.found||{}).length;
+  if(o.pointClue) nFound=Math.max(1,nFound);
+  const motif=o.correct
+      ? (o.asPhish?('Indésirable : '+(o.pointClue?PH_CLUES[o.pointClue.k].t.toLowerCase():m.ko)):('Validé : '+m.ok))
+      : (o.soft?'Bloqué, mais mauvaise cible'
+             : (m.phish?'Ce mail était un PIÈGE':'Ce mail était HONNÊTE'));
+  if(mail){
+    const st=document.createElement('div');
+    st.className='ph-stampmark '+(o.asPhish?'bad':'ok');
+    st.innerHTML='<span class="sm-t">'+(o.asPhish?'INDÉSIRABLE':'LÉGITIME')+'</span><span class="sm-w">'+motif+'</span>';
+    mail.appendChild(st);
+  }
+  PH.stats.total++; PH.pstats.total++;
+  after(820,()=>{
+    if(o.correct){
+      PH.streak++; PH.stats.right++; PH.pstats.right++;
+      let gain=1, bonus=[];
+      if(nFound>=1) gain=2;
+      if(nClues>=2 && nFound>=2) gain=3;
+      if(o.pointClue){ gain=Math.max(gain,2); bonus.push('preuve pointée'); }
+      if(PH.toolUsedWell && !o.auto){ gain+=1; bonus.push('outil bien utilisé'); }
+      if(PH.streak>0 && PH.streak%5===0){ gain+=3; bonus.push('série de '+PH.streak); }
+      if(o.auto) bonus.push('agi sans vérifier : aucun bonus');
+      PH.credits+=gain; PH.pstats.gain+=gain;
+      PH.stats.clues+=nFound; PH.pstats.clues+=nFound;
+      Object.keys(PH.found||{}).forEach(k=>{ if(o.auto) return;
+        PH.stats.found[k]=(PH.stats.found[k]||0)+1; PH.pstats.found[k]=(PH.pstats.found[k]||0)+1; });
+      beep('coin'); flyPts('+'+gain+' 🪙', mail);
+      phVerdict(true, m, gain, bonus, o);
+      if(mail) mail.classList.add(m.phish?'out-bad':'out-ok');
+      if(Math.random()<.3) phSay('lose');
+      after(2600, phNextMail);
+    } else {
+      PH.streak=0; PH.stats.wrong++; PH.pstats.wrong++;
+      (m.clues||[]).forEach(c=>{ if(!PH.found[c.k]){ PH.stats.missed[c.k]=(PH.stats.missed[c.k]||0)+1; PH.pstats.missed[c.k]=(PH.pstats.missed[c.k]||0)+1; } });
+      PH.credits=Math.max(0,PH.credits-3);
+      const amt=o.soft?PH_SOFT:PH_HIT;
+      if(o.gauge==='trust') PH.trust=Math.max(0,PH.trust-amt); else PH.net=Math.max(0,PH.net-amt);
+      beep('alarm'); screenShake(); redFlash();
+      phVerdict(false, m, 0, [], o);
+      phRevealClue(m);
+      phSay(o.soft?'lose':(m.phish?'win':'parano'));
+      phHud();
+      if(PH.net<=0||PH.trust<=0){ after(3400, phDefeat); return; }
+      if(PH.net<=30||PH.trust<=30) after(3000,()=>phSay('low'));
+      after(4200,()=>{ if(mail) mail.classList.add('out-bad'); after(420, phNextMail); });
+    }
+    phHud();
+  });
+}
+function phRevealClue(m){
+  const mail=document.getElementById('phMail'); if(!mail) return;
+  if(!m.phish){
+    const el=mail.querySelector('.ph-mb');
+    if(el){ el.classList.add('clue-pop');
+      el.insertAdjacentHTML('beforeend','<span class="clue-tag ok">✅ rien d\'interdit ici</span>'); }
+    return;
+  }
+  const c=m.clues[m.clues.length-1], zone=PH_CLUES[c.k].zone;
+  const rv=document.getElementById('phReveal');
+  if(rv) rv.outerHTML='<span class="mh-addr pop" id="phAddr">&lt;'+esc(m.mail)+'&gt;</span>';
+  let el=mail.querySelector('[data-zone="'+zone+'"]');
+  if(zone==='from') el=document.getElementById('phAddr')||el;
+  if(zone==='link'){ const lk=mail.querySelector('.mlk');
+    if(lk){ lk.insertAdjacentHTML('afterend',' <span class="clue-real">→ '+esc(m.link.real)+'</span>'); el=lk.parentElement; } }
+  if(!el) el=mail.querySelector('.ph-mb');
+  if(el){ el.classList.add('clue-pop');
+    el.insertAdjacentHTML('beforeend','<span class="clue-tag">'+PH_CLUES[c.k].ic+' '+PH_CLUES[c.k].t+'</span>'); }
+}
+function phVerdict(good, m, gain, bonus, o){
   const a=phArena(); if(!a) return;
   const old=a.querySelector('.ph-verdict'); if(old) old.remove();
-  const v=document.createElement('div'); v.className='ph-verdict '+(good?'good':'bad');
-  v.innerHTML=(good
-    ? '✅ <b>Bien vu, inspecteur !</b> +'+gain+' 🪙'+(PH.streak>=3?' (série x'+PH.streak+' !)':'')
-    : '❌ <b>Erreur !</b> Ce mail était '+(m.phish?'un PIÈGE':'HONNÊTE')+'…')
-    +'<span class="pv-clue">'+(m.why||'')+'</span>';
+  const last=(m.clues||[])[(m.clues||[]).length-1];
+  const primaryWhy=m.phish&&last?(PH_CLUES[last.k].ic+' '+last.why):('👍 '+ (m.ok?m.ok.charAt(0).toUpperCase()+m.ok.slice(1):'Rien d\'anormal')+'.');
+  const opt=(o&&typeof o==='object')?o:{};
+  const extraStr=(typeof o==='string')?o:'';
+  let head, clue, extra=extraStr;
+  if(good){
+    head='✅ <b>Bien vu !</b> +'+gain+' 🪙'+(bonus&&bonus.length?' <span class="pv-b">'+bonus.join(' · ')+'</span>':'');
+    clue=opt.pointClue?(PH_CLUES[opt.pointClue.k].ic+' '+opt.pointClue.why):primaryWhy;
+  } else if(opt.soft){
+    head='🟠 <b>Presque !</b>';
+    clue='Tu avais raison de le bloquer, mais <b>'+(PH_ZONE[opt.pickedSafe]||'cette partie')+'</b> est une partie normale.';
+    extra=primaryWhy;
+  } else if(m.phish){
+    head='❌ <b>Raté.</b> Ce mail était un <b>piège</b> — tu l\'as laissé passer.';
+    clue=primaryWhy;
+  } else {
+    head='❌ <b>Raté.</b> Ce mail était <b>honnête</b> : tu as bloqué un vrai message.';
+    clue=primaryWhy;
+  }
+  const v=document.createElement('div'); v.className='ph-verdict '+(good?'good':(opt.soft?'soft':'bad'));
+  v.innerHTML=head+'<span class="pv-clue">'+clue+'</span>'+(extra?'<span class="pv-clue">'+extra+'</span>':'');
   a.appendChild(v);
-  setTimeout(()=>{ try{v.remove();}catch(e){} }, 2200);
+  clearTimeout(PH._verdictT); PH._verdictT=setTimeout(()=>{ try{v.remove();}catch(e){} }, 8200);
 }
-function phWaveFailed(){
+
+/* ---- 14.22 Fin de phase : le rapport ---- */
+function phPhaseEnd(){
+  beep('win');
+  const p=PH.pstats;
+  if(p.wrong===0){ PH.net=Math.min(PH_MAXG,PH.net+PH_HEAL); PH.trust=Math.min(PH_MAXG,PH.trust+PH_HEAL); }
+  else if(p.wrong===1){ PH.net=Math.min(PH_MAXG,PH.net+5); PH.trust=Math.min(PH_MAXG,PH.trust+5); }
+  phHud();
+  after(700, phReport);
+}
+function phReport(){
   const a=phArena(); if(!a) return;
-  beep('bad');
-  const c=document.createElement('div'); c.className='ph-wavecard';
-  c.innerHTML='<span class="wc-ic">😵</span><span class="wc-t">Plus de cœurs !</span>'
-    +'<span class="wc-s">LE PHISHER a eu ta boîte cette fois… Relis les indices : l\'adresse, l\'urgence, les cadeaux, l\'argent, le mot de passe.</span>'
-    +'<button class="sh-go" id="wfRetry">↺ Recommencer la manche</button>';
-  a.appendChild(c);
-  if(window.ttsDecorateCard) ttsDecorateCard(c,null,['.wc-t','.wc-s']);   // 🔊 lit l'échec de la manche
-  document.getElementById('wfRetry').onclick=()=>{
-    c.remove(); PH.lives=3;
-    if(PH.tools.phone) PH.phoneLeft=1;
-    if(PH.tools.addr) PH.addrLeft=1;
-    phBuildQueue(); phHudRender(); phNextMail();
+  const p=PH.pstats, c=phCfg();
+  const found=Object.keys(p.found).sort((x,y)=>p.found[y]-p.found[x]);
+  const missed=Object.keys(p.missed).sort((x,y)=>p.missed[y]-p.missed[x]);
+  const pct=p.total?Math.round(100*p.right/p.total):0;
+  const r=document.createElement('div'); r.className='ph-report';
+  r.innerHTML='<div class="rp-card">'
+    +'<div class="rp-h"><span class="rp-ic">🛡️</span><div><span class="rp-t">Rapport de cybersécurité</span><span class="rp-s">'+esc(c.name)+'</span></div>'
+    +  '<span class="rp-score '+(pct>=90?'a':(pct>=70?'b':'c'))+'">'+pct+'%</span></div>'
+    +'<div class="rp-grid">'
+    +  '<div class="rp-b"><span class="rb-n">'+p.total+'</span><span class="rb-k">mails contrôlés</span></div>'
+    +  '<div class="rp-b good"><span class="rb-n">'+p.right+'</span><span class="rb-k">bien classés</span></div>'
+    +  '<div class="rp-b bad"><span class="rb-n">'+p.wrong+'</span><span class="rb-k">erreur'+(p.wrong>1?'s':'')+'</span></div>'
+    +  '<div class="rp-b cred"><span class="rb-n">+'+p.gain+'</span><span class="rb-k">crédits gagnés</span></div>'
+    +'</div>'
+    +'<div class="rp-cols">'
+    +  '<div class="rp-col"><span class="rc-t">🔍 Indices repérés</span>'
+    +    (found.length?found.map(k=>'<span class="rc-chip ok">'+PH_CLUES[k].ic+' '+PH_CLUES[k].t+' <b>×'+p.found[k]+'</b></span>').join('')
+                     :'<span class="rc-none">Aucun indice repéré. Inspecte l\'expéditeur, survole les boutons, ouvre le Registre !</span>')+'</div>'
+    +  '<div class="rp-col"><span class="rc-t">⚠️ Pièges encore confondus</span>'
+    +    (missed.length?missed.map(k=>'<span class="rc-chip bad">'+PH_CLUES[k].ic+' '+PH_CLUES[k].t+'</span>').join('')
+                      :'<span class="rc-none">Aucun piège ne t\'a échappé. Impeccable !</span>')+'</div>'
+    +'</div>'
+    +'<div class="rp-tools">🧰 Outils et vérifications : <b>'+p.tools+'</b></div>'
+    +'<button class="sh-go" id="rpGo">'+(PH.phase>=PH_PHASES.length-1?'Continuer →':'À la boutique 🛒')+'</button>'
+    +'</div>';
+  a.appendChild(r);
+  document.getElementById('rpGo').onclick=()=>{
+    beep('open'); r.remove();
+    if(PH.phase>=PH_PHASES.length-1){ phVictory(); return; }
+    phShop();
   };
 }
-function phWaveEnd(){
-  banner('🏆 Manche '+(PH.wave+1)+' terminée !','good');
-  beep('win');
-  if(PH.wave>=PH_WAVES.length-1){ after(1300, phVictory); return; }
-  after(1300, phShop);
-}
+/* ---- 14.23 La boutique ---- */
 function phShop(){
   const a=phArena(); if(!a) return;
-  const s=document.createElement('div'); s.className='ph-shop'; s.id='phShop';
-  function shopHtml(){
+  const s=document.createElement('div'); s.className='ph-shop';
+  const avail=PH_TOOLS.filter(t=>PH.phase+2>=t.from);
+  function html(){
     return '<span class="sh-t">🛒 La boutique de l\'inspecteur</span>'
-      +'<span class="sh-s">Tes crédits : 🪙 '+PH.credits+' — chaque outil révèle de NOUVELLES ruses du PHISHER !</span>'
+      +'<span class="sh-s">Tes crédits : 🪙 <b>'+PH.credits+'</b></span>'
       +'<div class="sh-grid">'
-      +PH_TOOLS.map(t=>{
+      +(avail.length?avail.map(t=>{
         const owned=PH.tools[t.id], can=PH.credits>=t.price;
         return '<button class="sh-card'+(owned?' owned':(can?'':' off'))+'" data-t="'+t.id+'">'
           +'<span class="shc-h"><span class="shc-ic">'+t.ic+'</span>'+t.name+'</span>'
           +(owned?'':'<span class="shc-new">⚡ '+esc(t.unlock)+'</span>')
           +'<span class="shc-d">'+t.desc+'</span>'
-          +'<span class="shc-p">'+(owned?'✔️ acheté':'🪙 '+t.price)+'</span></button>';
-      }).join('')
-      +'</div><button class="sh-go" id="shGo">Manche suivante ⚔️</button>';
+          +'<span class="shc-w">⚠️ '+t.warn+'</span>'
+          +'<span class="shc-p">'+(owned?'✔️ acheté · '+t.use:'🪙 '+t.price+' · '+t.use)+'</span></button>';
+      }).join(''):'<span class="sh-none">Aucun outil en rayon pour l\'instant : ils arrivent avec les phases.</span>')
+      +'</div><button class="sh-go" id="shGo">Phase suivante ⚔️</button>';
   }
-  s.innerHTML=shopHtml();
-  a.appendChild(s);
+  s.innerHTML=html(); a.appendChild(s);
   function bind(){
     s.querySelectorAll('.sh-card').forEach(b=>b.onclick=()=>{
       const t=PH_TOOLS.find(x=>x.id===b.getAttribute('data-t'));
-      if(!t || PH.tools[t.id]) return;
+      if(!t||PH.tools[t.id]) return;
       if(PH.credits<t.price){ beep('bad'); toast('Pas assez de crédits ! Tamponne juste pour en gagner.'); return; }
       PH.credits-=t.price; PH.tools[t.id]=true;
-      if(t.id==='phone') PH.phoneLeft=1;
-      if(t.id==='addr') PH.addrLeft=1;
+      if(t.id==='pj') PH.pjLeft=1;
+      if(t.id==='scan2') PH.scanLeft=2;
       beep('coin'); confetti();
       toast('⚡ <b>'+t.name+'</b> acheté ! '+esc(t.unlock));
-      s.innerHTML=shopHtml(); bind();
+      s.innerHTML=html(); bind();
     });
-    document.getElementById('shGo').onclick=()=>{
-      beep('open'); s.remove();
-      PH.wave++;
-      if(PH.tools.phone) PH.phoneLeft=1;
-      if(PH.tools.addr) PH.addrLeft=1;
-      phWaveIntro();
-    };
+    document.getElementById('shGo').onclick=()=>{ beep('open'); s.remove(); PH.phase++; phPhaseIntro(); };
   }
   bind();
 }
+
+/* ---- 14.24 Phase finale : le duel des jumeaux ---- */
+const PH_DUEL_SC=[
+  {id:'colis', who:['#colis'], sub:v=>'Votre colis n° '+v.colisN,
+   body:v=>'<p>Bonjour,</p><p>Votre colis sera livré <b>'+v.jour+'</b> entre '+v.heure+' et midi.</p><p>Merci de votre confiance.</p>'},
+  {id:'cdi', who:['#cdi'], sub:v=>'Ton emprunt au CDI',
+   body:v=>'<p>Bonjour,</p><p>Le livre '+v.livre+' est à rapporter avant <b>'+v.jour+'</b>.</p><p>Merci !</p>'},
+  {id:'cuicui', who:['#cuicui'], sub:v=>'Nouveauté sur ton espace',
+   body:v=>'<p>Bonjour,</p><p>Ton espace évolue <b>'+v.jour+'</b> : de nouvelles couleurs de dossiers arrivent.</p><p>Rien à faire de ton côté.</p>'},
+  {id:'ecole', who:['#secr','#vies'], sub:v=>'Document à rapporter avant '+v.jour,
+   body:v=>'<p>Bonjour,</p><p>Merci de rapporter le document signé avant <b>'+v.jour+'</b>.</p><p>Le secrétariat reste à votre disposition.</p>'},
+  {id:'prof', who:['prof'], sub:v=>'Documents '+matDe(v.who.mat),
+   body:v=>'<p>Bonjour,</p><p>Voici les documents '+matDe(v.who.mat)+' pour '+v.jour+'.</p><p>Bonne relecture !</p>'},
+  {id:'ville', who:['#biblio','#musee','#mairie'], sub:v=>'Programme des ateliers',
+   body:v=>'<p>Bonjour,</p><p>Le programme des ateliers de '+v.jour+' est disponible.</p><p>Inscriptions sur place, à l\'accueil.</p>'}
+];
+function phDuelPair(){
+  const sc=pickOne(PH_DUEL_SC), c=phPickWho(sc.who), v=phVars(c);
+  const base={name:c.name, mail:c.mail, date:phDate(), sub:sc.sub(v), body:sc.body(v), sign:c.name, c:c};
+  const good=Object.assign({}, base, {phish:false, atts:null, link:null});
+  const bad =Object.assign({}, base, {phish:true,  atts:null, link:null, diffs:[]});
+  const kit=[
+    ()=>{ const f=phFakeMail(c.mail, 2); bad.mail=f.mail;
+          bad.diffs.push({ic:'📧', t:'L\'adresse', w:f.why}); },
+    ()=>{ good.link=phLink(false,c,2,'btn'); bad.link=phLink(true,c,2,'btn'); bad.link.txt=good.link.txt;
+          bad.diffs.push({ic:'🔗', t:'Le bouton', w:'Même texte affiché, mais il mène à <b>'+esc(bad.link.dom)+'</b> au lieu de <b>'+esc(good.link.dom)+'</b>.'}); },
+    ()=>{ const a=phAtt(false,v,2); good.atts=[a];
+          const b2=phAtt(true,v,2); b2.n=a.n.replace(/\.[a-z]+$/,'')+'.'+a.n.split('.').pop()+'.exe'; b2.ext='exe';
+          bad.atts=[b2];
+          bad.diffs.push({ic:'📎', t:'La pièce jointe', w:'Le nom finit par <b>.exe</b> : c\'est un programme, pas un document.'}); },
+    ()=>{ bad.body=bad.body.replace('</p>','</p><p>Un règlement de <b>'+v.petit+' €</b> est nécessaire pour finaliser.</p>');
+          bad.diffs.push({ic:'💶', t:'La demande', w:'Ce message réclame de l\'argent. L\'autre ne demande rien.'}); },
+    ()=>{ bad.body=bad.body.replace('</p>','</p><p>Confirmez avec votre <b>identifiant et votre mot de passe</b>.</p>');
+          bad.diffs.push({ic:'🔑', t:'La demande', w:'Un mot de passe réclamé par mail : jamais, dans aucun cas.'}); },
+    ()=>{ bad.body=bad.body.replace('</p>','</p><p><b>Attention :</b> sans réponse sous <b>'+v.delai+'</b>, l\'accès sera définitivement supprimé.</p>');
+          bad.diffs.push({ic:'⏰', t:'Le ton', w:'Une menace et un délai serré, alors que l\'autre message est calme.'}); }
+  ];
+  const order=shuffle(kit.map((f,i)=>i));
+  const n=Math.random()<.55?1:2;
+  for(let i=0;i<n;i++) kit[order[i]]();
+  return Math.random()<.5?[good,bad]:[bad,good];
+}
+function phDuelMailHtml(m,i){
+  let body=m.body;
+  if(m.link) body+='<p class="ph-cta">'+phLinkHtml(m.link)+'</p>';
+  if(m.atts) body+='<p class="ph-atts">'+m.atts.map(a=>'<span class="ph-att"><span class="pa-n">'+a.ic+' '+esc(a.n)+'</span><span class="ac-size">'+fmtSize(a.s)+'</span></span>').join('')+'</p>';
+  body+='<p class="ph-sign">'+esc(m.sign)+'</p>';
+  return '<div class="dl-mail" data-i="'+i+'" title="Cliquer = ce mail est sûr">'
+    +'<div class="dl-body"><div class="ph-mh">'
+    +  '<div class="mh-row"><span class="mh-k">De</span><span class="mh-from">'+esc(m.name)+'</span><span class="mh-addr">&lt;'+esc(m.mail)+'&gt;</span></div>'
+    +  '<div class="mh-row"><span class="mh-k">Objet</span><span class="mh-sub">'+esc(m.sub)+'</span></div>'
+    +'</div><div class="ph-mb">'+body+'</div></div>'
+    +'<div class="dl-mark">✅ Ce mail est sûr</div></div>';
+}
+function phDuelStart(){
+  PH.duelIdx=0; PH.duelTotal=10; PH.duelBusy=false;
+  const st=document.getElementById('phStamps'); if(st) st.hidden=true;
+  phHud(); phSay('final'); phDuelNext();
+}
+function phDuelNext(){
+  if(PH.over) return;
+  if(PH.duelIdx>=PH.duelTotal){ phPhaseEnd(); return; }
+  PH.duelBusy=false;
+  PH.duelPair=phDuelPair();
+  const z=document.getElementById('phPaper'); if(!z) return;
+  z.innerHTML='<div class="ph-duel">'
+    +'<div class="dl-head">⚔️ Duel <b>'+(PH.duelIdx+1)+'</b> / '+PH.duelTotal+' — survole puis <b>clique le mail SÛR</b></div>'
+    +'<div class="dl-pair">'+phDuelMailHtml(PH.duelPair[0],0)+phDuelMailHtml(PH.duelPair[1],1)+'</div></div>';
+  beep('mail');
+  const q=document.getElementById('phQueue'); if(q) q.innerHTML='⚔️ Duel <b>'+(PH.duelIdx+1)+'</b> / '+PH.duelTotal;
+  /* les liens montrent leur vraie destination au survol, mais ne bloquent pas le clic du mail */
+  z.querySelectorAll('.mlk').forEach(a=>{
+    a.onclick=(e)=>{ e.preventDefault(); };
+    a.onmouseenter=()=>{
+      const t=document.createElement('div'); t.className='ph-linktip'; t.id='phTip';
+      t.innerHTML='🔗 Ce lien mène vraiment vers :<br><span class="lt-real">'+esc(a.getAttribute('data-real'))+'</span>';
+      document.body.appendChild(t);
+      const r=a.getBoundingClientRect();
+      t.style.left=Math.min(window.innerWidth-340, Math.max(8,r.left))+'px'; t.style.top=(r.bottom+8)+'px';
+    };
+    a.onmouseleave=()=>{ const t=document.getElementById('phTip'); if(t) t.remove(); };
+  });
+  z.querySelectorAll('.dl-mail').forEach(el=>el.onclick=()=>phDuelPick(+el.getAttribute('data-i')));
+}
+function phDuelPick(i){
+  if(PH.over||PH.duelBusy) return;
+  PH.duelBusy=true;
+  const pair=PH.duelPair, chosen=pair[i];
+  const badI=pair[0].phish?0:1, bad=pair[badI];
+  const z=document.getElementById('phPaper');
+  const tip=document.getElementById('phTip'); if(tip) tip.remove();
+  const correct=!chosen.phish;
+  PH.stats.total++; PH.pstats.total++;
+  z.querySelector('.dl-mail[data-i="'+badI+'"]').classList.add('is-bad');
+  z.querySelector('.dl-mail[data-i="'+(1-badI)+'"]').classList.add('is-ok');
+  const diffs='<div class="dl-diffs">'+bad.diffs.map(d=>'<span class="dl-d"><b>'+d.ic+' '+d.t+'</b> '+d.w+'</span>').join('')+'</div>';
+  if(correct){
+    PH.stats.right++; PH.pstats.right++; PH.streak++;
+    PH.credits+=4; PH.pstats.gain+=4;
+    beep('coin'); flyPts('+4 🪙', z);
+    phVerdictBox(true,'✅ <b>Bien vu !</b> +4 🪙', diffs); phSay('lose');
+  } else {
+    PH.stats.wrong++; PH.pstats.wrong++; PH.streak=0;
+    PH.net=Math.max(0,PH.net-PH_HIT); PH.credits=Math.max(0,PH.credits-3);
+    bad.diffs.forEach(d=>{ PH.pstats.missed[d.t]=1; });
+    beep('alarm'); screenShake(); redFlash();
+    phVerdictBox(false,'❌ <b>Raté.</b> Tu as choisi le mail piégé.', diffs); phSay('win');
+  }
+  phHud();
+  if(PH.net<=0||PH.trust<=0){ after(4200, phDefeat); return; }
+  PH.duelIdx++;
+  after(correct?3600:5200, phDuelNext);
+}
+function phVerdictBox(good, head, extra){
+  const a=phArena(); if(!a) return;
+  const old=a.querySelector('.ph-verdict'); if(old) old.remove();
+  const v=document.createElement('div'); v.className='ph-verdict '+(good?'good':'bad');
+  v.innerHTML=head+(extra||'');
+  a.appendChild(v);
+  clearTimeout(PH._verdictT); PH._verdictT=setTimeout(()=>{ try{v.remove();}catch(e){} }, 8200);
+}
+
+/* ---- 14.25 Défaite / victoire ---- */
+function phDefeat(){
+  PH.over=true; stopPhMusic();
+  const net=PH.net<=0;
+  beep('bad'); phMood('glee');
+  modal.className='modal bad';
+  modal.innerHTML='<span class="m-emoji">🎣</span>'
+    +'<div class="kicker" style="color:var(--red-d)">'+(net?'Réseau infiltré':'Confiance perdue')+'</div>'
+    +'<h2>'+(net?'LE PHISHER est entré dans la boîte !':'Tu bloques tout… même les vrais messages !')+'</h2>'
+    +'<p>'+(net
+      ? 'Trop de mails piégés sont passés. La jauge <b>🛡️ Sécurité du réseau</b> est vide.<br>Avant de valider : inspecte l\'adresse, survole les boutons, lis la fin des noms de fichiers.'
+      : 'Trop de messages utiles ont été jetés. La jauge <b>🤝 Confiance</b> est vide.<br>Un expéditeur <b>inconnu</b> ou <b>nouveau</b> n\'est pas un menteur : cherche une vraie raison de te méfier.')+'</p>'
+    +'<p style="font-size:.92rem;color:var(--muted)">Tu étais à la <b>'+phCfg().name+'</b>, avec <b>🪙 '+PH.credits+'</b> crédits. On repart du début, mais tu sais déjà beaucoup de choses.</p>'
+    +'<div class="m-actions"><button class="m-btn primary" id="phRetry">↺ Reprendre le contrôle</button></div>';
+  modal.dataset.ttsText=(window.TTS_STATIC||{})[net?'boss_lost_net':'boss_lost_trust']||'';
+  openOverlay(); fitModalWidth();
+  document.getElementById('phRetry').onclick=()=>{ closeOverlay(); phisherRun(); };
+}
 function phVictory(){
-  PH.over=true;
-  stopPhMusic();
+  PH.over=true; stopPhMusic();
   _missionDone=true;
   progressIdx=STEPS.length; saveProgress();
-  const stars=(PH.mistakes===0)?3:(PH.mistakes<=3?2:1);
+  const w=PH.stats.wrong;
+  const stars=(w<=2)?3:(w<=5?2:1);
   saveStars(starKey(), stars);
   beep('win'); confetti(); confetti();
+  const top=Object.keys(PH.stats.found).sort((a,b)=>PH.stats.found[b]-PH.stats.found[a]).slice(0,4);
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🎣💥</span>'
     +'<div class="kicker" style="color:var(--green-d)">Boss final vaincu</div>'
     +'<h2>LE PHISHER est à la corbeille !</h2>'
     +starLineHtml(stars)
-    +'<p>'+PH.total+' mails contrôlés, '+(PH.mistakes===0?'<b>zéro erreur</b> — un sans-faute d\'inspecteur ! 🕵️':PH.mistakes+' erreur'+(PH.mistakes>1?'s':'')+' — le PHISHER n\'a presque rien eu !')+'</p>'
-    +'<p style="font-size:.95rem;color:var(--muted)">Retiens ses ruses pour la vraie vie : <b>adresse louche, urgence, cadeau, argent, mot de passe</b> = poubelle !</p>'
+    +'<p>7 phases, <b>'+PH.stats.total+' mails</b> contrôlés, '
+    +(w===0?'<b>zéro erreur</b> — un sans-faute d\'inspecteur ! 🕵️':'<b>'+w+' erreur'+(w>1?'s':'')+'</b> seulement.')
+    +' Tu as repéré <b>'+PH.stats.clues+' indices</b>.</p>'
+    +(top.length?'<p style="font-size:.92rem">Tes meilleurs réflexes : '+top.map(k=>PH_CLUES[k].ic+' '+PH_CLUES[k].t.toLowerCase()).join(' · ')+'</p>':'')
+    +'<p style="font-size:.95rem;color:var(--muted)">Dans la vraie vie, garde l\'ordre : <b>observer</b>, <b>vérifier</b>, <b>croiser</b>, <b>demander de l\'aide</b>… et seulement après, <b>décider</b>.</p>'
     +'<div class="m-actions"><button class="m-btn primary green" id="phNext">Continuer →</button></div>';
-  modal.dataset.ttsText = (window.TTS_STATIC||{}).boss_win || '';
-  openOverlay();
+  modal.dataset.ttsText=(window.TTS_STATIC||{}).boss_win||'';
+  openOverlay(); fitModalWidth();
   popStars(stars);
   document.getElementById('phNext').onclick=()=>{ closeOverlay(); levelComplete(); };
 }
