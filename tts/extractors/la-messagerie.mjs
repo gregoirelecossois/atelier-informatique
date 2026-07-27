@@ -41,16 +41,17 @@ function extractCore(html){
 const strip = s => String(s).replace(/<[^>]+>/g, '');
 const GAME_HINT_FALLBACK = 'Suis la consigne affichée sur l\'écran !';
 
-// Cartes de manche du boss LE PHISHER (.ph-wavecard, hors #modal) : ttsDecorateCard lit
-// « .wc-t. <tous les .wc-s joints par un espace> ». La 2e ligne de la carte d'intro est
-// la même consigne pour toutes les manches.
-const PH_WAVE_LEGEND = '✅ LÉGITIME = on laisse passer · 🚫 INDÉSIRABLE = à la poubelle !';
-function extractPhWaves(html){
-  const i = html.indexOf('[', html.indexOf('const PH_WAVES='));
+// Tutoriels de phase du boss LE PHISHER (.ph-tutocard, hors #modal) : ttsDecorateCard lit
+// « .wc-t. <tous les .wc-s joints par un espace> », soit le nom de la phase, puis son
+// sous-titre, puis les lignes du tutoriel dans l'ordre du DOM.
+function extractPhPhases(html){
+  const anchor = html.indexOf('const PH_PHASES=');
+  if (anchor < 0) return [];
+  const i = html.indexOf('[', anchor);
   if (i < 0) return [];
   const ctx = {}; vm.createContext(ctx);
-  vm.runInContext('var __W = ' + extractBalanced(html, i) + ';', ctx);
-  return ctx.__W || [];
+  vm.runInContext('var __P = ' + extractBalanced(html, i) + ';', ctx);
+  return ctx.__P || [];
 }
 
 export function extractWanted(html, { ttsKey, ttsNormalize, extractStatic }){
@@ -74,7 +75,7 @@ export function extractWanted(html, { ttsKey, ttsNormalize, extractStatic }){
       }
     }
   }
-  for (const w of extractPhWaves(html)) add(w.name + '. ' + w.sub + ' ' + PH_WAVE_LEGEND);
+  for (const p of extractPhPhases(html)) add(p.name + '. ' + p.sub + ' ' + (p.tuto||[]).join(' '));
   for (const v of Object.values(STATIC)) add(v);
 
   return wanted;
