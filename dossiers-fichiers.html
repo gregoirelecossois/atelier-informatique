@@ -944,6 +944,10 @@ let actx=null, bossMusic=null;
 function audioCtx(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } } return actx; }
 function pauseBossMusic(){ if(bossMusic){ try{ bossMusic.pause(); }catch(e){} } }
 function resumeBossMusic(){ if(bossMusic && soundOn){ try{ const p=bossMusic.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
+
+/* Pendant la lecture TTS, la musique de fond devient un très léger fond sonore. */
+window.onTtsStart=function(){ if(bossMusic) bossMusic.volume=0.45*0.12; };
+window.onTtsEnd=function(){ if(bossMusic) bossMusic.volume=0.45; };
 function beep(kind){
   if(!soundOn) return; const a=audioCtx(); if(!a) return; const now=a.currentTime;
   function tone(freq,dur,type,vol,delay){

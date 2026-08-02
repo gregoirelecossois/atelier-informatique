@@ -5469,6 +5469,16 @@ function ixMusic(rate){
 }
 function ixMusicStop(){ if(ixAudio){ try{ ixAudio.pause(); ixAudio.currentTime=0; }catch(e){} } }
 function ixCleanup(){ if(IX){ IX.over=true; IX=null; ixMusicStop(); pzFsTeardown(); } }
+
+/* Pendant la lecture TTS, la musique de fond devient un très léger fond sonore. */
+window.onTtsStart=function(){
+  if(pzAudio) pzAudio.volume=.45*0.12;
+  if(ixAudio) ixAudio.volume=.5*0.12;
+};
+window.onTtsEnd=function(){
+  if(pzAudio) pzAudio.volume=.45;
+  if(ixAudio) ixAudio.volume=.5;
+};
 function ixArenaHtml(){
   return '<div class="pz-arena ix-arena" id="ixArena">'
     +'<button class="pz-fs-btn" id="pzFsBtn" title="Plein écran">⛶</button>'

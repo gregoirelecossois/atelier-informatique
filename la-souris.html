@@ -970,6 +970,10 @@ function startBossMusic(){
 function stopBossMusic(){ if(bossMusic){ try{ bossMusic.pause(); bossMusic.currentTime=0; }catch(e){} } }
 function pauseBossMusic(){ if(bossMusic){ try{ bossMusic.pause(); }catch(e){} } }
 function resumeBossMusic(){ if(bossMusic && soundOn){ try{ const p=bossMusic.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
+
+/* Pendant la lecture TTS, la musique de fond devient un très léger fond sonore. */
+window.onTtsStart=function(){ if(bossMusic) bossMusic.volume=0.45*0.12; };
+window.onTtsEnd=function(){ if(bossMusic) bossMusic.volume=0.45; };
 function beep(kind){
   if(!soundOn) return; const a=audioCtx(); if(!a) return;
   const now=a.currentTime;
