@@ -2059,6 +2059,18 @@ function pauseHbBossMusic(){ if(hbBossAudio){ try{hbBossAudio.pause();}catch(e){
 function resumeHbBossMusic(){ if(hbBossAudio && soundOn && HB.running){ try{ const p=hbBossAudio.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
 function stopHbBossMusic(){ if(hbBossAudio){ try{hbBossAudio.pause(); hbBossAudio.currentTime=0;}catch(e){} } }
 
+/* Pendant la lecture TTS, la musique de fond devient un très léger fond sonore. */
+window.onTtsStart=function(){
+  if(hackAmbientAudio) hackAmbientAudio.volume=.32*0.12;
+  if(bossAudio) bossAudio.volume=.5*0.12;
+  if(hbBossAudio) hbBossAudio.volume=.5*0.12;
+};
+window.onTtsEnd=function(){
+  if(hackAmbientAudio) hackAmbientAudio.volume=.32;
+  if(bossAudio) bossAudio.volume=.5;
+  if(hbBossAudio) hbBossAudio.volume=.5;
+};
+
 function startBoss(step){
   stopGame(); gamePaused=false;
   const theme=step.theme||{}, enh=step.enh||{};

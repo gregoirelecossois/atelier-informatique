@@ -47,11 +47,16 @@
   const PLAY_ICON = '🔊', STOP_ICON = '⏹';
   let curAudio = null, curBtn = null, curWatch = null;
   function setIcon(btn, ch){ if(btn) btn.textContent = ch; }
+  // Hooks facultatifs qu'un atelier peut brancher pour baisser sa musique de
+  // fond pendant la lecture TTS (elle ne doit plus être qu'un léger fond sonore).
+  function notifyTtsStart(){ if (window.onTtsStart) try{ window.onTtsStart(); }catch(e){} }
+  function notifyTtsEnd(){ if (window.onTtsEnd) try{ window.onTtsEnd(); }catch(e){} }
   function stopCurrent(){
     if (curWatch){ clearInterval(curWatch); curWatch=null; }
     if (curAudio){ try{ curAudio.pause(); }catch(e){} curAudio=null; }
     if (window.speechSynthesis){ try{ speechSynthesis.cancel(); }catch(e){} }
     if (curBtn){ curBtn.classList.remove('playing'); setIcon(curBtn, PLAY_ICON); curBtn=null; }
+    notifyTtsEnd();
   }
   // Les cartes de tutoriel de boss vivent hors de #modal : elles ne passent pas par
   // closeOverlay(), donc rien n'appellerait ttsStopCurrent() à leur fermeture. On coupe
@@ -68,22 +73,23 @@
            vs.find(v=>/^fr/i.test(v.lang)) || null;
   }
   function speakFallback(text, btn){
-    if (!window.speechSynthesis) return;
+    if (!window.speechSynthesis){ notifyTtsEnd(); return; }
     const u = new SpeechSynthesisUtterance(ttsNormalize(text));
     u.lang='fr-FR'; u.rate=0.95;
     const v = pickFrenchVoice(); if (v) u.voice=v;
-    u.onend=()=>{ if(btn){ btn.classList.remove('playing'); setIcon(btn, PLAY_ICON); } };
+    u.onend=()=>{ if(btn){ btn.classList.remove('playing'); setIcon(btn, PLAY_ICON); } notifyTtsEnd(); };
     speechSynthesis.speak(u);
   }
   function play(text, btn){
     stopCurrent();
     curBtn = btn; if (btn){ btn.classList.add('playing'); watchDetach(btn); }
     const clip = window.TTS_CLIPS && window.TTS_CLIPS[ttsKey(text)];
+    notifyTtsStart();
     if (clip){
       const a = new Audio(clip); curAudio = a;
-      a.onended = ()=>{ if(btn){ btn.classList.remove('playing'); setIcon(btn, PLAY_ICON); } curAudio=null; };
+      a.onended = ()=>{ if(btn){ btn.classList.remove('playing'); setIcon(btn, PLAY_ICON); } curAudio=null; notifyTtsEnd(); };
       a.play().catch(()=>{ // repli voix si la lecture échoue malgré le clic (cas rare)
-        curAudio=null; if (curBtn===btn) speakFallback(text, btn);
+        curAudio=null; if (curBtn===btn) speakFallback(text, btn); else notifyTtsEnd();
       });
     } else {
       speakFallback(text, btn);

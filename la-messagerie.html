@@ -1016,13 +1016,17 @@
   .dl-pair{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   /* on clique le mail entier pour le déclarer sûr ; filigrane au survol */
   .dl-mail{position:relative;min-height:0;display:flex;flex-direction:column;gap:7px;cursor:pointer;animation:phMailIn .34s ease;}
-  .dl-mail .dl-body{flex:1;min-height:0;overflow:auto;background:#fffdf5;border-radius:10px;box-shadow:0 14px 34px -14px rgba(0,0,0,.7), inset 0 0 0 2px #e5dfc8;transition:box-shadow .12s;}
+  .dl-mail .dl-body{position:relative;flex:1;min-height:0;overflow:auto;background:#fffdf5;border-radius:10px;box-shadow:0 14px 34px -14px rgba(0,0,0,.7), inset 0 0 0 2px #e5dfc8;transition:box-shadow .12s;}
   .dl-mail:hover .dl-body{box-shadow:0 14px 34px -14px rgba(0,0,0,.7), inset 0 0 0 3px #16a34a;}
   .dl-mail .ph-mb{font-size:.88rem;padding:10px 13px 12px;}
   .dl-mail .ph-mh{padding:9px 13px 7px;}
+  /* le mail entier se clique (duel) : pas de sélection de texte, curseur main partout dans la carte */
+  .screen .dl-mail .ph-mb,.screen .dl-mail .ph-mh{cursor:pointer;user-select:none;-webkit-user-select:none;}
+  /* le fond vert couvre TOUTE la carte (non tourné) ; seul le texte du tampon est incliné */
   .dl-mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;
-    background:rgba(22,163,74,.14);color:#15803d;font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.5rem;
-    transform:rotate(-9deg);border-radius:10px;transition:opacity .12s;z-index:3;text-shadow:0 2px 8px rgba(255,255,255,.9);}
+    background:rgba(22,163,74,.14);border-radius:10px;transition:opacity .12s;z-index:3;}
+  .dl-mark span{color:#15803d;font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:700;font-size:1.5rem;
+    transform:rotate(-9deg);text-shadow:0 2px 8px rgba(255,255,255,.9);}
   .dl-mail:hover .dl-mark{opacity:1;}
   .dl-mail.is-bad{cursor:default;} .dl-mail.is-ok{cursor:default;}
   .dl-mail.is-bad .dl-mark, .dl-mail.is-ok .dl-mark{opacity:0!important;}
@@ -1288,6 +1292,10 @@ function startPhMusic(){
 function stopPhMusic(){ if(phMusic){ try{ phMusic.pause(); phMusic.currentTime=0; }catch(e){} } }
 function pausePhMusic(){ if(phMusic){ try{ phMusic.pause(); }catch(e){} } }
 function resumePhMusic(){ if(phMusic && soundOn){ try{ const p=phMusic.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} } }
+
+/* Pendant la lecture TTS, la musique de fond devient un très léger fond sonore. */
+window.onTtsStart=function(){ if(phMusic) phMusic.volume=0.45*0.12; };
+window.onTtsEnd=function(){ if(phMusic) phMusic.volume=0.45; };
 function beep(kind){
   if(!soundOn) return; const a=audioCtx(); if(!a) return; const now=a.currentTime;
   function tone(freq,dur,type,vol,delay){
@@ -5964,8 +5972,8 @@ function phDuelMailHtml(m,i){
     +'<div class="dl-body"><div class="ph-mh">'
     +  '<div class="mh-row"><span class="mh-k">De</span><span class="mh-from">'+esc(m.name)+'</span><span class="mh-addr">&lt;'+esc(m.mail)+'&gt;</span></div>'
     +  '<div class="mh-row"><span class="mh-k">Objet</span><span class="mh-sub">'+esc(m.sub)+'</span></div>'
-    +'</div><div class="ph-mb">'+body+'</div></div>'
-    +'<div class="dl-mark">✅ Ce mail est sûr</div></div>';
+    +'</div><div class="ph-mb">'+body+'</div>'
+    +'<div class="dl-mark"><span>✅ Ce mail est sûr</span></div></div></div>';
 }
 function phDuelStart(){
   PH.duelIdx=0; PH.duelTotal=10; PH.duelBusy=false;
