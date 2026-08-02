@@ -760,11 +760,13 @@
   "fail_ohoh_generic": "Oh oh, tu as modifié autre chose ! Tu as changé des choses qui n'étaient pas demandées. Il faut faire seulement ce qui est demandé dans la mission. Besoin d'aide ? Clique sur Indice.",
   "hint_save": "Enregistre ton devoir. Clique sur le menu Fichier en haut, puis sur Enregistrer sous. Ensuite, range ton devoir dans Ce PC, Ma Classe, Restitution de devoirs.",
   "hint_generic": "L'indice. Relis bien chaque consigne, une par une. Fais seulement ce qui est demandé, dans l'ordre.",
-  "replay_intro": "Tu veux t'entraîner ? Choisis un exercice à refaire pour te rappeler comment faire. Tu reviendras ensuite au test, sans rien perdre."
+  "replay_intro": "Tu veux t'entraîner ? Choisis un exercice à refaire pour te rappeler comment faire. Tu reviendras ensuite au test, sans rien perdre.",
+  "badge_first": "Bravo, tu as gagné ton premier trophée ! Chaque trophée récompense une réussite : finir un niveau difficile, battre un boss, ou terminer un atelier en entier. Ils sont tous rangés dans ta vitrine, en bas de la page d'accueil. Va la découvrir !"
 }
 </script>
 <script src="tts/tts-atelier.js"></script>
 <script src="tts/traitement-texte.clips.js"></script>
+<script src="scripts/badges.js"></script>
 
 <script>
 /* =========================================================
@@ -2289,6 +2291,25 @@ const store={
   set(k,v){ try{localStorage.setItem(k,v);}catch(e){ (this._m=this._m||{})[k]=v; } },
   _m:{}
 };
+/* Efface TOUTES les clés d'un préfixe (utilisé par « Reset complet » du devkit).
+   On vide aussi le repli mémoire `_m` : quand localStorage est indisponible (certaines
+   configurations en file://), c'est LUI qui porte la progression, et une suppression
+   qui ne viserait que localStorage laisserait le jeu exactement là où il était. */
+function wipe(pfx){
+  try{ Object.keys(localStorage).forEach(k=>{ if(k.indexOf(pfx)===0) localStorage.removeItem(k); }); }catch(e){}
+  store._m={};
+}
+
+/* ---- Trophées (scripts/badges.js, partagé par tout l'atelier) ----
+   Raccourci tolérant : si le fichier n'est pas chargé, le jeu continue sans trophées. */
+const TT_LEVEL_BADGES={4:'tt.l4', 6:'tt.l6', 7:'tt.l7'};
+function bdg(id, opts){ return window.Badges ? Badges.award(id, opts) : false; }
+/* « Copie parfaite » : une tentative fausse (mission faite en trop, ou modification non
+   demandée) salit le niveau pour de bon. Le drapeau vit dans localStorage : fermer l'atelier
+   ne l'efface pas. Cliquer « Vérifier » trop tôt (« Pas encore ») n'est PAS une erreur —
+   l'élève n'a alors rien fait de faux, il a seulement vérifié en avance. */
+function ttMiss(){ store.set('tt_err_l'+currentLevel, '1'); }
+function ttLevelClean(n){ return store.get('tt_err_l'+n)!=='1'; }
 
 /* =========================================================
    4. RENDER
@@ -3073,16 +3094,16 @@ function onValidate(){
   if(currentStep.objectMode){
     const res=objectEvaluate();
     if(res.status==='success') return onSuccess();
-    if(res.status==='extra')   return onObjPresque();
-    if(res.status==='error')   return onObjOhoh();
+    if(res.status==='extra'){ ttMiss(); return onObjPresque(); }
+    if(res.status==='error'){ ttMiss(); return onObjOhoh(); }
     return onObjPasEncore();
   }
   if(currentStep.tableMode){
     const res=tableEvaluate();
     if(res.status==='success') return onSuccess();
-    if(res.status==='extra')   return onTablePresque();   // mission OK mais autre chose modifié
-    if(res.status==='error')   return onTableOhoh();      // mission pas finie ET autre chose modifié
-    return onTablePasEncore();                            // incomplet, rien d'autre touché → pas de reset
+    if(res.status==='extra'){ ttMiss(); return onTablePresque(); }   // mission OK mais autre chose modifié
+    if(res.status==='error'){ ttMiss(); return onTableOhoh(); }      // mission pas finie ET autre chose modifié
+    return onTablePasEncore();                                      // incomplet, rien d'autre touché → pas de reset
   }
   if(currentStep.contentMode){
     const cur=normContent(textOf(doc));
@@ -3094,14 +3115,15 @@ function onValidate(){
     // Réussite parfaite : texte exact ET aucune mise en forme parasite
     if(textDone && !fmtExtra) return onSuccess();
     // Mission accomplie MAIS extras (texte en trop OU mise en forme non demandée) → Presque
-    if(missionDone) return onContentPresque();
+    if(missionDone){ ttMiss(); return onContentPresque(); }
     // Mission PAS accomplie : rien touché → Pas encore ; sinon fausse modif → Oh oh
     if(cur===start && !fmtExtra) return onContentPasEncore();
-    return onContentOhoh();
+    ttMiss(); return onContentOhoh();
   }
   const res=evaluate(currentStep.startDoc, currentStep.goalDoc, doc);
   if(res.status==='success') return onSuccess();
-  if(res.status==='extra')  return onExtra(res);
+  if(res.status==='extra'){ ttMiss(); return onExtra(res); }
+  if(res.startedTask) ttMiss();   // l'élève a modifié le document, mais à côté de la consigne
   return onError(res);
 }
 // Détecte une mise en forme parasite : un caractère porte un attribut (gras, italique, souligné,
@@ -3328,12 +3350,20 @@ function onLevelComplete(){
 }
 function proceedLevelComplete(){
   updateProgressFinished();
-  if(currentLevel>=LEVELS.length) return onCourseFinish();
-  const nextN=currentLevel+1;
+  const nextN=currentLevel+1, last=currentLevel>=LEVELS.length;
+  // Premier trophée de toute la partie ? Sa grande popup va s'ouvrir : on lui confie
+  // notre bouton « suite » plutôt que d'empiler « Niveau débloqué » par-dessus.
+  const handover = (!last && window.Badges && Badges.isFirstEver())
+    ? {label:'Aller au Niveau '+nextN+' →', run:()=>loadLevel(nextN, 0, true)} : null;
+  bdg('meta.first', handover?{then:handover}:null);
+  if(TT_LEVEL_BADGES[currentLevel]) bdg(TT_LEVEL_BADGES[currentLevel]);
+  if(ttLevelClean(currentLevel)) bdg('tt.perf1');
+  if(last) return onCourseFinish();
   store.set('tt_unlocked', String(Math.max(getUnlocked(), nextN)));
   store.set('tt_step_l'+nextN, '0');
+  if(handover) store.set('tt_curlevel', String(nextN));
   refreshLevelBtn();
-  playUnlock(nextN, ()=>openLevelUnlockedModal(nextN));
+  playUnlock(nextN, handover?null:()=>openLevelUnlockedModal(nextN));
 }
 function openLevelUnlockedModal(nextN){
   const lvl=LEVELS[nextN-1];
@@ -3353,6 +3383,11 @@ function openLevelUnlockedModal(nextN){
   document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN, 0, true); };
 }
 function onCourseFinish(){
+  bdg('tt.master');
+  // « Zéro rature » : aucun niveau n'a connu de tentative fausse
+  let clean=true;
+  for(let i=1;i<=LEVELS.length;i++) if(!ttLevelClean(i)) clean=false;
+  if(clean) bdg('tt.perfAll');
   confetti(); confetti();
   modal.className='modal good';
   modal.innerHTML=`
@@ -4845,9 +4880,12 @@ function startObjectStep(){
   });
   document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
   document.getElementById('dkReset').onclick=()=>{
-    const keys=[UNLOCK,CUR,'tt_step'];
-    for(let i=1;i<=LEVELS.length;i++) keys.push(STEP+i);
-    keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+    // Balayage par PRÉFIXE plutôt qu'une liste de clés : une liste finit toujours par
+    // oublier une clé ajoutée plus tard (drapeaux « sans faute », tt_step…), et le reset
+    // paraît alors « incomplet ». Ici, tout ce qui commence par tt_ disparaît.
+    wipe('tt_');
+    // « Reset complet » remet aussi les trophées à zéro, pour rejouer la popup du premier
+    if(window.Badges) Badges.reset();
     location.href=HOME;
   };
   // (Le saut par URL ?go=L.S est traité dans init, pour éviter un double chargement.)

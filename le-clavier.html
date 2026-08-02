@@ -844,11 +844,13 @@
   "course_finish": "Parcours terminé ! Incroyable, tu as fini les sept niveaux du clavier, et tu as éteint K0RT3X pour de bon. Tu tapes comme un pro !",
   "boss_hint_hack": "Lis l'alerte en haut du terminal, puis tape la commande affichée, lettre par lettre, avant que la barre rouge de traçage soit pleine. La case jaune te montre où tu en es. Vise juste : chaque mauvaise touche te coûte une connexion. S'il y a deux commandes, attention : l'une est un piège ! Tape celle qui répond à l'alerte. Et quand il t'aspire dans sa mémoire, déplace-toi avec les touches Z, Q, S et D pour récupérer toutes ses clés sans te faire rattraper. Clique sur l'ampoule si tu cherches une touche.",
   "boss_hint_swarm": "Déplace ton vaisseau avec les touches F et J. Aligne-toi juste sous un alien, puis tape sa lettre pour tirer au laser. Quand le vaisseau-mère est vulnérable, tape les symboles et les chiffres affichés.",
-  "boss_hint_spell": "Pendant l'esquive, lis bien la touche dans la boule violette et tape-la vite, attention aux majuscules. Pendant l'attaque, frappe les symboles affichés devant le dragon."
+  "boss_hint_spell": "Pendant l'esquive, lis bien la touche dans la boule violette et tape-la vite, attention aux majuscules. Pendant l'attaque, frappe les symboles affichés devant le dragon.",
+  "badge_first": "Bravo, tu as gagné ton premier trophée ! Chaque trophée récompense une réussite : finir un niveau difficile, battre un boss, ou terminer un atelier en entier. Ils sont tous rangés dans ta vitrine, en bas de la page d'accueil. Va la découvrir !"
 }
 </script>
 <script src="tts/tts-atelier.js"></script>
 <script src="tts/le-clavier.clips.js"></script>
+<script src="scripts/badges.js"></script>
 
 <script>
 /* =========================================================
@@ -1143,6 +1145,14 @@ const store={
   set(k,v){ try{localStorage.setItem(k,v);}catch(e){ (this._m=this._m||{})[k]=v; } },
   _m:{}
 };
+/* Efface TOUTES les clés d'un préfixe (utilisé par « Reset complet » du devkit).
+   On vide aussi le repli mémoire `_m` : quand localStorage est indisponible (certaines
+   configurations en file://), c'est LUI qui porte la progression, et une suppression
+   qui ne viserait que localStorage laisserait le jeu exactement là où il était. */
+function wipe(pfx){
+  try{ Object.keys(localStorage).forEach(k=>{ if(k.indexOf(pfx)===0) localStorage.removeItem(k); }); }catch(e){}
+  store._m={};
+}
 function getUnlocked(){ let u=parseInt(store.get('kb_unlocked')||'1',10); if(isNaN(u)||u<1)u=1; return Math.min(u,LEVELS.length); }
 function getSavedStep(n){ let s=parseInt(store.get('kb_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
 function saveProgress(){ store.set('kb_step_l'+currentLevel, String(progressIdx)); }
@@ -1154,6 +1164,13 @@ function saveProgress(){ store.set('kb_step_l'+currentLevel, String(progressIdx)
    Elle n'est JAMAIS appliquée aux combats de boss, qui ont leur propre sélecteur de
    difficulté (KB_BOSS_MODES / HB_TUNING) — cf. kbCanEase(). Gardée en localStorage :
    un élève qui ferme l'atelier après avoir bloqué ne repart pas au niveau le plus dur. */
+/* ---- Trophées (scripts/badges.js, partagé par tout l'atelier) ----
+   Raccourci tolérant : si le fichier n'est pas chargé, le jeu continue sans trophées. */
+const KB_LEVEL_BADGES={3:'kb.l3', 4:'kb.l4', 6:'kb.l6'};
+function bdg(id, opts){ return window.Badges ? Badges.award(id, opts) : false; }
+/* « Frappe nette » : un niveau est parfait si l'aide « Plus facile » n'y a jamais été activée. */
+function kbLevelClean(n){ return loadEase(n)===0; }
+
 const KB_EASE_MAX=4, KB_EASE_MUL=0.8;
 let kbEaseSteps=0;    // nb d'aides accumulées sur le niveau courant
 let kbFailStreak=0;   // échecs d'affilée sur la mission en cours
@@ -2634,6 +2651,9 @@ function bossDefeated(){
   stopBossMusic(); beep('win');
   const cx=B.field.clientWidth/2, cy=B.field.clientHeight/2;
   for(let i=0;i<5;i++) setTimeout(()=>burstAt(cx+(Math.random()*160-80),cy+(Math.random()*100-50),B.field),i*170);
+  // Trophées : le palier suit le mode joué et remonte si l'élève rejoue plus dur.
+  bdg('boss.mere', {diff:kbBossMode});
+  if(kbBossMode==='extreme') bdg('hard.mere');
   setTimeout(()=>onWin(),1300);
 }
 function bossFail(){
@@ -3060,6 +3080,9 @@ function hbDefeated(){
   hbSay('nooooon… extinction…');
   hbStatus('> K0RT3X : extinction totale. Bien joué, hacker !','ok');
   confetti();
+  // Trophées : le palier suit le mode joué et remonte si l'élève rejoue plus dur.
+  bdg('boss.kortex', {diff:kbBossMode});
+  if(kbBossMode==='extreme') bdg('hard.kortex');
   hbWait(2100,()=>{ stopHB(); onWin(); });
 }
 function hbFail(){
@@ -4239,12 +4262,22 @@ function refreshLevelBtn(){ const b=document.getElementById('levelBtn'); if(b) b
 
 function levelComplete(){
   stopGame();
-  if(currentLevel>=LEVELS.length) return courseFinish();
-  const nextN=currentLevel+1;
+  const nextN=currentLevel+1, last=currentLevel>=LEVELS.length;
+  // Premier trophée de toute la partie ? Sa grande popup va s'ouvrir : on lui confie
+  // notre bouton « suite » plutôt que d'empiler « Niveau débloqué » par-dessus.
+  const handover = (!last && window.Badges && Badges.isFirstEver())
+    ? {label:'Aller au Niveau '+nextN+' →', run:()=>loadLevel(nextN,0,true)} : null;
+  bdg('meta.first', handover?{then:handover}:null);
+  if(KB_LEVEL_BADGES[currentLevel]) bdg(KB_LEVEL_BADGES[currentLevel]);
+  // N5 et N7 se terminent par un boss, mais leurs missions précédentes, elles,
+  // peuvent demander de l'aide : le niveau reste donc jugeable comme les autres.
+  if(kbLevelClean(currentLevel)) bdg('kb.perf1');
+  if(last) return courseFinish();
   store.set('kb_unlocked', String(Math.max(getUnlocked(), nextN)));
   store.set('kb_step_l'+nextN, '0');
+  if(handover) store.set('kb_curlevel', String(nextN));
   refreshLevelBtn();
-  playUnlock(nextN, ()=>openLevelUnlockedModal(nextN));
+  playUnlock(nextN, handover?null:()=>openLevelUnlockedModal(nextN));
 }
 function openLevelUnlockedModal(nextN){
   const lvl=LEVELS[nextN-1]; confetti();
@@ -4261,6 +4294,11 @@ function openLevelUnlockedModal(nextN){
   document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
 }
 function courseFinish(){
+  bdg('kb.master');
+  // « Clavier parfait » : aucun niveau n'a eu besoin de « Plus facile »
+  let clean=true;
+  for(let i=1;i<=LEVELS.length;i++) if(!kbLevelClean(i)) clean=false;
+  if(clean) bdg('kb.perfAll');
   confetti(); confetti();
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
@@ -4545,9 +4583,12 @@ function confetti(){
   });
   document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
   document.getElementById('dkReset').onclick=()=>{
-    const keys=[UNLOCK,CUR];
-    for(let i=1;i<=LEVELS.length;i++){ keys.push(STEP+i); keys.push('kb_ease_l'+i); }
-    keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+    // Balayage par PRÉFIXE plutôt qu'une liste de clés : une liste finit toujours par
+    // oublier une clé ajoutée plus tard (aide « Plus facile », mode de boss, drapeaux…),
+    // et le reset paraît alors « incomplet ». Ici, tout ce qui commence par kb_ disparaît.
+    wipe('kb_');
+    // « Reset complet » remet aussi les trophées à zéro, pour rejouer la popup du premier
+    if(window.Badges) Badges.reset();
     location.href=HOME;
   };
   // (Le saut par URL ?go=L.S est traité dans init, pour éviter un double chargement.)

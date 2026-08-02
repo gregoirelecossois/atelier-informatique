@@ -121,6 +121,15 @@
   @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
 </style>
 <script>try{if(localStorage.getItem('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
+<!-- Seul texte lu de la page d'accueil : la bulle de la visite guidée de la vitrine.
+     Doit rester identique &#224; TOUR_TEXT dans scripts/badges.js (la cl&#233; du clip est un hash du contenu). -->
+<script type="application/json" id="tts-static">
+{
+  "badge_tour": "Ici, c'est ta vitrine de trophées. Chaque rond gris avec un cadenas est un trophée qui te reste à gagner : passe ta souris dessus pour découvrir ce qu'il faut faire. Tu en gagnes en finissant les niveaux difficiles, en battant les boss, et en terminant les ateliers."
+}
+</script>
+<script src="tts/tts-atelier.js"></script>
+<script src="tts/index.clips.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -251,8 +260,13 @@
       </a>
     </main>
 
+    <!-- Vitrine de troph&#233;es : reste absente tant qu'aucun troph&#233;e n'est gagn&#233;
+         (cf. scripts/badges.js, qui la peint et la r&#233;v&#232;le). -->
+    <section id="vitrine" style="margin-top:44px;display:none"></section>
+
     <footer>Gr&#233;goire Lecossois &nbsp;x&nbsp; Claude Code</footer>
   </div>
+<script src="scripts/badges.js"></script>
 <script>
   // Refl&#232;te l'avancement de chaque jeu (lu depuis localStorage)
   (function(){
@@ -276,6 +290,19 @@
     paint('#dfLevels','df_unlocked','df_curlevel');
     paint('#nvLevels','nv_unlocked','nv_curlevel');
     paint('#mlLevels','ml_unlocked','ml_curlevel');
+  })();
+
+  /* ===== Vitrine de troph&#233;es =====
+     Elle n'appara&#238;t qu'&#224; partir du 1er troph&#233;e. En arrivant depuis la popup
+     « ton premier troph&#233;e » (index.html?vitrine=1), on d&#233;file jusqu'en bas et on
+     d&#233;plie la bulle d'explication — une seule fois dans la vie du navigateur. */
+  (function(){
+    if(!window.Badges) return;
+    var host=document.getElementById('vitrine');
+    if(Badges.count()<1) return;
+    host.style.display='block';
+    Badges.renderShowcase(host);
+    if(Badges.tourPending()) setTimeout(function(){ Badges.runTour(host); }, 320);
   })();
 
   /* ===== Acc&#232;s d&#233;veloppeur (raccourcis vers chaque niveau) ===== */
@@ -338,8 +365,16 @@
       location.reload();
     };
     document.getElementById('dkReset').onclick=()=>{
-      GAMES.forEach(g=>{ const pfx=g.unlock.replace('_unlocked','_step_l'); del(g.unlock); del(g.cur); for(let i=1;i<=g.stepN;i++) del(pfx+i); });
-      del('tt_step');
+      // Balayage par PR&#201;FIXE plut&#244;t qu'une liste de cl&#233;s : une liste finit toujours par
+      // oublier une cl&#233; ajout&#233;e plus tard (aides, &#233;toiles, modes de boss, drapeaux
+      // « sans faute »&#8230;), et le reset para&#238;t alors « incomplet ». Ici, tout ce qui
+      // commence par ms_ kb_ tt_ df_ nv_ ml_ dispara&#238;t. La pr&#233;f&#233;rence d'accessibilit&#233;
+      // a11y_dys, elle, n'a aucun de ces pr&#233;fixes : elle survit, et c'est voulu.
+      try{
+        const pfx=GAMES.map(g=>g.unlock.replace('unlocked',''));
+        Object.keys(localStorage).forEach(k=>{ if(pfx.some(p=>k.indexOf(p)===0)) localStorage.removeItem(k); });
+      }catch(e){}
+      if(window.Badges) Badges.reset();
       location.reload();
     };
   })();

@@ -708,11 +708,13 @@
   "course_finish": "Parcours terminé ! Incroyable, tu as fini les six niveaux de la souris et vaincu le Démon Gardien. Le clic, le glisser-déposer, le double-clic, le clic droit, la sélection et la molette n'ont plus de secret pour toi. Tu es un vrai champion de la souris !",
   "boss_fail": "Le démon t'a vaincu. Tu as perdu tous tes cœurs. Recommence le combat, tu vas y arriver !",
   "boss_gate": "Boss final. Gruk, le Démon Gardien. Te voilà au sommet de la tour : Gruk, le Démon Gardien t'attend ! Clique sur les flammes pour te protéger. Suis les consignes pour chaque phase du boss. Quand tu as besoin, clic droit sur la potion de vie, en bas à gauche, pour récupérer deux cœurs !",
-  "boss_difficulty": "Boss final. Choisis ta difficulté. Relance le combat contre Gruk en choisissant un nouveau mode."
+  "boss_difficulty": "Boss final. Choisis ta difficulté. Relance le combat contre Gruk en choisissant un nouveau mode.",
+  "badge_first": "Bravo, tu as gagné ton premier trophée ! Chaque trophée récompense une réussite : finir un niveau difficile, battre un boss, ou terminer un atelier en entier. Ils sont tous rangés dans ta vitrine, en bas de la page d'accueil. Va la découvrir !"
 }
 </script>
 <script src="tts/tts-atelier.js"></script>
 <script src="tts/la-souris.clips.js"></script>
+<script src="scripts/badges.js"></script>
 
 <script>
 /* =========================================================
@@ -908,10 +910,26 @@ const store={
   set(k,v){ try{localStorage.setItem(k,v);}catch(e){ (this._m=this._m||{})[k]=v; } },
   _m:{}
 };
+/* Efface TOUTES les clés d'un préfixe (utilisé par « Reset complet » du devkit).
+   On vide aussi le repli mémoire `_m` : quand localStorage est indisponible (certaines
+   configurations en file://), c'est LUI qui porte la progression, et une suppression
+   qui ne viserait que localStorage laisserait le jeu exactement là où il était. */
+function wipe(pfx){
+  try{ Object.keys(localStorage).forEach(k=>{ if(k.indexOf(pfx)===0) localStorage.removeItem(k); }); }catch(e){}
+  store._m={};
+}
 function getUnlocked(){ let u=parseInt(store.get('ms_unlocked')||'1',10); if(isNaN(u)||u<1)u=1; return Math.min(u,LEVELS.length); }
 function getSavedStep(n){ let s=parseInt(store.get('ms_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
 function saveProgress(){ store.set('ms_step_l'+currentLevel, String(progressIdx)); }
 function reviewing(){ return playIdx<progressIdx; }
+
+/* ---- Trophées (scripts/badges.js, partagé par tout l'atelier) ----
+   Raccourci tolérant : si le fichier n'est pas chargé, le jeu continue sans trophées.
+   Les niveaux qui décernent un trophée sont listés ici pour rester lisibles d'un coup. */
+const MS_LEVEL_BADGES={3:'ms.l3', 5:'ms.l5', 6:'ms.l6'};
+function bdg(id, opts){ return window.Badges ? Badges.award(id, opts) : false; }
+/* « Sans une aide » : un niveau est parfait si l'aide « Plus facile » n'y a jamais été activée. */
+function msLevelClean(n){ return loadEase(n)===0; }
 
 /* ---- Aide « Plus facile » (missions à échec : clic N1, défi du double-clic N3) ----
    Après 2 échecs D'AFFILÉE sur une même mission, la popup d'échec propose de ralentir.
@@ -2372,6 +2390,9 @@ function bossFinaleDeath(){
   // anim terminée à 5 s (dernière frame conservée) → popup victoire à 7 s
   pTimeout(()=>{
     burstAt(B.field, B.field.clientWidth/2, B.field.clientHeight*0.5); confetti();
+    // Trophées : le palier suit le mode joué et remonte si l'élève rejoue plus dur.
+    bdg('boss.gruk', {diff:bossMode});
+    if(bossMode==='extreme') bdg('hard.gruk');
     bossBanner('🏆 VICTOIRE !','Le démon est vaincu !', ()=>{ B.running=false; cancelAnimationFrame(B.raf); onWin(); });
   }, deathMs+2000);
 }
@@ -3090,12 +3111,24 @@ function refreshLevelBtn(){ const b=document.getElementById('levelBtn'); if(b) b
 
 function levelComplete(){
   stopGame();
-  if(currentLevel>=LEVELS.length) return courseFinish();
-  const nextN=currentLevel+1;
+  const nextN=currentLevel+1, last=currentLevel>=LEVELS.length;
+  // Premier trophée de toute la partie ? Sa grande popup va s'ouvrir. Plutôt que de lui
+  // empiler « Niveau débloqué » par-dessus — deux fenêtres d'affilée, dont une que
+  // l'élève ferme sans la lire — on lui confie notre bouton « suite » (cf. badges.js).
+  const handover = (!last && window.Badges && Badges.isFirstEver())
+    ? {label:'Aller au Niveau '+nextN+' →', run:()=>loadLevel(nextN,0,true)} : null;
+  bdg('meta.first', handover?{then:handover}:null);
+  if(MS_LEVEL_BADGES[currentLevel]) bdg(MS_LEVEL_BADGES[currentLevel]);
+  // le boss n'a jamais accès à « Plus facile » : le compter rendrait le trophée gratuit
+  if(LEVELS[currentLevel-1].game!=='boss' && msLevelClean(currentLevel)) bdg('ms.perf1');
+  if(last) return courseFinish();
   store.set('ms_unlocked', String(Math.max(getUnlocked(), nextN)));
   store.set('ms_step_l'+nextN, '0');
+  // Avec la popup du trophée, l'élève peut filer voir sa vitrine : on pointe déjà le
+  // niveau suivant pour qu'un retour plus tard le reprenne au bon endroit.
+  if(handover) store.set('ms_curlevel', String(nextN));
   refreshLevelBtn();
-  playUnlock(nextN, ()=>openLevelUnlockedModal(nextN));
+  playUnlock(nextN, handover?null:()=>openLevelUnlockedModal(nextN));
 }
 function openLevelUnlockedModal(nextN){
   const lvl=LEVELS[nextN-1]; confetti();
@@ -3112,6 +3145,11 @@ function openLevelUnlockedModal(nextN){
   document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
 }
 function courseFinish(){
+  bdg('ms.master');
+  // « Souris parfaite » : aucun niveau n'a eu besoin de « Plus facile »
+  let clean=true;
+  for(let i=1;i<=LEVELS.length;i++) if(!msLevelClean(i)) clean=false;
+  if(clean) bdg('ms.perfAll');
   confetti(); confetti();
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
@@ -3353,8 +3391,12 @@ function confetti(){
   });
   document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
   document.getElementById('dkReset').onclick=()=>{
-    const keys=[UNLOCK,CUR]; for(let i=1;i<=LEVELS.length;i++){ keys.push(STEP+i); keys.push('ms_ease_l'+i); }
-    keys.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+    // Balayage par PRÉFIXE plutôt qu'une liste de clés : une liste finit toujours par
+    // oublier une clé ajoutée plus tard (aide « Plus facile », mode de boss, drapeaux…),
+    // et le reset paraît alors « incomplet ». Ici, tout ce qui commence par ms_ disparaît.
+    wipe('ms_');
+    // « Reset complet » remet aussi les trophées à zéro, pour rejouer la popup du premier
+    if(window.Badges) Badges.reset();
     location.href=HOME;
   };
 })();
