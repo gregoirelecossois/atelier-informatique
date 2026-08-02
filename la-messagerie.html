@@ -1123,11 +1123,13 @@
   "fault_major": "Attention, fausse manœuvre. Personne ne t'a demandé de faire ça. Relis bien l'objectif en cours : on remet la boîte en ordre et on repart du début.",
   "fault_minor": "Ce n'était pas l'objectif. Relis bien l'objectif en cours avant d'agir, pour être sûr de faire ce qu'il faut.",
   "hint_stale": "Tu l'as déjà fait avant qu'on te le demande : ça ne compte pas. Refais le geste maintenant que c'est l'objectif affiché.",
-  "boss_wave_failed": "Plus de cœurs !. LE PHISHER a eu ta boîte cette fois… Relis les indices : l'adresse, l'urgence, les cadeaux, l'argent, le mot de passe."
+  "boss_wave_failed": "Plus de cœurs !. LE PHISHER a eu ta boîte cette fois… Relis les indices : l'adresse, l'urgence, les cadeaux, l'argent, le mot de passe.",
+  "badge_first": "Bravo, tu as gagné ton premier trophée ! Chaque trophée récompense une réussite : finir un niveau difficile, battre un boss, ou terminer un atelier en entier. Ils sont tous rangés dans ta vitrine, en bas de la page d'accueil. Va la découvrir !"
 }
 </script>
 <script src="tts/tts-atelier.js"></script>
 <script src="tts/la-messagerie.clips.js"></script>
+<script src="scripts/badges.js"></script>
 
 <script>
 /* =========================================================
@@ -1160,6 +1162,14 @@ const store={
   del(k){ try{localStorage.removeItem(k);}catch(e){ if(this._m) delete this._m[k]; } },
   _m:{}
 };
+/* Efface TOUTES les clés d'un préfixe (utilisé par « Reset complet » du devkit).
+   On vide aussi le repli mémoire `_m` : quand localStorage est indisponible (certaines
+   configurations en file://), c'est LUI qui porte la progression, et une suppression
+   qui ne viserait que localStorage laisserait le jeu exactement là où il était. */
+function wipe(pfx){
+  try{ Object.keys(localStorage).forEach(k=>{ if(k.indexOf(pfx)===0) localStorage.removeItem(k); }); }catch(e){}
+  store._m={};
+}
 let currentLevel=1, STEPS=[], progressIdx=0, playIdx=0, currentStep=null;
 const stage=document.getElementById('stage');
 const overlay=document.getElementById('overlay');
@@ -1253,6 +1263,11 @@ let _timers=[];
 function after(ms,fn){ const t=setTimeout(fn,ms); _timers.push(t); return t; }
 function every(ms,fn){ const t=setInterval(fn,ms); _timers.push(t); return t; }
 function clearTimers(){ _timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); _timers=[]; }
+
+/* ---- Trophées (scripts/badges.js, partagé par tout l'atelier) ----
+   Raccourci tolérant : si le fichier n'est pas chargé, le jeu continue sans trophées. */
+const ML_LEVEL_BADGES={2:'ml.l2', 4:'ml.l4', 8:'ml.l8'};
+function bdg(id, opts){ return window.Badges ? Badges.award(id, opts) : false; }
 
 function getUnlocked(){ let u=parseInt(store.get('ml_unlocked')||'1',10); if(isNaN(u)||u<1)u=1; return Math.min(u,LEVELS.length); }
 function getSavedStep(n){ let s=parseInt(store.get('ml_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
@@ -3122,6 +3137,8 @@ function getStarsMap(){ try{ return JSON.parse(store.get('ml_stars')||'{}')||{};
 function saveStars(key,n){ const m=getStarsMap(); if(!m[key]||n>m[key]){ m[key]=n; store.set('ml_stars', JSON.stringify(m)); } }
 function starKey(){ return currentLevel+'.'+(playIdx+1); }
 function levelStars(n){ const m=getStarsMap(); let t=0; LEVELS[n-1].rounds.forEach((r,i)=>{ t+=m[n+'.'+(i+1)]||0; }); return t; }
+/* Trophées de perfection : un niveau est « trois étoiles » quand CHAQUE mission y a décroché ⭐⭐⭐. */
+function mlLevelPerfect(n){ return levelStars(n) === LEVELS[n-1].rounds.length*3; }
 function starLineHtml(stars){
   return '<div class="star-line">'+[0,1,2].map(i=>'<span class="sp" id="spStar'+i+'">'+(i<stars?'⭐':'☆')+'</span>').join('')+'</div>';
 }
@@ -5106,7 +5123,7 @@ function phInfo(html, tone){
 /* ---- 14.13 Le bureau ---- */
 const PH_MAXG=100, PH_HIT=15, PH_SOFT=8, PH_HEAL=10;
 function phisherRun(){
-  PH.phase=0; PH.credits=0; PH.net=PH_MAXG; PH.trust=PH_MAXG;
+  PH.phase=0; PH.credits=0; PH.net=PH_MAXG; PH.trust=PH_MAXG; PH.netMin=PH_MAXG;
   PH.streak=0; PH.over=false; PH.usedTpl={}; PH.bodies={};
   PH.pointMode=false; PH.pointing=false; PH.revealed=false; PH.canReveal=false;
   PH.tools={scan2:false,url:false,pj:false};
@@ -5150,6 +5167,10 @@ function buildPhArena(){
   document.getElementById('stampBad').onclick=()=>phStamp(true);
 }
 function phHud(){
+  // Trophée « Sans une fuite » : on retient le plus bas niveau atteint par la Sécurité
+  // réseau. phHud() étant rappelée après CHAQUE variation de jauge, ce point de mesure
+  // couvre tous les chemins qui font baisser PH.net, sans avoir à les instrumenter un à un.
+  PH.netMin=Math.min(PH.netMin==null?PH_MAXG:PH.netMin, PH.net);
   const g1=document.getElementById('gNet'); if(!g1) return;
   const g2=document.getElementById('gTrust');
   g1.style.width=Math.max(0,PH.net)+'%';  g1.parentElement.className='g-bar'+(PH.net<=30?' low':(PH.net<=60?' mid':''));
@@ -6039,6 +6060,10 @@ function phVictory(){
   const w=PH.stats.wrong;
   const stars=(w<=2)?3:(w<=5?2:1);
   saveStars(starKey(), stars);
+  // Trophées : LE PHISHER n'a pas de modes de difficulté. Son trophée d'or récompense
+  // donc une victoire propre — Sécurité réseau jamais tombée sous la moitié.
+  bdg('boss.phisher');
+  if(PH.netMin>=PH_MAXG/2) bdg('hard.phisher');
   beep('win'); confetti(); confetti();
   const top=Object.keys(PH.stats.found).sort((a,b)=>PH.stats.found[b]-PH.stats.found[a]).slice(0,4);
   modal.className='modal good';
@@ -6204,11 +6229,19 @@ function onMissionWin(){
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
 }
 function levelComplete(){
-  if(currentLevel>=LEVELS.length) return courseFinish();
-  const nextN=currentLevel+1;
+  const nextN=currentLevel+1, last=currentLevel>=LEVELS.length;
+  // Premier trophée de toute la partie ? Sa grande popup va s'ouvrir : on lui confie
+  // notre bouton « suite » plutôt que d'empiler « Niveau débloqué » par-dessus.
+  const handover = (!last && window.Badges && Badges.isFirstEver())
+    ? {label:'Aller au Niveau '+nextN+' →', run:()=>loadLevel(nextN,0,true)} : null;
+  bdg('meta.first', handover?{then:handover}:null);
+  if(ML_LEVEL_BADGES[currentLevel]) bdg(ML_LEVEL_BADGES[currentLevel]);
+  if(mlLevelPerfect(currentLevel)) bdg('ml.perf1');
+  if(last) return courseFinish();
   store.set('ml_unlocked', String(Math.max(getUnlocked(), nextN)));
   store.set('ml_step_l'+nextN, '0');
   refreshLevelBtn(); confetti();
+  if(handover){ store.set('ml_curlevel', String(nextN)); return; }
   const lvl=LEVELS[nextN-1];
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🎉</span>'
@@ -6223,6 +6256,11 @@ function levelComplete(){
   document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
 }
 function courseFinish(){
+  bdg('ml.master');
+  // « Messagerie sans faute » : ⭐⭐⭐ à toutes les missions de tous les niveaux
+  let perfect=true;
+  for(let i=1;i<=LEVELS.length;i++) if(!mlLevelPerfect(i)) perfect=false;
+  if(perfect) bdg('ml.perfAll');
   confetti(); confetti();
   const m=getStarsMap();
   let tot=0, max=0;
@@ -6493,7 +6531,15 @@ document.getElementById('stepCount').onclick=()=>openLevelSelector();
   document.getElementById('dkToggle').onclick=()=>root.classList.toggle('open');
   root.querySelectorAll('.dk-step').forEach(b=>b.onclick=()=>{ root.classList.remove('open'); devJump(+b.getAttribute('data-l'), +b.getAttribute('data-s')); });
   document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
-  document.getElementById('dkReset').onclick=()=>{ const keys=[UNLOCK,CUR,'ml_stars']; for(let i=1;i<=LEVELS.length;i++) keys.push(STEP+i); keys.forEach(k=>store.del(k)); location.href=HOME; };
+  document.getElementById('dkReset').onclick=()=>{
+    // Balayage par PRÉFIXE plutôt qu'une liste de clés : une liste finit toujours par
+    // oublier une clé ajoutée plus tard (étoiles, carnet, largeur du panneau…), et le
+    // reset paraît alors « incomplet ». Ici, tout ce qui commence par ml_ disparaît.
+    wipe('ml_');
+    // « Reset complet » remet aussi les trophées à zéro, pour rejouer la popup du premier
+    if(window.Badges) Badges.reset();
+    location.href=HOME;
+  };
 })();
 </script>
 <script>

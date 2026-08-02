@@ -783,11 +783,13 @@
   "course_finish": "Parcours terminé ! Incroyable, tu as fini les huit niveaux de dossiers et fichiers et tu as vaincu le virus. Tu sais ouvrir, naviguer avec le volet, créer, ranger, supprimer, restaurer, rechercher, trier et gérer les extensions. Un vrai champion de l'ordinateur !",
   "boss_briefing": "Combat de boss, cinq phases. CORRUPTUS, le Virus Fantôme. En haut, la jauge de contamination monte sans cesse : si elle atteint cent pour cent, c'est le crash système ! Détruis CORRUPTUS avant qu'il ne prenne le contrôle. Choisis ta difficulté.",
   "boss_alert": "Alerte système. Intrusion détectée. CORRUPTUS point EXE s'est échappé dans vos fichiers. Il se déplace, contamine et se reproduit. Mission : le traquer en cinq phases et l'éliminer. Surveille la jauge de contamination en haut !",
-  "boss_win": "Système restauré. CORRUPTUS éliminé !"
+  "boss_win": "Système restauré. CORRUPTUS éliminé !",
+  "badge_first": "Bravo, tu as gagné ton premier trophée ! Chaque trophée récompense une réussite : finir un niveau difficile, battre un boss, ou terminer un atelier en entier. Ils sont tous rangés dans ta vitrine, en bas de la page d'accueil. Va la découvrir !"
 }
 </script>
 <script src="tts/tts-atelier.js"></script>
 <script src="tts/dossiers-fichiers.clips.js"></script>
+<script src="scripts/badges.js"></script>
 
 <script>
 /* =========================================================
@@ -895,7 +897,25 @@ const store={
   del(k){ try{localStorage.removeItem(k);}catch(e){ if(this._m) delete this._m[k]; } },
   _m:{}
 };
+/* Efface TOUTES les clés d'un préfixe (utilisé par « Reset complet » du devkit).
+   On vide aussi le repli mémoire `_m` : quand localStorage est indisponible (certaines
+   configurations en file://), c'est LUI qui porte la progression, et une suppression
+   qui ne viserait que localStorage laisserait le jeu exactement là où il était. */
+function wipe(pfx){
+  try{ Object.keys(localStorage).forEach(k=>{ if(k.indexOf(pfx)===0) localStorage.removeItem(k); }); }catch(e){}
+  store._m={};
+}
 let currentLevel=1, STEPS=[], progressIdx=0, playIdx=0, currentStep=null;
+
+/* ---- Trophées (scripts/badges.js, partagé par tout l'atelier) ----
+   Raccourci tolérant : si le fichier n'est pas chargé, le jeu continue sans trophées. */
+const DF_LEVEL_BADGES={4:'df.l4', 5:'df.l5', 7:'df.l7'};
+function bdg(id, opts){ return window.Badges ? Badges.award(id, opts) : false; }
+/* « Rangement au cordeau » : une mission ratée (mauvaise cible, mauvaise méthode) salit le
+   niveau pour de bon. Le drapeau vit dans localStorage : fermer l'atelier ne l'efface pas. */
+function dfMiss(){ store.set('df_err_l'+currentLevel, '1'); }
+function dfLevelClean(n){ return store.get('df_err_l'+n)!=='1'; }
+
 const stage=document.getElementById('stage');
 const overlay=document.getElementById('overlay');
 const modal=document.getElementById('modal');
@@ -2278,7 +2298,7 @@ function missionViolation(){
   return null;
 }
 function missionFail(type){
-  beep('bad');
+  beep('bad'); dfMiss();
   const map={
     delete:'Tu as <b>supprimé</b> un élément qui n\'était pas demandé.',
     rename:'Tu as <b>renommé</b> un élément que tu ne devais pas toucher.',
@@ -2299,7 +2319,7 @@ function missionFail(type){
 /* mauvaise méthode utilisée pour atteindre le dossier cible d'un objectif (ex: fil d'Ariane au lieu de ⬆) :
    on ne recommence pas toute la mission, on relance juste cet objectif */
 function wrongMethodFail(goal){
-  beep('bad');
+  beep('bad'); dfMiss();
   modal.className='modal warn';
   modal.innerHTML='<span class="m-emoji">🧭</span><h2>Pas par là !</h2>'
     +'<p>'+(goal.hint||'Il faut utiliser la méthode demandée par l\'objectif.')+'</p>'
@@ -3267,11 +3287,20 @@ function onMissionWin(){
   document.getElementById('next').onclick=()=>{ closeOverlay(); startStep(playIdx+1); };
 }
 function levelComplete(){
-  if(currentLevel>=LEVELS.length) return courseFinish();
-  const nextN=currentLevel+1;
+  const nextN=currentLevel+1, last=currentLevel>=LEVELS.length;
+  // Premier trophée de toute la partie ? Sa grande popup va s'ouvrir : on lui confie
+  // notre bouton « suite » plutôt que d'empiler « Niveau débloqué » par-dessus.
+  const handover = (!last && window.Badges && Badges.isFirstEver())
+    ? {label:'Aller au Niveau '+nextN+' →', run:()=>loadLevel(nextN,0,true)} : null;
+  bdg('meta.first', handover?{then:handover}:null);
+  if(DF_LEVEL_BADGES[currentLevel]) bdg(DF_LEVEL_BADGES[currentLevel]);
+  // le niveau 9 est le boss seul : rien à juger « sans faute » là-dessus
+  if(!last && dfLevelClean(currentLevel)) bdg('df.perf1');
+  if(last) return courseFinish();
   store.set('df_unlocked', String(Math.max(getUnlocked(), nextN)));
   store.set('df_step_l'+nextN, '0');
   refreshLevelBtn(); confetti();
+  if(handover){ store.set('df_curlevel', String(nextN)); return; }
   const lvl=LEVELS[nextN-1];
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🎉</span>'
@@ -3286,6 +3315,11 @@ function levelComplete(){
   document.getElementById('goNextLvl').onclick=()=>{ closeOverlay(); loadLevel(nextN,0,true); };
 }
 function courseFinish(){
+  bdg('df.master');
+  // « Tout à sa place » : aucun niveau n'a connu de mission ratée (le boss excepté)
+  let clean=true;
+  for(let i=1;i<LEVELS.length;i++) if(!dfLevelClean(i)) clean=false;
+  if(clean) bdg('df.perfAll');
   confetti(); confetti();
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🏅</span><h2>Parcours terminé !</h2>'
@@ -4410,6 +4444,9 @@ function bossWin(){
   EX.boss.won=true; EX.boss.running=false; cancelAnimationFrame(EX.boss.raf); bossStopSpawn(); bossClearTimers(); hideBossTrack();
   stopCorrWatermarkLoop(); pauseBossMusic();
   beep('win'); confetti(); confetti();
+  // Trophées : le palier suit le mode joué et remonte si l'élève rejoue plus dur.
+  bdg('boss.corruptus', {diff:EX.boss.diffKey});
+  if(EX.boss.diffKey==='hard') bdg('hard.corruptus');
   progressIdx=STEPS.length; saveProgress();
   EX.boss.contam=0; const f=document.getElementById('contamFill'); if(f){ f.style.background='#22c55e'; f.style.width='0%'; }
   EX.boss.cleared=EX.boss.phasesTotal; updatePips();
@@ -4673,7 +4710,15 @@ function onHint(){
   document.getElementById('dkToggle').onclick=()=>root.classList.toggle('open');
   root.querySelectorAll('.dk-step').forEach(b=>b.onclick=()=>{ root.classList.remove('open'); devJump(+b.getAttribute('data-l'), +b.getAttribute('data-s')); });
   document.getElementById('dkUnlockAll').onclick=()=>{ store.set(UNLOCK, String(LEVELS.length)); refreshLevelBtn(); };
-  document.getElementById('dkReset').onclick=()=>{ const keys=[UNLOCK,CUR]; for(let i=1;i<=LEVELS.length;i++) keys.push(STEP+i); keys.forEach(k=>store.del(k)); location.href=HOME; };
+  document.getElementById('dkReset').onclick=()=>{
+    // Balayage par PRÉFIXE plutôt qu'une liste de clés : une liste finit toujours par
+    // oublier une clé ajoutée plus tard (mode de boss, drapeaux « sans faute »…), et le
+    // reset paraît alors « incomplet ». Ici, tout ce qui commence par df_ disparaît.
+    wipe('df_');
+    // « Reset complet » remet aussi les trophées à zéro, pour rejouer la popup du premier
+    if(window.Badges) Badges.reset();
+    location.href=HOME;
+  };
 })();
 </script>
 <script>
