@@ -59,6 +59,10 @@ function css(){
   '.atl-btn.ghost{background:#eef3f9;color:#3c4d61;}',
   '.atl-btn.danger{background:#fee2e2;color:#b91c1c;}',
   '.atl-note{margin:16px 0 0;font-size:.79rem;color:#7b8b9d;line-height:1.45;text-align:center;}',
+  '.atl-rgpd{margin:12px 0 0;font-size:.76rem;color:#7b8b9d;line-height:1.5;}',
+  '.atl-rgpd summary{cursor:pointer;font-weight:800;color:#5d6f83;text-align:center;}',
+  '.atl-rgpd summary:hover{color:#2563eb;}',
+  '.atl-rgpd p{margin:9px 0 0;text-align:left;}',
   '.atl-who{background:#f4f8fd;border-radius:14px;padding:13px 15px;margin:0 0 16px;}',
   '.atl-who b{display:block;font-size:1.05rem;}',
   '.atl-who span{color:#5d6f83;font-size:.84rem;}'
@@ -185,6 +189,17 @@ function vueConnexion(){
       '</div>'+
       '<p class="atl-note">Pas encore de compte ? Demande-le à ton professeur.<br>'+
         'Sans connexion, tu peux jouer, mais rien ne sera gardé quand tu changeras de poste.</p>'+
+      /* Information des personnes (RGPD art. 13). Repliée pour ne pas encombrer la
+         fenêtre, mais présente à l'endroit exact où la donnée est demandée — voir
+         docs/rgpd-mention-information.md, dont ceci est la version courte. */
+      '<details class="atl-rgpd"><summary>Que deviennent mes données ?</summary>'+
+        "<p>Ton prénom, ton nom, ta classe et ton avancement dans les jeux sont enregistrés "+
+        "sur un serveur du collège, en France. Ça sert à deux choses : que tu retrouves ta "+
+        "progression sur n'importe quel poste, et que ton professeur puisse t'aider si tu "+
+        "bloques. Rien d'autre n'est collecté, rien n'est transmis à qui que ce soit, et "+
+        "tout est effacé au bout de deux ans.</p>"+
+        "<p>Tu peux demander à voir, corriger ou effacer tes données : parles-en à ton "+
+        "professeur ou au chef d'établissement.</p></details>"+
     '</div>';
 
   var id = back.querySelector('#atlId'), mdp = back.querySelector('#atlMdp'),
