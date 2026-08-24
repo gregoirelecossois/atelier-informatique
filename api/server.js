@@ -37,6 +37,14 @@ const PREFIXES = ['ms_', 'kb_', 'tt_', 'df_', 'nv_', 'ml_', 'badges_', 'a11y_'];
 const CLE_OK = /^[a-z0-9_]{1,64}$/;
 
 const SESSION_MS = 12 * 60 * 60 * 1000;   /* une journée de classe, largement */
+
+/* Durée de conservation d'un compte élève, comptée depuis sa CRÉATION (RGPD art. 5.1.e).
+   Passé ce délai le compte est supprimé, progression et trophées compris. Compter depuis
+   la création plutôt que depuis la dernière connexion est un choix : c'est une échéance
+   connue d'avance, la même pour tout le monde, qu'on peut annoncer aux familles dans la
+   mention d'information — mais un élève encore présent au bout de deux ans repart de zéro.
+   Il suffit alors de lui recréer un compte. */
+const CONSERVATION_MOIS = Number(process.env.CONSERVATION_MOIS || 24);
 const CORPS_MAX = 256 * 1024;
 const VALEUR_MAX = 4096;
 const CLES_MAX = 500;
@@ -235,6 +243,31 @@ async function sante() {
 }
 
 /* --------------------------------------------------------------------------
+   Purge automatique
+   Une durée de conservation qui dépend d'une commande qu'on pense à lancer n'est
+   pas une durée de conservation. Le serveur s'en charge : au démarrage, puis une
+   fois par jour. Chaque passage laisse une trace dans le journal.
+   -------------------------------------------------------------------------- */
+async function purgerComptesExpires() {
+  try {
+    const r = await db.q(
+      `delete from comptes
+        where role = 'eleve' and cree_le < now() - ($1 || ' months')::interval
+        returning identifiant`,
+      [String(CONSERVATION_MOIS)]);
+    if (!r.rowCount) return;
+    await db.journaliser('systeme', 'comptes.purge', null, {
+      mois: CONSERVATION_MOIS,
+      supprimes: r.rowCount,
+      identifiants: r.rows.map((l) => l.identifiant).slice(0, 200)
+    });
+    console.log(`[api] purge : ${r.rowCount} compte(s) élève au-delà de ${CONSERVATION_MOIS} mois`);
+  } catch (e) {
+    console.error('[api] purge impossible :', e.message);
+  }
+}
+
+/* --------------------------------------------------------------------------
    Aiguillage
    -------------------------------------------------------------------------- */
 const ROUTES = {
@@ -276,7 +309,12 @@ try {
 serveur.listen(PORT, HOTE, () => {
   console.log(`[api] à l'écoute sur ${HOTE}:${PORT}`);
   console.log(`[api] origines autorisées : ${ORIGINES.length ? ORIGINES.join(', ') : '(aucune — appels navigateur bloqués)'}`);
+  console.log(`[api] conservation des comptes élèves : ${CONSERVATION_MOIS} mois après création`);
 });
+
+/* Au démarrage — après une minute, le temps que le service se pose — puis chaque jour. */
+setTimeout(purgerComptesExpires, 60_000).unref();
+setInterval(purgerComptesExpires, 24 * 60 * 60 * 1000).unref();
 
 for (const signal of ['SIGTERM', 'SIGINT']) {
   process.on(signal, () => {

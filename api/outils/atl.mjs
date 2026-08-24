@@ -9,13 +9,14 @@
  *   node outils/atl.mjs init
  *   node outils/atl.mjs classes
  *   node outils/atl.mjs classe <nom> [ordre]
- *   node outils/atl.mjs creer <prenom> <nom> [classe] [--prof] [--mdp X] [--fort]
+ *   node outils/atl.mjs creer <prenom> <nom> [classe] [--prof] [--mdp X] [--court]
  *   node outils/atl.mjs liste [classe]
- *   node outils/atl.mjs mdp <identifiant> [--mdp X] [--fort]
+ *   node outils/atl.mjs mdp <identifiant> [--mdp X] [--court]
  *   node outils/atl.mjs activer|desactiver <identifiant>
- *   node outils/atl.mjs supprimer <identifiant>
- *   node outils/atl.mjs importer <fichier.csv> [--fort]
- *   node outils/atl.mjs purger --avant AAAA-MM-JJ
+ *   node outils/atl.mjs supprimer <identifiant> --oui
+ *   node outils/atl.mjs importer <fichier.csv> [--court]
+ *   node outils/atl.mjs purger [--mois 24] [--oui]
+ *   node outils/atl.mjs entropie
  */
 import '../env.js';
 import fs from 'node:fs';
@@ -23,7 +24,8 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
-import { MOTS, ALPHABET } from './mots.js';
+import { CONSONNES, VOYELLES, ALPHABET, GROUPES, SYLLABES_PAR_GROUPE, LONGUEUR_COURT,
+         BITS_PRONONCABLE, BITS_COURT } from './motsdepasse.js';
 
 const args = process.argv.slice(2);
 const commande = args[0];
@@ -35,7 +37,7 @@ const options = Object.fromEntries(
   })
 );
 /* `--mdp X` en deux mots : la forme la plus naturelle à taper. */
-for (const cle of ['mdp', 'avant']) {
+for (const cle of ['mdp', 'mois']) {
   if (options[cle] === true) {
     const i = args.indexOf('--' + cle);
     if (args[i + 1] && !args[i + 1].startsWith('--')) {
@@ -46,21 +48,24 @@ for (const cle of ['mdp', 'avant']) {
 }
 
 /* --------------------------------------------------------------------------
-   Mots de passe
+   Mots de passe — les deux formes dépassent 50 bits d'entropie.
+   Le détail du calcul et le pourquoi de chaque brique sont dans motsdepasse.js.
    -------------------------------------------------------------------------- */
-function motDePasse(fort) {
-  if (fort) {
-    /* ~50 bits : le palier « mot de passe seul + restriction d'accès » de la CNIL.
-       Réservé au compte enseignant et aux établissements qui veulent la conformité
-       stricte pour tout le monde. */
-    const c = Array.from({ length: 10 }, () => ALPHABET[crypto.randomInt(ALPHABET.length)]);
-    return `${c.slice(0, 4).join('')}-${c.slice(4, 7).join('')}-${c.slice(7).join('')}`;
+function motDePasse(court) {
+  const tire = (s) => s[crypto.randomInt(s.length)];
+
+  if (court) {
+    /* 11 caractères sans glyphe ambigu → 54,5 bits. Court à taper, impossible à
+       retenir : pour les adultes et les gestionnaires de mots de passe. */
+    const c = Array.from({ length: LONGUEUR_COURT }, () => tire(ALPHABET));
+    return `${c.slice(0, 4).join('')}-${c.slice(4, 8).join('')}-${c.slice(8).join('')}`;
   }
-  /* ~30 bits, recopiable par un élève de 6e. Face à une attaque EN LIGNE — la seule
-     possible ici, la base n'étant pas publique — la limitation à 10 essais par quart
-     d'heure rend ce niveau très largement hors de portée. Voir README.md. */
-  const m = () => MOTS[crypto.randomInt(MOTS.length)];
-  return `${m()}-${m()}-${m()}${crypto.randomInt(10)}${crypto.randomInt(10)}`;
+
+  /* Prononçable : consonne/voyelle en alternance, 9 syllabes → 55,2 bits.
+     Trois groupes de six lettres, tout en minuscules. */
+  const groupes = Array.from({ length: GROUPES }, () =>
+    Array.from({ length: SYLLABES_PAR_GROUPE }, () => tire(CONSONNES) + tire(VOYELLES)).join(''));
+  return groupes.join('-');
 }
 
 function sansAccent(s) {
@@ -102,7 +107,7 @@ const commandes = {
     }
     console.log('Schéma appliqué, classes de base en place.');
     console.log('Crée maintenant ton compte enseignant :');
-    console.log('  node outils/atl.mjs creer Prenom Nom --prof --fort');
+    console.log('  node outils/atl.mjs creer Prenom Nom --prof --court');
   },
 
   async classes() {
@@ -125,10 +130,10 @@ const commandes = {
 
   async creer() {
     const [prenom, nom, classe] = positionnels;
-    if (!prenom || !nom) throw new Error('Usage : creer <prenom> <nom> [classe] [--prof] [--mdp X] [--fort]');
+    if (!prenom || !nom) throw new Error('Usage : creer <prenom> <nom> [classe] [--prof] [--mdp X] [--court]');
 
     const role = options.prof ? 'prof' : 'eleve';
-    const clair = typeof options.mdp === 'string' ? options.mdp : motDePasse(options.fort || role === 'prof');
+    const clair = typeof options.mdp === 'string' ? options.mdp : motDePasse(options.court);
     if (role === 'prof' && clair.length < 12) {
       throw new Error('Le compte enseignant voit toute la base : 12 caractères minimum.');
     }
@@ -173,11 +178,11 @@ const commandes = {
 
   async mdp() {
     const [identifiant] = positionnels;
-    if (!identifiant) throw new Error('Usage : mdp <identifiant> [--mdp X] [--fort]');
+    if (!identifiant) throw new Error('Usage : mdp <identifiant> [--mdp X] [--court]');
     const c = await db.une('select id, role from comptes where identifiant = $1', [identifiant]);
     if (!c) throw new Error(`Compte « ${identifiant} » introuvable.`);
 
-    const clair = typeof options.mdp === 'string' ? options.mdp : motDePasse(options.fort || c.role === 'prof');
+    const clair = typeof options.mdp === 'string' ? options.mdp : motDePasse(options.court);
     await db.q('update comptes set mdp = $2, doit_changer_mdp = $3 where id = $1',
       [c.id, await auth.hacher(clair), c.role === 'eleve']);
     /* Toutes les sessions ouvertes tombent : c'est le but d'une réinitialisation. */
@@ -218,7 +223,7 @@ const commandes = {
       if (!prenom || !nom) { ignorees++; continue; }
 
       const identifiant = await identifiantLibre(prenom, nom);
-      const clair = motDePasse(options.fort);
+      const clair = motDePasse(options.court);
       const c = await db.une(
         `insert into comptes(identifiant, prenom, nom, classe_id, role, mdp, doit_changer_mdp)
          values ($1,$2,$3,$4,'eleve',$5,true) returning id`,
@@ -239,27 +244,51 @@ const commandes = {
     console.log('  ⚠ Ce fichier contient les mots de passe EN CLAIR : imprime-le, distribue-le, puis SUPPRIME-LE.\n');
   },
 
-  /* Conservation limitée dans le temps (RGPD art. 5.1.e). À passer chaque fin d'année. */
+  /* Conservation limitée dans le temps (RGPD art. 5.1.e).
+     Le serveur fait déjà cette purge tout seul, une fois par jour : cette commande
+     sert à REGARDER ce qui va partir, ou à forcer le passage tout de suite. */
   async purger() {
-    const avant = options.avant;
-    if (typeof avant !== 'string') throw new Error('Usage : purger --avant AAAA-MM-JJ [--oui]');
-    const vises = await db.q(
-      `select identifiant from comptes
-        where role = 'eleve'
-          and coalesce(derniere_connexion, cree_le) < $1::date`, [avant]);
+    const mois = Number(options.mois || process.env.CONSERVATION_MOIS || 24);
+    if (!Number.isFinite(mois) || mois < 1) throw new Error('Usage : purger [--mois 24] [--oui]');
 
-    if (!vises.rows.length) return console.log('Aucun compte concerné.');
+    const vises = await db.q(
+      `select identifiant, cree_le from comptes
+        where role = 'eleve' and cree_le < now() - ($1 || ' months')::interval
+        order by cree_le`, [String(mois)]);
+
+    if (!vises.rows.length) return console.log(`Aucun compte élève n'a plus de ${mois} mois.`);
+
     if (!options.oui) {
-      console.log(`${vises.rows.length} compte(s) élève sans connexion depuis le ${avant} :`);
-      for (const c of vises.rows.slice(0, 20)) console.log('  ' + c.identifiant);
+      console.log(`${vises.rows.length} compte(s) élève créé(s) il y a plus de ${mois} mois :`);
+      for (const c of vises.rows.slice(0, 20)) {
+        console.log(`  ${c.identifiant.padEnd(20)} créé le ${new Date(c.cree_le).toLocaleDateString('fr-FR')}`);
+      }
       if (vises.rows.length > 20) console.log(`  … et ${vises.rows.length - 20} autre(s)`);
       console.log('\nConfirme la suppression définitive en ajoutant --oui.');
       return;
     }
     const r = await db.q(
-      `delete from comptes where role = 'eleve' and coalesce(derniere_connexion, cree_le) < $1::date`, [avant]);
-    await db.journaliser('cli', 'comptes.purge', null, { avant, supprimes: r.rowCount });
+      `delete from comptes where role = 'eleve' and cree_le < now() - ($1 || ' months')::interval`,
+      [String(mois)]);
+    await db.journaliser('cli', 'comptes.purge', null, { mois, supprimes: r.rowCount });
     console.log(`${r.rowCount} compte(s) supprimé(s).`);
+  },
+
+  /* De quoi répondre au DPD sans avoir à le croire sur parole. */
+  async entropie() {
+    const ex = (n, f) => Array.from({ length: n }, f).join('\n                  ');
+    console.log('');
+    console.log(`  Prononçable (défaut)  ${BITS_PRONONCABLE.toFixed(1)} bits`);
+    console.log(`     ${GROUPES} groupes × ${SYLLABES_PAR_GROUPE} syllabes, ${CONSONNES.length} consonnes × ${VOYELLES.length} voyelles`);
+    console.log(`     exemples :   ${ex(3, () => motDePasse(false))}`);
+    console.log('');
+    console.log(`  Court (--court)       ${BITS_COURT.toFixed(1)} bits`);
+    console.log(`     ${LONGUEUR_COURT} caractères d'un alphabet de ${ALPHABET.length} sans glyphe ambigu`);
+    console.log(`     exemples :   ${ex(3, () => motDePasse(true))}`);
+    console.log('');
+    console.log(`  Seuil CNIL 2022-100 avec restriction d'accès : 50 bits.`);
+    console.log(`  Restriction en place : 10 essais par identifiant et 40 par IP, sur 10 minutes.`);
+    console.log('');
   }
 };
 
@@ -278,13 +307,14 @@ const AIDE = `
   node outils/atl.mjs init
   node outils/atl.mjs classes
   node outils/atl.mjs classe <nom> [ordre]
-  node outils/atl.mjs creer <prenom> <nom> [classe] [--prof] [--mdp X] [--fort]
+  node outils/atl.mjs creer <prenom> <nom> [classe] [--prof] [--mdp X] [--court]
   node outils/atl.mjs liste [classe]
-  node outils/atl.mjs mdp <identifiant> [--mdp X] [--fort]
+  node outils/atl.mjs mdp <identifiant> [--mdp X] [--court]
   node outils/atl.mjs activer|desactiver <identifiant>
   node outils/atl.mjs supprimer <identifiant> --oui
-  node outils/atl.mjs importer <fichier.csv> [--fort]
-  node outils/atl.mjs purger --avant AAAA-MM-JJ [--oui]
+  node outils/atl.mjs importer <fichier.csv> [--court]
+  node outils/atl.mjs purger [--mois 24] [--oui]
+  node outils/atl.mjs entropie
 `;
 
 const fn = commandes[commande];

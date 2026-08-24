@@ -1,0 +1,39 @@
+/* Fabrication des mots de passe — les briques et l'arithmétique.
+ *
+ * Contrainte : 50 bits d'entropie au minimum (palier « mot de passe + restriction
+ * d'accès » de la recommandation CNIL 2022-100), tout en restant recopiable et
+ * mémorisable par un élève de 6e.
+ *
+ * Ces deux exigences tirent en sens inverse, et il n'y a pas d'échappatoire : 50 bits
+ * d'information occupent au minimum ~11 caractères tirés au hasard, ou ~18 lettres si
+ * on veut que ça se prononce. Le choix par défaut privilégie la mémorisation.
+ *
+ *   PRONONÇABLE (défaut) : bamito-renuka-vilose
+ *     Consonne/voyelle en alternance stricte. 14 consonnes × 5 voyelles = 70 syllabes,
+ *     soit 6,13 bits par syllabe ; 9 syllabes → 55,2 bits.
+ *     Trois atouts pour des élèves : ça se prononce donc ça se retient ; il n'y a que
+ *     des minuscules ; et la POSITION dit si la lettre est une consonne ou une voyelle,
+ *     ce qui lève d'avance toute confusion de lecture sur une feuille imprimée.
+ *
+ *   COURT (--court) : k7fh-m2pq-vr
+ *     11 caractères d'un alphabet de 31 sans glyphe ambigu → 54,5 bits.
+ *     Deux fois plus court à taper, mais illisible à retenir : à réserver aux adultes
+ *     et aux comptes qui vivent dans un gestionnaire de mots de passe.
+ */
+
+/* Consonnes au son stable en français : ni c (ce/ca), ni g (ge/ga), ni h muet,
+   ni q qui traîne son u, ni w/x/y. */
+export const CONSONNES = 'bdfjklmnprstvz';   /* 14 */
+export const VOYELLES = 'aeiou';             /*  5 */
+
+/* Ni i, ni l, ni o, ni 0/1 : les confusions classiques quand on recopie un code. */
+export const ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';   /* 31 */
+
+export const SYLLABES_PAR_GROUPE = 3;   /* 3 syllabes = 6 lettres par groupe */
+export const GROUPES = 3;               /* 3 groupes = 9 syllabes = 18 lettres */
+export const LONGUEUR_COURT = 11;
+
+/* Entropie exacte, en bits — affichée par « atl.mjs entropie » et citée dans le README
+   et dans la fiche de registre : mieux vaut un chiffre calculé qu'un chiffre affirmé. */
+export const BITS_PRONONCABLE = GROUPES * SYLLABES_PAR_GROUPE * Math.log2(CONSONNES.length * VOYELLES.length);
+export const BITS_COURT = LONGUEUR_COURT * Math.log2(ALPHABET.length);

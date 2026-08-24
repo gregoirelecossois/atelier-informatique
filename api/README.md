@@ -114,7 +114,7 @@ node outils/atl.mjs init
 ```
 
 ```bash
-node outils/atl.mjs creer Grégoire Lecossois --prof --fort
+node outils/atl.mjs creer Grégoire Lecossois --prof --court
 ```
 
 ```bash
@@ -134,7 +134,7 @@ seule et unique fois où ces mots de passe sont lisibles — la base ne contient
 empreinte.
 
 Autres commandes : `classes`, `classe`, `liste [classe]`, `mdp <identifiant>`,
-`activer` / `desactiver`, `supprimer <identifiant> --oui`.
+`activer` / `desactiver`, `supprimer <identifiant> --oui`, `entropie`.
 
 ---
 
@@ -159,21 +159,32 @@ Autres commandes : `classes`, `classe`, `liste [classe]`, `mdp <identifiant>`,
 
 ### Le mot de passe des élèves
 
-Les mots de passe générés par défaut ressemblent à `souris-tulipe-phare42` : trois mots
-d'une liste de 200, sans accent, plus deux chiffres — environ **30 bits d'entropie**.
+Les deux formes générées dépassent le seuil de **50 bits** demandé par la recommandation
+CNIL 2022-100 lorsqu'une restriction d'accès est en place. `node outils/atl.mjs entropie`
+affiche le calcul et des exemples — de quoi répondre au DPD sans le lui faire croire sur
+parole.
 
-La recommandation CNIL demande 50 bits lorsqu'une restriction d'accès est en place.
-Ces 30 bits sont un choix assumé, à connaître :
+**Par défaut — prononçable, ~55 bits** : `mibomu-sefanu-kerebe`
 
-- la seule attaque possible ici est **en ligne** (la base n'est pas publique, et le
-  poivre protège une éventuelle copie) ; avec 10 essais par quart d'heure, épuiser
-  30 bits demanderait des siècles ;
-- un mot de passe qu'un élève de 6e recopie sans se tromper est un mot de passe qu'il
-  ne note pas sur sa trousse.
+Consonne et voyelle en alternance stricte, trois groupes de six lettres. C'est la forme
+la plus courte qui reste mémorisable, et elle a trois qualités qui comptent en classe :
 
-Si ton DPD veut la conformité stricte, `--fort` génère des mots de passe à ~50 bits
-(`k7fh-m2p-qvr`) — c'est le **défaut imposé** pour les comptes enseignants, qui voient
-toute la base.
+- **ça se prononce**, donc ça se retient (« mi-bo-mu, sé-fa-nu, ké-ré-be ») ;
+- **que des minuscules**, aucun accent, aucun chiffre à placer, aucune majuscule à
+  chercher — ce qui compte quand l'atelier sert justement à apprendre le clavier ;
+- **la position dit la nature de la lettre** : rangs impairs = consonnes, rangs pairs =
+  voyelles. Un élève qui hésite entre `i` et `l`, ou entre `u` et `v`,
+  tranche tout seul en recopiant depuis sa carte imprimée.
+
+**Avec `--court` — 11 caractères, ~54 bits** : `jmzn-fyuc-5p7`
+
+Deux fois plus court à taper, mais impossible à retenir : pour les adultes et les comptes
+qui vivent dans un gestionnaire de mots de passe.
+
+> **Le plancher est incompressible.** 50 bits d'information occupent au minimum ~11
+> caractères tirés au hasard, ou ~18 lettres si on veut que ça se prononce. Aucune
+> présentation n'y échappe : on choisit seulement entre « court et illisible » et
+> « un peu plus long et mémorisable ».
 
 ---
 
@@ -185,16 +196,27 @@ toute la base.
 pg_dump -Fc "$PGDATABASE" > ~/sauvegardes/atelier-$(date +%F).dump
 ```
 
-**Purge de fin d'année** (RGPD, limitation de la durée de conservation) — d'abord un
-essai à blanc, qui liste sans rien supprimer :
+**Purge — automatique, rien à lancer.** Un compte élève est supprimé **24 mois après sa
+création**, progression et trophées compris. Le serveur s'en charge au démarrage puis une
+fois par jour, et chaque passage laisse une trace dans la table `journal`. La durée se
+règle avec `CONSERVATION_MOIS`.
+
+Pour voir d'avance ce qui va partir, sans rien supprimer :
 
 ```bash
-node outils/atl.mjs purger --avant 2027-07-01
+node outils/atl.mjs purger
 ```
 
+Et pour forcer le passage tout de suite :
+
 ```bash
-node outils/atl.mjs purger --avant 2027-07-01 --oui
+node outils/atl.mjs purger --oui
 ```
+
+> **À savoir** : le délai court depuis la **création**, pas depuis la dernière connexion.
+> C'est une échéance connue d'avance, identique pour tous, qu'on peut annoncer aux
+> familles dans la mention d'information. En contrepartie, un élève encore présent au
+> bout de deux ans repart de zéro : il suffit de lui recréer un compte.
 
 ---
 
