@@ -22,6 +22,22 @@ API est une couche qu'on ajoute, jamais un passage obligé.
 Rien d'autre : pas de date de naissance, pas d'adresse, pas d'e-mail élève, pas d'INE,
 aucun champ de commentaire libre. Voir les commentaires de `schema.sql`.
 
+Durées de conservation, appliquées automatiquement par le serveur :
+
+| Donnée | Durée |
+|---|---|
+| Compte élève, progression, trophées | 24 mois après la **création** du compte (`CONSERVATION_MOIS`) |
+| Journal des connexions et actions | 12 mois (`JOURNAL_MOIS`) |
+| Session | 12 heures |
+| Présence en séance | dernier état seulement, périmé après 2 minutes |
+
+> **Les documents RGPD de l'établissement ne sont pas dans ce dépôt.** La fiche de
+> registre (art. 30) et la mention d'information (art. 13) appartiennent au chef
+> d'établissement, qui est le responsable de traitement — pas au logiciel. Remplies,
+> elles portent le nom du collège, son adresse et des contacts nominatifs. Elles vivent
+> donc dans `documents-rgpd/`, ignoré par git. Ce qui précède en est la matière
+> technique, et a bien sa place ici.
+
 ---
 
 ## 2. Déploiement chez alwaysdata
@@ -82,6 +98,7 @@ très largement : 300 élèves occupent moins de 5 Mo.
    | `POIVRE` | un secret généré une fois (voir ci-dessous) |
    | `ORIGINES` | `https://gregoirelecossois.github.io` |
    | `CONSERVATION_MOIS` | `24` |
+   | `JOURNAL_MOIS` | `12` |
 
    Génère le poivre **une seule fois** et garde-le dans ton gestionnaire de mots de passe :
 

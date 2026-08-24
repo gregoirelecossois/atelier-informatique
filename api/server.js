@@ -61,6 +61,11 @@ const SESSION_MS = 12 * 60 * 60 * 1000;   /* une journée de classe, largement *
    mention d'information — mais un élève encore présent au bout de deux ans repart de zéro.
    Il suffit alors de lui recréer un compte. */
 const CONSERVATION_MOIS = Number(process.env.CONSERVATION_MOIS || 24);
+
+/* Durée de conservation du journal des connexions et des actions enseignantes. Il
+   contient identifiants et adresses IP : douze mois, la durée usuelle pour des traces
+   de connexion — assez pour expliquer un incident, pas davantage. */
+const JOURNAL_MOIS = Number(process.env.JOURNAL_MOIS || 12);
 const CORPS_MAX = 256 * 1024;
 const VALEUR_MAX = 4096;
 const CLES_MAX = 500;
@@ -297,6 +302,23 @@ async function purgerComptesExpires() {
     console.log(`[api] purge : ${r.rowCount} compte(s) élève au-delà de ${CONSERVATION_MOIS} mois`);
   } catch (e) {
     console.error('[api] purge impossible :', e.message);
+  }
+}
+
+/* Le journal garde l'identifiant et l'adresse IP de chaque connexion : ce sont des
+   données personnelles, elles ne peuvent pas être conservées indéfiniment. Douze mois
+   est la durée usuelle pour des traces de connexion — assez pour expliquer un incident,
+   pas davantage. La suppression d'un compte n'emporte PAS son journal (c'est le but :
+   une trace qui disparaît avec ce qu'elle documente ne trace rien), d'où cette purge
+   séparée, sur l'âge de la ligne. */
+async function purgerJournal() {
+  try {
+    const r = await db.q(
+      `delete from journal where ts < now() - ($1 || ' months')::interval`,
+      [String(JOURNAL_MOIS)]);
+    if (r.rowCount) console.log(`[api] journal : ${r.rowCount} ligne(s) au-delà de ${JOURNAL_MOIS} mois`);
+  } catch (e) {
+    console.error('[api] purge du journal impossible :', e.message);
   }
 }
 
@@ -603,13 +625,14 @@ try {
 serveur.listen(PORT, HOTE, () => {
   console.log(`[api] à l'écoute sur ${HOTE}:${PORT}`);
   console.log(`[api] origines autorisées : ${ORIGINES.length ? ORIGINES.join(', ') : '(aucune — appels navigateur bloqués)'}`);
-  console.log(`[api] conservation des comptes élèves : ${CONSERVATION_MOIS} mois après création`);
+  console.log(`[api] conservation : comptes élèves ${CONSERVATION_MOIS} mois, journal ${JOURNAL_MOIS} mois`);
   console.log(`[api] empreinte du code : ${VERSION}`);
 });
 
 /* Au démarrage — après une minute, le temps que le service se pose — puis chaque jour. */
-setTimeout(purgerComptesExpires, 60_000).unref();
-setInterval(purgerComptesExpires, 24 * 60 * 60 * 1000).unref();
+function menageQuotidien(){ purgerComptesExpires(); purgerJournal(); }
+setTimeout(menageQuotidien, 60_000).unref();
+setInterval(menageQuotidien, 24 * 60 * 60 * 1000).unref();
 
 for (const signal of ['SIGTERM', 'SIGINT']) {
   process.on(signal, () => {

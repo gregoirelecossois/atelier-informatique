@@ -3,3 +3,10 @@
 # Synthèse vocale : cache mp3 intermédiaire (les clips finaux .clips.js sont versionnés)
 tts/.tts-cache/
 tts/*.tts-manifest.json
+
+# Documents RGPD de l’établissement : registre et mention d’information.
+# Ils appartiennent au chef d’établissement, pas au logiciel, et portent une fois
+# remplis le nom du collège, son adresse et des contacts nominatifs. Ils restent donc
+# hors du dépôt public. Voir api/README.md § 1 et § 5 pour la description technique,
+# elle, qui a bien sa place ici.
+documents-rgpd/
