@@ -143,6 +143,13 @@ function vueCompte(){
         '<span>'+esc(el.classe || 'Sans classe')+' · identifiant <b style="display:inline">'+esc(el.identifiant)+'</b></span></div>'+
       '<p class="atl-sub" style="margin-bottom:16px">Ta progression et tes trophées sont enregistrés sur le serveur du collège : '+
         'tu les retrouveras sur n\'importe quel poste.</p>'+
+      /* Le tableau de bord n'est jamais annoncé aux élèves : il n'apparaît que dans la
+         fenêtre de compte d'un enseignant connecté. Le serveur vérifie le rôle de son
+         côté, ce bouton n'est qu'un raccourci. */
+      (el.role === 'prof'
+        ? '<a class="atl-btn primaire" href="prof.html" style="display:block;text-align:center;'+
+          'text-decoration:none;margin-bottom:9px">📊 Suivi des élèves</a>'
+        : '')+
       '<div class="atl-acts">'+
         '<button type="button" class="atl-btn ghost" data-a="fermer">Continuer</button>'+
         '<button type="button" class="atl-btn danger" data-a="sortir">Se déconnecter</button>'+

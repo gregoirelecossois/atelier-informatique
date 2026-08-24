@@ -1,8 +1,8 @@
 /* API de l'Atelier informatique — comptes élèves et sauvegarde de progression.
  *
- * Volontairement sans cadre applicatif : node:http et pg, rien d'autre. Cinq routes,
- * un hébergement mutualisé, aucune étape de compilation — moins il y a de pièces, moins
- * il y a à surveiller et à mettre à jour pendant l'année scolaire.
+ * Volontairement sans cadre applicatif : node:http et pg, rien d'autre. Un hébergement
+ * mutualisé, aucune étape de compilation — moins il y a de pièces, moins il y a à
+ * surveiller et à mettre à jour pendant l'année scolaire.
  *
  * Authentification par jeton porteur (Authorization: Bearer …) et non par cookie :
  * la page de jeu et l'API vivent sur deux domaines différents (GitHub Pages d'un côté,
@@ -10,17 +10,30 @@
  * navigateurs comme par les filtres des réseaux d'établissement. Corollaire agréable :
  * aucune surface CSRF.
  *
- * Routes :
- *   GET  /api/sante          état du service (pour la supervision)
- *   POST /api/connexion      {identifiant, motdepasse} → jeton + progression
- *   POST /api/deconnexion    révoque le jeton présenté
- *   GET  /api/moi            profil + progression complète
- *   PUT  /api/progression    {majs:{clé:valeur}, suppressions:[clé]} → nouvelle version
+ * Routes ouvertes à tout compte connecté :
+ *   GET    /api/sante                       état du service (pour la supervision)
+ *   POST   /api/connexion                   {identifiant, motdepasse} → jeton + progression
+ *   POST   /api/deconnexion                 révoque le jeton présenté
+ *   GET    /api/moi                         profil + progression complète
+ *   PUT    /api/progression                 {majs, suppressions} → nouvelle version
+ *   POST   /api/presence                    battement : où en est l'élève en ce moment
+ *
+ * Routes réservées au rôle « prof » — le tableau de bord :
+ *   GET    /api/prof/tableau                tous les comptes + leur avancement résumé
+ *   GET    /api/prof/presence               qui est connecté, et où (interrogé souvent)
+ *   POST   /api/prof/classes                crée ou réordonne une classe
+ *   POST   /api/prof/eleves                 crée un compte → mot de passe en clair, une fois
+ *   GET    /api/prof/eleve/:id              fiche complète
+ *   PATCH  /api/prof/eleve/:id              nom, prénom, classe, identifiant, actif
+ *   DELETE /api/prof/eleve/:id              suppression définitive
+ *   POST   /api/prof/eleve/:id/mdp          réinitialise le mot de passe
+ *   PUT    /api/prof/eleve/:id/progression  débloque un niveau, corrige un avancement
  */
 import './env.js';
 import http from 'node:http';
 import * as db from './db.js';
 import * as auth from './auth.js';
+import { creerCompte, reinitialiserMdp, IDENTIFIANT_OK } from './comptes.js';
 
 const PORT = Number(process.env.PORT || 8300);
 /* alwaysdata impose d'écouter sur l'IP et le port qu'il fournit, et les expose sous
@@ -67,7 +80,7 @@ function cors(req, res) {
   else if (ORIGINES.includes(origine)) res.setHeader('Access-Control-Allow-Origin', origine);
   else return;                                  /* origine inconnue : pas d'en-tête, le navigateur bloquera */
   res.setHeader('Vary', 'Origin');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   res.setHeader('Access-Control-Max-Age', '86400');
 }
@@ -202,8 +215,13 @@ async function moi(req) {
 
 async function ecrireProgression(req) {
   const s = await session(req);
-  const corps = await lireCorps(req);
+  return appliquerProgression(s.id, await lireCorps(req));
+}
 
+/* Le même chemin d'écriture sert à l'élève qui joue et à l'enseignant qui débloque un
+   niveau depuis le tableau de bord : mêmes contrôles de clé, même fusion, aucune porte
+   dérobée qui accepterait des clés que l'autre refuse. */
+async function appliquerProgression(compteId, corps) {
   const majs = corps.majs && typeof corps.majs === 'object' ? corps.majs : {};
   const suppressions = Array.isArray(corps.suppressions) ? corps.suppressions : [];
 
@@ -218,7 +236,7 @@ async function ecrireProgression(req) {
 
   if (Object.keys(propre).length > CLES_MAX) throw new Refus(413, 'Trop de clés en une fois.');
   if (!Object.keys(propre).length && !suppressions.length) {
-    return { version: (await progressionDe(s.id)).version };
+    return { version: (await progressionDe(compteId)).version };
   }
 
   const r = await db.une(
@@ -229,7 +247,7 @@ async function ecrireProgression(req) {
             version = progressions.version + 1,
             maj_le  = now()
       returning version`,
-    [s.id, JSON.stringify(propre), suppressions.map(String)]
+    [compteId, JSON.stringify(propre), suppressions.map(String)]
   );
   return { version: r.version };
 }
@@ -270,26 +288,265 @@ async function purgerComptesExpires() {
 }
 
 /* --------------------------------------------------------------------------
+   Présence
+   Un battement toutes les 45 secondes tant que l'onglet de l'élève est visible.
+   On écrase la ligne précédente : savoir où en est un élève MAINTENANT sert à
+   l'aider tout de suite ; garder la trace de ses allées et venues serait une
+   collecte sans finalité.
+   -------------------------------------------------------------------------- */
+async function battement(req) {
+  const s = await session(req);
+  const corps = await lireCorps(req);
+  const entier = (v, max) => {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) && n >= 0 && n <= max ? n : null;
+  };
+  await db.q(
+    `insert into presence(compte_id, atelier, niveau, mission, vu_le) values ($1,$2,$3,$4, now())
+     on conflict (compte_id) do update
+        set atelier = excluded.atelier, niveau = excluded.niveau,
+            mission = excluded.mission, vu_le = now()`,
+    [s.id, corps.atelier ? String(corps.atelier).slice(0, 40) : null,
+     entier(corps.niveau, 99), entier(corps.mission, 999)]);
+  return { ok: true };
+}
+
+/* --------------------------------------------------------------------------
+   Espace enseignant
+   -------------------------------------------------------------------------- */
+async function sessionProf(req) {
+  const s = await session(req);
+  if (s.role !== 'prof') throw new Refus(403, 'Réservé aux enseignants.');
+  return s;
+}
+
+const PREFIXES_JEU = ['ms', 'kb', 'tt', 'df', 'nv', 'ml'];
+
+/* Résumé compact. Le serveur ignore volontairement la structure des jeux — c'est
+   scripts/ateliers.js, côté navigateur, qui sait combien de niveaux compte chaque
+   atelier. Ici on extrait seulement les nombres, ce qui évite d'expédier la
+   progression complète de trois cents élèves à chaque rafraîchissement. */
+function resumer(l) {
+  const d = l.donnees || {};
+
+  let badges = {};
+  try { badges = JSON.parse(d.badges_v1 || '{}') || {}; } catch { /* progression illisible */ }
+
+  const niveaux = {};
+  for (const p of PREFIXES_JEU) {
+    const courant = parseInt(d[p + '_curlevel'] || '1', 10) || 1;
+    niveaux[p] = {
+      u: parseInt(d[p + '_unlocked'] || '1', 10) || 1,
+      c: courant,
+      s: parseInt(d[p + '_step_l' + courant] || '0', 10) || 0,
+      /* Terminer le DERNIER niveau ne fait pas monter *_unlocked : les ateliers passent
+         directement à leur écran de fin. Le trophée d'atelier est donc le seul signal
+         fiable de « tout fini » — sans lui, un élève complet plafonnerait à 6/7. */
+      fini: !!badges[p + '.master']
+    };
+  }
+  const trophees = Object.keys(badges).length;
+
+  return {
+    id: l.id, identifiant: l.identifiant, prenom: l.prenom, nom: l.nom,
+    classe: l.classe, classe_id: l.classe_id, role: l.role, actif: l.actif,
+    cree_le: l.cree_le, derniere_connexion: l.derniere_connexion,
+    niveaux, trophees
+  };
+}
+
+async function lesClasses() {
+  return (await db.q('select id, nom, ordre from classes order by ordre, nom')).rows;
+}
+
+/* Une seule requête pour peindre tout le tableau. Rechargée toutes les 30 s. */
+async function profTableau(req) {
+  await sessionProf(req);
+  const r = await db.q(
+    `select c.id, c.identifiant, c.prenom, c.nom, c.role, c.actif, c.cree_le, c.derniere_connexion,
+            cl.id as classe_id, cl.nom as classe,
+            coalesce(p.donnees, '{}'::jsonb) as donnees
+       from comptes c
+       left join classes cl on cl.id = c.classe_id
+       left join progressions p on p.compte_id = c.id
+      order by cl.ordre nulls last, cl.nom, c.nom, c.prenom`);
+  return { eleves: r.rows.map(resumer), classes: await lesClasses() };
+}
+
+/* Volontairement minuscule : c'est CE qui est interrogé toutes les 10 s. */
+async function profPresence(req) {
+  await sessionProf(req);
+  const r = await db.q(
+    `select compte_id, atelier, niveau, mission, vu_le
+       from presence where vu_le > now() - interval '5 minutes'`);
+  return { presents: r.rows, maintenant: new Date().toISOString() };
+}
+
+async function profEleve(req, params) {
+  await sessionProf(req);
+  const l = await db.une(
+    `select c.id, c.identifiant, c.prenom, c.nom, c.role, c.actif, c.cree_le, c.derniere_connexion,
+            c.doit_changer_mdp, cl.id as classe_id, cl.nom as classe
+       from comptes c left join classes cl on cl.id = c.classe_id
+      where c.id = $1`, [Number(params.id)]);
+  if (!l) throw new Refus(404, 'Compte introuvable.');
+  return { eleve: l, ...(await progressionDe(l.id)) };
+}
+
+async function profCreerEleve(req) {
+  const s = await sessionProf(req);
+  const corps = await lireCorps(req);
+  try {
+    const c = await creerCompte({
+      prenom: String(corps.prenom || '').trim(),
+      nom: String(corps.nom || '').trim(),
+      classe_id: corps.classe_id != null ? Number(corps.classe_id) : undefined,
+      classe: corps.classe,
+      role: corps.role === 'prof' ? 'prof' : 'eleve',
+      acteur: s.identifiant
+    });
+    return c;                       /* contient le mot de passe en clair, une seule fois */
+  } catch (e) {
+    throw new Refus(400, e.message);
+  }
+}
+
+async function profModifierEleve(req, params) {
+  const s = await sessionProf(req);
+  const id = Number(params.id);
+  const corps = await lireCorps(req);
+
+  const cible = await db.une('select id, identifiant, role, actif from comptes where id = $1', [id]);
+  if (!cible) throw new Refus(404, 'Compte introuvable.');
+
+  const champs = [], valeurs = [];
+  const poser = (col, val) => { champs.push(`${col} = $${champs.length + 2}`); valeurs.push(val); };
+
+  if (typeof corps.prenom === 'string' && corps.prenom.trim()) poser('prenom', corps.prenom.trim().slice(0, 60));
+  if (typeof corps.nom === 'string' && corps.nom.trim()) poser('nom', corps.nom.trim().slice(0, 60));
+  if ('classe_id' in corps) poser('classe_id', corps.classe_id == null ? null : Number(corps.classe_id));
+
+  if (typeof corps.identifiant === 'string') {
+    const id2 = corps.identifiant.trim().toLowerCase();
+    if (!IDENTIFIANT_OK.test(id2)) {
+      throw new Refus(400, 'Identifiant : minuscules, chiffres, point et tiret, 2 à 31 caractères.');
+    }
+    const pris = await db.une('select 1 from comptes where identifiant = $1 and id <> $2', [id2, id]);
+    if (pris) throw new Refus(409, `L'identifiant « ${id2} » est déjà pris.`);
+    poser('identifiant', id2);
+  }
+
+  if ('actif' in corps) {
+    if (id === s.id && !corps.actif) throw new Refus(400, 'On ne se désactive pas soi-même.');
+    poser('actif', !!corps.actif);
+    if (!corps.actif) await db.q('delete from sessions where compte_id = $1', [id]);
+  }
+
+  if (!champs.length) throw new Refus(400, 'Rien à modifier.');
+  await db.q(`update comptes set ${champs.join(', ')} where id = $1`, [id, ...valeurs]);
+  await db.journaliser(s.identifiant, 'compte.modification', cible.identifiant, corps);
+  return { ok: true };
+}
+
+async function profMdpEleve(req, params) {
+  const s = await sessionProf(req);
+  const cible = await db.une('select identifiant from comptes where id = $1', [Number(params.id)]);
+  if (!cible) throw new Refus(404, 'Compte introuvable.');
+  return reinitialiserMdp(cible.identifiant, { acteur: s.identifiant });
+}
+
+async function profSupprimerEleve(req, params) {
+  const s = await sessionProf(req);
+  const id = Number(params.id);
+  if (id === s.id) throw new Refus(400, 'On ne supprime pas son propre compte.');
+  const cible = await db.une('select identifiant from comptes where id = $1', [id]);
+  if (!cible) throw new Refus(404, 'Compte introuvable.');
+  await db.q('delete from comptes where id = $1', [id]);
+  await db.journaliser(s.identifiant, 'compte.suppression', cible.identifiant, null);
+  return { ok: true };
+}
+
+/* Déblocage d'un niveau depuis le tableau de bord : c'est une écriture de progression
+   comme une autre, avec les mêmes contrôles de clé — et une trace au journal, parce
+   qu'un avancement modifié par l'enseignant doit pouvoir s'expliquer. */
+async function profProgressionEleve(req, params) {
+  const s = await sessionProf(req);
+  const id = Number(params.id);
+  const cible = await db.une('select identifiant from comptes where id = $1', [id]);
+  if (!cible) throw new Refus(404, 'Compte introuvable.');
+  const corps = await lireCorps(req);
+  const r = await appliquerProgression(id, corps);
+  await db.journaliser(s.identifiant, 'progression.modification', cible.identifiant,
+    { majs: corps.majs || {}, suppressions: corps.suppressions || [] });
+  return r;
+}
+
+async function profCreerClasse(req) {
+  const s = await sessionProf(req);
+  const corps = await lireCorps(req);
+  const nom = String(corps.nom || '').trim().slice(0, 30);
+  if (!nom) throw new Refus(400, 'Nom de classe attendu.');
+  await db.q(
+    `insert into classes(nom, ordre) values ($1,$2)
+     on conflict (nom) do update set ordre = excluded.ordre`, [nom, Number(corps.ordre || 0)]);
+  await db.journaliser(s.identifiant, 'classe.enregistrement', nom, null);
+  return { classes: await lesClasses() };
+}
+
+/* --------------------------------------------------------------------------
    Aiguillage
    -------------------------------------------------------------------------- */
-const ROUTES = {
-  'GET /api/sante': sante,
-  'POST /api/connexion': connexion,
-  'POST /api/deconnexion': deconnexion,
-  'GET /api/moi': moi,
-  'PUT /api/progression': ecrireProgression
-};
+const ROUTES = [
+  ['GET',    '/api/sante',                     sante],
+  ['POST',   '/api/connexion',                 connexion],
+  ['POST',   '/api/deconnexion',               deconnexion],
+  ['GET',    '/api/moi',                       moi],
+  ['PUT',    '/api/progression',               ecrireProgression],
+  ['POST',   '/api/presence',                  battement],
+
+  ['GET',    '/api/prof/tableau',              profTableau],
+  ['GET',    '/api/prof/presence',             profPresence],
+  ['POST',   '/api/prof/classes',              profCreerClasse],
+  ['POST',   '/api/prof/eleves',               profCreerEleve],
+  ['GET',    '/api/prof/eleve/:id',            profEleve],
+  ['PATCH',  '/api/prof/eleve/:id',            profModifierEleve],
+  ['DELETE', '/api/prof/eleve/:id',            profSupprimerEleve],
+  ['POST',   '/api/prof/eleve/:id/mdp',        profMdpEleve],
+  ['PUT',    '/api/prof/eleve/:id/progression', profProgressionEleve]
+];
+
+function trouverRoute(methode, chemin) {
+  for (const [m, motif, fn] of ROUTES) {
+    if (m !== methode) continue;
+    if (!motif.includes(':')) {
+      if (motif === chemin) return { fn, params: {} };
+      continue;
+    }
+    const a = motif.split('/'), b = chemin.split('/');
+    if (a.length !== b.length) continue;
+    const params = {};
+    let ok = true;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i].startsWith(':')) {
+        if (!/^\d+$/.test(b[i])) { ok = false; break; }   /* nos seuls paramètres sont des identifiants numériques */
+        params[a[i].slice(1)] = b[i];
+      } else if (a[i] !== b[i]) { ok = false; break; }
+    }
+    if (ok) return { fn, params };
+  }
+  return null;
+}
 
 const serveur = http.createServer(async (req, res) => {
   cors(req, res);
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
   const chemin = (req.url || '/').split('?')[0].replace(/\/+$/, '') || '/';
-  const route = ROUTES[`${req.method} ${chemin}`];
+  const route = trouverRoute(req.method, chemin);
   if (!route) return repondre(res, 404, { erreur: 'Route inconnue.' });
 
   try {
-    repondre(res, 200, await route(req));
+    repondre(res, 200, await route.fn(req, route.params));
   } catch (e) {
     const code = e.code >= 400 && e.code <= 599 ? e.code : 500;
     if (code === 500) console.error('[api]', chemin, e);

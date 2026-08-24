@@ -58,3 +58,16 @@ create table if not exists journal (
   details  jsonb
 );
 create index if not exists journal_ts_idx on journal(ts desc);
+
+-- Présence « en direct » du tableau de bord enseignant. Une ligne par élève, écrasée à
+-- chaque battement (toutes les 45 s tant que l'onglet est visible). On garde volontairement
+-- le DERNIER état seulement : savoir où en est un élève maintenant sert à l'aider tout de
+-- suite ; conserver la trace de ses allées et venues serait une collecte sans finalité.
+create table if not exists presence (
+  compte_id int primary key references comptes(id) on delete cascade,
+  atelier   text,
+  niveau    int,
+  mission   int,
+  vu_le     timestamptz not null default now()
+);
+create index if not exists presence_vu_idx on presence(vu_le desc);
