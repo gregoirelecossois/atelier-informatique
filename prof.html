@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Suivi des élèves — Atelier informatique</title>
+
+<!-- Page enseignant. Elle n'est PAS secrète : tout ce qu'elle affiche vient de l'API,
+     qui vérifie le rôle « prof » à chaque requête. Un élève qui l'ouvre voit un écran
+     de connexion et rien d'autre. La sécurité est côté serveur, jamais ici. -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --fond:#eef2f7; --carte:#fff; --trait:#dde5ee; --encre:#22303f; --gris:#6b7d91;
+    --bleu:#2563eb; --vert:#16a34a; --orange:#e0a416; --rouge:#dc2626;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-size:15px;}
+  h1,h2,h3{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;margin:0;}
+  button{font-family:inherit;cursor:pointer}
+
+  .barre{position:sticky;top:0;z-index:20;background:var(--carte);border-bottom:2px solid var(--trait);
+         padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .barre h1{font-size:1.25rem;margin-right:auto}
+  .barre .qui{color:var(--gris);font-size:.85rem;font-weight:700}
+
+  .btn{border:2px solid var(--trait);background:#fff;color:var(--encre);border-radius:999px;
+       padding:8px 15px;font-weight:800;font-size:.85rem;transition:border-color .15s,background .15s}
+  .btn:hover{border-color:#9fb6cd}
+  .btn.primaire{background:var(--bleu);border-color:var(--bleu);color:#fff}
+  .btn.danger{background:#fef2f2;border-color:#fecaca;color:#b91c1c}
+  .btn[disabled]{opacity:.5;cursor:default}
+  .btn.petit{padding:5px 11px;font-size:.78rem}
+
+  .zone{max-width:1500px;margin:0 auto;padding:18px 20px 60px}
+
+  .filtres{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 16px}
+  .puce{border:2px solid var(--trait);background:#fff;border-radius:999px;padding:6px 13px;
+        font-weight:800;font-size:.82rem;color:var(--gris)}
+  .puce.on{background:var(--encre);border-color:var(--encre);color:#fff}
+  .filtres input,.filtres select{border:2px solid var(--trait);border-radius:999px;padding:7px 13px;
+        font-family:inherit;font-weight:700;font-size:.85rem;color:var(--encre);background:#fff}
+  .filtres input:focus,.filtres select:focus{outline:none;border-color:var(--bleu)}
+
+  .cartes{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+
+  .eleve{background:var(--carte);border:2px solid var(--trait);border-radius:16px;padding:13px 15px;
+         cursor:pointer;transition:border-color .15s,transform .08s}
+  .eleve:hover{border-color:#9fb6cd}
+  .eleve:active{transform:translateY(1px)}
+  .eleve.inactif{opacity:.55}
+  .eleve.ici{border-color:var(--vert);box-shadow:0 0 0 3px rgba(22,163,74,.12)}
+
+  .tete{display:flex;align-items:baseline;gap:8px;margin-bottom:3px}
+  .tete .nom{font-weight:800;font-size:1.02rem}
+  .tete .classe{font-size:.78rem;font-weight:800;color:var(--gris);
+        background:#f1f5fa;border-radius:999px;padding:2px 8px}
+  .tete .pt{width:9px;height:9px;border-radius:50%;background:#cbd5e1;flex:none;margin-left:auto}
+  .tete .pt.ici{background:var(--vert);box-shadow:0 0 0 4px rgba(22,163,74,.18)}
+
+  .sous{font-size:.76rem;color:var(--gris);margin-bottom:9px;min-height:1.1em}
+  .sous b{color:var(--vert)}
+
+  .global{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  .global .piste{flex:1;height:9px;border-radius:999px;background:#e8eef5;overflow:hidden}
+  .global .jus{height:100%;border-radius:999px;transition:width .3s}
+  .global .pc{font-weight:800;font-size:.8rem;min-width:36px;text-align:right}
+  .global .tr{font-size:.78rem;font-weight:800;color:var(--gris)}
+
+  .mini{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+  .mini .col{text-align:center}
+  .mini .ic{font-size:.82rem;line-height:1}
+  .mini .piste{height:6px;border-radius:999px;background:#e8eef5;overflow:hidden;margin-top:3px}
+  .mini .jus{height:100%;border-radius:999px}
+  .mini .nb{font-size:.63rem;color:var(--gris);font-weight:800;margin-top:2px}
+
+  .vide{text-align:center;color:var(--gris);padding:60px 20px;font-weight:700}
+
+  /* ---- fenêtre ---- */
+  .fond{position:fixed;inset:0;background:rgba(20,30,42,.6);z-index:60;display:flex;
+        align-items:center;justify-content:center;padding:18px}
+  .boite{background:#fff;border-radius:20px;width:min(760px,100%);max-height:92dvh;overflow:auto;
+         padding:22px 24px 20px;box-shadow:0 24px 60px rgba(15,25,38,.35)}
+  .boite h2{font-size:1.3rem;margin-bottom:2px}
+  .boite .id{color:var(--gris);font-size:.84rem;font-weight:700;margin-bottom:16px}
+  .boite label{display:block;font-weight:800;font-size:.78rem;margin:0 0 4px}
+  .boite input,.boite select{width:100%;border:2px solid var(--trait);border-radius:11px;padding:9px 12px;
+        font-family:inherit;font-size:.95rem;font-weight:700;color:var(--encre);background:#fbfdff}
+  .boite input:focus,.boite select:focus{outline:none;border-color:var(--bleu);background:#fff}
+  .grille{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+
+  .bloc{border-top:2px solid var(--trait);margin-top:18px;padding-top:14px}
+  .bloc h3{font-size:.95rem;margin-bottom:3px}
+  .bloc .aide{color:var(--gris);font-size:.78rem;margin:0 0 10px;line-height:1.4}
+
+  .at{margin-bottom:11px}
+  .at .nomat{font-weight:800;font-size:.84rem;margin-bottom:4px}
+  .niv{display:flex;flex-wrap:wrap;gap:4px}
+  .niv button{border:2px solid var(--trait);background:#fff;border-radius:9px;padding:4px 9px;
+        font-size:.75rem;font-weight:800;color:var(--gris);transition:all .12s}
+  .niv button:hover{border-color:var(--bleu);color:var(--bleu)}
+  .niv button.fait{background:#eaf7ef;border-color:#bfe3cc;color:#15803d}
+  .niv button.ici{background:var(--bleu);border-color:var(--bleu);color:#fff}
+  .niv button.bloque{background:#f6f8fb;color:#a9b8c8}
+
+  .msg{border-radius:12px;padding:10px 13px;font-size:.84rem;font-weight:700;margin:0 0 14px;line-height:1.4}
+  .msg.ok{background:#eaf7ef;color:#15803d}
+  .msg.ko{background:#fef2f2;color:#b91c1c}
+  .msg code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.05em;
+        background:rgba(0,0,0,.06);padding:1px 6px;border-radius:5px}
+
+  .actes{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+  .actes .pousse{margin-left:auto}
+
+  @media (max-width:560px){ .grille{grid-template-columns:1fr} .barre h1{font-size:1.05rem} }
+</style>
+</head>
+<body>
+
+<div class="barre">
+  <h1>📊 Suivi des élèves</h1>
+  <span class="qui" id="qui"></span>
+  <button class="btn" id="bNouveau">＋ Nouveau compte</button>
+  <button class="btn" id="bQuitter">Déconnexion</button>
+</div>
+
+<div class="zone">
+  <div class="filtres" id="filtres" style="display:none">
+    <span id="puces"></span>
+    <input type="search" id="cherche" placeholder="Chercher un nom…" style="width:190px">
+    <select id="tri">
+      <option value="avancement">Trier : les moins avancés d'abord</option>
+      <option value="nom">Trier : par nom</option>
+      <option value="classe">Trier : par classe</option>
+      <option value="recent">Trier : dernière connexion</option>
+      <option value="presents">Trier : connectés d'abord</option>
+    </select>
+    <span class="qui" id="compte"></span>
+  </div>
+
+  <div id="cartes" class="cartes"></div>
+  <div id="vide" class="vide">Chargement…</div>
+</div>
+
+<script src="scripts/ateliers.js"></script>
+<script src="scripts/config.js"></script>
+<script src="scripts/store.js"></script>
+<script src="scripts/compte.js"></script>
+
+<script>
+'use strict';
+
+/* =========================================================================
+   Le tableau de bord ne stocke rien et ne décide rien : il peint ce que
+   /api/prof/* lui répond, et c'est le serveur qui vérifie le rôle à chaque
+   requête. Deux rythmes de rafraîchissement volontairement distincts —
+   la liste complète est lourde et bouge peu, la présence est minuscule et
+   bouge tout le temps.
+   ========================================================================= */
+var RYTHME_TABLEAU = 30000;
+var RYTHME_PRESENCE = 10000;
+
+var etat = { eleves: [], classes: [], presents: {}, classe: null, cherche: '', tri: 'avancement' };
+var minuteurs = [];
+
+function $(s){ return document.querySelector(s); }
+function esc(s){ return String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ---- Réseau -------------------------------------------------------------- */
+function api(methode, chemin, corps){
+  var cfg = window.ATELIER_CONFIG || {};
+  var s = JSON.parse(localStorage.getItem('atl_session') || 'null');
+  var init = { method: methode, headers: {}, cache: 'no-store' };
+  if(s && s.jeton) init.headers['Authorization'] = 'Bearer ' + s.jeton;
+  if(corps !== undefined){ init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(corps); }
+  return fetch(String(cfg.api || '').replace(/\/+$/,'') + chemin, init).then(function(r){
+    return r.text().then(function(t){
+      var j = {}; try{ j = t ? JSON.parse(t) : {}; }catch(e){}
+      if(!r.ok){ var e2 = new Error(j.erreur || ('HTTP ' + r.status)); e2.statut = r.status; throw e2; }
+      return j;
+    });
+  });
+}
+
+/* ---- Calcul d'avancement -------------------------------------------------
+   Le serveur renvoie des nombres bruts ; c'est ici, où scripts/ateliers.js est
+   chargé, qu'on sait combien de niveaux compte chaque atelier.               */
+function niveauxFaits(a, n){
+  /* n.fini vient du trophée d'atelier : c'est le seul signal de « dernier niveau
+     terminé », *_unlocked ne montant jamais au-delà de l'avant-dernier. */
+  if(!n) return 0;
+  return n.fini ? a.niveaux.length : Math.min(a.niveaux.length, Math.max(0, n.u - 1));
+}
+
+function avancementDe(el){
+  var faits = 0, total = 0;
+  window.ATELIERS.forEach(function(a){
+    faits += niveauxFaits(a, el.niveaux && el.niveaux[a.id]);
+    total += a.niveaux.length;
+  });
+  return { faits: faits, total: total, pc: total ? Math.round(faits * 100 / total) : 0 };
+}
+
+function couleurAvancement(pc){
+  return pc < 20 ? 'var(--rouge)' : pc < 55 ? 'var(--orange)' : 'var(--vert)';
+}
+
+/* ---- Peinture ------------------------------------------------------------ */
+function carteEleve(el){
+  var av = avancementDe(el);
+  var p = etat.presents[el.id];
+  var atelier = p && p.atelier ? window.ATELIERS.filter(function(a){ return a.id === p.atelier; })[0] : null;
+
+  var mini = window.ATELIERS.map(function(a){
+    var faits = niveauxFaits(a, el.niveaux && el.niveaux[a.id]);
+    var pc = Math.round(faits * 100 / a.niveaux.length);
+    return '<div class="col" title="' + esc(a.nom + ' — ' + faits + '/' + a.niveaux.length + ' niveaux') + '">' +
+      '<div class="ic">' + a.ic + '</div>' +
+      '<div class="piste"><div class="jus" style="width:' + pc + '%;background:' + a.hue + '"></div></div>' +
+      '<div class="nb">' + faits + '/' + a.niveaux.length + '</div></div>';
+  }).join('');
+
+  var sous = p && atelier
+    ? '<b>● en ce moment</b> · ' + esc(atelier.ic + ' ' + atelier.nom) + ' · niveau ' + (p.niveau || 1)
+    : (el.derniere_connexion
+        ? 'vu ' + quand(el.derniere_connexion)
+        : 'ne s\'est jamais connecté');
+
+  return '<div class="eleve' + (p ? ' ici' : '') + (el.actif ? '' : ' inactif') + '" data-id="' + el.id + '">' +
+    '<div class="tete"><span class="nom">' + esc(el.prenom + ' ' + el.nom) + '</span>' +
+      '<span class="classe">' + esc(el.classe || '—') + '</span>' +
+      '<span class="pt' + (p ? ' ici' : '') + '"></span></div>' +
+    '<div class="sous">' + sous + '</div>' +
+    '<div class="global"><div class="piste"><div class="jus" style="width:' + av.pc + '%;background:' +
+        couleurAvancement(av.pc) + '"></div></div>' +
+      '<span class="pc" style="color:' + couleurAvancement(av.pc) + '">' + av.pc + '%</span>' +
+      '<span class="tr">🏆 ' + el.trophees + '</span></div>' +
+    '<div class="mini">' + mini + '</div></div>';
+}
+
+function quand(iso){
+  var d = new Date(iso), min = Math.round((Date.now() - d) / 60000);
+  if(min < 60) return 'il y a ' + min + ' min';
+  if(min < 60 * 24) return 'il y a ' + Math.round(min / 60) + ' h';
+  var j = Math.round(min / 1440);
+  return j < 30 ? 'il y a ' + j + ' jour' + (j > 1 ? 's' : '') : 'le ' + d.toLocaleDateString('fr-FR');
+}
+
+/* Sans accents ni casse : on tape « kone » et on trouve « Koné », « ines » et on
+   trouve « Inès ». Un professeur qui cherche un élève ne devrait pas avoir à viser
+   le bon accent du premier coup. */
+function plat(t){
+  return String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function visibles(){
+  var q = plat(etat.cherche.trim());
+  var liste = etat.eleves.filter(function(e){
+    if(e.role === 'prof') return false;
+    if(etat.classe && e.classe !== etat.classe) return false;
+    if(q && plat(e.prenom + ' ' + e.nom + ' ' + e.identifiant).indexOf(q) < 0) return false;
+    return true;
+  });
+
+  var tri = {
+    /* Par défaut : ceux qui avancent le moins remontent. C'est à eux que sert
+       cette page — pas à contempler ceux qui vont bien. */
+    avancement: function(a, b){ return avancementDe(a).pc - avancementDe(b).pc; },
+    nom: function(a, b){ return (a.nom + a.prenom).localeCompare(b.nom + b.prenom, 'fr'); },
+    classe: function(a, b){ return String(a.classe).localeCompare(String(b.classe), 'fr')
+                                 || (a.nom + a.prenom).localeCompare(b.nom + b.prenom, 'fr'); },
+    recent: function(a, b){ return new Date(b.derniere_connexion || 0) - new Date(a.derniere_connexion || 0); },
+    presents: function(a, b){ return (etat.presents[b.id] ? 1 : 0) - (etat.presents[a.id] ? 1 : 0)
+                                   || avancementDe(a).pc - avancementDe(b).pc; }
+  }[etat.tri];
+
+  return liste.sort(tri);
+}
+
+function peindre(){
+  var liste = visibles();
+  $('#cartes').innerHTML = liste.map(carteEleve).join('');
+  var nb = Object.keys(etat.presents).length;
+  $('#compte').textContent = liste.length + ' élève' + (liste.length > 1 ? 's' : '') +
+    (nb ? ' · ' + nb + ' connecté' + (nb > 1 ? 's' : '') : '');
+  $('#vide').style.display = liste.length ? 'none' : 'block';
+  if(!liste.length) $('#vide').textContent = etat.eleves.length
+    ? 'Aucun élève ne correspond à ce filtre.'
+    : 'Aucun compte élève. Crée le premier avec « ＋ Nouveau compte ».';
+}
+
+function peindrePuces(){
+  var noms = [];
+  etat.classes.forEach(function(c){ if(noms.indexOf(c.nom) < 0) noms.push(c.nom); });
+  $('#puces').innerHTML = '<button class="puce' + (etat.classe ? '' : ' on') + '" data-c="">Toutes</button>' +
+    noms.map(function(n){
+      return '<button class="puce' + (etat.classe === n ? ' on' : '') + '" data-c="' + esc(n) + '">' + esc(n) + '</button>';
+    }).join('');
+}
+
+/* ---- Chargements --------------------------------------------------------- */
+function chargerTableau(){
+  return api('GET', '/api/prof/tableau').then(function(r){
+    etat.eleves = r.eleves; etat.classes = r.classes;
+    $('#filtres').style.display = '';
+    peindrePuces(); peindre();
+  });
+}
+
+function chargerPresence(){
+  return api('GET', '/api/prof/presence').then(function(r){
+    var p = {};
+    r.presents.forEach(function(l){ p[l.compte_id] = l; });
+    etat.presents = p;
+    peindre();
+  }).catch(function(){ /* un trou de réseau ne doit pas vider l'écran */ });
+}
+
+/* ---- Fenêtre ------------------------------------------------------------- */
+var fond = null;
+function fermer(){ if(fond){ fond.remove(); fond = null; } }
+function ouvrir(html){
+  fermer();
+  fond = document.createElement('div');
+  fond.className = 'fond';
+  fond.innerHTML = '<div class="boite">' + html + '</div>';
+  fond.addEventListener('mousedown', function(e){ if(e.target === fond) fermer(); });
+  document.body.appendChild(fond);
+  return fond.querySelector('.boite');
+}
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') fermer(); });
+
+function ficheEleve(id){
+  api('GET', '/api/prof/eleve/' + id).then(function(r){
+    var e = r.eleve, d = r.progression || {};
+
+    var trophees = {};
+    try{ trophees = JSON.parse(d.badges_v1 || '{}') || {}; }catch(err){}
+
+    var ateliers = window.ATELIERS.map(function(a){
+      var fini = !!trophees[a.id + '.master'];
+      var u = fini ? a.niveaux.length + 1 : (parseInt(d[a.id + '_unlocked'] || '1', 10) || 1);
+      var c = parseInt(d[a.id + '_curlevel'] || '1', 10) || 1;
+      var boutons = a.niveaux.map(function(nom, i){
+        var n = i + 1;
+        var cl = n < u ? 'fait' : n === c ? 'ici' : n > u ? 'bloque' : '';
+        return '<button data-at="' + a.id + '" data-n="' + n + '" class="' + cl + '" title="' +
+          esc(nom + (n > u ? ' — verrouillé, cliquer pour débloquer' : '')) + '">' + n + '</button>';
+      }).join('');
+      return '<div class="at"><div class="nomat">' + a.ic + ' ' + esc(a.nom) +
+        ' <span style="color:var(--gris);font-weight:700">— ' + Math.min(a.niveaux.length, Math.max(0, u - 1)) +
+        '/' + a.niveaux.length + (fini ? ' ✓' : '') + '</span></div>' +
+        '<div class="niv">' + boutons + '</div></div>';
+    }).join('');
+
+    var options = etat.classes.map(function(c){
+      return '<option value="' + c.id + '"' + (c.id === e.classe_id ? ' selected' : '') + '>' + esc(c.nom) + '</option>';
+    }).join('');
+
+    var b = ouvrir(
+      '<h2>' + esc(e.prenom + ' ' + e.nom) + '</h2>' +
+      '<div class="id">identifiant <b>' + esc(e.identifiant) + '</b> · créé le ' +
+        new Date(e.cree_le).toLocaleDateString('fr-FR') +
+        (e.derniere_connexion ? ' · vu ' + quand(e.derniere_connexion) : ' · jamais connecté') +
+        (e.actif ? '' : ' · <b style="color:var(--rouge)">compte désactivé</b>') + '</div>' +
+      '<div id="msg"></div>' +
+      '<div class="grille">' +
+        '<div><label>Prénom</label><input id="fPrenom" value="' + esc(e.prenom) + '"></div>' +
+        '<div><label>Nom</label><input id="fNom" value="' + esc(e.nom) + '"></div>' +
+        '<div><label>Classe</label><select id="fClasse"><option value="">—</option>' + options + '</select></div>' +
+        '<div><label>Identifiant</label><input id="fId" value="' + esc(e.identifiant) + '"></div>' +
+      '</div>' +
+      '<button class="btn primaire" id="bEnregistrer">Enregistrer</button>' +
+
+      '<div class="bloc"><h3>Avancement</h3>' +
+        '<p class="aide">Clique un numéro de niveau pour l\'ouvrir à l\'élève. Vert = terminé, ' +
+        'bleu = niveau en cours, gris pâle = encore verrouillé. Utile quand quelqu\'un bloque ' +
+        'depuis trois séances sur la même mission.</p>' + ateliers + '</div>' +
+
+      '<div class="bloc"><h3>Le compte</h3>' +
+        '<div class="actes">' +
+          '<button class="btn" id="bMdp">🔑 Nouveau mot de passe</button>' +
+          '<button class="btn" id="bActif">' + (e.actif ? '⏸ Désactiver' : '▶ Réactiver') + '</button>' +
+          '<button class="btn danger pousse" id="bSuppr">🗑 Supprimer</button>' +
+        '</div></div>'
+    );
+
+    function dire(cl, html){ b.querySelector('#msg').innerHTML = '<div class="msg ' + cl + '">' + html + '</div>'; }
+    function echec(err){ dire('ko', esc(err.message || 'Échec.')); }
+
+    b.querySelector('#bEnregistrer').onclick = function(){
+      api('PATCH', '/api/prof/eleve/' + id, {
+        prenom: b.querySelector('#fPrenom').value,
+        nom: b.querySelector('#fNom').value,
+        classe_id: b.querySelector('#fClasse').value || null,
+        identifiant: b.querySelector('#fId').value
+      }).then(function(){ dire('ok', 'Enregistré.'); return chargerTableau(); }).catch(echec);
+    };
+
+    b.querySelectorAll('.niv button').forEach(function(bt){
+      bt.onclick = function(){
+        var at = bt.getAttribute('data-at'), n = +bt.getAttribute('data-n');
+        var majs = {};
+        majs[at + '_unlocked'] = String(n);
+        majs[at + '_curlevel'] = String(n);
+        api('PUT', '/api/prof/eleve/' + id + '/progression', { majs: majs })
+          .then(function(){ ficheEleve(id); return chargerTableau(); })
+          .catch(echec);
+      };
+    });
+
+    b.querySelector('#bMdp').onclick = function(){
+      api('POST', '/api/prof/eleve/' + id + '/mdp', {}).then(function(r2){
+        dire('ok', 'Nouveau mot de passe de <b>' + esc(e.prenom) + '</b> : <code>' + esc(r2.motdepasse) +
+          '</code><br>Note-le maintenant, il ne sera plus jamais affiché. Ses sessions ouvertes sont fermées.');
+      }).catch(echec);
+    };
+
+    b.querySelector('#bActif').onclick = function(){
+      api('PATCH', '/api/prof/eleve/' + id, { actif: !e.actif })
+        .then(function(){ ficheEleve(id); return chargerTableau(); }).catch(echec);
+    };
+
+    b.querySelector('#bSuppr').onclick = function(){
+      if(!confirm('Supprimer définitivement le compte de ' + e.prenom + ' ' + e.nom +
+                  ' ?\n\nSa progression et ses trophées disparaissent avec lui. C\'est irréversible.')) return;
+      api('DELETE', '/api/prof/eleve/' + id).then(function(){ fermer(); return chargerTableau(); }).catch(echec);
+    };
+  }).catch(function(e){ alert(e.message); });
+}
+
+function fenetreNouveau(){
+  var options = etat.classes.map(function(c){
+    return '<option value="' + c.id + '">' + esc(c.nom) + '</option>';
+  }).join('');
+
+  var b = ouvrir(
+    '<h2>Nouveau compte</h2>' +
+    '<div class="id">L\'identifiant est fabriqué tout seul à partir du prénom et du nom.</div>' +
+    '<div id="msg"></div>' +
+    '<div class="grille">' +
+      '<div><label>Prénom</label><input id="nPrenom" autofocus></div>' +
+      '<div><label>Nom</label><input id="nNom"></div>' +
+      '<div><label>Classe</label><select id="nClasse"><option value="">—</option>' + options + '</select></div>' +
+      '<div><label>Nouvelle classe (si absente)</label><input id="nClasseNeuve" placeholder="6eC"></div>' +
+    '</div>' +
+    '<div class="actes"><button class="btn" id="bAnnuler">Annuler</button>' +
+    '<button class="btn primaire pousse" id="bCreer">Créer le compte</button></div>'
+  );
+
+  b.querySelector('#bAnnuler').onclick = fermer;
+  b.querySelector('#bCreer').onclick = function(){
+    var bt = this; bt.disabled = true;
+    var neuve = b.querySelector('#nClasseNeuve').value.trim();
+    var suite = neuve
+      ? api('POST', '/api/prof/classes', { nom: neuve }).then(function(r){ etat.classes = r.classes; return neuve; })
+      : Promise.resolve(null);
+
+    suite.then(function(nomNeuf){
+      return api('POST', '/api/prof/eleves', {
+        prenom: b.querySelector('#nPrenom').value,
+        nom: b.querySelector('#nNom').value,
+        classe: nomNeuf || undefined,
+        classe_id: nomNeuf ? undefined : (b.querySelector('#nClasse').value || null)
+      });
+    }).then(function(c){
+      b.querySelector('#msg').innerHTML = '<div class="msg ok">Compte créé.<br>Identifiant : <code>' +
+        esc(c.identifiant) + '</code><br>Mot de passe : <code>' + esc(c.motdepasse) + '</code><br>' +
+        'Recopie-le maintenant : il ne sera plus jamais affiché.</div>';
+      b.querySelector('#nPrenom').value = ''; b.querySelector('#nNom').value = '';
+      b.querySelector('#nClasseNeuve').value = '';
+      bt.disabled = false;
+      return chargerTableau();
+    }).catch(function(e){
+      b.querySelector('#msg').innerHTML = '<div class="msg ko">' + esc(e.message) + '</div>';
+      bt.disabled = false;
+    });
+  };
+}
+
+/* ---- Démarrage ----------------------------------------------------------- */
+var demarre = false;
+function demarrer(){
+  /* surEtat rappelle son abonné à chaque changement d'état : sans ce verrou, on
+     empilerait un jeu de minuteurs par notification. */
+  if(demarre) return;
+  demarre = true;
+
+  var el = Store.eleve();
+  if(!el){
+    $('#vide').textContent = 'Connecte-toi avec ton compte enseignant pour voir le suivi.';
+    return;
+  }
+  if(el.role !== 'prof'){
+    $('#vide').innerHTML = 'Cette page est réservée aux enseignants.<br>' +
+      '<a href="index.html" style="color:var(--bleu)">Retour aux ateliers</a>';
+    return;
+  }
+
+  $('#qui').textContent = el.prenom + ' ' + el.nom;
+  chargerTableau().then(chargerPresence).catch(function(e){ $('#vide').textContent = e.message; });
+
+  minuteurs.push(setInterval(chargerTableau, RYTHME_TABLEAU));
+  minuteurs.push(setInterval(chargerPresence, RYTHME_PRESENCE));
+
+  /* Onglet caché : on cesse d'interroger. Une salle info n'a pas besoin d'un onglet
+     qui pique le réseau toutes les dix secondes en arrière-plan. */
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible'){ chargerTableau(); chargerPresence(); }
+  });
+}
+
+$('#cartes').addEventListener('click', function(e){
+  var c = e.target.closest('.eleve');
+  if(c) ficheEleve(+c.getAttribute('data-id'));
+});
+$('#puces').addEventListener('click', function(e){
+  var p = e.target.closest('.puce');
+  if(!p) return;
+  etat.classe = p.getAttribute('data-c') || null;
+  peindrePuces(); peindre();
+});
+$('#cherche').addEventListener('input', function(){ etat.cherche = this.value; peindre(); });
+$('#tri').addEventListener('change', function(){ etat.tri = this.value; peindre(); });
+$('#bNouveau').addEventListener('click', fenetreNouveau);
+$('#bQuitter').addEventListener('click', function(){
+  minuteurs.forEach(clearInterval);
+  Store.deconnexion().then(function(){ location.href = 'index.html'; });
+});
+
+if(!Store.enLigne()){
+  $('#vide').textContent = 'Aucun serveur configuré (scripts/config.js) : le suivi des élèves demande une API.';
+}else{
+  /* store.js hydrate la session en tâche de fond ; on attend qu'il ait fini. */
+  Store.surEtat(function(e){ if(e === 'ok' || e === 'invite' || e === 'expire') setTimeout(demarrer, 0); });
+  /* Filet : si aucun état ne tombe (réseau muet), on peint quand même l'écran. */
+  setTimeout(demarrer, 5000);
+}
+</script>
+</body>
+</html>

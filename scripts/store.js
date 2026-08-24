@@ -409,6 +409,39 @@ function amorcer(essai){
 
 if(CLOUD && session) amorcer(0);
 
+/* ---------------------------------------------------------------------------
+   Battement de présence
+   Dit au tableau de bord enseignant où en est l'élève EN CE MOMENT, pour qu'un
+   professeur voie d'un coup d'œil qui bloque et sur quoi. Rien à câbler dans les
+   ateliers : on déduit l'atelier du nom de fichier (scripts/ateliers.js) et le
+   niveau des clés déjà présentes. Silencieux tant que personne n'est connecté.
+   --------------------------------------------------------------------------- */
+var BATTEMENT_MS = 45000;
+
+function ouSuisJe(){
+  var a = window.ATELIER_PAR_FICHIER ? window.ATELIER_PAR_FICHIER(location.pathname) : null;
+  if(!a) return { atelier: null, niveau: null, mission: null };
+  var n = parseInt(get(a.id + '_curlevel') || '1', 10) || 1;
+  return {
+    atelier: a.id,
+    niveau: n,
+    mission: parseInt(get(a.id + '_step_l' + n) || '0', 10) || 0
+  };
+}
+
+function battre(){
+  if(!mem || !session || document.visibilityState === 'hidden') return;
+  req('POST', '/api/presence', ouSuisJe()).catch(function(){ /* sans conséquence */ });
+}
+
+if(CLOUD && session){
+  setTimeout(battre, 2000);
+  setInterval(battre, BATTEMENT_MS);
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible') battre();
+  });
+}
+
 /* Dernière chance avant fermeture / changement d'onglet. */
 function vider(){
   if(mem && session && !riens()) envoyer({ keepalive: true });

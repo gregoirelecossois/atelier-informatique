@@ -52,3 +52,33 @@ export const LONGUEUR_COFFRE = 20;
 export const BITS_PRONONCABLE = GROUPES * SYLLABES_PAR_GROUPE * Math.log2(CONSONNES.length * VOYELLES.length);
 export const BITS_COURT = LONGUEUR_COURT * Math.log2(ALPHABET.length);
 export const BITS_COFFRE = LONGUEUR_COFFRE * Math.log2(ALPHABET_COFFRE.length);
+
+/* --------------------------------------------------------------------------
+   Génération. Vit ici plutôt que dans l'outil en ligne de commande depuis que le
+   tableau de bord enseignant crée lui aussi des comptes : deux générateurs, c'est
+   deux politiques de mots de passe qui divergent le jour où l'une est corrigée.
+   -------------------------------------------------------------------------- */
+import crypto from 'node:crypto';
+
+const tire = (s) => s[crypto.randomInt(s.length)];
+
+export function generer(type) {
+  if (type === 'coffre') {
+    return Array.from({ length: LONGUEUR_COFFRE }, () => tire(ALPHABET_COFFRE)).join('');
+  }
+  if (type === 'court') {
+    const c = Array.from({ length: LONGUEUR_COURT }, () => tire(ALPHABET));
+    return `${c.slice(0, 4).join('')}-${c.slice(4, 8).join('')}-${c.slice(8).join('')}`;
+  }
+  const groupes = Array.from({ length: GROUPES }, () =>
+    Array.from({ length: SYLLABES_PAR_GROUPE }, () => tire(CONSONNES) + tire(VOYELLES)).join(''));
+  return groupes.join('-');
+}
+
+/* Qui reçoit quoi : l'enseignant voit toute la base et range son mot de passe dans un
+   gestionnaire — aucune raison qu'il hérite d'un mot de passe taillé pour être recopié
+   par un élève de 6e. `force` ('court' | 'prononcable') l'emporte sur le rôle. */
+export function formePour(role, force) {
+  if (force === 'court' || force === 'prononcable' || force === 'coffre') return force;
+  return role === 'prof' ? 'coffre' : 'prononcable';
+}

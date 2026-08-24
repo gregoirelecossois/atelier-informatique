@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 /* Outil d'administration en ligne de commande.
  *
- * C'est lui qui crée les comptes tant que le tableau de bord (phase 2) n'existe pas.
- * Il tourne sur le serveur, jamais dans un navigateur : les mots de passe en clair
- * n'apparaissent qu'une seule fois, à l'écran ou dans le fichier à imprimer, et ne
- * sont plus jamais récupérables ensuite — la base ne contient que leur empreinte.
+ * Il double le tableau de bord enseignant pour tout ce qui se fait mieux en SSH :
+ * l'import d'une classe entière, l'inspection, la purge. La création de comptes et la
+ * politique de mots de passe viennent de ../comptes.js et ../motsdepasse.js, partagés
+ * avec le serveur — un compte créé ici et un compte créé depuis le navigateur sont
+ * rigoureusement identiques.
+ *
+ * Les mots de passe en clair n'apparaissent qu'une fois, à l'écran ou dans le fichier à
+ * imprimer, et ne sont plus jamais récupérables : la base ne contient que leur empreinte.
  *
  *   node outils/atl.mjs init
  *   node outils/atl.mjs classes
@@ -21,12 +25,13 @@
 import '../env.js';
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import * as db from '../db.js';
-import * as auth from '../auth.js';
-import { CONSONNES, VOYELLES, ALPHABET, ALPHABET_COFFRE, GROUPES, SYLLABES_PAR_GROUPE,
-         LONGUEUR_COURT, LONGUEUR_COFFRE,
-         BITS_PRONONCABLE, BITS_COURT, BITS_COFFRE } from './motsdepasse.js';
+import { creerCompte, reinitialiserMdp } from '../comptes.js';
+import {
+  CONSONNES, VOYELLES, ALPHABET, ALPHABET_COFFRE,
+  GROUPES, SYLLABES_PAR_GROUPE, LONGUEUR_COURT, LONGUEUR_COFFRE,
+  BITS_PRONONCABLE, BITS_COURT, BITS_COFFRE, generer
+} from '../motsdepasse.js';
 
 const args = process.argv.slice(2);
 const commande = args[0];
@@ -47,69 +52,8 @@ for (const cle of ['mdp', 'mois']) {
     }
   }
 }
-
-/* --------------------------------------------------------------------------
-   Mots de passe — les trois formes dépassent 50 bits d'entropie.
-   Le détail du calcul et le pourquoi de chaque brique sont dans motsdepasse.js.
-   -------------------------------------------------------------------------- */
-function motDePasse(type) {
-  const tire = (s) => s[crypto.randomInt(s.length)];
-
-  if (type === 'coffre') {
-    /* 20 caractères, trois classes → 119 bits. Défaut du compte enseignant : il voit
-       toute la base, il vit dans un gestionnaire, rien ne justifie d'y économiser. */
-    return Array.from({ length: LONGUEUR_COFFRE }, () => tire(ALPHABET_COFFRE)).join('');
-  }
-
-  if (type === 'court') {
-    /* 11 caractères sans glyphe ambigu → 54,5 bits. Court à taper, impossible à
-       retenir : pour un adulte qui doit encore pouvoir le recopier à la main. */
-    const c = Array.from({ length: LONGUEUR_COURT }, () => tire(ALPHABET));
-    return `${c.slice(0, 4).join('')}-${c.slice(4, 8).join('')}-${c.slice(8).join('')}`;
-  }
-
-  /* Prononçable : consonne/voyelle en alternance, 9 syllabes → 55,2 bits.
-     Trois groupes de six lettres, tout en minuscules. */
-  const groupes = Array.from({ length: GROUPES }, () =>
-    Array.from({ length: SYLLABES_PAR_GROUPE }, () => tire(CONSONNES) + tire(VOYELLES)).join(''));
-  return groupes.join('-');
-}
-
-/* Qui reçoit quoi : l'enseignant voit toute la base et range son mot de passe dans un
-   gestionnaire — il n'a aucune raison d'hériter d'un mot de passe taillé pour être
-   recopié par un élève de 6e. --court et --prononcable forcent l'autre forme. */
-function forme(role) {
-  if (options.court) return 'court';
-  if (options.prononcable) return 'prononcable';
-  return role === 'prof' ? 'coffre' : 'prononcable';
-}
-
-function sansAccent(s) {
-  return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-}
-
-async function identifiantLibre(prenom, nom) {
-  const p = sansAccent(prenom).toLowerCase().replace(/[^a-z]/g, '');
-  const n = sansAccent(nom).toLowerCase().replace(/[^a-z]/g, '');
-  if (!p || !n) throw new Error('Prénom et nom doivent contenir des lettres.');
-
-  const essais = [`${p}.${n[0]}`, `${p}.${n.slice(0, 3)}`, `${p}.${n}`];
-  for (let i = 2; i <= 30; i++) essais.push(`${p}.${n[0]}${i}`);
-  for (const id of essais) {
-    const pris = await db.une('select 1 from comptes where identifiant = $1', [id]);
-    if (!pris) return id;
-  }
-  throw new Error('Impossible de trouver un identifiant libre.');
-}
-
-async function classeId(nom) {
-  if (!nom) return null;
-  const c = await db.une('select id from classes where lower(nom) = lower($1)', [nom]);
-  if (c) return c.id;
-  const neuf = await db.une('insert into classes(nom) values ($1) returning id', [nom]);
-  console.log(`  (classe « ${nom} » créée)`);
-  return neuf.id;
-}
+const forme = options.court ? 'court' : options.prononcable ? 'prononcable' : undefined;
+const mdpImpose = typeof options.mdp === 'string' ? options.mdp : undefined;
 
 /* --------------------------------------------------------------------------
    Commandes
@@ -149,23 +93,12 @@ const commandes = {
     if (!prenom || !nom) throw new Error('Usage : creer <prenom> <nom> [classe] [--prof] [--mdp X] [--court]');
 
     const role = options.prof ? 'prof' : 'eleve';
-    const clair = typeof options.mdp === 'string' ? options.mdp : motDePasse(forme(role));
-    if (role === 'prof' && clair.length < 12) {
-      throw new Error('Le compte enseignant voit toute la base : 12 caractères minimum.');
-    }
-
-    const identifiant = await identifiantLibre(prenom, nom);
-    const c = await db.une(
-      `insert into comptes(identifiant, prenom, nom, classe_id, role, mdp, doit_changer_mdp)
-       values ($1,$2,$3,$4,$5,$6,$7) returning id`,
-      [identifiant, prenom, nom, await classeId(classe), role, await auth.hacher(clair), role === 'eleve']);
-    await db.q('insert into progressions(compte_id) values ($1) on conflict do nothing', [c.id]);
-    await db.journaliser('cli', 'compte.creation', identifiant, { role, classe: classe || null });
+    const c = await creerCompte({ prenom, nom, classe, role, mdp: mdpImpose, forme, acteur: 'cli' });
 
     console.log('');
     console.log(`  ${role === 'prof' ? 'ENSEIGNANT' : 'Élève'} : ${prenom} ${nom}${classe ? ' · ' + classe : ''}`);
-    console.log(`  Identifiant   : ${identifiant}`);
-    console.log(`  Mot de passe  : ${clair}`);
+    console.log(`  Identifiant   : ${c.identifiant}`);
+    console.log(`  Mot de passe  : ${c.motdepasse}`);
     console.log('');
     console.log('  Note-le maintenant : il n’est plus affiché ensuite.');
   },
@@ -195,16 +128,8 @@ const commandes = {
   async mdp() {
     const [identifiant] = positionnels;
     if (!identifiant) throw new Error('Usage : mdp <identifiant> [--mdp X] [--court]');
-    const c = await db.une('select id, role from comptes where identifiant = $1', [identifiant]);
-    if (!c) throw new Error(`Compte « ${identifiant} » introuvable.`);
-
-    const clair = typeof options.mdp === 'string' ? options.mdp : motDePasse(forme(c.role));
-    await db.q('update comptes set mdp = $2, doit_changer_mdp = $3 where id = $1',
-      [c.id, await auth.hacher(clair), c.role === 'eleve']);
-    /* Toutes les sessions ouvertes tombent : c'est le but d'une réinitialisation. */
-    await db.q('delete from sessions where compte_id = $1', [c.id]);
-    await db.journaliser('cli', 'compte.mdp', identifiant, null);
-    console.log(`\n  ${identifiant} → nouveau mot de passe : ${clair}\n`);
+    const c = await reinitialiserMdp(identifiant, { mdp: mdpImpose, forme, acteur: 'cli' });
+    console.log(`\n  ${c.identifiant} → nouveau mot de passe : ${c.motdepasse}\n`);
   },
 
   async activer() { await basculer(true); },
@@ -238,14 +163,8 @@ const commandes = {
       const [prenom, nom, classe] = champs;
       if (!prenom || !nom) { ignorees++; continue; }
 
-      const identifiant = await identifiantLibre(prenom, nom);
-      const clair = motDePasse(forme('eleve'));
-      const c = await db.une(
-        `insert into comptes(identifiant, prenom, nom, classe_id, role, mdp, doit_changer_mdp)
-         values ($1,$2,$3,$4,'eleve',$5,true) returning id`,
-        [identifiant, prenom, nom, await classeId(classe), await auth.hacher(clair)]);
-      await db.q('insert into progressions(compte_id) values ($1) on conflict do nothing', [c.id]);
-      sortie.push([classe || '', prenom, nom, identifiant, clair]);
+      const c = await creerCompte({ prenom, nom, classe, role: 'eleve', forme, acteur: 'cli' });
+      sortie.push([classe || '', prenom, nom, c.identifiant, c.motdepasse]);
     }
 
     const nomSortie = path.join(path.dirname(path.resolve(fichier)),
@@ -296,15 +215,15 @@ const commandes = {
     console.log('');
     console.log(`  Prononçable (élèves)   ${BITS_PRONONCABLE.toFixed(1)} bits`);
     console.log(`     ${GROUPES} groupes × ${SYLLABES_PAR_GROUPE} syllabes, ${CONSONNES.length} consonnes × ${VOYELLES.length} voyelles`);
-    console.log(`     exemples :   ${ex(3, () => motDePasse('prononcable'))}`);
+    console.log(`     exemples :   ${ex(3, () => generer('prononcable'))}`);
     console.log('');
     console.log(`  Court (--court)        ${BITS_COURT.toFixed(1)} bits`);
     console.log(`     ${LONGUEUR_COURT} caractères d'un alphabet de ${ALPHABET.length} sans glyphe ambigu`);
-    console.log(`     exemples :   ${ex(3, () => motDePasse('court'))}`);
+    console.log(`     exemples :   ${ex(3, () => generer('court'))}`);
     console.log('');
     console.log(`  Coffre (défaut --prof) ${BITS_COFFRE.toFixed(1)} bits`);
     console.log(`     ${LONGUEUR_COFFRE} caractères d'un alphabet de ${ALPHABET_COFFRE.length}, pour un gestionnaire de mots de passe`);
-    console.log(`     exemples :   ${ex(3, () => motDePasse('coffre'))}`);
+    console.log(`     exemples :   ${ex(3, () => generer('coffre'))}`);
     console.log('');
     console.log(`  Seuil CNIL 2022-100 avec restriction d'accès : 50 bits.`);
     console.log(`  Restriction en place : 10 essais par identifiant et 40 par IP, sur 10 minutes.`);
@@ -352,7 +271,7 @@ if (!fn) {
   }
 }
 
-/* On ferme la reserve AVANT de sortir : process.exit() ne laisse pas tourner un
-   bloc finally, et une connexion PostgreSQL abandonnee reste comptee un moment. */
+/* On ferme la réserve AVANT de sortir : process.exit() ne laisse pas tourner un bloc
+   finally, et une connexion PostgreSQL abandonnée reste comptée un moment. */
 await db.pool.end().catch(() => {});
 process.exit(code);

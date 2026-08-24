@@ -120,6 +120,7 @@
   html.dys .dys-toggle .dys-knob{left:18px;}
   @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
 </style>
+<script src="scripts/ateliers.js"></script>
 <script src="scripts/config.js"></script>
 <script src="scripts/store.js"></script>
 <!-- Repli : si scripts/store.js n'a pas pu être chargé (poste très verrouillé, fichier
@@ -215,7 +216,8 @@
           <span class="lvl-chip" data-n="5"><span class="ic">&#x2022;</span>Niv. 5</span>
           <span class="lvl-chip" data-n="6"><span class="ic">&#x2022;</span>Niv. 6</span>
           <span class="lvl-chip" data-n="7"><span class="ic">&#x2022;</span>Niv. 7</span>
-          <span class="lvl-chip" data-n="8"><span class="ic">&#x1F9A0;</span> Boss</span>
+          <span class="lvl-chip" data-n="8"><span class="ic">&#x2022;</span>Niv. 8</span>
+          <span class="lvl-chip" data-n="9"><span class="ic">&#x1F9A0;</span> Boss</span>
         </div>
         <span class="go">Commencer
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -317,20 +319,12 @@
 
   /* ===== Acc&#232;s d&#233;veloppeur (raccourcis vers chaque niveau) ===== */
   (function devkit(){
-    const GAMES=[
-      {file:'la-souris.html', name:'🖱️ La souris', unlock:'ms_unlocked', cur:'ms_curlevel', stepN:7,
-       levels:['Clique !','Glisse-dépose','Le double-clic','Le clic droit','Sélectionner','La molette','👑 Combat de Boss']},
-      {file:'le-clavier.html', name:'⌨️ Le clavier', unlock:'kb_unlocked', cur:'kb_curlevel', stepN:7,
-       levels:['Les lettres','Les majuscules','Les accents','Les chiffres','Les symboles','Frappe libre','La chasse à la lave']},
-      {file:'traitement-texte.html', name:'📝 Traitement de texte', unlock:'tt_unlocked', cur:'tt_curlevel', stepN:7,
-       levels:['Les bases','Paragraphes & Alignements','Listes & Structure','Le clavier magique','Écrire et déplacer','Les tableaux','Images & Objets']},
-      {file:'dossiers-fichiers.html', name:'🗂️ Dossiers et fichiers', unlock:'df_unlocked', cur:'df_curlevel', stepN:8,
-       levels:['Le Bureau et les fenêtres','Naviguer dans les dossiers','Créer et nommer','Ranger : déplacer et copier','Supprimer et la corbeille','Rechercher et trier','Les extensions de fichiers','🦠 Le Virus (Boss)']},
-      {file:'naviguer-internet.html', name:'🌐 Naviguer sur internet', unlock:'nv_unlocked', cur:'nv_curlevel', stepN:9,
-       levels:['Ton navigateur','Les liens et les adresses','Chercher sur internet','Favoris et historique','Pubs et pop-ups (🪟 POPZILLA)','Sécurité et fiabilité','Les téléchargements','Les mots de passe','👾 INFOX (Boss final)']},
-      {file:'la-messagerie.html', name:'✉️ La messagerie', unlock:'ml_unlocked', cur:'ml_curlevel', stepN:9,
-       levels:['Ton premier mail','À, Cc et Cci','Le carnet d\'adresses','Les pièces jointes','Mise en forme & signature','Range ta boîte !','Retrouve tes mails','L\'agenda','🎣 LE PHISHER (Boss final)']}
-    ];
+    /* Dérivé de scripts/ateliers.js : la liste des niveaux ne vit qu'à un endroit, et
+       le tableau de bord enseignant lit exactement la même. */
+    const GAMES=window.ATELIERS.map(a=>({
+      file:a.fichier, name:a.ic+' '+a.nom, unlock:a.id+'_unlocked', cur:a.id+'_curlevel',
+      stepN:a.niveaux.length, levels:a.niveaux
+    }));
     const css=`
     #devkit{position:fixed;right:14px;bottom:14px;z-index:300;font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;}
     #devkit .dk-toggle{display:inline-flex;align-items:center;gap:6px;background:#1e2733;color:#e7eef6;border:none;

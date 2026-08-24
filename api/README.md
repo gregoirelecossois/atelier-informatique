@@ -123,10 +123,35 @@ très largement : 300 élèves occupent moins de 5 Mo.
 
 ---
 
-## 3. Créer les comptes
+## 3. Le tableau de bord enseignant
 
-Tant que le tableau de bord enseignant n'existe pas (phase 2), tout se fait en SSH
-depuis `~/api` :
+`prof.html`, à côté des jeux. Il n'est annoncé nulle part : le bouton « 📊 Suivi des
+élèves » n'apparaît que dans la fenêtre de compte d'un enseignant connecté. La page
+elle-même n'est pas secrète — c'est l'API qui vérifie le rôle à chaque requête, un élève
+qui trouve l'adresse ne voit rien.
+
+Ce qu'on y fait :
+
+- **repérer qui décroche** : le tri par défaut remonte les moins avancés, et la couleur
+  de la barre passe du rouge au vert ; filtres par classe, recherche par nom (insensible
+  aux accents), tri par avancement, classe, dernière connexion ou présence ;
+- **voir qui travaille en ce moment**, dans quel atelier et à quel niveau — les élèves
+  émettent un battement toutes les 45 s tant que leur onglet est visible, et la page
+  l'interroge toutes les 10 s ;
+- **débloquer un niveau d'un clic** dans la fiche d'un élève, quand il bute depuis trois
+  séances sur la même mission ;
+- **créer un compte**, réinitialiser un mot de passe, corriger un nom, une classe ou un
+  identifiant, désactiver ou supprimer.
+
+Toute action de l'enseignant est inscrite dans la table `journal` : un avancement modifié
+doit pouvoir s'expliquer.
+
+Deux garde-fous : on ne supprime ni ne désactive son propre compte.
+
+## 4. Créer les comptes en ligne de commande
+
+Le tableau de bord crée les comptes un par un ; l'import d'une classe entière et la
+purge restent en SSH depuis `~/api` :
 
 ```bash
 node outils/atl.mjs init
@@ -157,7 +182,7 @@ Autres commandes : `classes`, `classe`, `liste [classe]`, `mdp <identifiant>`,
 
 ---
 
-## 4. Sécurité — les choix faits, et pourquoi
+## 5. Sécurité — les choix faits, et pourquoi
 
 - **Hachage scrypt** (`node:crypto`), sel aléatoire de 128 bits, plus un poivre gardé
   hors base. scrypt figure dans les fonctions admises par la recommandation CNIL
@@ -218,7 +243,7 @@ la taper de tête.
 
 ---
 
-## 5. Entretien
+## 6. Entretien
 
 **Sauvegarde** (à mettre en tâche planifiée alwaysdata, une fois par nuit) :
 
@@ -250,7 +275,7 @@ node outils/atl.mjs purger --oui
 
 ---
 
-## 6. Dépannage
+## 7. Dépannage
 
 | Symptôme | Piste |
 |---|---|
