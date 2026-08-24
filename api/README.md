@@ -36,15 +36,25 @@ très largement : 300 élèves occupent moins de 5 Mo.
 
 ### 2.2 Le code
 
-2. **Accès distant → SSH** : active-le, puis connecte-toi et dépose le dossier `api/` :
+2. **Accès distant → SSH** : il est désactivé par défaut, active-le, puis connecte-toi :
 
    ```bash
    ssh TONCOMPTE@ssh-TONCOMPTE.alwaysdata.net
    ```
 
+   Récupère **le seul dossier `api/`**, sans jamais poser les 56 Mo du dépôt sur le
+   disque — l'archive est lue au vol, seul ce qui est demandé est écrit (~90 Ko) :
+
    ```bash
-   git clone https://github.com/gregoirelecossois/atelier-informatique.git ~/depot && cp -r ~/depot/api ~/api && cd ~/api && npm install
+   curl -sL https://github.com/gregoirelecossois/atelier-informatique/archive/refs/heads/main.tar.gz | tar xz --strip-components=1 --wildcards '*/api/*'
    ```
+
+   ```bash
+   cd ~/api && npm install
+   ```
+
+   > Un `git clone` du dépôt entier ne passerait pas : 56 Mo de fichiers plus autant
+   > d'objets Git dépassent les 100 Mo du plan gratuit. L'API installée pèse moins d'1 Mo.
 
 ### 2.3 Le site
 
