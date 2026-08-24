@@ -279,12 +279,20 @@ function carteEleve(el){
     '<div class="tete"><span class="nom">' + esc(el.prenom + ' ' + el.nom) + '</span>' +
       '<span class="classe">' + esc(el.classe || '—') + '</span>' +
       '<span class="pt' + (p ? ' ici' : '') + '"></span></div>' +
-    '<div class="sous">' + sous + '</div>' +
+    '<div class="sous"' + (p ? ' title="dernier signe de vie il y a ' + age(p.vu_le) + '"' : '') +
+      '>' + sous + '</div>' +
     '<div class="global"><div class="piste"><div class="jus" style="width:' + av.pc + '%;background:' +
         couleurAvancement(av.pc) + '"></div></div>' +
       '<span class="pc" style="color:' + couleurAvancement(av.pc) + '">' + av.pc + '%</span>' +
       '<span class="tr">🏆 ' + el.trophees + '</span></div>' +
     '<div class="mini">' + mini + '</div></div>';
+}
+
+/* Fraîcheur du dernier battement, en clair. Un point vert binaire ne dit pas s'il
+   date de trois secondes ou de quarante ; au survol, le professeur a la réponse. */
+function age(iso){
+  var s = Math.max(0, Math.round((Date.now() - new Date(iso)) / 1000));
+  return s < 60 ? s + ' s' : Math.round(s / 60) + ' min';
 }
 
 function quand(iso){
