@@ -65,7 +65,14 @@ très largement : 300 élèves occupent moins de 5 Mo.
 
    alwaysdata fournit `PORT` tout seul : ne le renseigne pas.
 
-4. **Environnement** (même écran) — voir `.env.example` :
+4. **Les variables** — dans un fichier `~/api/.env`, lisible par `env.js`.
+
+   On les met **là plutôt que dans l'écran « Environnement » d'alwaysdata**, pour une
+   raison pratique : l'outil en ligne de commande (`atl.mjs`, lancé en SSH) doit voir
+   les mêmes valeurs que le site. Un fichier, un seul endroit, les deux qui marchent.
+   Il n'est jamais versionné (`api/.gitignore`) et un `chmod 600` le réserve à ton compte.
+
+   Voir `.env.example` :
 
    | Variable | Valeur |
    |---|---|
@@ -73,6 +80,7 @@ très largement : 300 élèves occupent moins de 5 Mo.
    | `PGUSER` / `PGPASSWORD` / `PGDATABASE` | ceux de l'étape 1 |
    | `POIVRE` | un secret généré une fois (voir ci-dessous) |
    | `ORIGINES` | `https://gregoirelecossois.github.io` |
+   | `CONSERVATION_MOIS` | `24` |
 
    Génère le poivre **une seule fois** et garde-le dans ton gestionnaire de mots de passe :
 
