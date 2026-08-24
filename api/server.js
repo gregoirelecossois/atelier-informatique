@@ -11,7 +11,7 @@
  * aucune surface CSRF.
  *
  * Routes ouvertes à tout compte connecté :
- *   GET    /api/sante                       état du service (pour la supervision)
+ *   GET    /api/sante                       état du service + empreinte du code déployé
  *   POST   /api/connexion                   {identifiant, motdepasse} → jeton + progression
  *   POST   /api/deconnexion                 révoque le jeton présenté
  *   GET    /api/moi                         profil + progression complète
@@ -34,6 +34,7 @@ import http from 'node:http';
 import * as db from './db.js';
 import * as auth from './auth.js';
 import { creerCompte, reinitialiserMdp, IDENTIFIANT_OK } from './comptes.js';
+import { VERSION, DEMARRE } from './version.js';
 
 const PORT = Number(process.env.PORT || 8300);
 /* alwaysdata impose d'écouter sur l'IP et le port qu'il fournit, et les expose sous
@@ -257,9 +258,18 @@ function verifierCle(k) {
   if (!PREFIXES.some((p) => k.startsWith(p))) throw new Refus(400, `Clé hors périmètre : « ${k} ».`);
 }
 
+/* `version` est l'empreinte du code qui tourne réellement (cf. version.js) : après
+   un redéploiement, elle dit en un coup d'œil si le nouveau code a bien été repris,
+   sans avoir à deviner d'après le comportement de l'application. */
 async function sante() {
   await db.q('select 1');
-  return { ok: true, service: 'atelier-informatique', heure: new Date().toISOString() };
+  return {
+    ok: true,
+    service: 'atelier-informatique',
+    version: VERSION,
+    demarre: DEMARRE,
+    heure: new Date().toISOString()
+  };
 }
 
 /* --------------------------------------------------------------------------
@@ -585,6 +595,7 @@ serveur.listen(PORT, HOTE, () => {
   console.log(`[api] à l'écoute sur ${HOTE}:${PORT}`);
   console.log(`[api] origines autorisées : ${ORIGINES.length ? ORIGINES.join(', ') : '(aucune — appels navigateur bloqués)'}`);
   console.log(`[api] conservation des comptes élèves : ${CONSERVATION_MOIS} mois après création`);
+  console.log(`[api] empreinte du code : ${VERSION}`);
 });
 
 /* Au démarrage — après une minute, le temps que le service se pose — puis chaque jour. */
