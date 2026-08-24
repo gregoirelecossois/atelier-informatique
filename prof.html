@@ -27,7 +27,9 @@
 
   .barre{position:sticky;top:0;z-index:20;background:var(--carte);border-bottom:2px solid var(--trait);
          padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-  .barre h1{font-size:1.25rem;margin-right:auto}
+  .barre h1{font-size:1.25rem}
+  .barre .creneau{margin-right:auto;display:inline-flex}
+  .barre a.btn{text-decoration:none;display:inline-flex;align-items:center}
   .barre .qui{color:var(--gris);font-size:.85rem;font-weight:700}
 
   .btn{border:2px solid var(--trait);background:#fff;color:var(--encre);border-radius:999px;
@@ -108,6 +110,14 @@
   .niv button.fait{background:#eaf7ef;border-color:#bfe3cc;color:#15803d}
   .niv button.ici{background:var(--bleu);border-color:var(--bleu);color:#fff}
   .niv button.bloque{background:#f6f8fb;color:#a9b8c8}
+  .niv button.ouvert{box-shadow:0 0 0 3px rgba(37,99,235,.22)}
+  .missions{margin:6px 0 2px;padding:8px 10px;background:#f4f8fd;border-radius:10px}
+  .missions .etiq{display:block;font-size:.74rem;font-weight:800;color:var(--gris);margin-bottom:5px}
+  .missions .lignem{display:flex;flex-wrap:wrap;gap:4px}
+  .missions button{border:2px solid #d7e4f2;background:#fff;border-radius:8px;padding:3px 8px;
+        font-size:.73rem;font-weight:800;color:#3c4d61;transition:all .12s}
+  .missions button:hover{border-color:var(--bleu);color:var(--bleu)}
+  .missions button.ici{background:var(--bleu);border-color:var(--bleu);color:#fff}
 
   .msg{border-radius:12px;padding:10px 13px;font-size:.84rem;font-weight:700;margin:0 0 14px;line-height:1.4}
   .msg.ok{background:#eaf7ef;color:#15803d}
@@ -125,7 +135,11 @@
 
 <div class="barre">
   <h1>📊 Suivi des élèves</h1>
+  <!-- data-atl-compte : scripts/compte.js pose sa pastille ICI plutôt qu'en flottant
+       en haut à gauche, où elle recouvrait le titre. -->
+  <span class="creneau" data-atl-compte></span>
   <span class="qui" id="qui"></span>
+  <a class="btn" href="index.html">🏠 Accueil</a>
   <button class="btn" id="bNouveau">＋ Nouveau compte</button>
   <button class="btn" id="bQuitter">Déconnexion</button>
 </div>
@@ -208,6 +222,23 @@ function avancementDe(el){
   return { faits: faits, total: total, pc: total ? Math.round(faits * 100 / total) : 0 };
 }
 
+/* Position fine dans un atelier : « N3 · M2 » se lit d'un coup d'œil et tient sous une
+   barre de trente pixels. Les totaux de missions viennent de scripts/ateliers.js, qui
+   les tient de scripts/compter-missions.mjs — jamais saisis à la main. */
+function positionFine(a, n){
+  if(!n) return { court: '—', long: 'pas commencé' };
+  if(n.fini) return { court: '✓', long: 'atelier terminé' };
+  var lvl = Math.min(a.niveaux.length, Math.max(1, n.c));
+  var total = (a.missions && a.missions[lvl - 1]) || 0;
+  var mission = Math.min(total || 999, (n.s || 0) + 1);
+  if(lvl === 1 && (n.s || 0) === 0 && (n.u || 1) <= 1) return { court: '—', long: 'pas commencé' };
+  return {
+    court: 'N' + lvl + '·M' + mission,
+    long: 'niveau ' + lvl + ' « ' + a.niveaux[lvl - 1] + ' », mission ' + mission +
+          (total ? ' sur ' + total : '')
+  };
+}
+
 function couleurAvancement(pc){
   return pc < 20 ? 'var(--rouge)' : pc < 55 ? 'var(--orange)' : 'var(--vert)';
 }
@@ -224,16 +255,22 @@ function carteEleve(el){
   var p = atelier ? pres : null;
 
   var mini = window.ATELIERS.map(function(a){
-    var faits = niveauxFaits(a, el.niveaux && el.niveaux[a.id]);
+    var n = el.niveaux && el.niveaux[a.id];
+    var faits = niveauxFaits(a, n);
     var pc = Math.round(faits * 100 / a.niveaux.length);
-    return '<div class="col" title="' + esc(a.nom + ' — ' + faits + '/' + a.niveaux.length + ' niveaux') + '">' +
+    var pos = positionFine(a, n);
+    return '<div class="col" title="' + esc(a.nom + ' — ' + faits + '/' + a.niveaux.length +
+        ' niveaux · ' + pos.long) + '">' +
       '<div class="ic">' + a.ic + '</div>' +
       '<div class="piste"><div class="jus" style="width:' + pc + '%;background:' + a.hue + '"></div></div>' +
-      '<div class="nb">' + faits + '/' + a.niveaux.length + '</div></div>';
+      '<div class="nb">' + pos.court + '</div></div>';
   }).join('');
 
   var sous = p
-    ? '<b>● en ce moment</b> · ' + esc(atelier.ic + ' ' + atelier.nom) + ' · niveau ' + (p.niveau || 1)
+    ? '<b>● en ce moment</b> · ' + esc(atelier.ic + ' ' + atelier.nom) + ' · ' +
+      'N' + (p.niveau || 1) + ' · M' + ((p.mission || 0) + 1) +
+      (atelier.missions && atelier.missions[(p.niveau || 1) - 1]
+        ? '/' + atelier.missions[(p.niveau || 1) - 1] : '')
     : (el.derniere_connexion
         ? 'vu ' + quand(el.derniere_connexion)
         : 'ne s\'est jamais connecté');
@@ -353,16 +390,20 @@ function ficheEleve(id){
       var fini = !!trophees[a.id + '.master'];
       var u = fini ? a.niveaux.length + 1 : (parseInt(d[a.id + '_unlocked'] || '1', 10) || 1);
       var c = parseInt(d[a.id + '_curlevel'] || '1', 10) || 1;
+      var etape = parseInt(d[a.id + '_step_l' + c] || '0', 10) || 0;
       var boutons = a.niveaux.map(function(nom, i){
         var n = i + 1;
         var cl = n < u ? 'fait' : n === c ? 'ici' : n > u ? 'bloque' : '';
         return '<button data-at="' + a.id + '" data-n="' + n + '" class="' + cl + '" title="' +
-          esc(nom + (n > u ? ' — verrouillé, cliquer pour débloquer' : '')) + '">' + n + '</button>';
+          esc(nom) + '">' + n + '</button>';
       }).join('');
-      return '<div class="at"><div class="nomat">' + a.ic + ' ' + esc(a.nom) +
+      var pos = positionFine(a, { u: u, c: c, s: etape, fini: fini });
+      return '<div class="at" data-at="' + a.id + '"><div class="nomat">' + a.ic + ' ' + esc(a.nom) +
         ' <span style="color:var(--gris);font-weight:700">— ' + Math.min(a.niveaux.length, Math.max(0, u - 1)) +
-        '/' + a.niveaux.length + (fini ? ' ✓' : '') + '</span></div>' +
-        '<div class="niv">' + boutons + '</div></div>';
+        '/' + a.niveaux.length + ' niveaux · ' + esc(pos.court === '—' ? 'pas commencé' : pos.court) +
+        (fini ? ' ✓' : '') + '</span></div>' +
+        '<div class="niv">' + boutons + '</div>' +
+        '<div class="missions" hidden></div></div>';
     }).join('');
 
     var options = etat.classes.map(function(c){
@@ -409,15 +450,50 @@ function ficheEleve(id){
       }).then(function(){ dire('ok', 'Enregistré.'); return chargerTableau(); }).catch(echec);
     };
 
+    /* Cliquer un niveau ne débloque plus rien : il DÉPLIE ses missions. On choisit
+       ensuite précisément où poser l'élève. Débloquer un niveau entier d'un clic
+       envoyait souvent l'élève plus loin qu'on ne voulait, et afficher les quelque
+       trois cents missions d'emblée aurait noyé la fiche. */
+    function replier(){
+      b.querySelectorAll('.missions').forEach(function(m){ m.hidden = true; m.innerHTML = ''; });
+      b.querySelectorAll('.niv button.ouvert').forEach(function(x){ x.classList.remove('ouvert'); });
+    }
+
     b.querySelectorAll('.niv button').forEach(function(bt){
       bt.onclick = function(){
         var at = bt.getAttribute('data-at'), n = +bt.getAttribute('data-n');
-        var majs = {};
-        majs[at + '_unlocked'] = String(n);
-        majs[at + '_curlevel'] = String(n);
-        api('PUT', '/api/prof/eleve/' + id + '/progression', { majs: majs })
-          .then(function(){ ficheEleve(id); return chargerTableau(); })
-          .catch(echec);
+        var a = window.ATELIERS.filter(function(x){ return x.id === at; })[0];
+        var zone = bt.closest('.at').querySelector('.missions');
+        var deja = !zone.hidden && bt.classList.contains('ouvert');
+        replier();
+        if(deja) return;
+
+        bt.classList.add('ouvert');
+        var total = (a.missions && a.missions[n - 1]) || 1;
+        var courant = (parseInt(d[at + '_curlevel'] || '1', 10) || 1) === n
+          ? (parseInt(d[at + '_step_l' + n] || '0', 10) || 0) + 1 : 0;
+
+        var mis = [];
+        for(var k = 1; k <= total; k++){
+          mis.push('<button data-m="' + k + '"' + (k === courant ? ' class="ici"' : '') +
+            ' title="Placer au niveau ' + n + ', mission ' + k + '">M' + k + '</button>');
+        }
+        zone.innerHTML = '<span class="etiq">' + esc(a.niveaux[n - 1]) + " — placer l'élève à :</span>" +
+          '<span class="lignem">' + mis.join('') + '</span>';
+        zone.hidden = false;
+
+        zone.querySelectorAll('button').forEach(function(mb){
+          mb.onclick = function(){
+            var k = +mb.getAttribute('data-m');
+            var majs = {};
+            majs[at + '_unlocked'] = String(Math.max(n, parseInt(d[at + '_unlocked'] || '1', 10) || 1));
+            majs[at + '_curlevel'] = String(n);
+            majs[at + '_step_l' + n] = String(k - 1);
+            api('PUT', '/api/prof/eleve/' + id + '/progression', { majs: majs })
+              .then(function(){ ficheEleve(id); return chargerTableau(); })
+              .catch(echec);
+          };
+        });
       };
     });
 

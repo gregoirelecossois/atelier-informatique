@@ -127,7 +127,10 @@ async function session(req) {
   const brut = String(req.headers.authorization || '');
   const m = brut.match(/^Bearer\s+(.+)$/i);
   if (!m) throw new Refus(401, 'Connexion requise.');
+  return sessionDuJeton(m[1]);
+}
 
+async function sessionDuJeton(jetonClair) {
   const ligne = await db.une(
     `select s.jeton, s.expire_le, s.vue_le,
             c.id, c.identifiant, c.prenom, c.nom, c.role, cl.nom as classe
@@ -135,7 +138,7 @@ async function session(req) {
        join comptes c  on c.id = s.compte_id
        left join classes cl on cl.id = c.classe_id
       where s.jeton = $1 and s.expire_le > now() and c.actif`,
-    [auth.empreinte(m[1])]
+    [auth.empreinte(jetonClair)]
   );
   if (!ligne) throw new Refus(401, 'Session expirée.');
 
@@ -314,9 +317,15 @@ async function purgerComptesExpires() {
    -------------------------------------------------------------------------- */
 const PRESENCE_MINUTES = 2;   /* tolère un battement manqué, pas davantage */
 
+/* sendBeacon ne sait pas poser d'en-tête Authorization : pour le seul message de
+   départ, on accepte donc le jeton dans le corps. Aucune faiblesse ajoutée — c'est le
+   même secret, présenté autrement, et sans cookie il n'y a pas de surface CSRF. On le
+   limite quand même à cette route, la moins sensible de toutes. */
 async function battement(req) {
-  const s = await session(req);
   const corps = await lireCorps(req);
+  const s = corps.jeton && !req.headers.authorization
+    ? await sessionDuJeton(String(corps.jeton))
+    : await session(req);
 
   if (corps.parti) {
     await db.q('delete from presence where compte_id = $1', [s.id]);
