@@ -1,0 +1,5 @@
+node_modules/
+.env
+
+# Sorties de « atl.mjs importer » : mots de passe EN CLAIR, a imprimer puis detruire.
+identifiants-*.csv

@@ -658,7 +658,12 @@
   html.dys .dys-toggle .dys-knob{left:18px;}
   @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
 </style>
-<script>try{if(localStorage.getItem('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
+<script src="scripts/config.js"></script>
+<script src="scripts/store.js"></script>
+<!-- Repli : si scripts/store.js n'a pas pu être chargé (poste très verrouillé, fichier
+     absent), l'atelier reste jouable comme avant les comptes — progression sur le poste. -->
+<script>window.Store=window.Store||{_m:{},get:function(k){try{return localStorage.getItem(k)}catch(e){return k in this._m?this._m[k]:null}},set:function(k,v){try{localStorage.setItem(k,String(v))}catch(e){this._m[k]=String(v)}},del:function(k){try{localStorage.removeItem(k)}catch(e){delete this._m[k]}},wipe:function(p){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf(p)===0)localStorage.removeItem(k)})}catch(e){}this._m={}},snapshot:function(){return{}},enLigne:function(){return false},eleve:function(){return null},etat:function(){return"local"},surEtat:function(){}};</script>
+<script>try{if(Store.get('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
 </head>
 <body>
   <div class="topbar">
@@ -715,6 +720,7 @@
 <script src="tts/tts-atelier.js"></script>
 <script src="tts/la-souris.clips.js"></script>
 <script src="scripts/badges.js"></script>
+<script src="scripts/compte.js"></script>
 
 <script>
 /* =========================================================
@@ -905,19 +911,14 @@ const stage=document.getElementById('stage');
 const overlay=document.getElementById('overlay');
 const modal=document.getElementById('modal');
 
-const store={
-  get(k){ try{return localStorage.getItem(k);}catch(e){return this._m&&this._m[k];} },
-  set(k,v){ try{localStorage.setItem(k,v);}catch(e){ (this._m=this._m||{})[k]=v; } },
-  _m:{}
-};
+/* Tout passe par scripts/store.js, partagé par les six ateliers et l'accueil : même
+   API synchrone qu'avant (get / set / del), mais la progression suit l'élève de poste
+   en poste dès qu'il est connecté, et retombe sur le navigateur sinon. */
+const store=window.Store;
 /* Efface TOUTES les clés d'un préfixe (utilisé par « Reset complet » du devkit).
-   On vide aussi le repli mémoire `_m` : quand localStorage est indisponible (certaines
-   configurations en file://), c'est LUI qui porte la progression, et une suppression
-   qui ne viserait que localStorage laisserait le jeu exactement là où il était. */
-function wipe(pfx){
-  try{ Object.keys(localStorage).forEach(k=>{ if(k.indexOf(pfx)===0) localStorage.removeItem(k); }); }catch(e){}
-  store._m={};
-}
+   Balayage par préfixe et non par liste : une liste finit toujours par oublier une clé
+   ajoutée plus tard. Store.wipe s'occupe aussi du repli mémoire et du serveur. */
+function wipe(pfx){ store.wipe(pfx); }
 function getUnlocked(){ let u=parseInt(store.get('ms_unlocked')||'1',10); if(isNaN(u)||u<1)u=1; return Math.min(u,LEVELS.length); }
 function getSavedStep(n){ let s=parseInt(store.get('ms_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
 function saveProgress(){ store.set('ms_step_l'+currentLevel, String(progressIdx)); }
@@ -935,7 +936,7 @@ function msLevelClean(n){ return loadEase(n)===0; }
    Après 2 échecs D'AFFILÉE sur une même mission, la popup d'échec propose de ralentir.
    L'aide vaut pour TOUT le reste du niveau et se cumule : 2 nouveaux échecs d'affilée la
    remontent d'un cran, jusqu'à MS_EASE_MAX. Jamais appliquée au combat de boss, qui a son
-   propre sélecteur de difficulté (BOSS_MODES) — cf. msCanEase(). Gardée en localStorage :
+   propre sélecteur de difficulté (BOSS_MODES) — cf. msCanEase(). Gardée dans le stockage :
    un élève qui ferme l'atelier après avoir bloqué ne repart pas au réglage le plus dur.
    Même dispositif que le « Plus facile » de le-clavier.html (préfixe kb_ là-bas). */
 const MS_EASE_MAX=4, MS_EASE_MUL=0.8;
@@ -1780,7 +1781,7 @@ const BOSS_MODES={
            // jauge moins ingrate et horde un peu plus lente (livesBonus reste à -2).
            fireMul:0.72, countMul:1.26, gaugeGain:0.86, gaugeDecay:1.35, speedMul:1.22, fairyMul:1.62, livesBonus:-2}
 };
-let bossMode = (function(){ try{ const m=localStorage.getItem('ms_bossmode'); return BOSS_MODES[m]?m:'hard'; }catch(e){ return 'hard'; } })();
+let bossMode = (function(){ const m=store.get('ms_bossmode'); return BOSS_MODES[m]?m:'hard'; })();
 function bd(){ return BOSS_MODES[bossMode]||BOSS_MODES.hard; }
 function bCount(n,min){ return Math.max(min||1, Math.round(n*bd().countMul)); }   // mise à l'échelle d'un nombre de cibles
 /* portrait de référence du boss (sprite « south » du dossier rotations) */
@@ -2978,7 +2979,7 @@ function bossModeChooserHTML(){
 }
 function bindBossModeChoice(){
   modal.querySelectorAll('.boss-mode-btn').forEach(b=>{
-    b.onclick=()=>{ bossMode=b.getAttribute('data-mode'); try{localStorage.setItem('ms_bossmode',bossMode);}catch(e){}
+    b.onclick=()=>{ bossMode=b.getAttribute('data-mode'); store.set('ms_bossmode',bossMode);
       closeOverlay(); audioCtx(); launchGame(); };
   });
 }
@@ -3420,11 +3421,11 @@ function confetti(){
   btn.addEventListener('click',function(){
     var want=!root.classList.contains('dys');
     if(typeof window.__dysConfirm==='function'){ window.__dysConfirm(want); return; }
-    try{localStorage.setItem(KEY,want?'1':'0');}catch(e){}
+    Store.set(KEY,want?'1':'0');
     apply(want);
   });
   document.body.appendChild(btn);
-  var on=false; try{on=localStorage.getItem(KEY)==='1';}catch(e){}
+  var on=Store.get(KEY)==='1';
   apply(on);
 })();
 </script>
