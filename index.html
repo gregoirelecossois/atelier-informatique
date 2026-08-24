@@ -120,7 +120,12 @@
   html.dys .dys-toggle .dys-knob{left:18px;}
   @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
 </style>
-<script>try{if(localStorage.getItem('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
+<script src="scripts/config.js"></script>
+<script src="scripts/store.js"></script>
+<!-- Repli : si scripts/store.js n'a pas pu être chargé (poste très verrouillé, fichier
+     absent), l'atelier reste jouable comme avant les comptes — progression sur le poste. -->
+<script>window.Store=window.Store||{_m:{},get:function(k){try{return localStorage.getItem(k)}catch(e){return k in this._m?this._m[k]:null}},set:function(k,v){try{localStorage.setItem(k,String(v))}catch(e){this._m[k]=String(v)}},del:function(k){try{localStorage.removeItem(k)}catch(e){delete this._m[k]}},wipe:function(p){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf(p)===0)localStorage.removeItem(k)})}catch(e){}this._m={}},snapshot:function(){return{}},enLigne:function(){return false},eleve:function(){return null},etat:function(){return"local"},surEtat:function(){}};</script>
+<script>try{if(Store.get('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
 <!-- Seul texte lu de la page d'accueil : la bulle de la visite guidée de la vitrine.
      Doit rester identique &#224; TOUR_TEXT dans scripts/badges.js (la cl&#233; du clip est un hash du contenu). -->
 <script type="application/json" id="tts-static">
@@ -267,10 +272,11 @@
     <footer>Gr&#233;goire Lecossois &nbsp;x&nbsp; Claude Code</footer>
   </div>
 <script src="scripts/badges.js"></script>
+<script src="scripts/compte.js"></script>
 <script>
-  // Refl&#232;te l'avancement de chaque jeu (lu depuis localStorage)
+  // Refl&#232;te l'avancement de chaque jeu (lu depuis scripts/store.js)
   (function(){
-    function read(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+    function read(k){ return Store.get(k); }
     function paint(sel, unlockedKey, curKey){
       let unlocked=parseInt(read(unlockedKey)||'1',10); if(isNaN(unlocked)||unlocked<1) unlocked=1;
       let cur=parseInt(read(curKey)||'1',10); if(isNaN(cur)||cur<1) cur=1;
@@ -284,12 +290,16 @@
         else { ic.textContent='•'; }
       });
     }
-    paint('#msLevels','ms_unlocked','ms_curlevel');
-    paint('#kbLevels','kb_unlocked','kb_curlevel');
-    paint('#ttLevels','tt_unlocked','tt_curlevel');
-    paint('#dfLevels','df_unlocked','df_curlevel');
-    paint('#nvLevels','nv_unlocked','nv_curlevel');
-    paint('#mlLevels','ml_unlocked','ml_curlevel');
+    function tout(){
+      paint('#msLevels','ms_unlocked','ms_curlevel');
+      paint('#kbLevels','kb_unlocked','kb_curlevel');
+      paint('#ttLevels','tt_unlocked','tt_curlevel');
+      paint('#dfLevels','df_unlocked','df_curlevel');
+      paint('#nvLevels','nv_unlocked','nv_curlevel');
+      paint('#mlLevels','ml_unlocked','ml_curlevel');
+    }
+    tout();
+    document.addEventListener('store:maj', tout);
   })();
 
   /* ===== Vitrine de troph&#233;es =====
@@ -358,8 +368,8 @@
     document.body.appendChild(root);
 
     document.getElementById('dkToggle').onclick=()=>root.classList.toggle('open');
-    function set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
-    function del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+    function set(k,v){ Store.set(k,v); }
+    function del(k){ Store.del(k); }
     document.getElementById('dkUnlockAll').onclick=()=>{
       GAMES.forEach(g=>set(g.unlock, String(g.stepN)));
       location.reload();
@@ -370,10 +380,7 @@
       // « sans faute »&#8230;), et le reset para&#238;t alors « incomplet ». Ici, tout ce qui
       // commence par ms_ kb_ tt_ df_ nv_ ml_ dispara&#238;t. La pr&#233;f&#233;rence d'accessibilit&#233;
       // a11y_dys, elle, n'a aucun de ces pr&#233;fixes : elle survit, et c'est voulu.
-      try{
-        const pfx=GAMES.map(g=>g.unlock.replace('unlocked',''));
-        Object.keys(localStorage).forEach(k=>{ if(pfx.some(p=>k.indexOf(p)===0)) localStorage.removeItem(k); });
-      }catch(e){}
+      GAMES.forEach(g=>Store.wipe(g.unlock.replace('unlocked','')));
       if(window.Badges) Badges.reset();
       location.reload();
     };
@@ -392,11 +399,11 @@
     }
     btn.addEventListener('click',function(){
       var on=!root.classList.contains('dys');
-      try{localStorage.setItem(KEY,on?'1':'0');}catch(e){}
+      Store.set(KEY,on?'1':'0');
       apply(on);
     });
     document.body.appendChild(btn);
-    var on=false; try{on=localStorage.getItem(KEY)==='1';}catch(e){}
+    var on=Store.get(KEY)==='1';
     apply(on);
   })();
 </script>

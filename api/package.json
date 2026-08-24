@@ -1,0 +1,16 @@
+{
+  "name": "atelier-informatique-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Comptes eleves et sauvegarde de progression pour l'Atelier informatique",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "init": "node outils/atl.mjs init"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}

@@ -737,7 +737,12 @@
   html.dys .dys-toggle .dys-knob{left:18px;}
   @media (max-width:520px){ .dys-toggle .dys-label{display:none;} .dys-toggle{padding:7px;} }
 </style>
-<script>try{if(localStorage.getItem('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
+<script src="scripts/config.js"></script>
+<script src="scripts/store.js"></script>
+<!-- Repli : si scripts/store.js n'a pas pu être chargé (poste très verrouillé, fichier
+     absent), l'atelier reste jouable comme avant les comptes — progression sur le poste. -->
+<script>window.Store=window.Store||{_m:{},get:function(k){try{return localStorage.getItem(k)}catch(e){return k in this._m?this._m[k]:null}},set:function(k,v){try{localStorage.setItem(k,String(v))}catch(e){this._m[k]=String(v)}},del:function(k){try{localStorage.removeItem(k)}catch(e){delete this._m[k]}},wipe:function(p){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf(p)===0)localStorage.removeItem(k)})}catch(e){}this._m={}},snapshot:function(){return{}},enLigne:function(){return false},eleve:function(){return null},etat:function(){return"local"},surEtat:function(){}};</script>
+<script>try{if(Store.get('a11y_dys')==='1')document.documentElement.classList.add('dys');}catch(e){}</script>
 </head>
 <body>
   <div class="topbar">
@@ -790,6 +795,7 @@
 <script src="tts/tts-atelier.js"></script>
 <script src="tts/dossiers-fichiers.clips.js"></script>
 <script src="scripts/badges.js"></script>
+<script src="scripts/compte.js"></script>
 
 <script>
 /* =========================================================
@@ -891,20 +897,14 @@ function pathOf(node){ const p=[]; let c=node; while(c){ p.unshift(c); c=c.paren
 /* ---------------------------------------------------------
    1. ÉTAT GLOBAL + STOCKAGE
    --------------------------------------------------------- */
-const store={
-  get(k){ try{return localStorage.getItem(k);}catch(e){return this._m&&this._m[k];} },
-  set(k,v){ try{localStorage.setItem(k,v);}catch(e){ (this._m=this._m||{})[k]=v; } },
-  del(k){ try{localStorage.removeItem(k);}catch(e){ if(this._m) delete this._m[k]; } },
-  _m:{}
-};
+/* Tout passe par scripts/store.js, partagé par les six ateliers et l'accueil : même
+   API synchrone qu'avant (get / set / del), mais la progression suit l'élève de poste
+   en poste dès qu'il est connecté, et retombe sur le navigateur sinon. */
+const store=window.Store;
 /* Efface TOUTES les clés d'un préfixe (utilisé par « Reset complet » du devkit).
-   On vide aussi le repli mémoire `_m` : quand localStorage est indisponible (certaines
-   configurations en file://), c'est LUI qui porte la progression, et une suppression
-   qui ne viserait que localStorage laisserait le jeu exactement là où il était. */
-function wipe(pfx){
-  try{ Object.keys(localStorage).forEach(k=>{ if(k.indexOf(pfx)===0) localStorage.removeItem(k); }); }catch(e){}
-  store._m={};
-}
+   Balayage par préfixe et non par liste : une liste finit toujours par oublier une clé
+   ajoutée plus tard. Store.wipe s'occupe aussi du repli mémoire et du serveur. */
+function wipe(pfx){ store.wipe(pfx); }
 let currentLevel=1, STEPS=[], progressIdx=0, playIdx=0, currentStep=null;
 
 /* ---- Trophées (scripts/badges.js, partagé par tout l'atelier) ----
@@ -912,7 +912,7 @@ let currentLevel=1, STEPS=[], progressIdx=0, playIdx=0, currentStep=null;
 const DF_LEVEL_BADGES={4:'df.l4', 5:'df.l5', 7:'df.l7'};
 function bdg(id, opts){ return window.Badges ? Badges.award(id, opts) : false; }
 /* « Rangement au cordeau » : une mission ratée (mauvaise cible, mauvaise méthode) salit le
-   niveau pour de bon. Le drapeau vit dans localStorage : fermer l'atelier ne l'efface pas. */
+   niveau pour de bon. Le drapeau est rangé dans le stockage : fermer l'atelier ne l'efface pas. */
 function dfMiss(){ store.set('df_err_l'+currentLevel, '1'); }
 function dfLevelClean(n){ return store.get('df_err_l'+n)!=='1'; }
 
@@ -4734,9 +4734,9 @@ function onHint(){
   btn.innerHTML='<span class="dys-ic" aria-hidden="true">🔤</span><span class="dys-label">Mode Dys</span><span class="dys-switch"><span class="dys-knob"></span></span>';
   function apply(on){ root.classList.toggle('dys',on); btn.setAttribute('aria-pressed',on?'true':'false');
     btn.title=on?'Mode Dyslexique activé — clique pour revenir à la police normale':'Activer le Mode Dyslexique (police OpenDyslexic)'; }
-  btn.addEventListener('click',function(){ var want=!root.classList.contains('dys'); try{localStorage.setItem(KEY,want?'1':'0');}catch(e){} apply(want); });
+  btn.addEventListener('click',function(){ var want=!root.classList.contains('dys'); Store.set(KEY,want?'1':'0'); apply(want); });
   document.body.appendChild(btn);
-  var on=false; try{on=localStorage.getItem(KEY)==='1';}catch(e){} apply(on);
+  var on=Store.get(KEY)==='1'; apply(on);
 })();
 </script>
 </body>

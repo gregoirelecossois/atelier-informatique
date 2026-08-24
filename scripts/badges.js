@@ -6,7 +6,8 @@
  * la mise en page des ateliers — ceux-ci sont verrouillés à 100dvh sans défilement, donc
  * tout ce que ce fichier affiche EN JEU est en position:fixed.
  *
- * Persistance : une seule clé localStorage `badges_v1`, sans préfixe d'atelier — les
+ * Persistance : une seule clé `badges_v1` dans scripts/store.js (donc synchronisée
+ * avec le compte de l'élève quand il y en a un), sans préfixe d'atelier — les
  * trophées sont transversaux. Chaque entrée vaut {t:<horodatage>} et, pour les boss à
  * modes, {t:…, d:'<clé de difficulté>'} : rejouer un boss dans un mode PLUS DUR met le
  * trophée à niveau au lieu d'être ignoré (cf. award()).
@@ -183,10 +184,10 @@ function countReal(s){ var n=0; for(var k in s){ if(s.hasOwnProperty(k) && BY_ID
 /* ---------------------------------------------------------------------------
    4. Persistance
    --------------------------------------------------------------------------- */
-function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ return {}; } }
-function save(o){ try{ localStorage.setItem(KEY, JSON.stringify(o)); }catch(e){} }
-function flag(k){ try{ return localStorage.getItem(k)==='1'; }catch(e){ return false; } }
-function setFlag(k){ try{ localStorage.setItem(k,'1'); }catch(e){} }
+function load(){ try{ return JSON.parse(Store.get(KEY)||'{}')||{}; }catch(e){ return {}; } }
+function save(o){ Store.set(KEY, JSON.stringify(o)); }
+function flag(k){ return Store.get(k)==='1'; }
+function setFlag(k){ Store.set(k,'1'); }
 
 /* ---------------------------------------------------------------------------
    5. Attribution
@@ -248,7 +249,7 @@ function get(id){ return load()[id]||null; }
 function has(id){ return !!load()[id]; }
 function count(){ var s=load(), n=0; for(var k in s) if(s.hasOwnProperty(k)&&BY_ID[k]) n++; return n; }
 function all(){ return load(); }
-function reset(){ try{ localStorage.removeItem(KEY); localStorage.removeItem(TOUR_KEY); localStorage.removeItem('badges_seen_first'); }catch(e){} }
+function reset(){ Store.del(KEY); Store.del(TOUR_KEY); Store.del('badges_seen_first'); }
 
 /* ---------------------------------------------------------------------------
    6. Styles (injectés une fois, préfixe bdg- pour ne rien percuter)
