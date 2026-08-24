@@ -434,11 +434,25 @@ function battre(){
   req('POST', '/api/presence', ouSuisJe()).catch(function(){ /* sans conséquence */ });
 }
 
+/* Départ annoncé : sans lui, un élève qui ferme son onglet resterait affiché
+   « en ce moment » jusqu'à la péremption côté serveur — le tableau de bord
+   montrerait quelqu'un au travail alors qu'il est sorti. keepalive permet à la
+   requête de survivre à la fermeture de la page. */
+function quitter(){
+  if(!mem || !session) return;
+  req('POST', '/api/presence', { parti: true }, { keepalive: true }).catch(function(){});
+}
+
 if(CLOUD && session){
   setTimeout(battre, 2000);
   setInterval(battre, BATTEMENT_MS);
+  /* On s'accroche à visibilitychange et NON à pagehide, et c'est le point clé :
+     passer d'un atelier à l'autre déclenche pagehide sans rien cacher du tout —
+     annoncer un départ là ferait clignoter l'élève hors du tableau de bord entre
+     deux pages. Fermer l'onglet, verrouiller le téléphone ou changer d'appli,
+     en revanche, passe bien par visibilitychange. */
   document.addEventListener('visibilitychange', function(){
-    if(document.visibilityState === 'visible') battre();
+    if(document.visibilityState === 'visible') battre(); else quitter();
   });
 }
 
