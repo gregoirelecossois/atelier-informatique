@@ -9,9 +9,9 @@
  *   node outils/atl.mjs init
  *   node outils/atl.mjs classes
  *   node outils/atl.mjs classe <nom> [ordre]
- *   node outils/atl.mjs creer <prenom> <nom> [classe] [--prof] [--mdp X] [--court]
+ *   node outils/atl.mjs creer <prenom> <nom> [classe] [--prof] [--mdp X] [--court|--prononcable]
  *   node outils/atl.mjs liste [classe]
- *   node outils/atl.mjs mdp <identifiant> [--mdp X] [--court]
+ *   node outils/atl.mjs mdp <identifiant> [--mdp X] [--court|--prononcable]
  *   node outils/atl.mjs activer|desactiver <identifiant>
  *   node outils/atl.mjs supprimer <identifiant> --oui
  *   node outils/atl.mjs importer <fichier.csv> [--court]
@@ -24,8 +24,9 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import * as db from '../db.js';
 import * as auth from '../auth.js';
-import { CONSONNES, VOYELLES, ALPHABET, GROUPES, SYLLABES_PAR_GROUPE, LONGUEUR_COURT,
-         BITS_PRONONCABLE, BITS_COURT } from './motsdepasse.js';
+import { CONSONNES, VOYELLES, ALPHABET, ALPHABET_COFFRE, GROUPES, SYLLABES_PAR_GROUPE,
+         LONGUEUR_COURT, LONGUEUR_COFFRE,
+         BITS_PRONONCABLE, BITS_COURT, BITS_COFFRE } from './motsdepasse.js';
 
 const args = process.argv.slice(2);
 const commande = args[0];
@@ -48,15 +49,21 @@ for (const cle of ['mdp', 'mois']) {
 }
 
 /* --------------------------------------------------------------------------
-   Mots de passe — les deux formes dépassent 50 bits d'entropie.
+   Mots de passe — les trois formes dépassent 50 bits d'entropie.
    Le détail du calcul et le pourquoi de chaque brique sont dans motsdepasse.js.
    -------------------------------------------------------------------------- */
-function motDePasse(court) {
+function motDePasse(type) {
   const tire = (s) => s[crypto.randomInt(s.length)];
 
-  if (court) {
+  if (type === 'coffre') {
+    /* 20 caractères, trois classes → 119 bits. Défaut du compte enseignant : il voit
+       toute la base, il vit dans un gestionnaire, rien ne justifie d'y économiser. */
+    return Array.from({ length: LONGUEUR_COFFRE }, () => tire(ALPHABET_COFFRE)).join('');
+  }
+
+  if (type === 'court') {
     /* 11 caractères sans glyphe ambigu → 54,5 bits. Court à taper, impossible à
-       retenir : pour les adultes et les gestionnaires de mots de passe. */
+       retenir : pour un adulte qui doit encore pouvoir le recopier à la main. */
     const c = Array.from({ length: LONGUEUR_COURT }, () => tire(ALPHABET));
     return `${c.slice(0, 4).join('')}-${c.slice(4, 8).join('')}-${c.slice(8).join('')}`;
   }
@@ -66,6 +73,15 @@ function motDePasse(court) {
   const groupes = Array.from({ length: GROUPES }, () =>
     Array.from({ length: SYLLABES_PAR_GROUPE }, () => tire(CONSONNES) + tire(VOYELLES)).join(''));
   return groupes.join('-');
+}
+
+/* Qui reçoit quoi : l'enseignant voit toute la base et range son mot de passe dans un
+   gestionnaire — il n'a aucune raison d'hériter d'un mot de passe taillé pour être
+   recopié par un élève de 6e. --court et --prononcable forcent l'autre forme. */
+function forme(role) {
+  if (options.court) return 'court';
+  if (options.prononcable) return 'prononcable';
+  return role === 'prof' ? 'coffre' : 'prononcable';
 }
 
 function sansAccent(s) {
@@ -107,7 +123,7 @@ const commandes = {
     }
     console.log('Schéma appliqué, classes de base en place.');
     console.log('Crée maintenant ton compte enseignant :');
-    console.log('  node outils/atl.mjs creer Prenom Nom --prof --court');
+    console.log('  node outils/atl.mjs creer Prenom Nom --prof');
   },
 
   async classes() {
@@ -133,7 +149,7 @@ const commandes = {
     if (!prenom || !nom) throw new Error('Usage : creer <prenom> <nom> [classe] [--prof] [--mdp X] [--court]');
 
     const role = options.prof ? 'prof' : 'eleve';
-    const clair = typeof options.mdp === 'string' ? options.mdp : motDePasse(options.court);
+    const clair = typeof options.mdp === 'string' ? options.mdp : motDePasse(forme(role));
     if (role === 'prof' && clair.length < 12) {
       throw new Error('Le compte enseignant voit toute la base : 12 caractères minimum.');
     }
@@ -182,7 +198,7 @@ const commandes = {
     const c = await db.une('select id, role from comptes where identifiant = $1', [identifiant]);
     if (!c) throw new Error(`Compte « ${identifiant} » introuvable.`);
 
-    const clair = typeof options.mdp === 'string' ? options.mdp : motDePasse(options.court);
+    const clair = typeof options.mdp === 'string' ? options.mdp : motDePasse(forme(c.role));
     await db.q('update comptes set mdp = $2, doit_changer_mdp = $3 where id = $1',
       [c.id, await auth.hacher(clair), c.role === 'eleve']);
     /* Toutes les sessions ouvertes tombent : c'est le but d'une réinitialisation. */
@@ -223,7 +239,7 @@ const commandes = {
       if (!prenom || !nom) { ignorees++; continue; }
 
       const identifiant = await identifiantLibre(prenom, nom);
-      const clair = motDePasse(options.court);
+      const clair = motDePasse(forme('eleve'));
       const c = await db.une(
         `insert into comptes(identifiant, prenom, nom, classe_id, role, mdp, doit_changer_mdp)
          values ($1,$2,$3,$4,'eleve',$5,true) returning id`,
@@ -278,13 +294,17 @@ const commandes = {
   async entropie() {
     const ex = (n, f) => Array.from({ length: n }, f).join('\n                  ');
     console.log('');
-    console.log(`  Prononçable (défaut)  ${BITS_PRONONCABLE.toFixed(1)} bits`);
+    console.log(`  Prononçable (élèves)   ${BITS_PRONONCABLE.toFixed(1)} bits`);
     console.log(`     ${GROUPES} groupes × ${SYLLABES_PAR_GROUPE} syllabes, ${CONSONNES.length} consonnes × ${VOYELLES.length} voyelles`);
-    console.log(`     exemples :   ${ex(3, () => motDePasse(false))}`);
+    console.log(`     exemples :   ${ex(3, () => motDePasse('prononcable'))}`);
     console.log('');
-    console.log(`  Court (--court)       ${BITS_COURT.toFixed(1)} bits`);
+    console.log(`  Court (--court)        ${BITS_COURT.toFixed(1)} bits`);
     console.log(`     ${LONGUEUR_COURT} caractères d'un alphabet de ${ALPHABET.length} sans glyphe ambigu`);
-    console.log(`     exemples :   ${ex(3, () => motDePasse(true))}`);
+    console.log(`     exemples :   ${ex(3, () => motDePasse('court'))}`);
+    console.log('');
+    console.log(`  Coffre (défaut --prof) ${BITS_COFFRE.toFixed(1)} bits`);
+    console.log(`     ${LONGUEUR_COFFRE} caractères d'un alphabet de ${ALPHABET_COFFRE.length}, pour un gestionnaire de mots de passe`);
+    console.log(`     exemples :   ${ex(3, () => motDePasse('coffre'))}`);
     console.log('');
     console.log(`  Seuil CNIL 2022-100 avec restriction d'accès : 50 bits.`);
     console.log(`  Restriction en place : 10 essais par identifiant et 40 par IP, sur 10 minutes.`);
@@ -307,9 +327,9 @@ const AIDE = `
   node outils/atl.mjs init
   node outils/atl.mjs classes
   node outils/atl.mjs classe <nom> [ordre]
-  node outils/atl.mjs creer <prenom> <nom> [classe] [--prof] [--mdp X] [--court]
+  node outils/atl.mjs creer <prenom> <nom> [classe] [--prof] [--mdp X] [--court|--prononcable]
   node outils/atl.mjs liste [classe]
-  node outils/atl.mjs mdp <identifiant> [--mdp X] [--court]
+  node outils/atl.mjs mdp <identifiant> [--mdp X] [--court|--prononcable]
   node outils/atl.mjs activer|desactiver <identifiant>
   node outils/atl.mjs supprimer <identifiant> --oui
   node outils/atl.mjs importer <fichier.csv> [--court]

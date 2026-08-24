@@ -42,19 +42,20 @@ très largement : 300 élèves occupent moins de 5 Mo.
    ssh TONCOMPTE@ssh-TONCOMPTE.alwaysdata.net
    ```
 
-   Récupère **le seul dossier `api/`**, sans jamais poser les 56 Mo du dépôt sur le
-   disque — l'archive est lue au vol, seul ce qui est demandé est écrit (~90 Ko) :
+   Récupère **les seuls fichiers de `api/`** — 86 Ko, en une seule ligne :
 
    ```bash
-   curl -sL https://github.com/gregoirelecossois/atelier-informatique/archive/refs/heads/main.tar.gz | tar xz --strip-components=1 --wildcards '*/api/*'
+   mkdir -p ~/api/outils && cd ~/api && B=https://raw.githubusercontent.com/gregoirelecossois/atelier-informatique/main/api && for f in package.json package-lock.json schema.sql env.js db.js auth.js server.js README.md .env.example .gitignore; do curl -sfL -o "$f" "$B/$f"; done && for f in atl.mjs motsdepasse.js; do curl -sfL -o "outils/$f" "$B/outils/$f"; done && ls -a
    ```
 
    ```bash
    cd ~/api && npm install
    ```
 
-   > Un `git clone` du dépôt entier ne passerait pas : 56 Mo de fichiers plus autant
-   > d'objets Git dépassent les 100 Mo du plan gratuit. L'API installée pèse moins d'1 Mo.
+   > Ni `git clone`, ni archive complète : 56 Mo de fichiers plus autant d'objets Git
+   > dépassent les 100 Mo du plan gratuit, et un `curl … | tar` se casse dès que le tuyau
+   > se perd au copier-coller — constaté en conditions réelles. Douze fichiers nommés,
+   > une ligne, rien à nettoyer. L'API installée pèse moins d'1 Mo.
 
 ### 2.3 Le site
 
@@ -65,7 +66,14 @@ très largement : 300 élèves occupent moins de 5 Mo.
 
    alwaysdata fournit `PORT` tout seul : ne le renseigne pas.
 
-4. **Environnement** (même écran) — voir `.env.example` :
+4. **Les variables** — dans un fichier `~/api/.env`, lisible par `env.js`.
+
+   On les met **là plutôt que dans l'écran « Environnement » d'alwaysdata**, pour une
+   raison pratique : l'outil en ligne de commande (`atl.mjs`, lancé en SSH) doit voir
+   les mêmes valeurs que le site. Un fichier, un seul endroit, les deux qui marchent.
+   Il n'est jamais versionné (`api/.gitignore`) et un `chmod 600` le réserve à ton compte.
+
+   Voir `.env.example` :
 
    | Variable | Valeur |
    |---|---|
@@ -73,6 +81,7 @@ très largement : 300 élèves occupent moins de 5 Mo.
    | `PGUSER` / `PGPASSWORD` / `PGDATABASE` | ceux de l'étape 1 |
    | `POIVRE` | un secret généré une fois (voir ci-dessous) |
    | `ORIGINES` | `https://gregoirelecossois.github.io` |
+   | `CONSERVATION_MOIS` | `24` |
 
    Génère le poivre **une seule fois** et garde-le dans ton gestionnaire de mots de passe :
 
@@ -188,8 +197,19 @@ la plus courte qui reste mémorisable, et elle a trois qualités qui comptent en
 
 **Avec `--court` — 11 caractères, ~54 bits** : `jmzn-fyuc-5p7`
 
-Deux fois plus court à taper, mais impossible à retenir : pour les adultes et les comptes
-qui vivent dans un gestionnaire de mots de passe.
+Deux fois plus court à taper, mais impossible à retenir : pour un adulte qui doit encore
+pouvoir le recopier à la main.
+
+**Le compte enseignant — 20 caractères, ~119 bits** : `7ni9FrGsJE00dX39e1jy`
+
+C'est le défaut de `--prof`, et ce n'est pas un excès de zèle : ce compte voit **toute**
+la base, c'est le seul qui mérite d'être attaqué, et le seul dont le mot de passe ne coûte
+rien à rallonger puisqu'il vit dans un gestionnaire. Lui donner les 55 bits d'un mot de
+passe d'élève reviendrait à économiser sur la seule serrure qui compte. Effet secondaire
+appréciable : les gestionnaires cessent de le signaler comme faible.
+
+`--prononcable` force la forme élève sur n'importe quel compte, si tu tiens à pouvoir
+la taper de tête.
 
 > **Le plancher est incompressible.** 50 bits d'information occupent au minimum ~11
 > caractères tirés au hasard, ou ~18 lettres si on veut que ça se prononce. Aucune

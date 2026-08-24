@@ -12,7 +12,7 @@
  * l'atelier doit rester utilisable sans réseau, clé USB à la main.
  */
 window.ATELIER_CONFIG = {
-  api: '',
+  api: 'https://progression-informatique.alwaysdata.net',
 
   /* Nom affiché dans l'écran de connexion (juste cosmétique). */
   etablissement: '',
