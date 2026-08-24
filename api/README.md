@@ -197,8 +197,19 @@ la plus courte qui reste mémorisable, et elle a trois qualités qui comptent en
 
 **Avec `--court` — 11 caractères, ~54 bits** : `jmzn-fyuc-5p7`
 
-Deux fois plus court à taper, mais impossible à retenir : pour les adultes et les comptes
-qui vivent dans un gestionnaire de mots de passe.
+Deux fois plus court à taper, mais impossible à retenir : pour un adulte qui doit encore
+pouvoir le recopier à la main.
+
+**Le compte enseignant — 20 caractères, ~119 bits** : `7ni9FrGsJE00dX39e1jy`
+
+C'est le défaut de `--prof`, et ce n'est pas un excès de zèle : ce compte voit **toute**
+la base, c'est le seul qui mérite d'être attaqué, et le seul dont le mot de passe ne coûte
+rien à rallonger puisqu'il vit dans un gestionnaire. Lui donner les 55 bits d'un mot de
+passe d'élève reviendrait à économiser sur la seule serrure qui compte. Effet secondaire
+appréciable : les gestionnaires cessent de le signaler comme faible.
+
+`--prononcable` force la forme élève sur n'importe quel compte, si tu tiens à pouvoir
+la taper de tête.
 
 > **Le plancher est incompressible.** 50 bits d'information occupent au minimum ~11
 > caractères tirés au hasard, ou ~18 lettres si on veut que ça se prononce. Aucune
