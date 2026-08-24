@@ -93,7 +93,24 @@ très largement : 300 élèves occupent moins de 5 Mo.
    > de la protection qu'il apporte : une copie de la base, seule, ne permet aucune
    > attaque par dictionnaire.
 
-5. Vérifie : `https://TONCOMPTE.alwaysdata.net/api/sante` doit répondre `{"ok":true,…}`.
+5. Vérifie : `https://TONCOMPTE.alwaysdata.net/api/sante` doit répondre
+
+   ```json
+   {"ok":true,"service":"atelier-informatique","version":"94e3f1331da5","demarre":"…"}
+   ```
+
+   `version` est l'empreinte du code qui tourne réellement. Après chaque
+   redéploiement, une commande suffit pour savoir si le nouveau code a bien été repris —
+   la question qui, sans ça, ne se tranche qu'en observant le comportement de l'appli :
+
+   ```bash
+   node outils/empreinte.mjs https://TONCOMPTE.alwaysdata.net
+   ```
+
+   Elle affiche les deux empreintes, dit si elles concordent, et sort en erreur sinon.
+   Rien à incrémenter à la main : l'empreinte est calculée à partir des fichiers source
+   eux-mêmes, avec les fins de ligne normalisées pour qu'une copie Windows et une copie
+   Linux donnent le même résultat.
 
 ### 2.4 Brancher les jeux
 
@@ -288,3 +305,4 @@ node outils/atl.mjs purger --oui
 | « Session expirée » au bout de 12 h | normal, il suffit de se reconnecter |
 | La pastille affiche « hors ligne » | l'élève continue de jouer, tout est gardé sur le poste et repart au retour du réseau |
 | `/api/sante` ne répond pas | regarder les journaux du site dans l'admin alwaysdata ; le plus souvent une variable de base de données mal saisie |
+| Un correctif déployé semble sans effet | `node outils/empreinte.mjs https://…` : si les empreintes diffèrent, le processus n'a pas repris le nouveau code — redémarrer le site dans l'admin |
