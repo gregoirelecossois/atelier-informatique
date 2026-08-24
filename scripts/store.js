@@ -444,13 +444,28 @@ function quitter(){
 }
 
 if(CLOUD && session){
-  setTimeout(battre, 2000);
+  /* Battement immédiat, et non deux secondes plus tard : c'est ce qui permet
+     d'annoncer aussi le départ sur pagehide sans faire clignoter l'élève hors du
+     tableau de bord quand il passe simplement d'un atelier au suivant. Le trou
+     entre le départ de l'ancienne page et le battement de la nouvelle tombe sous
+     la centaine de millisecondes, là où le tableau n'interroge que toutes les
+     dix secondes. */
+  battre();
+  /* Second battement de sécurité. Le départ de la page précédente part en keepalive
+     et rien ne garantit qu'il arrive AVANT le battement de celle-ci : s'il arrive
+     après, il effacerait une présence pourtant bien réelle. Ce rappel la rétablit
+     en une seconde et demie au lieu de quarante-cinq. */
+  setTimeout(battre, 1500);
   setInterval(battre, BATTEMENT_MS);
-  /* On s'accroche à visibilitychange et NON à pagehide, et c'est le point clé :
-     passer d'un atelier à l'autre déclenche pagehide sans rien cacher du tout —
-     annoncer un départ là ferait clignoter l'élève hors du tableau de bord entre
-     deux pages. Fermer l'onglet, verrouiller le téléphone ou changer d'appli,
-     en revanche, passe bien par visibilitychange. */
+
+  /* Les deux signaux, parce qu'aucun ne couvre tous les cas :
+       pagehide          fermeture de fenêtre ou d'onglet sur ordinateur — le seul
+                         fiable là-dessus, visibilitychange n'est pas garanti ;
+       visibilitychange  téléphone verrouillé, changement d'application, onglet
+                         mis en arrière-plan — là où pagehide, lui, ne vient pas.
+     Envoyer le départ deux fois ne coûte rien : effacer une ligne déjà effacée
+     est sans effet. */
+  window.addEventListener('pagehide', quitter);
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState === 'visible') battre(); else quitter();
   });
