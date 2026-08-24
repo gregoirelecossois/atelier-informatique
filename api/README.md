@@ -137,7 +137,11 @@ Ce qu'on y fait :
   aux accents), tri par avancement, classe, dernière connexion ou présence ;
 - **voir qui travaille en ce moment**, dans quel atelier et à quel niveau — les élèves
   émettent un battement toutes les 45 s tant que leur onglet est visible, et la page
-  l'interroge toutes les 10 s ;
+  l'interroge toutes les 10 s. Un élève disparaît du direct de deux façons : il ferme
+  l'onglet, verrouille son téléphone ou change d'application, et son navigateur annonce
+  le départ — le point vert s'éteint aussitôt ; ou plus aucun battement n'arrive pendant
+  deux minutes, ce qui couvre la coupure de réseau et l'onglet tué de force. Passer d'un
+  atelier à l'autre, en revanche, ne l'éteint pas ;
 - **débloquer un niveau d'un clic** dans la fiche d'un élève, quand il bute depuis trois
   séances sur la même mission ;
 - **créer un compte**, réinitialiser un mot de passe, corriger un nom, une classe ou un

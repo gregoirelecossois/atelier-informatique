@@ -293,10 +293,26 @@ async function purgerComptesExpires() {
    On écrase la ligne précédente : savoir où en est un élève MAINTENANT sert à
    l'aider tout de suite ; garder la trace de ses allées et venues serait une
    collecte sans finalité.
+
+   Deux façons de disparaître du tableau de bord :
+     - le départ annoncé — l'élève ferme l'onglet ou passe à autre chose, le
+       navigateur envoie {parti:true} et la ligne s'efface tout de suite ;
+     - la péremption — plus de battement pendant PRESENCE_MINUTES, ce qui couvre
+       la coupure de réseau, le téléphone qui s'éteint, l'onglet tué de force.
+   Sans le premier, un élève parti restait « en ce moment » jusqu'à la fin du
+   délai : le tableau affichait quelqu'un au travail alors qu'il était sorti.
    -------------------------------------------------------------------------- */
+const PRESENCE_MINUTES = 2;   /* tolère un battement manqué, pas davantage */
+
 async function battement(req) {
   const s = await session(req);
   const corps = await lireCorps(req);
+
+  if (corps.parti) {
+    await db.q('delete from presence where compte_id = $1', [s.id]);
+    return { ok: true };
+  }
+
   const entier = (v, max) => {
     const n = parseInt(v, 10);
     return Number.isFinite(n) && n >= 0 && n <= max ? n : null;
@@ -378,7 +394,7 @@ async function profPresence(req) {
   await sessionProf(req);
   const r = await db.q(
     `select compte_id, atelier, niveau, mission, vu_le
-       from presence where vu_le > now() - interval '5 minutes'`);
+       from presence where vu_le > now() - ($1 || ' minutes')::interval`, [String(PRESENCE_MINUTES)]);
   return { presents: r.rows, maintenant: new Date().toISOString() };
 }
 
