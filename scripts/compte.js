@@ -80,8 +80,12 @@ function poserChip(){
   chip.innerHTML = '<span class="atl-pt"></span><span class="atl-txt"></span>';
   chip.addEventListener('click', ouvrir);
 
-  var bar = document.querySelector('.topbar');
-  if(bar){ bar.appendChild(chip); }
+  /* Une page peut réserver l'emplacement de la pastille avec data-atl-compte : c'est
+     ce que fait le tableau de bord, dont l'en-tête est déjà occupé et où une pastille
+     flottante en haut à gauche viendrait recouvrir le titre. À défaut, on se glisse
+     dans la .topbar des ateliers, et en dernier recours on flotte. */
+  var place = document.querySelector('[data-atl-compte]') || document.querySelector('.topbar');
+  if(place){ place.appendChild(chip); }
   else { chip.classList.add('atl-float'); document.body.appendChild(chip); }
 }
 

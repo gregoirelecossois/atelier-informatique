@@ -159,8 +159,12 @@ Ce qu'on y fait :
   le départ — le point vert s'éteint aussitôt ; ou plus aucun battement n'arrive pendant
   deux minutes, ce qui couvre la coupure de réseau et l'onglet tué de force. Passer d'un
   atelier à l'autre, en revanche, ne l'éteint pas ;
-- **débloquer un niveau d'un clic** dans la fiche d'un élève, quand il bute depuis trois
-  séances sur la même mission ;
+- **suivre finement** : chaque atelier affiche la position exacte, `N3·M2` — niveau 3,
+  mission 2 — plutôt qu'un simple numéro de niveau ;
+- **placer un élève mission par mission** : dans sa fiche, cliquer un niveau déplie ses
+  missions avec celle en cours mise en évidence, et un second clic y envoie l'élève.
+  Débloquer un niveau entier expédiait souvent l'élève plus loin qu'on ne voulait, et
+  afficher les trois cents missions d'emblée aurait noyé la fiche ;
 - **créer un compte**, réinitialiser un mot de passe, corriger un nom, une classe ou un
   identifiant, désactiver ou supprimer.
 
@@ -265,6 +269,18 @@ la taper de tête.
 ---
 
 ## 6. Entretien
+
+**Après avoir ajouté ou retiré une mission ou un niveau**, deux scripts remettent les
+compteurs d'aplomb — le tableau de bord s'en sert comme dénominateurs :
+
+```bash
+node scripts/compter-missions.mjs && node scripts/verifier-catalogue.mjs
+```
+
+Le premier recompte les missions de chaque niveau et les réécrit dans
+`scripts/ateliers.js` ; il recoupe sa somme avec `scripts/game-count.mjs` et refuse
+d'écrire en cas d'écart. Le second vérifie que l'atelier, le catalogue et les pastilles
+de la page d'accueil annoncent le même nombre de niveaux.
 
 **Sauvegarde** (à mettre en tâche planifiée alwaysdata, une fois par nuit) :
 

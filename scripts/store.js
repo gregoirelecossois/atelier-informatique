@@ -440,7 +440,24 @@ function battre(){
    requête de survivre à la fermeture de la page. */
 function quitter(){
   if(!mem || !session) return;
-  req('POST', '/api/presence', { parti: true }, { keepalive: true }).catch(function(){});
+  var corps = { parti: true, jeton: session.jeton };
+
+  /* sendBeacon d'abord, et ce n'est pas un détail : fermer complètement le navigateur
+     tue le processus avant qu'un fetch, même en keepalive, n'ait eu le temps de partir.
+     C'est le cas le plus banal en classe — l'élève ferme sa fenêtre au milieu d'une
+     mission — et c'était justement celui qui échouait. sendBeacon est fait pour ça :
+     le navigateur prend la requête en charge et la remet lui-même.
+     Le type text/plain évite la requête préliminaire CORS, que la page n'est plus là
+     pour attendre ; le jeton voyage dans le corps, faute d'en-tête possible. */
+  try{
+    if(navigator.sendBeacon){
+      var ok = navigator.sendBeacon(API + '/api/presence',
+        new Blob([JSON.stringify(corps)], { type: 'text/plain;charset=UTF-8' }));
+      if(ok) return;
+    }
+  }catch(e){}
+
+  req('POST', '/api/presence', corps, { keepalive: true }).catch(function(){});
 }
 
 if(CLOUD && session){
