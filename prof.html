@@ -215,8 +215,13 @@ function couleurAvancement(pc){
 /* ---- Peinture ------------------------------------------------------------ */
 function carteEleve(el){
   var av = avancementDe(el);
-  var p = etat.presents[el.id];
-  var atelier = p && p.atelier ? window.ATELIERS.filter(function(a){ return a.id === p.atelier; })[0] : null;
+  /* « Présent » exige une ligne de présence ET l'atelier qu'elle désigne. Une ligne
+     sans atelier ne dit rien de lisible à un professeur : la traiter comme une présence
+     teinterait la carte en vert sans rien expliquer. */
+  var pres = etat.presents[el.id];
+  var atelier = pres && pres.atelier
+    ? window.ATELIERS.filter(function(a){ return a.id === pres.atelier; })[0] : null;
+  var p = atelier ? pres : null;
 
   var mini = window.ATELIERS.map(function(a){
     var faits = niveauxFaits(a, el.niveaux && el.niveaux[a.id]);
@@ -227,7 +232,7 @@ function carteEleve(el){
       '<div class="nb">' + faits + '/' + a.niveaux.length + '</div></div>';
   }).join('');
 
-  var sous = p && atelier
+  var sous = p
     ? '<b>● en ce moment</b> · ' + esc(atelier.ic + ' ' + atelier.nom) + ' · niveau ' + (p.niveau || 1)
     : (el.derniere_connexion
         ? 'vu ' + quand(el.derniere_connexion)
