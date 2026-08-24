@@ -23,7 +23,9 @@ import * as db from './db.js';
 import * as auth from './auth.js';
 
 const PORT = Number(process.env.PORT || 8300);
-const HOTE = process.env.HOST || '0.0.0.0';
+/* alwaysdata impose d'écouter sur l'IP et le port qu'il fournit, et les expose sous
+   les noms IP et PORT ; d'autres hébergeurs utilisent HOST. On accepte les trois. */
+const HOTE = process.env.IP || process.env.HOST || '0.0.0.0';
 
 /* Domaines autorisés à appeler l'API depuis un navigateur. « * » n'est accepté que si
    on le demande explicitement (pratique en développement, à proscrire en production). */
