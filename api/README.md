@@ -42,19 +42,20 @@ très largement : 300 élèves occupent moins de 5 Mo.
    ssh TONCOMPTE@ssh-TONCOMPTE.alwaysdata.net
    ```
 
-   Récupère **le seul dossier `api/`**, sans jamais poser les 56 Mo du dépôt sur le
-   disque — l'archive est lue au vol, seul ce qui est demandé est écrit (~90 Ko) :
+   Récupère **les seuls fichiers de `api/`** — 86 Ko, en une seule ligne :
 
    ```bash
-   curl -sL https://github.com/gregoirelecossois/atelier-informatique/archive/refs/heads/main.tar.gz | tar xz --strip-components=1 --wildcards '*/api/*'
+   mkdir -p ~/api/outils && cd ~/api && B=https://raw.githubusercontent.com/gregoirelecossois/atelier-informatique/main/api && for f in package.json package-lock.json schema.sql env.js db.js auth.js server.js README.md .env.example .gitignore; do curl -sfL -o "$f" "$B/$f"; done && for f in atl.mjs motsdepasse.js; do curl -sfL -o "outils/$f" "$B/outils/$f"; done && ls -a
    ```
 
    ```bash
    cd ~/api && npm install
    ```
 
-   > Un `git clone` du dépôt entier ne passerait pas : 56 Mo de fichiers plus autant
-   > d'objets Git dépassent les 100 Mo du plan gratuit. L'API installée pèse moins d'1 Mo.
+   > Ni `git clone`, ni archive complète : 56 Mo de fichiers plus autant d'objets Git
+   > dépassent les 100 Mo du plan gratuit, et un `curl … | tar` se casse dès que le tuyau
+   > se perd au copier-coller — constaté en conditions réelles. Douze fichiers nommés,
+   > une ligne, rien à nettoyer. L'API installée pèse moins d'1 Mo.
 
 ### 2.3 Le site
 
