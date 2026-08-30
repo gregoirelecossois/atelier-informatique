@@ -361,7 +361,19 @@
     root.innerHTML=html;
     document.body.appendChild(root);
 
-    document.getElementById('dkToggle').onclick=()=>root.classList.toggle('open');
+    // Petit verrou enseignant : rien de sensible, juste éviter qu'un élève ouvre le
+    // panneau par curiosité. Le mot de passe est retenu pour la session de l'onglet.
+    function dkAuth(){
+      try{ if(sessionStorage.getItem('dk_auth')==='1') return true; }catch(e){}
+      const a=prompt('Espace enseignant — mot de passe :');
+      if(a==='dev35'){ try{ sessionStorage.setItem('dk_auth','1'); }catch(e){} return true; }
+      if(a!==null) alert('Mot de passe incorrect.');
+      return false;
+    }
+    document.getElementById('dkToggle').onclick=()=>{
+      if(!root.classList.contains('open') && !dkAuth()) return;
+      root.classList.toggle('open');
+    };
     function set(k,v){ Store.set(k,v); }
     function del(k){ Store.del(k); }
     document.getElementById('dkUnlockAll').onclick=()=>{
