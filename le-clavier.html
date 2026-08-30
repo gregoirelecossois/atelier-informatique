@@ -4591,7 +4591,19 @@ function confetti(){
     loadLevel(L, S, false);
   }
 
-  document.getElementById('dkToggle').onclick=()=>root.classList.toggle('open');
+  // Petit verrou enseignant : rien de sensible, juste éviter qu'un élève ouvre le
+  // panneau par curiosité. Le mot de passe est retenu pour la session de l'onglet.
+  function dkAuth(){
+    try{ if(sessionStorage.getItem('dk_auth')==='1') return true; }catch(e){}
+    const a=prompt('Espace enseignant — mot de passe :');
+    if(a==='dev35'){ try{ sessionStorage.setItem('dk_auth','1'); }catch(e){} return true; }
+    if(a!==null) alert('Mot de passe incorrect.');
+    return false;
+  }
+  document.getElementById('dkToggle').onclick=()=>{
+    if(!root.classList.contains('open') && !dkAuth()) return;
+    root.classList.toggle('open');
+  };
   root.querySelectorAll('.dk-step').forEach(b=>{
     b.onclick=()=>{ root.classList.remove('open'); devJump(+b.getAttribute('data-l'), +b.getAttribute('data-s')); };
   });
