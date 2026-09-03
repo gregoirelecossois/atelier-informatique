@@ -50,8 +50,13 @@ const ORIGINES = String(process.env.ORIGINES || '')
 
 /* Mêmes préfixes que scripts/store.js : le serveur ne stocke que ce qui appartient
    au jeu. Une clé qui n'entre pas dans cette liste est refusée, pas ignorée — mieux
-   vaut une erreur visible qu'une progression qui disparaît en silence. */
-const PREFIXES = ['ms_', 'kb_', 'tt_', 'df_', 'nv_', 'ml_', 'badges_', 'a11y_'];
+   vaut une erreur visible qu'une progression qui disparaît en silence.
+   ⚠ Les DEUX listes doivent rester jumelles : le client refuserait d'envoyer une clé
+   que le serveur accepte, et inversement le serveur rejetterait tout un envoi pour
+   une seule clé inconnue.
+   `pc_` appartient à l'application « Le PC » (dépôt gregoirelecossois/le-pc), qui
+   partage les mêmes comptes : même domaine de publication, donc même session. */
+const PREFIXES = ['ms_', 'kb_', 'tt_', 'df_', 'nv_', 'ml_', 'pc_', 'badges_', 'a11y_'];
 const CLE_OK = /^[a-z0-9_]{1,64}$/;
 
 const SESSION_MS = 12 * 60 * 60 * 1000;   /* une journée de classe, largement */

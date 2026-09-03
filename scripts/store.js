@@ -54,8 +54,10 @@ var API   = (location.protocol === 'file:') ? '' : String(CFG.api || '').replace
 var CLOUD = !!API;
 
 /* Les clés qui appartiennent à l'élève et le suivent de poste en poste. Tout le reste
-   (clés d'un autre script, essais divers) reste strictement local au navigateur. */
-var PREFIXES = ['ms_','kb_','tt_','df_','nv_','ml_','badges_','a11y_'];
+   (clés d'un autre script, essais divers) reste strictement local au navigateur.
+   ⚠ Liste jumelle de PREFIXES dans api/server.js : les deux doivent bouger ensemble.
+   `pc_` appartient à l'application « Le PC », qui charge ce même fichier. */
+var PREFIXES = ['ms_','kb_','tt_','df_','nv_','ml_','pc_','badges_','a11y_'];
 function aMoi(k){
   for(var i=0;i<PREFIXES.length;i++) if(k.indexOf(PREFIXES[i])===0) return true;
   return false;

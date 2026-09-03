@@ -200,7 +200,32 @@ Le schéma, lui, se rejoue tout seul au démarrage (`db.migrer()`, tout est en
 > pour les pages et l'API : plus rien à déclarer dans `ORIGINES`, et un seul domaine à
 > faire ouvrir dans le proxy du collège.
 
-### 2.6 Faire ouvrir le domaine
+### 2.6 Partager les comptes avec une autre application
+
+L'application **« Le PC »** (dépôt `gregoirelecossois/le-pc`) utilise les mêmes comptes
+élèves. Rien à installer côté serveur : elle est publiée sous le **même domaine**
+(`gregoirelecossois.github.io`), donc sur la **même origine** au sens du navigateur —
+le chemin ne compte pas. Elle voit la clé de session `atl_session` posée ici, et un
+élève connecté d'un côté l'est de l'autre, sans second écran de connexion.
+
+Ce qu'il a fallu, et ce qu'il faudra pour la suivante :
+
+1. **Un préfixe de clés** réservé à l'application (`pc_`), ajouté aux **deux** listes
+   jumelles — `PREFIXES` dans `api/server.js` et dans `scripts/store.js` — puis
+   redéploiement de l'API (§ 2.4).
+2. **`ORIGINES`** doit contenir le domaine de publication. Ici il y était déjà : c'est
+   le même que celui des jeux.
+3. Côté application, charger `scripts/store.js`, `scripts/compte.js` et
+   `scripts/config.js` **avant** son propre code, et faire passer toute sa persistance
+   par `Store.get/set/del` avec des clés préfixées.
+
+> Le tableau de bord enseignant **n'affiche pas** l'avancement de ces applications :
+> `PREFIXES_JEU` est une liste distincte, et `resumer()` attend une structure précise
+> (`<p>_curlevel`, `<p>_unlocked`, `<p>_step_l<n>`, trophée `<p>.master`). Une
+> application qui ne l'expose pas afficherait un avancement faux. À traiter au cas par
+> cas, quand l'application sait produire ces clés-là.
+
+### 2.7 Faire ouvrir le domaine
 
 7. **À faire avant la première séance** : demander au référent numérique / à la DSI
    d'autoriser le domaine dans le filtrage du collège. Sinon, trente élèves devant un
@@ -292,7 +317,10 @@ Autres commandes : `classes`, `classe`, `liste [classe]`, `mdp <identifiant>`,
   et un cookie tiers se fait bloquer aussi bien par les navigateurs que par les filtres
   d'établissement. Effet de bord agréable : aucune surface CSRF.
 - **Périmètre des clés** : le serveur n'accepte que les clés de jeu (`ms_`, `kb_`,
-  `tt_`, `df_`, `nv_`, `ml_`, `badges_`, `a11y_`). Tout le reste est refusé.
+  `tt_`, `df_`, `nv_`, `ml_`, `pc_`, `badges_`, `a11y_`). Tout le reste est refusé.
+  Cette liste est **jumelle** de `PREFIXES` dans `scripts/store.js` : les deux bougent
+  ensemble, sinon le client refuse d'envoyer une clé que le serveur accepte — ou le
+  serveur rejette tout un envoi pour une seule clé inconnue.
 
 ### Le mot de passe des élèves
 
