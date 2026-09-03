@@ -75,7 +75,12 @@
   .global .pc{font-weight:800;font-size:.8rem;min-width:36px;text-align:right}
   .global .tr{font-size:.78rem;font-weight:800;color:var(--gris)}
 
-  .mini{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+  .mini{display:grid;grid-template-columns:repeat(6,1fr) 9px 1fr;gap:5px;align-items:start}
+  /* Colonne des applications liées : séparée des six ateliers par un trait, parce
+     que « Le PC » n'en est pas un septième et ne doit pas se lire comme tel. */
+  .mini .sep{align-self:stretch;justify-self:center;width:1px;background:#dbe3ec;min-height:22px}
+  .mini .col.app .ic{filter:none}
+  .mini .col.jamais{opacity:.34}
   .mini .col{text-align:center}
   .mini .ic{font-size:.82rem;line-height:1}
   .mini .piste{height:6px;border-radius:999px;background:#e8eef5;overflow:hidden;margin-top:3px}
@@ -252,7 +257,10 @@ function carteEleve(el){
   var pres = etat.presents[el.id];
   var atelier = pres && pres.atelier
     ? window.ATELIERS.filter(function(a){ return a.id === pres.atelier; })[0] : null;
-  var p = atelier ? pres : null;
+  /* Une application liée compte comme une présence — l'élève travaille — mais elle
+     ne se décrit pas en niveaux et missions : elle a ses chapitres. */
+  var app = !atelier && pres && pres.atelier ? window.APP_LIEE(pres.atelier) : null;
+  var p = (atelier || app) ? pres : null;
 
   var mini = window.ATELIERS.map(function(a){
     var n = el.niveaux && el.niveaux[a.id];
@@ -266,11 +274,31 @@ function carteEleve(el){
       '<div class="nb">' + pos.court + '</div></div>';
   }).join('');
 
+  /* Les applications liées, après un séparateur. Elles ne comptent pas dans
+     l'avancement global : ce sont des comptes bruts, lus tels quels. */
+  mini += '<div class="sep"></div>' + window.APPS_LIEES.map(function(a){
+    var d = a.id === 'pc' ? el.pc : null;
+    if(!d) return '<div class="col app jamais" title="' + esc(a.nom + ' — jamais ouvert') + '">' +
+      '<div class="ic">' + a.ic + '</div>' +
+      '<div class="piste"></div><div class="nb">—</div></div>';
+    var total = a.chapitres.length;
+    var pct = Math.round(d.faits * 100 / total);
+    return '<div class="col app" title="' + esc(a.nom + ' — ' + d.faits + '/' + total +
+        ' chapitres · ' + d.etoiles + ' étoiles · ' + d.fiches + '/' + a.fiches + ' fiches · ' +
+        d.badges + '/' + a.badges + ' badges') + '">' +
+      '<div class="ic">' + a.ic + '</div>' +
+      '<div class="piste"><div class="jus" style="width:' + pct + '%;background:' + a.hue + '"></div></div>' +
+      '<div class="nb">' + d.faits + '/' + total + '</div></div>';
+  }).join('');
+
   var sous = p
-    ? '<b>● en ce moment</b> · ' + esc(atelier.ic + ' ' + atelier.nom) + ' · ' +
-      'N' + (p.niveau || 1) + ' · M' + ((p.mission || 0) + 1) +
-      (atelier.missions && atelier.missions[(p.niveau || 1) - 1]
-        ? '/' + atelier.missions[(p.niveau || 1) - 1] : '')
+    ? (atelier
+        ? '<b>● en ce moment</b> · ' + esc(atelier.ic + ' ' + atelier.nom) + ' · ' +
+          'N' + (p.niveau || 1) + ' · M' + ((p.mission || 0) + 1) +
+          (atelier.missions && atelier.missions[(p.niveau || 1) - 1]
+            ? '/' + atelier.missions[(p.niveau || 1) - 1] : '')
+        : '<b>● en ce moment</b> · ' + esc(app.ic + ' ' + app.nom) + ' · ' +
+          'chapitre ' + Math.min(p.niveau || 1, app.chapitres.length) + '/' + app.chapitres.length)
     : (el.derniere_connexion
         ? 'vu ' + quand(el.derniere_connexion)
         : 'ne s\'est jamais connecté');
@@ -387,6 +415,42 @@ function ouvrir(html){
 }
 document.addEventListener('keydown', function(e){ if(e.key === 'Escape') fermer(); });
 
+/* Bloc des applications liées dans la fiche d'un élève.
+   La lecture parse la progression de l'application pour SAVOIR OÙ IL EN EST ; l'écriture,
+   elle, ne touche jamais à ce blob : elle dépose une instruction (cf. plus bas). Si
+   l'application renomme un chapitre, on l'affiche non terminé — on se dégrade, on ne
+   corrompt rien. */
+function blocApps(d){
+  return window.APPS_LIEES.map(function(a){
+    var faits = {};
+    try{
+      var etat = JSON.parse(d[a.id + '_progression'] || 'null');
+      var res = etat && etat.state && etat.state.results;
+      if(res) for(var k in res) if(res[k] && res[k].done) faits[k] = true;
+    }catch(err){ /* progression illisible : tout s'affiche comme non fait */ }
+
+    var jamais = !d[a.id + '_progression'];
+    var enAttente = d[a.debloquer];
+
+    var boutons = a.chapitres.map(function(c, i){
+      var cl = faits[c.id] ? ' class="fait"' : '';
+      return '<button data-app="' + a.id + '" data-c="' + (i + 1) + '"' + cl +
+        ' title="' + esc(c.nom + (faits[c.id] ? ' — terminé' : '') +
+          ' · ouvrir les chapitres 1 à ' + (i + 1)) + '">' + (i + 1) + '</button>';
+    }).join('');
+
+    return '<div class="bloc"><h3>' + a.ic + ' ' + esc(a.nom) + '</h3>' +
+      '<p class="aide">Application à part, pas un atelier — elle ne compte pas dans ' +
+      'l\'avancement global ni dans les trophées. Vert = chapitre terminé. Cliquer un ' +
+      'numéro <b>ouvre les chapitres 1 à celui-là</b> ; rien n\'est jamais retiré, et ' +
+      'ça s\'applique à la prochaine ouverture de l\'application par l\'élève.' +
+      (jamais ? ' <b>Il ne l\'a encore jamais ouverte.</b>' : '') +
+      (enAttente ? ' <b>Ouverture jusqu\'au chapitre ' + esc(enAttente) +
+        ' en attente</b> — il ne s\'est pas reconnecté depuis.' : '') + '</p>' +
+      '<div class="at"><div class="niv">' + boutons + '</div></div></div>';
+  }).join('');
+}
+
 function ficheEleve(id){
   api('GET', '/api/prof/eleve/' + id).then(function(r){
     var e = r.eleve, d = r.progression || {};
@@ -439,6 +503,8 @@ function ficheEleve(id){
         'bleu = niveau en cours, gris pâle = encore verrouillé. Utile quand quelqu\'un bloque ' +
         'depuis trois séances sur la même mission.</p>' + ateliers + '</div>' +
 
+      blocApps(d) +
+
       '<div class="bloc"><h3>Le compte</h3>' +
         '<div class="actes">' +
           '<button class="btn" id="bMdp">🔑 Nouveau mot de passe</button>' +
@@ -449,6 +515,28 @@ function ficheEleve(id){
 
     function dire(cl, html){ b.querySelector('#msg').innerHTML = '<div class="msg ' + cl + '">' + html + '</div>'; }
     function echec(err){ dire('ko', esc(err.message || 'Échec.')); }
+
+    /* Déblocage d'une application liée : on n'écrit PAS dans sa progression. On y dépose
+       une instruction d'un seul nombre, que l'application lit à son prochain démarrage,
+       applique avec sa propre logique, puis efface elle-même. C'est ce qui permet à
+       « Le PC » de refondre son modèle de données sans que cette page ait à suivre. */
+    b.querySelectorAll('.niv button[data-app]').forEach(function(bt){
+      bt.onclick = function(){
+        var app = window.APP_LIEE(bt.getAttribute('data-app'));
+        var n = +bt.getAttribute('data-c');
+        if(!app) return;
+        var majs = {};
+        majs[app.debloquer] = String(n);
+        api('PUT', '/api/prof/eleve/' + id + '/progression', { majs: majs })
+          .then(function(){
+            dire('ok', esc(app.nom) + ' : chapitres 1 à ' + n + ' ouverts à <b>' + esc(e.prenom) +
+              '</b>.<br>Ils s\'appliqueront à sa prochaine ouverture de l\'application. ' +
+              'Rien n\'est retiré : ce qu\'il a déjà réussi reste acquis.');
+            return chargerTableau();
+          })
+          .catch(echec);
+      };
+    });
 
     b.querySelector('#bEnregistrer').onclick = function(){
       api('PATCH', '/api/prof/eleve/' + id, {
@@ -468,7 +556,9 @@ function ficheEleve(id){
       b.querySelectorAll('.niv button.ouvert').forEach(function(x){ x.classList.remove('ouvert'); });
     }
 
-    b.querySelectorAll('.niv button').forEach(function(bt){
+    /* [data-at] et non « .niv button » : les applications liées réutilisent la même
+       classe pour leurs chapitres, et ce gestionnaire-ci ne parle que des ateliers. */
+    b.querySelectorAll('.niv button[data-at]').forEach(function(bt){
       bt.onclick = function(){
         var at = bt.getAttribute('data-at'), n = +bt.getAttribute('data-n');
         var a = window.ATELIERS.filter(function(x){ return x.id === at; })[0];

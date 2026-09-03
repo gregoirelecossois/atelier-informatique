@@ -51,3 +51,56 @@ window.ATELIER_PAR_FICHIER = function(chemin){
 /* Nombre total de niveaux, tous ateliers confondus — le dénominateur de l'avancement
    global affiché dans le tableau de bord. */
 window.ATELIERS_TOTAL_NIVEAUX = window.ATELIERS.reduce(function(n, a){ return n + a.niveaux.length; }, 0);
+
+/* ---------------------------------------------------------------------------
+   Applications LIÉES — délibérément hors de window.ATELIERS.
+
+   « Le PC » partage les comptes élèves (même origine, même session), mais ce n'est
+   PAS un septième atelier : il vit dans un autre dépôt, il raisonne en chapitres et
+   en étoiles plutôt qu'en niveaux et missions, et il ne compte ni dans l'avancement
+   global, ni dans le compteur de jeux de la page d'accueil, ni dans les trophées.
+   L'ajouter à ATELIERS aurait faussé ces trois-là d'un coup.
+
+   Le tableau de bord l'affiche donc à part, après les six colonnes et derrière un
+   séparateur. Les totaux sont ici parce que le serveur ne les connaît pas : il ne
+   renvoie que des comptes bruts (cf. resumerLePc dans api/server.js).
+
+   Les chapitres sont listés ici pour l'AFFICHAGE seulement — jamais pour écrire dans la
+   progression de l'application. Si « Le PC » en renomme un, le tableau de bord l'affiche
+   simplement comme non terminé : il se dégrade, il ne corrompt rien. Le déblocage, lui,
+   passe par une instruction d'un seul nombre (cf. `debloquer` ci-dessous).
+   --------------------------------------------------------------------------- */
+window.APPS_LIEES = [
+  { id:'pc', nom:'Le PC', ic:'🖥️', hue:'#0ea5e9',
+    sousTitre:'monte ton ordinateur',
+    url:'https://gregoirelecossois.github.io/le-pc/',
+    /* Clé d'instruction : le tableau de bord y écrit un simple numéro de chapitre, que
+       l'application lit à son démarrage, applique AVEC SA PROPRE LOGIQUE, puis efface.
+       Le contrat entre les deux dépôts tient dans ce nombre : c'est ce qui permet à
+       « Le PC » de refondre son modèle de données sans rien casser ici. */
+    debloquer:'pc_debloquer',
+    fiches:15, badges:10,
+    chapitres:[
+      { id:'decouverte',    nom:'La visite guidée' },
+      { id:'nommer',        nom:'Comment ça s\'appelle ?' },
+      { id:'reperer',       nom:'Trouve-le dans la tour' },
+      { id:'roles',         nom:'À quoi ça sert ?' },
+      { id:'montage',       nom:'Le montage' },
+      { id:'cablage',       nom:'Le câblage' },
+      { id:'peripheriques', nom:'Nomme les périphériques' },
+      { id:'branchement',   nom:'Branche les périphériques' },
+      { id:'demontage',     nom:'Le démontage' },
+      { id:'defi',          nom:'Le défi du technicien' }
+    ] }
+];
+
+/* Retrouve une application liée par son identifiant de présence. Même rôle que
+   ATELIER_PAR_FICHIER pour les six ateliers, mais l'application se déclare elle-même
+   (window.ATELIER_POSITION) : elle n'est pas servie depuis ce dépôt, son nom de
+   fichier ne nous apprendrait rien. */
+window.APP_LIEE = function(id){
+  for (var i = 0; i < window.APPS_LIEES.length; i++) {
+    if (window.APPS_LIEES[i].id === id) return window.APPS_LIEES[i];
+  }
+  return null;
+};

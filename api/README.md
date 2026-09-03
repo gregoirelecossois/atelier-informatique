@@ -200,7 +200,80 @@ Le schéma, lui, se rejoue tout seul au démarrage (`db.migrer()`, tout est en
 > pour les pages et l'API : plus rien à déclarer dans `ORIGINES`, et un seul domaine à
 > faire ouvrir dans le proxy du collège.
 
-### 2.6 Faire ouvrir le domaine
+### 2.6 Partager les comptes avec une autre application
+
+L'application **« Le PC »** (dépôt `gregoirelecossois/le-pc`) utilise les mêmes comptes
+élèves. Rien à installer côté serveur : elle est publiée sous le **même domaine**
+(`gregoirelecossois.github.io`), donc sur la **même origine** au sens du navigateur —
+le chemin ne compte pas. Elle voit la clé de session `atl_session` posée ici, et un
+élève connecté d'un côté l'est de l'autre, sans second écran de connexion.
+
+Ce qu'il a fallu, et ce qu'il faudra pour la suivante :
+
+1. **Un préfixe de clés** réservé à l'application (`pc_`), ajouté aux **deux** listes
+   jumelles — `PREFIXES` dans `api/server.js` et dans `scripts/store.js` — puis
+   redéploiement de l'API (§ 2.4).
+2. **`ORIGINES`** doit contenir le domaine de publication. Ici il y était déjà : c'est
+   le même que celui des jeux.
+3. Côté application, charger `scripts/store.js`, `scripts/compte.js` et
+   `scripts/config.js` **avant** son propre code, et faire passer toute sa persistance
+   par `Store.get/set/del` avec des clés préfixées.
+
+#### Dans le tableau de bord
+
+« Le PC » y figure, mais **à part** : après les six colonnes d'ateliers, derrière un
+séparateur. Ce n'est pas un septième atelier — il vit dans un autre dépôt, raisonne en
+chapitres et en étoiles plutôt qu'en niveaux et missions, et il ne compte **ni** dans
+l'avancement global, **ni** dans le compteur de jeux de la page d'accueil, **ni** dans
+les trophées. C'est pourquoi il n'est pas dans `window.ATELIERS` mais dans
+`window.APPS_LIEES` (`scripts/ateliers.js`), et pas dans `PREFIXES_JEU` non plus.
+
+Le partage du travail : le serveur renvoie des **comptes bruts** (`resumerLePc` lit la
+clé `pc_progression` et en tire chapitres finis, étoiles, fiches, badges, XP) et ignore
+comme toujours la structure des jeux ; les **totaux** vivent côté client, dans
+`APPS_LIEES`, où ils sont déjà tenus. Un élève qui n'y a jamais joué a une colonne grisée
+et un tiret, pas un zéro qui ressemblerait à un échec.
+
+Pour la présence « en ce moment », l'application se déclare elle-même : elle pose une
+fonction `window.ATELIER_POSITION` renvoyant `{ atelier, niveau, mission }`, que
+`scripts/store.js` interroge à chaque battement. Son nom de fichier ne nous apprendrait
+rien, elle n'est pas servie depuis ce dépôt.
+
+> Une application qui n'expose **ni** l'un **ni** l'autre reste silencieuse : ni colonne,
+> ni présence. C'est volontaire — un avancement faux serait pire que pas d'avancement.
+
+#### Débloquer un chapitre : par instruction, jamais par écriture directe
+
+Dans la fiche d'un élève, cliquer un chapitre de « Le PC » **n'écrit pas** dans sa
+progression. Le tableau de bord y dépose une **instruction d'un seul nombre** :
+
+```js
+majs['pc_debloquer'] = '5'
+```
+
+L'application la lit à son démarrage (et à `store:maj`, si le professeur a cliqué pendant
+qu'elle était ouverte ailleurs), l'applique **avec sa propre logique**, puis **efface la
+clé** elle-même.
+
+Pourquoi ce détour : la progression de « Le PC » est un unique objet JSON, où débloquer
+signifie marquer `done` tous les chapitres précédents, avec des `stars`, `bestScore`,
+`mistakes`, `seconds` et `hintsUsed` qu'il faudrait **inventer**. Le tableau de bord
+devrait donc embarquer une copie du modèle de données de l'autre dépôt — un modèle qui a
+déjà changé une fois (chapitre 7 scindé en deux, migration `v1 → v2`). Le jour où il
+rebouge, on écrirait silencieusement des données fausses dans la progression d'un élève.
+Avec l'instruction, le contrat entre les deux dépôts tient dans un nombre.
+
+Deux garanties, tenues côté application et vérifiées :
+
+- **rien n'est jamais retiré ni dégradé** — un chapitre déjà réussi garde ses étoiles ;
+- **les résultats fabriqués valent zéro étoile** : ils disent « ce chapitre est ouvert »,
+  pas « il l'a réussi ». Ni l'élève ni le professeur ne doit lire une réussite là où il
+  n'y en a pas eu. L'XP n'est pas touchée non plus.
+
+Tant que l'élève ne s'est pas reconnecté, la fiche affiche « ouverture jusqu'au
+chapitre N **en attente** ».
+
+### 2.7 Faire ouvrir le domaine
 
 7. **À faire avant la première séance** : demander au référent numérique / à la DSI
    d'autoriser le domaine dans le filtrage du collège. Sinon, trente élèves devant un
@@ -292,7 +365,10 @@ Autres commandes : `classes`, `classe`, `liste [classe]`, `mdp <identifiant>`,
   et un cookie tiers se fait bloquer aussi bien par les navigateurs que par les filtres
   d'établissement. Effet de bord agréable : aucune surface CSRF.
 - **Périmètre des clés** : le serveur n'accepte que les clés de jeu (`ms_`, `kb_`,
-  `tt_`, `df_`, `nv_`, `ml_`, `badges_`, `a11y_`). Tout le reste est refusé.
+  `tt_`, `df_`, `nv_`, `ml_`, `pc_`, `badges_`, `a11y_`). Tout le reste est refusé.
+  Cette liste est **jumelle** de `PREFIXES` dans `scripts/store.js` : les deux bougent
+  ensemble, sinon le client refuse d'envoyer une clé que le serveur accepte — ou le
+  serveur rejette tout un envoi pour une seule clé inconnue.
 
 ### Le mot de passe des élèves
 

@@ -54,8 +54,10 @@ var API   = (location.protocol === 'file:') ? '' : String(CFG.api || '').replace
 var CLOUD = !!API;
 
 /* Les clés qui appartiennent à l'élève et le suivent de poste en poste. Tout le reste
-   (clés d'un autre script, essais divers) reste strictement local au navigateur. */
-var PREFIXES = ['ms_','kb_','tt_','df_','nv_','ml_','badges_','a11y_'];
+   (clés d'un autre script, essais divers) reste strictement local au navigateur.
+   ⚠ Liste jumelle de PREFIXES dans api/server.js : les deux doivent bouger ensemble.
+   `pc_` appartient à l'application « Le PC », qui charge ce même fichier. */
+var PREFIXES = ['ms_','kb_','tt_','df_','nv_','ml_','pc_','badges_','a11y_'];
 function aMoi(k){
   for(var i=0;i<PREFIXES.length;i++) if(k.indexOf(PREFIXES[i])===0) return true;
   return false;
@@ -418,21 +420,49 @@ if(CLOUD && session) amorcer(0);
    niveau des clés déjà présentes. Silencieux tant que personne n'est connecté.
    --------------------------------------------------------------------------- */
 var BATTEMENT_MS = 45000;
+var aBattu = false;   /* cette page a-t-elle déjà réclamé la présence ? cf. quitter() */
+
+var NULLE_PART = { atelier: null, niveau: null, mission: null };
 
 function ouSuisJe(){
   var a = window.ATELIER_PAR_FICHIER ? window.ATELIER_PAR_FICHIER(location.pathname) : null;
-  if(!a) return { atelier: null, niveau: null, mission: null };
-  var n = parseInt(get(a.id + '_curlevel') || '1', 10) || 1;
+  if(a){
+    var n = parseInt(get(a.id + '_curlevel') || '1', 10) || 1;
+    return {
+      atelier: a.id,
+      niveau: n,
+      mission: parseInt(get(a.id + '_step_l' + n) || '0', 10) || 0
+    };
+  }
+  /* Application LIÉE (« Le PC ») : elle n'est pas servie depuis ce dépôt, son nom de
+     fichier ne nous apprend rien, et elle ne range pas sa progression en niveaux. Elle
+     se déclare donc elle-même. Contrat : renvoyer { atelier, niveau, mission }, avec un
+     `atelier` que scripts/ateliers.js connaît (window.APPS_LIEES). Tout le reste est
+     ignoré — une application tierce ne décide pas de ce qu'affiche le tableau de bord. */
+  var d = null;
+  try{ d = typeof window.ATELIER_POSITION === 'function' ? window.ATELIER_POSITION() : null; }
+  catch(e){ d = null; }
+  if(!d || !d.atelier) return NULLE_PART;
   return {
-    atelier: a.id,
-    niveau: n,
-    mission: parseInt(get(a.id + '_step_l' + n) || '0', 10) || 0
+    atelier: String(d.atelier).slice(0, 40),
+    niveau: parseInt(d.niveau, 10) || 1,
+    mission: parseInt(d.mission, 10) || 0
   };
 }
 
 function battre(){
   if(!mem || !session || document.visibilityState === 'hidden') return;
-  req('POST', '/api/presence', ouSuisJe()).catch(function(){ /* sans conséquence */ });
+  var ou = ouSuisJe();
+  /* Une page qui ne sait pas dire OÙ elle est ne réclame pas la présence : la page
+     d'accueil, et toute application extérieure qui partage les comptes (« Le PC »).
+     Ce n'est pas de la coquetterie — la ligne de présence est UNIQUE par élève
+     (clé primaire compte_id) et s'écrase à chaque battement. Sans ce garde-fou, un
+     élève qui garde un second onglet ouvert, ce qui est la norme en classe, efface
+     toutes les 45 secondes le « N3 · M2 » que le tableau de bord vient d'afficher :
+     il disparaît de l'écran du professeur alors qu'il travaille. */
+  if(!ou.atelier) return;
+  aBattu = true;
+  req('POST', '/api/presence', ou).catch(function(){ /* sans conséquence */ });
 }
 
 /* Départ annoncé : sans lui, un élève qui ferme son onglet resterait affiché
@@ -441,6 +471,10 @@ function battre(){
    requête de survivre à la fermeture de la page. */
 function quitter(){
   if(!mem || !session) return;
+  /* Symétrique du garde-fou de battre() : seule une page qui a RÉCLAMÉ la présence a le
+     droit de l'effacer. Sinon fermer un second onglet — l'accueil, « Le PC » — sortirait
+     du tableau de bord un élève resté en plein atelier dans le premier. */
+  if(!aBattu) return;
   var corps = { parti: true, jeton: session.jeton };
 
   /* sendBeacon d'abord, et ce n'est pas un détail : fermer complètement le navigateur

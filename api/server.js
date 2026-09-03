@@ -50,8 +50,13 @@ const ORIGINES = String(process.env.ORIGINES || '')
 
 /* Mêmes préfixes que scripts/store.js : le serveur ne stocke que ce qui appartient
    au jeu. Une clé qui n'entre pas dans cette liste est refusée, pas ignorée — mieux
-   vaut une erreur visible qu'une progression qui disparaît en silence. */
-const PREFIXES = ['ms_', 'kb_', 'tt_', 'df_', 'nv_', 'ml_', 'badges_', 'a11y_'];
+   vaut une erreur visible qu'une progression qui disparaît en silence.
+   ⚠ Les DEUX listes doivent rester jumelles : le client refuserait d'envoyer une clé
+   que le serveur accepte, et inversement le serveur rejetterait tout un envoi pour
+   une seule clé inconnue.
+   `pc_` appartient à l'application « Le PC » (dépôt gregoirelecossois/le-pc), qui
+   partage les mêmes comptes : même domaine de publication, donc même session. */
+const PREFIXES = ['ms_', 'kb_', 'tt_', 'df_', 'nv_', 'ml_', 'pc_', 'badges_', 'a11y_'];
 const CLE_OK = /^[a-z0-9_]{1,64}$/;
 
 const SESSION_MS = 12 * 60 * 60 * 1000;   /* une journée de classe, largement */
@@ -464,8 +469,38 @@ function resumer(l) {
     id: l.id, identifiant: l.identifiant, prenom: l.prenom, nom: l.nom,
     classe: l.classe, classe_id: l.classe_id, role: l.role, actif: l.actif,
     cree_le: l.cree_le, derniere_connexion: l.derniere_connexion,
-    niveaux, trophees
+    niveaux, trophees, pc: resumerLePc(d)
   };
+}
+
+/* « Le PC » n'est PAS un septième atelier : c'est une application à part, avec ses
+ * chapitres et ses étoiles, et le tableau de bord l'affiche à côté des six, séparément.
+ * Sa progression n'a donc pas la forme <p>_curlevel / <p>_step_l<n> que lit la boucle
+ * ci-dessus — c'est un seul objet JSON, écrit par zustand.
+ *
+ * On en tire des COMPTES, jamais des pourcentages : le serveur ignore volontairement
+ * combien l'application a de chapitres, comme il ignore le contenu des six ateliers.
+ * Les totaux vivent dans scripts/ateliers.js, côté client, où ils sont déjà tenus.
+ *
+ * Renvoie null si l'élève n'y a jamais joué — le tableau de bord grise la colonne
+ * plutôt que d'afficher un zéro qui ressemble à un échec.
+ */
+function resumerLePc(d) {
+  try {
+    const s = JSON.parse(d.pc_progression || 'null')?.state;
+    if (!s) return null;
+    const res = s.results && typeof s.results === 'object' ? s.results : {};
+    const finis = Object.values(res).filter((r) => r && r.done);
+    return {
+      faits: finis.length,
+      etoiles: finis.reduce((t, r) => t + (Number(r.stars) || 0), 0),
+      fiches: Array.isArray(s.discovered) ? s.discovered.length : 0,
+      badges: Array.isArray(s.badges) ? s.badges.length : 0,
+      xp: Number(s.xp) || 0
+    };
+  } catch {
+    return null;   /* progression illisible : comme si elle n'existait pas */
+  }
 }
 
 async function lesClasses() {
