@@ -165,6 +165,17 @@ cd ~/api && node outils/empreinte.mjs https://TONCOMPTE.alwaysdata.net
 Tant que ça dit « Le serveur fait tourner un AUTRE code », inutile de chercher le bug
 ailleurs. `.env` n'est jamais écrasé par ces commandes : il n'est pas dans la liste.
 
+Pour interroger une route directement depuis le poste Windows, `curl.exe` et pas `curl` :
+sous PowerShell, `curl` est un **alias d'`Invoke-WebRequest`**, qui ne comprend ni `-s`
+ni `-w` et répond « Argument manquant pour le paramètre SessionVariable ».
+
+```powershell
+curl.exe -s -o - -w "`nHTTP %{http_code}`n" -X POST https://TONCOMPTE.alwaysdata.net/api/mdp -H "Content-Type: application/json" -d "{}"
+```
+
+`401 Connexion requise.` = la route est là et réclame un jeton, c'est le résultat
+attendu. `404 Route inconnue.` = le site n'a pas redémarré.
+
 Le schéma, lui, se rejoue tout seul au démarrage (`db.migrer()`, tout est en
 `if not exists`) — une colonne ajoutée dans `schema.sql` n'a pas besoin d'être appliquée
 à la main.
