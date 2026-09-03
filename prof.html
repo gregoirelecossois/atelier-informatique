@@ -423,7 +423,8 @@ function ficheEleve(id){
       '<div class="id">identifiant <b>' + esc(e.identifiant) + '</b> · créé le ' +
         new Date(e.cree_le).toLocaleDateString('fr-FR') +
         (e.derniere_connexion ? ' · vu ' + quand(e.derniere_connexion) : ' · jamais connecté') +
-        (e.actif ? '' : ' · <b style="color:var(--rouge)">compte désactivé</b>') + '</div>' +
+        (e.actif ? '' : ' · <b style="color:var(--rouge)">compte désactivé</b>') +
+        (e.doit_changer_mdp ? ' · <b>mot de passe provisoire</b>, l\'élève en choisira un à sa prochaine connexion' : '') + '</div>' +
       '<div id="msg"></div>' +
       '<div class="grille">' +
         '<div><label>Prénom</label><input id="fPrenom" value="' + esc(e.prenom) + '"></div>' +
@@ -507,8 +508,9 @@ function ficheEleve(id){
 
     b.querySelector('#bMdp').onclick = function(){
       api('POST', '/api/prof/eleve/' + id + '/mdp', {}).then(function(r2){
-        dire('ok', 'Nouveau mot de passe de <b>' + esc(e.prenom) + '</b> : <code>' + esc(r2.motdepasse) +
-          '</code><br>Note-le maintenant, il ne sera plus jamais affiché. Ses sessions ouvertes sont fermées.');
+        dire('ok', 'Nouveau mot de passe <b>provisoire</b> de <b>' + esc(e.prenom) + '</b> : <code>' + esc(r2.motdepasse) +
+          '</code><br>Note-le maintenant, il ne sera plus jamais affiché. Ses sessions ouvertes sont fermées, ' +
+          'et il devra choisir son propre mot de passe dès sa prochaine connexion.');
       }).catch(echec);
     };
 
@@ -561,8 +563,9 @@ function fenetreNouveau(){
       });
     }).then(function(c){
       b.querySelector('#msg').innerHTML = '<div class="msg ok">Compte créé.<br>Identifiant : <code>' +
-        esc(c.identifiant) + '</code><br>Mot de passe : <code>' + esc(c.motdepasse) + '</code><br>' +
-        'Recopie-le maintenant : il ne sera plus jamais affiché.</div>';
+        esc(c.identifiant) + '</code><br>Mot de passe <b>provisoire</b> : <code>' + esc(c.motdepasse) + '</code><br>' +
+        'Recopie-le maintenant : il ne sera plus jamais affiché. À sa première connexion, l\'élève devra ' +
+        'choisir lui-même son mot de passe — celui-ci ne servira qu\'une fois.</div>';
       b.querySelector('#nPrenom').value = ''; b.querySelector('#nNom').value = '';
       b.querySelector('#nClasseNeuve').value = '';
       bt.disabled = false;

@@ -82,3 +82,68 @@ export function formePour(role, force) {
   if (force === 'court' || force === 'prononcable' || force === 'coffre') return force;
   return role === 'prof' ? 'coffre' : 'prononcable';
 }
+
+/* --------------------------------------------------------------------------
+   Le mot de passe CHOISI PAR L'ÉLÈVE (première connexion)
+
+   Le mot de passe fabriqué plus haut est TEMPORAIRE : il voyage sur une feuille
+   imprimée, il passe entre les mains de l'enseignant, il traîne parfois dans un
+   cahier. À sa première connexion, l'élève en choisit un que personne d'autre ne
+   connaît — c'est la condition pour que l'empreinte en base ait un sens.
+
+   Les quatre familles exigées (majuscule, minuscule, chiffre, symbole) ne sont pas
+   qu'une case à cocher réglementaire : le N5 du clavier apprend justement à taper
+   @ # € + ( ) = _ " et la ponctuation, et cet écran est le premier endroit où ça sert
+   pour de vrai.
+
+   ⚠️ Honnêteté sur l'entropie : un mot de passe CHOISI par un humain de 11 ans
+   n'atteint pas les ~55 bits d'un mot de passe TIRÉ AU HASARD, même avec quatre
+   familles et cette longueur. Ce qui maintient le compte dans le palier « 50 bits avec
+   restriction d'accès » de la recommandation CNIL 2022-100, c'est la limitation des
+   tentatives (auth.bloque : 10 essais par identifiant sur 10 minutes) — pas la seule
+   composition. Le registre de traitement doit dire ça, et pas autre chose.
+
+   MDP_MIN se change ici, et ici seulement : les messages affichés à l'élève comme les
+   contrôles serveur en découlent. 12 caractères avec les quatre familles, c'est la
+   formulation historique de la CNIL, et c'est un choix de terrain : les élèves de
+   l'atelier sont rodés au clavier — ils viennent d'y passer sept niveaux, dont un
+   consacré aux symboles. La copie dans scripts/compte.js est à changer en même temps.
+   -------------------------------------------------------------------------- */
+export const MDP_MIN = 12;
+export const MDP_MAX = 128;   /* pas une exigence de sécurité : une borne d'entrée */
+
+/* Les accents comptent comme des lettres, pas comme des symboles : « é » ne doit pas
+   passer pour un caractère spécial, sinon la règle ne veut plus rien dire côté élève. */
+const A_MAJUSCULE = /[A-ZÀ-ÖØ-Þ]/;
+const A_MINUSCULE = /[a-zß-öø-ÿ]/;
+const A_CHIFFRE   = /[0-9]/;
+const A_SYMBOLE   = /[^0-9A-Za-zÀ-ÖØ-öø-ÿ\s]/;
+
+/* Le libellé est écrit POUR L'ÉLÈVE : c'est ce texte exact qui s'affiche dans la
+   fenêtre de création (scripts/compte.js en tient la copie mot pour mot). */
+export const REGLES_MDP = [
+  { cle: 'longueur',  texte: `au moins ${MDP_MIN} caractères`,      ok: (m) => m.length >= MDP_MIN },
+  { cle: 'majuscule', texte: 'une MAJUSCULE',                       ok: (m) => A_MAJUSCULE.test(m) },
+  { cle: 'minuscule', texte: 'une minuscule',                       ok: (m) => A_MINUSCULE.test(m) },
+  { cle: 'chiffre',   texte: 'un chiffre',                          ok: (m) => A_CHIFFRE.test(m) },
+  { cle: 'symbole',   texte: 'un symbole (! ? @ # € + - _ …)',      ok: (m) => A_SYMBOLE.test(m) }
+];
+
+/* Renvoie la liste des règles NON respectées, vide si tout va bien. */
+export function reglesManquantes(mdp) {
+  const m = String(mdp || '');
+  return REGLES_MDP.filter((r) => !r.ok(m));
+}
+
+/* Lève une erreur lisible par l'élève, ou ne fait rien. Le serveur l'appelle avant
+   tout hachage : la fenêtre du navigateur affiche les mêmes règles, mais rien
+   n'empêche d'appeler l'API directement. */
+export function verifierPolitique(mdp) {
+  const m = String(mdp || '');
+  if (m.length > MDP_MAX) throw new Error(`Mot de passe trop long (${MDP_MAX} caractères maximum).`);
+  if (/\s/.test(m)) throw new Error('Pas d\'espace dans le mot de passe.');
+  const manque = reglesManquantes(m);
+  if (manque.length) {
+    throw new Error('Il manque ' + manque.map((r) => r.texte).join(', ') + '.');
+  }
+}

@@ -65,7 +65,19 @@ function css(){
   '.atl-rgpd p{margin:9px 0 0;text-align:left;}',
   '.atl-who{background:#f4f8fd;border-radius:14px;padding:13px 15px;margin:0 0 16px;}',
   '.atl-who b{display:block;font-size:1.05rem;}',
-  '.atl-who span{color:#5d6f83;font-size:.84rem;}'
+  '.atl-who span{color:#5d6f83;font-size:.84rem;}',
+
+  /* Liste des règles du mot de passe : elle se coche en direct pendant la frappe.
+     Un élève de 6e ne lit pas une phrase de refus après coup — il regarde ce qui
+     manque encore pendant qu'il tape. */
+  '.atl-regles{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:3px;}',
+  '.atl-regles li{font-size:.82rem;font-weight:700;color:#8a99aa;line-height:1.35;}',
+  '.atl-regles li::before{content:"○ ";font-weight:800;}',
+  '.atl-regles li.ok{color:#16a34a;}',
+  '.atl-regles li.ok::before{content:"✓ ";}',
+  '.atl-vu{display:flex;align-items:center;gap:7px;margin:-6px 0 14px;font-size:.8rem;',
+    'font-weight:700;color:#5d6f83;cursor:pointer;user-select:none;}',
+  '.atl-vu input{width:auto;margin:0;}'
   ].join('');
   (document.head||document.documentElement).appendChild(s);
 }
@@ -82,7 +94,9 @@ function poserChip(){
   chip.type = 'button';
   chip.className = 'atl-chip';
   chip.innerHTML = '<span class="atl-pt"></span><span class="atl-txt"></span>';
-  chip.addEventListener('click', ouvrir);
+  /* Enveloppé : addEventListener passerait l'événement en 1er argument, que `ouvrir`
+     prendrait pour une vue à afficher. */
+  chip.addEventListener('click', function(){ ouvrir(); });
 
   /* Une page peut réserver l'emplacement de la pastille avec data-atl-compte : c'est
      ce que fait le tableau de bord, dont l'en-tête est déjà occupé et où une pastille
@@ -123,23 +137,28 @@ function peindre(e){
    3. La fenêtre
    --------------------------------------------------------------------------- */
 var back = null;
+var verrouillee = false;   /* fenêtre qu'on ne peut pas refermer : création du mot de passe */
 
 function fermer(){
-  if(!back) return;
+  if(!back || verrouillee) return;
   document.removeEventListener('keydown', auClavier, true);
   if(back.parentNode) back.parentNode.removeChild(back);
   back = null;
 }
 function auClavier(ev){ if(ev.key === 'Escape'){ ev.stopPropagation(); fermer(); } }
 
-function ouvrir(){
-  if(back) return;
+/* `vue` force un écran précis ; sans elle on montre le compte ou la connexion.
+   `bloquante` retire les deux sorties habituelles (Échap et clic dans le vide) : c'est
+   le cas de la création du mot de passe, qu'on ne contourne pas en cliquant à côté. */
+function ouvrir(vue, bloquante){
+  if(back){ if(!vue) return; fermer(); }
+  verrouillee = !!bloquante;
   back = document.createElement('div');
   back.className = 'atl-back';
   back.addEventListener('mousedown', function(ev){ if(ev.target === back) fermer(); });
   document.addEventListener('keydown', auClavier, true);
   document.body.appendChild(back);
-  (Store.eleve() ? vueCompte : vueConnexion)();
+  (vue || (Store.eleve() ? vueCompte : vueConnexion))();
 }
 
 function vueCompte(){
@@ -158,6 +177,8 @@ function vueCompte(){
         ? '<a class="atl-btn primaire" href="prof.html" style="display:block;text-align:center;'+
           'text-decoration:none;margin-bottom:9px">📊 Suivi des élèves</a>'
         : '')+
+      '<button type="button" class="atl-btn ghost" data-a="mdp" style="width:100%;margin-bottom:9px">'+
+        '🔑 Changer mon mot de passe</button>'+
       '<div class="atl-acts">'+
         '<button type="button" class="atl-btn ghost" data-a="fermer">Continuer</button>'+
         '<button type="button" class="atl-btn danger" data-a="sortir">Se déconnecter</button>'+
@@ -166,10 +187,132 @@ function vueCompte(){
     '</div>';
 
   back.querySelector('[data-a=fermer]').onclick = fermer;
+  back.querySelector('[data-a=mdp]').onclick = function(){ vueMotDePasse(false); };
   back.querySelector('[data-a=sortir]').onclick = function(){
     var b = this; b.disabled = true; b.textContent = 'Sauvegarde…';
     Store.deconnexion().then(function(){ location.reload(); });
   };
+}
+
+/* ---------------------------------------------------------------------------
+   3 bis. Le mot de passe que l'élève choisit lui-même
+
+   Le mot de passe distribué par l'enseignant est TEMPORAIRE : il a été imprimé, lu à
+   voix haute, parfois recopié sur un cahier. Tant qu'il sert, l'empreinte gardée en
+   base ne protège rien. À la première connexion, l'élève en choisit donc un que
+   personne d'autre ne connaît — et il le tape DEUX FOIS, parce qu'un mot de passe
+   choisi puis mal retapé est un compte perdu jusqu'à la prochaine réinitialisation.
+
+   Les règles ci-dessous sont la copie EXACTE de REGLES_MDP dans api/motsdepasse.js.
+   Ici elles servent à guider pendant la frappe ; c'est le serveur qui décide.
+   --------------------------------------------------------------------------- */
+var MDP_MIN = 12;   /* doit rester égal à MDP_MIN dans api/motsdepasse.js */
+var REGLES = [
+  { texte: 'au moins ' + MDP_MIN + ' caractères', ok: function(m){ return m.length >= MDP_MIN; } },
+  { texte: 'une MAJUSCULE',                       ok: function(m){ return /[A-ZÀ-ÖØ-Þ]/.test(m); } },
+  { texte: 'une minuscule',                       ok: function(m){ return /[a-zß-öø-ÿ]/.test(m); } },
+  { texte: 'un chiffre',                          ok: function(m){ return /[0-9]/.test(m); } },
+  { texte: 'un symbole (! ? @ # € + - _ …)',      ok: function(m){ return /[^0-9A-Za-zÀ-ÖØ-öø-ÿ\s]/.test(m); } }
+];
+
+/* `premiere` : première connexion — la fenêtre est bloquante et ne demande pas le mot
+   de passe actuel (l'élève vient de s'en servir pour entrer). Sinon c'est un changement
+   volontaire depuis « Ton compte », et le mot de passe actuel est exigé. */
+function vueMotDePasse(premiere){
+  var el = Store.eleve() || {};
+  back.innerHTML =
+    '<div class="atl-box">'+
+      '<h2>'+(premiere ? 'Choisis ton mot de passe' : 'Changer ton mot de passe')+'</h2>'+
+      '<p class="atl-sub">'+
+        (premiere
+          ? 'Bienvenue '+esc(el.prenom)+' ! Celui que ton professeur t\'a donné était provisoire. '+
+            'Invente-en un que <b>toi seul</b> connais, et retiens-le bien : personne ne pourra te le redonner.'
+          : 'Choisis un nouveau mot de passe. Tes autres sessions ouvertes seront fermées.')+
+      '</p>'+
+      '<div id="atlErr"></div>'+
+      (premiere ? '' :
+        '<label for="atlAnc">Ton mot de passe actuel</label>'+
+        '<input id="atlAnc" type="password" autocomplete="off" placeholder="•••••••••">')+
+      '<label for="atlN1">Nouveau mot de passe</label>'+
+      '<input id="atlN1" type="password" autocomplete="off" placeholder="•••••••••">'+
+      '<ul class="atl-regles" id="atlRegles">'+
+        REGLES.map(function(r){ return '<li>'+esc(r.texte)+'</li>'; }).join('')+
+      '</ul>'+
+      '<label class="atl-vu"><input type="checkbox" id="atlVu"> Montrer ce que je tape</label>'+
+      '<label for="atlN2">Retape-le pour vérifier</label>'+
+      '<input id="atlN2" type="password" autocomplete="off" placeholder="•••••••••">'+
+      '<div class="atl-acts">'+
+        (premiere ? '' : '<button type="button" class="atl-btn ghost" data-a="fermer">Annuler</button>')+
+        '<button type="button" class="atl-btn primary" data-a="ok">Enregistrer</button>'+
+      '</div>'+
+      /* L'exemple doit passer les règles telles qu'elles sont réglées : 16 caractères,
+         les quatre familles. Le proposer trop court apprendrait le contraire de la règle. */
+      '<p class="atl-note">Un bon mot de passe se retient sans se deviner : pense à deux mots '+
+        'à toi, colle-les, et glisse une majuscule, des chiffres et un signe. '+
+        'Exemple de forme (n\'utilise pas celui-là) : <b>Marcelbaleine35!</b></p>'+
+    '</div>';
+
+  var anc = back.querySelector('#atlAnc'),
+      n1  = back.querySelector('#atlN1'),
+      n2  = back.querySelector('#atlN2'),
+      vu  = back.querySelector('#atlVu'),
+      lis = back.querySelectorAll('#atlRegles li'),
+      btn = back.querySelector('[data-a=ok]'),
+      err = back.querySelector('#atlErr');
+
+  function erreur(msg){ err.innerHTML = '<div class="atl-err">' + esc(msg) + '</div>'; }
+
+  function cocher(){
+    var m = n1.value, i;
+    for(i = 0; i < REGLES.length; i++){
+      if(REGLES[i].ok(m)) lis[i].classList.add('ok'); else lis[i].classList.remove('ok');
+    }
+  }
+  n1.addEventListener('input', cocher);
+
+  /* Une seule case pour les deux champs : un élève qui n'arrive pas à retaper à
+     l'identique a besoin de VOIR les deux, pas seulement le premier. */
+  vu.addEventListener('change', function(){
+    var t = vu.checked ? 'text' : 'password';
+    n1.type = t; n2.type = t;
+  });
+
+  function envoyer(){
+    var m = n1.value, m2 = n2.value, i;
+    for(i = 0; i < REGLES.length; i++){
+      if(!REGLES[i].ok(m)){ erreur('Il manque : ' + REGLES[i].texte + '.'); n1.focus(); return; }
+    }
+    if(m !== m2){
+      erreur('Les deux mots de passe ne sont pas les mêmes. Retape le second.');
+      n2.value = ''; n2.focus(); return;
+    }
+    btn.disabled = true; btn.textContent = 'Enregistrement…'; err.innerHTML = '';
+    Store.changerMdp(m, anc ? anc.value : '').then(function(){
+      verrouillee = false;
+      fermer();
+      /* Pas de rechargement : la progression est déjà chargée et la session tient
+         toujours — recharger ferait perdre une mission commencée. */
+      if(chip) peindre(Store.etat());
+    }).catch(function(e){
+      /* En première connexion, un 401 ne peut pas venir d'un mot de passe actuel faux
+         (on ne le demande pas) : la session est tombée. Sans ce cas, l'élève resterait
+         enfermé dans une fenêtre qu'il ne peut pas refermer. */
+      if(premiere && e && e.statut === 401){ verrouillee = false; location.reload(); return; }
+      btn.disabled = false; btn.textContent = 'Enregistrer';
+      erreur(e && e.message && e.statut ? e.message
+        : 'Impossible de joindre le serveur. Préviens ton professeur.');
+      if(e && e.statut === 401 && anc){ anc.value = ''; anc.focus(); }
+    });
+  }
+
+  btn.onclick = envoyer;
+  var annuler = back.querySelector('[data-a=fermer]');
+  if(annuler) annuler.onclick = fermer;
+  [anc, n1, n2].forEach(function(inp){
+    if(!inp) return;
+    inp.addEventListener('keydown', function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); envoyer(); } });
+  });
+  setTimeout(function(){ (anc || n1).focus(); }, 30);
 }
 
 function vueConnexion(){
@@ -239,7 +382,26 @@ function demarrer(){
   Store.surEtat(peindre);
   /* Session tombée pendant la partie : on le dit franchement plutôt que de laisser
      l'élève jouer une heure pour rien. */
-  Store.surEtat(function(e){ if(e === 'expire' && !back) ouvrir(); });
+  Store.surEtat(function(e){
+    if(e !== 'expire') return;
+    /* La session est tombée pendant que l'élève choisissait son mot de passe : on
+       déverrouille, sinon il reste devant un formulaire que le serveur refusera. */
+    if(verrouillee){ verrouillee = false; fermer(); }
+    if(!back) ouvrir();
+  });
+  verifierMdpProvisoire();
+  /* Le profil arrive parfois APRÈS le premier peindre() : /api/moi le rafraîchit au
+     démarrage, et c'est lui qui porte le drapeau si la page a été rouverte plus tard. */
+  Store.surEtat(function(){ verifierMdpProvisoire(); });
+}
+
+/* Mot de passe encore provisoire : l'élève le remplace avant de jouer. La fenêtre est
+   bloquante — sans quoi la moitié de la classe cliquerait « plus tard » et le mot de
+   passe imprimé resterait le vrai mot de passe toute l'année. */
+function verifierMdpProvisoire(){
+  var el = Store.eleve();
+  if(!el || !el.doitChangerMdp || back) return;
+  ouvrir(function(){ vueMotDePasse(true); }, true);
 }
 
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer);
