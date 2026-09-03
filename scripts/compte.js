@@ -299,6 +299,24 @@ function vueMotDePasse(premiere){
          enfermé dans une fenêtre qu'il ne peut pas refermer. */
       if(premiere && e && e.statut === 401){ verrouillee = false; location.reload(); return; }
       btn.disabled = false; btn.textContent = 'Enregistrer';
+      /* 404 : les pages suivent GitHub Pages, l'API vit chez l'hébergeur et se
+         redéploie à la main. Un décalage entre les deux donne un « Route inconnue. »
+         du serveur, qui ne veut rien dire pour un élève — et surtout, l'élève n'y
+         peut rien. On le dit dans ses mots et on déverrouille : il doit pouvoir
+         continuer à jouer en attendant. Cf. api/README.md § 2.4. */
+      if(e && e.statut === 404){
+        verrouillee = false;
+        erreur('Le serveur du collège n\'est pas encore à jour : impossible de changer '+
+               'ton mot de passe pour l\'instant. Préviens ton professeur, et continue à jouer.');
+        var acts = back.querySelector('.atl-acts');
+        if(acts && !back.querySelector('[data-a=fermer]')){
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'atl-btn ghost'; b.textContent = 'Continuer sans changer';
+          b.onclick = fermer;
+          acts.insertBefore(b, acts.firstChild);
+        }
+        return;
+      }
       erreur(e && e.message && e.statut ? e.message
         : 'Impossible de joindre le serveur. Préviens ton professeur.');
       if(e && e.statut === 401 && anc){ anc.value = ''; anc.focus(); }
