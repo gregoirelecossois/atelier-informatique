@@ -845,8 +845,10 @@
   "win_jalon": "Défi réussi ! Bravo, tu maîtrises. Passe à la suite.",
   "win_review": "Bien joué ! Tu as refait cette mission. On revient à ta mission en cours, ta progression est gardée.",
   "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau jeu s'ouvre.",
-  "ease_pursuit": "On ralentit pour toi ! La vague violette avancera moins vite, pour cette mission et toutes les suivantes du niveau.",
-  "ease_trace": "On ralentit pour toi ! La barre de traçage se remplira moins vite, pour cette mission et toutes les suivantes du niveau.",
+  "ease_pursuit": "On ralentit pour toi ! La vague violette avancera moins vite, et elle te laissera plus d'avance au départ, pour cette mission et toutes les suivantes du niveau. Et si c'est encore trop dur, tu pourras demander encore plus facile, autant de fois que tu veux.",
+  "ease_trace": "On ralentit pour toi ! La barre de traçage se remplira moins vite, et tu auras une connexion de plus, pour cette mission et toutes les suivantes du niveau. Et si c'est encore trop dur, tu pourras demander encore plus facile, autant de fois que tu veux.",
+  "ease_fall": "On ralentit pour toi ! Les lettres tomberont moins vite, elles arriveront moins souvent, et tu auras un cœur de plus, pour cette mission et toutes les suivantes du niveau. Et si c'est encore trop dur, tu pourras demander encore plus facile, autant de fois que tu veux.",
+  "ease_invaders": "On ralentit pour toi ! Les aliens avanceront moins vite, ils arriveront moins souvent, et tu auras un cœur de plus, pour cette mission et toutes les suivantes du niveau. Et si c'est encore trop dur, tu pourras demander encore plus facile, autant de fois que tu veux.",
   "course_finish": "Parcours terminé ! Incroyable, tu as fini les sept niveaux du clavier, et tu as éteint K0RT3X pour de bon. Tu tapes comme un pro !",
   "boss_hint_hack": "Lis l'alerte en haut du terminal, puis tape la commande affichée, lettre par lettre, avant que la barre rouge de traçage soit pleine. La case jaune te montre où tu en es. Vise juste : chaque mauvaise touche te coûte une connexion. S'il y a deux commandes, attention : l'une est un piège ! Tape celle qui répond à l'alerte. Et quand il t'aspire dans sa mémoire, déplace-toi avec les touches Z, Q, S et D pour récupérer toutes ses clés sans te faire rattraper. Clique sur l'ampoule si tu cherches une touche.",
   "boss_hint_swarm": "Déplace ton vaisseau avec les touches F et J. Aligne-toi juste sous un alien, puis tape sa lettre pour tirer au laser. Quand le vaisseau-mère est vulnérable, tape les symboles et les chiffres affichés.",
@@ -1159,13 +1161,23 @@ function getUnlocked(){ let u=parseInt(store.get('kb_unlocked')||'1',10); if(isN
 function getSavedStep(n){ let s=parseInt(store.get('kb_step_l'+n)||'0',10); return (isNaN(s)||s<0)?0:s; }
 function saveProgress(){ store.set('kb_step_l'+currentLevel, String(progressIdx)); }
 
-/* ---- Aide « Plus facile » (missions chronométrées : défi du N5, poursuites du N7) ----
+/* ---- Aide « Plus facile » (toutes les missions qui peuvent être perdues) ----
    Après 2 échecs D'AFFILÉE sur une même mission, la popup d'échec propose de ralentir la
    menace. L'aide vaut pour TOUT le reste du niveau (pas seulement la mission ratée) et se
-   cumule : 2 nouveaux échecs d'affilée la remontent d'un cran, jusqu'à KB_EASE_MAX.
+   CUMULE SANS FIN : 2 nouveaux échecs d'affilée la remontent d'un cran, et aucun « dernier
+   cran » n'est jamais annoncé à l'élève.
    Elle n'est JAMAIS appliquée aux combats de boss, qui ont leur propre sélecteur de
    difficulté (KB_BOSS_MODES / HB_TUNING) — cf. kbCanEase(). Gardée dans le stockage :
-   un élève qui ferme l'atelier après avoir bloqué ne repart pas au niveau le plus dur. */
+   un élève qui ferme l'atelier après avoir bloqué ne repart pas au niveau le plus dur.
+
+   Où c'est branché — partout où une mission a des cœurs, des connexions ou une vague :
+     • N1 et N2, le parachute : lettres qui tombent moins vite, moins souvent, et un cœur
+       de plus par cran ;
+     • N3 et N4, l'invasion : mêmes trois leviers sur les aliens ;
+     • N5, le défi du traçage : barre plus lente, et une connexion 📡 de plus par cran ;
+     • N7, les poursuites : vague plus lente, plus de répit avant qu'elle démarre, et une
+       plus grande avance au départ.
+   (N6 n'a aucune condition d'échec : rien à alléger, et aucune popup où l'accrocher.) */
 /* ---- Trophées (scripts/badges.js, partagé par tout l'atelier) ----
    Raccourci tolérant : si le fichier n'est pas chargé, le jeu continue sans trophées. */
 const KB_LEVEL_BADGES={3:'kb.l3', 4:'kb.l4', 6:'kb.l6'};
@@ -1173,16 +1185,32 @@ function bdg(id, opts){ return window.Badges ? Badges.award(id, opts) : false; }
 /* « Frappe nette » : un niveau est parfait si l'aide « Plus facile » n'y a jamais été activée. */
 function kbLevelClean(n){ return loadEase(n)===0; }
 
-const KB_EASE_MAX=4, KB_EASE_MUL=0.8;
+/* KB_EASE_MAX n'est PAS un plafond pédagogique mais une borne arithmétique : au-delà,
+   0,8^n finit par valoir 0 et une division par zéro donnerait une durée à Infinity. */
+const KB_EASE_MAX=50, KB_EASE_MUL=0.8, KB_EASE_FLOOR=0.2, KB_SPAWN_MAX=1.8;
 let kbEaseSteps=0;    // nb d'aides accumulées sur le niveau courant
 let kbFailStreak=0;   // échecs d'affilée sur la mission en cours
 function loadEase(n){ let e=parseInt(store.get('kb_ease_l'+n)||'0',10); return (isNaN(e)||e<0)?0:Math.min(e,KB_EASE_MAX); }
 function saveEase(){ store.set('kb_ease_l'+currentLevel, String(kbEaseSteps)); }
-/* Facteur appliqué à la VITESSE de la menace : 1 = normal, 0,8 = 20 % plus lent, etc.
-   Les chronos (barre de traçage) durent à l'inverse plus longtemps : durée / kbEaseFactor(). */
-function kbEaseFactor(){ return Math.pow(KB_EASE_MUL, kbEaseSteps); }
-/* Une mission peut être allégée si elle a une menace chronométrée et que ce n'est pas un boss. */
-function kbCanEase(){ return !!(currentStep && currentStep.mode!=='boss' && (currentStep.pursuit || currentStep.energies)); }
+function kbEaseRaw(){ return Math.pow(KB_EASE_MUL, kbEaseSteps); }
+/* Facteur appliqué à la VITESSE de la menace : 1 = normal, 0,8 = 20 % plus lent. Planchonné :
+   sous KB_EASE_FLOOR, une lettre qui tombe encore moins vite ne se verrait plus tomber. */
+function kbEaseFactor(){ return Math.max(KB_EASE_FLOOR, kbEaseRaw()); }
+/* Une DURÉE allégée (barre de traçage, répit avant la vague) : elle dure plus longtemps, sans borne. */
+function kbEaseLonger(ms){ return ms ? ms/kbEaseRaw() : 0; }
+/* L'intervalle entre deux apparitions s'étire, mais pas au-delà de KB_SPAWN_MAX : sinon la
+   mission ne serait plus difficile, juste interminable — 30 lettres à attendre une par une. */
+function kbEaseSpawn(ms){ return ms ? ms*Math.min(KB_SPAWN_MAX, 1/kbEaseRaw()) : ms; }
+/* Le levier qui reste utile quand la vitesse a touché son plancher : +1 par cran, sans plafond.
+   Sert aux cœurs (parachute, invasion), aux connexions 📡 (N5) et à l'avance de départ (N7). */
+function kbEaseBonus(){ return kbEaseSteps; }
+/* Une mission peut être allégée si elle peut RÉELLEMENT être perdue (cœurs, connexions ou
+   vague qui rattrape) et que ce n'est pas un boss — le boss a des `lives` lui aussi, d'où
+   le test sur `mode` en premier. */
+function kbCanEase(){
+  return !!(currentStep && currentStep.mode!=='boss'
+            && (currentStep.pursuit || currentStep.energies || currentStep.lives));
+}
 
 let soundOn = (store.get('kb_sound')||'1')==='1';
 
@@ -1297,9 +1325,13 @@ function startParachute(step){
     + '</div>'
     + '<div class="field" id="field"><div class="ground"></div></div>';
   const field=document.getElementById('field');
+  // « Plus facile » : lettres plus lentes, plus espacées, et un cœur de plus par cran.
+  // maxLives est gardé à part — le HUD dessinait la rangée de cœurs d'après step.lives,
+  // qui ne connaît pas les cœurs ajoutés par l'aide.
+  const lives=step.lives+kbEaseBonus();
   Object.assign(P,{
-    step, field, items:[], cleared:0, lives:step.lives, target:step.target,
-    speed:step.speed, spawnMs:step.spawnMs, pool:step.pool, running:true,
+    step, field, items:[], cleared:0, lives, maxLives:lives, target:step.target,
+    speed:step.speed*kbEaseFactor(), spawnMs:kbEaseSpawn(step.spawnMs), pool:step.pool, running:true,
     last:0, nextSpawn:0, groundY:0, raf:0
   });
   P.groundY=field.clientHeight - 58;
@@ -1314,8 +1346,12 @@ function startParachute(step){
   P.raf=requestAnimationFrame(loopP);
 }
 function lowestItem(){ let low=null; if(P.items) for(const it of P.items){ if(!low||it.y>low.y) low=it; } return low; }
+/* Au-delà de 10 cœurs (« Plus facile » cumulé), la rangée déborderait du bandeau, qui doit
+   tenir sur une ligne : on bascule sur un compteur. Idem dans updateInvHud et hackHud. */
 function updateHud(){
-  let h=''; for(let i=0;i<P.step.lives;i++) h+= (i<P.lives?'❤️':'<span class="lost">🖤</span>');
+  let h;
+  if(P.maxLives>10){ h='❤️ ×'+Math.max(0,P.lives); }
+  else { h=''; for(let i=0;i<P.maxLives;i++) h+= (i<P.lives?'❤️':'<span class="lost">🖤</span>'); }
   document.getElementById('hudLives').innerHTML=h;
   document.getElementById('hudCount').textContent=P.cleared+' / '+P.target+' réussies';
   document.getElementById('hudMeter').style.width=Math.min(100,P.cleared/P.target*100)+'%';
@@ -1452,10 +1488,12 @@ function startInvaders(step){
     + '</div>'
     + '<div class="field invaders" id="field"><div class="ship" id="invShip">🚀</div></div>';
   const field=document.getElementById('field');
+  // « Plus facile » : aliens plus lents, plus espacés, et un cœur de plus par cran (cf. startP).
+  const lives=step.lives+kbEaseBonus();
   Object.assign(I,{
     step, field, ship:document.getElementById('invShip'),
-    items:[], cleared:0, lives:step.lives, target:step.target,
-    speed:step.speed*INV_SPEED_MULT, spawnMs:step.spawnMs, pool:step.pool, running:true,
+    items:[], cleared:0, lives, maxLives:lives, target:step.target,
+    speed:step.speed*INV_SPEED_MULT*kbEaseFactor(), spawnMs:kbEaseSpawn(step.spawnMs), pool:step.pool, running:true,
     last:0, nextSpawn:0, groundY:0, raf:0,
     phase:'normal', combo:0, killsSinceBoss:0, miniBoss:null
   });
@@ -1471,7 +1509,9 @@ function startInvaders(step){
   I.raf=requestAnimationFrame(loopI);
 }
 function updateInvHud(){
-  let h=''; for(let i=0;i<I.step.lives;i++) h+= (i<I.lives?'❤️':'<span class="lost">🖤</span>');
+  let h;
+  if(I.maxLives>10){ h='❤️ ×'+Math.max(0,I.lives); }
+  else { h=''; for(let i=0;i<I.maxLives;i++) h+= (i<I.lives?'❤️':'<span class="lost">🖤</span>'); }
   document.getElementById('hudLives').innerHTML=h;
   document.getElementById('hudCount').textContent=I.cleared+' / '+I.target+' détruits';
   document.getElementById('hudMeter').style.width=Math.min(100,I.cleared/I.target*100)+'%';
@@ -1678,7 +1718,11 @@ function startHackterm(step){
   const chal=!!step.energies;
   Object.assign(H,{
     sid, step, chal, codes:step.codes.slice(), codeIdx:0, code:[], pos:0,
-    hits:0, errors:0, energies:step.energies||0, ready:false, running:true,
+    // « Plus facile » : une connexion 📡 de plus par cran. maxEnergies est gardé à part,
+    // le HUD dessinait la rangée d'après step.energies (qui ignore les crans d'aide).
+    hits:0, errors:0, energies:(step.energies||0)+(step.energies?kbEaseBonus():0),
+    maxEnergies:(step.energies||0)+(step.energies?kbEaseBonus():0),
+    ready:false, running:true,
     raf:0, traceDur:0, traceElapsed:0, lastTs:0
   });
   stage.innerHTML=
@@ -1715,7 +1759,10 @@ function updateHtHud(){
   const m=document.getElementById('htMeter');
   if(m) m.style.width=(H.codeIdx/H.codes.length*100)+'%';
   const lk=document.getElementById('htLinks');
-  if(lk){ let h=''; for(let i=0;i<(H.step.energies||0);i++) h+=(i<H.energies?'📡':'<span class="lost">📡</span>'); lk.innerHTML=h; }
+  if(lk){ let h;
+    if(H.maxEnergies>10){ h='📡 ×'+Math.max(0,H.energies); }
+    else { h=''; for(let i=0;i<(H.maxEnergies||0);i++) h+=(i<H.energies?'📡':'<span class="lost">📡</span>'); }
+    lk.innerHTML=h; }
 }
 function updateRadar(){
   const z=document.getElementById('radZone'); if(!z) return;
@@ -1752,7 +1799,7 @@ function newHackCode(){
 }
 function startTrace(){
   // « Plus facile » : le traçage est une DURÉE, on l'allonge donc au lieu de la réduire
-  H.traceDur=((H.step.traceBase||4200)+(H.step.tracePerChar||1300)*H.code.length)/kbEaseFactor();
+  H.traceDur=kbEaseLonger((H.step.traceBase||4200)+(H.step.tracePerChar||1300)*H.code.length);
   H.traceElapsed=0; H.lastTs=0;
   const f=document.getElementById('htTrace'); if(f) f.style.width='0%';
   if(H.raf) cancelAnimationFrame(H.raf);
@@ -1854,7 +1901,10 @@ function startDactylo(step){
     + '</div>';
   Object.assign(D,{
     step, text:step.text, i:0, errors:0, hits:0, running:true,
-    pursuit, chaser:-(step.lead||4), startTs:0, lastTs:0, started:false, grace:step.grace||0, raf:0,
+    // « Plus facile » : la vague part de plus loin derrière (un caractère d'avance de plus
+    // par cran) et attend plus longtemps avant de démarrer. Sa vitesse est ralentie dans loopD.
+    pursuit, chaser:-((step.lead||4)+kbEaseBonus()), startTs:0, lastTs:0, started:false,
+    grace:kbEaseLonger(step.grace||0), raf:0,
     typeMs:0, typeTs:0   // chrono de frappe : démarre à la 1re lettre, se met en pause si le jeu est mis en pause
   });
   renderType();
@@ -4183,6 +4233,7 @@ function onWin(sc){
 function onFail(reason, tip){
   kbFailStreak++;
   // 2 échecs d'affilée : on propose de ralentir la menace pour la suite du niveau
+  // L'offre ne s'épuise jamais : un élève qui bloque doit toujours pouvoir demander plus facile.
   const offerEase = kbFailStreak>=2 && kbCanEase() && kbEaseSteps<KB_EASE_MAX;
   modal.className='modal bad';
   modal.innerHTML='<span class="m-emoji">🙈</span><h2>'+reason+'</h2>'
@@ -4197,19 +4248,24 @@ function onFail(reason, tip){
 /* Applique un cran d'aide et confirme à l'élève, en nommant la menace du niveau. */
 function applyEase(){
   kbEaseSteps=Math.min(KB_EASE_MAX, kbEaseSteps+1); kbFailStreak=0; saveEase();
-  const pursuit=!!(currentStep&&currentStep.pursuit);
-  const what=pursuit ? 'La <b>vague violette</b> avancera <b>moins vite</b>'
-                     : 'La <b>barre de traçage</b> se remplira <b>moins vite</b>';
-  const more=kbEaseSteps<KB_EASE_MAX
-    ? 'Et si c\'est encore trop dur, on pourra ralentir <b>encore</b> plus tard.'
-    : 'C\'est le réglage le plus tranquille : tu as tout le temps qu\'il faut.';
+  // Quatre menaces possibles, on nomme celle que l'élève a sous les yeux : la vague du N7,
+  // la barre de traçage du N5, les lettres du parachute (N1-N2) ou les aliens (N3-N4).
+  const st=currentStep||{}, lvl=LEVELS[currentLevel-1]||{};
+  const kind = st.pursuit    ? 'pursuit'
+             : st.energies   ? 'trace'
+             : lvl.game==='invaders' ? 'invaders' : 'fall';
+  const what = kind==='pursuit'  ? 'La <b>vague violette</b> avancera <b>moins vite</b>, et elle te laissera <b>plus d\'avance</b> au départ'
+             : kind==='trace'    ? 'La <b>barre de traçage</b> se remplira <b>moins vite</b>, et tu auras une <b>connexion de plus</b>'
+             : kind==='invaders' ? 'Les <b>aliens</b> avanceront <b>moins vite</b>, ils arriveront <b>moins souvent</b>, et tu auras un <b>cœur de plus</b>'
+                                 : 'Les <b>lettres</b> tomberont <b>moins vite</b>, elles arriveront <b>moins souvent</b>, et tu auras un <b>cœur de plus</b>';
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🐢</span>'
-    +'<div class="kicker" style="color:var(--green-d)">Aide '+kbEaseSteps+' sur '+KB_EASE_MAX+'</div>'
+    +'<div class="kicker" style="color:var(--green-d)">Aide n° '+kbEaseSteps+'</div>'
     +'<h2>On ralentit pour toi !</h2>'
-    +'<p>'+what+', pour cette mission <b>et toutes les suivantes</b> du niveau. '+more+'</p>'
+    +'<p>'+what+', pour cette mission <b>et toutes les suivantes</b> du niveau. '
+    +'Et si c\'est encore trop dur, tu pourras demander <b>encore</b> plus facile, autant de fois que tu veux.</p>'
     +'<div class="m-actions"><button class="m-btn primary green" id="easeGo">C\'est parti ! 🚀</button></div>';
-  modal.dataset.ttsText=(window.TTS_STATIC||{})[pursuit?'ease_pursuit':'ease_trace'] || '';
+  modal.dataset.ttsText=(window.TTS_STATIC||{})['ease_'+kind] || '';
   openOverlay(); fitModalWidth();
   document.getElementById('easeGo').onclick=()=>{ closeOverlay(); audioCtx(); launchGame(); };
 }

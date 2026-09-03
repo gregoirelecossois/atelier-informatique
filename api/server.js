@@ -15,6 +15,7 @@
  *   POST   /api/connexion                   {identifiant, motdepasse} → jeton + progression
  *   POST   /api/deconnexion                 révoque le jeton présenté
  *   GET    /api/moi                         profil + progression complète
+ *   POST   /api/mdp                         {nouveau, ancien?} → l'élève choisit son mot de passe
  *   PUT    /api/progression                 {majs, suppressions} → nouvelle version
  *   POST   /api/presence                    battement : où en est l'élève en ce moment
  *
@@ -34,6 +35,7 @@ import http from 'node:http';
 import * as db from './db.js';
 import * as auth from './auth.js';
 import { creerCompte, reinitialiserMdp, IDENTIFIANT_OK } from './comptes.js';
+import { verifierPolitique } from './motsdepasse.js';
 import { VERSION, DEMARRE } from './version.js';
 
 const PORT = Number(process.env.PORT || 8300);
@@ -138,7 +140,7 @@ async function session(req) {
 async function sessionDuJeton(jetonClair) {
   const ligne = await db.une(
     `select s.jeton, s.expire_le, s.vue_le,
-            c.id, c.identifiant, c.prenom, c.nom, c.role, cl.nom as classe
+            c.id, c.identifiant, c.prenom, c.nom, c.role, c.doit_changer_mdp, cl.nom as classe
        from sessions s
        join comptes c  on c.id = s.compte_id
        left join classes cl on cl.id = c.classe_id
@@ -158,8 +160,12 @@ async function sessionDuJeton(jetonClair) {
   return ligne;
 }
 
+/* `doitChangerMdp` voyage avec le profil, donc aussi bien dans la réponse de connexion
+   que dans /api/moi : la fenêtre de création de mot de passe doit revenir tant que
+   l'élève ne l'a pas menée au bout, y compris s'il recharge la page pour l'esquiver. */
 function profil(l) {
-  return { id: l.id, identifiant: l.identifiant, prenom: l.prenom, nom: l.nom, classe: l.classe, role: l.role };
+  return { id: l.id, identifiant: l.identifiant, prenom: l.prenom, nom: l.nom, classe: l.classe, role: l.role,
+           doitChangerMdp: !!l.doit_changer_mdp };
 }
 
 async function progressionDe(compteId) {
@@ -208,7 +214,9 @@ async function connexion(req) {
   await db.journaliser(identifiant, 'connexion', null, { ip: adresse });
 
   const p = await progressionDe(c.id);
-  return { jeton: jeton.clair, eleve: profil(c), ...p, doitChangerMdp: c.doit_changer_mdp };
+  /* `doitChangerMdp` est dans profil() : le client trouve la même information au même
+     endroit après une connexion et après un /api/moi. */
+  return { jeton: jeton.clair, eleve: profil(c), ...p };
 }
 
 async function deconnexion(req) {
@@ -220,6 +228,54 @@ async function deconnexion(req) {
 async function moi(req) {
   const s = await session(req);
   return { eleve: profil(s), ...(await progressionDe(s.id)) };
+}
+
+/* POST /api/mdp — l'élève (ou l'enseignant) choisit LUI-MÊME son mot de passe.
+ *
+ * Le mot de passe fabriqué par le tableau de bord est temporaire par construction : il
+ * a été imprimé, lu à voix haute, recopié sur un cahier. Tant que `doit_changer_mdp`
+ * est vrai, l'empreinte en base ne protège donc rien du tout ; c'est cette route qui
+ * ferme la parenthèse.
+ *
+ * Le mot de passe actuel n'est redemandé QUE s'il s'agit d'un changement volontaire.
+ * À la première connexion l'élève vient tout juste de s'authentifier avec, et le lui
+ * refaire taper à 11 ans est surtout un bon moyen de le bloquer à la porte.
+ */
+async function changerMonMdp(req) {
+  const s = await session(req);
+  const corps = await lireCorps(req);
+  const nouveau = String(corps.nouveau || '');
+  const adresse = ip(req);
+
+  const c = await db.une('select mdp from comptes where id = $1', [s.id]);
+  if (!c) throw new Refus(401, 'Session expirée.');
+
+  if (!s.doit_changer_mdp) {
+    const ancien = String(corps.ancien || '');
+    if (auth.bloque(adresse, s.identifiant)) {
+      throw new Refus(429, 'Trop de tentatives. Attends quelques minutes, puis réessaie.');
+    }
+    if (!ancien || !(await auth.verifier(ancien, c.mdp))) {
+      auth.noterEchec(adresse, s.identifiant);
+      throw new Refus(401, 'Mot de passe actuel incorrect.');
+    }
+    auth.oublier(adresse, s.identifiant);
+  }
+
+  try { verifierPolitique(nouveau); } catch (e) { throw new Refus(400, e.message); }
+  if (await auth.verifier(nouveau, c.mdp)) {
+    throw new Refus(400, 'Choisis un mot de passe différent de celui que tu avais.');
+  }
+
+  await db.q('update comptes set mdp = $2, doit_changer_mdp = false where id = $1',
+    [s.id, await auth.hacher(nouveau)]);
+  /* Toutes les autres sessions tombent — sauf celle qui vient de faire le changement,
+     sinon l'élève serait déconnecté juste après avoir choisi son mot de passe. */
+  await db.q('delete from sessions where compte_id = $1 and jeton <> $2', [s.id, s.jeton]);
+  /* Le journal note QUE le mot de passe a changé, jamais sa valeur ni sa forme. */
+  await db.journaliser(s.identifiant, 'compte.mdp.choisi', null, { ip: adresse });
+
+  return { ok: true, eleve: { ...profil(s), doitChangerMdp: false } };
 }
 
 async function ecrireProgression(req) {
@@ -558,6 +614,7 @@ const ROUTES = [
   ['POST',   '/api/connexion',                 connexion],
   ['POST',   '/api/deconnexion',               deconnexion],
   ['GET',    '/api/moi',                       moi],
+  ['POST',   '/api/mdp',                       changerMonMdp],
   ['PUT',    '/api/progression',               ecrireProgression],
   ['POST',   '/api/presence',                  battement],
 

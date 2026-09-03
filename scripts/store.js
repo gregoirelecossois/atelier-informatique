@@ -38,6 +38,7 @@
  *   eleve()                      {id, prenom, nom, classe} ou null
  *   connexion(identifiant, mdp)  Promise → {eleve}
  *   deconnexion()                Promise
+ *   changerMdp(nouveau, ancien)  Promise → {eleve} (l'élève choisit son mot de passe)
  *   pousser()                    force l'envoi immédiat des changements en attente
  *   etat()                       'local' | 'invite' | 'ok' | 'envoi' | 'hors-ligne' | 'expire'
  *   surEtat(cb)                  s'abonne aux changements d'état (rappelé aussitôt)
@@ -513,6 +514,20 @@ function connexion(identifiant, motdepasse){
     });
 }
 
+/* L'élève choisit lui-même son mot de passe. `ancien` n'est demandé par le serveur que
+   pour un changement VOLONTAIRE : à la première connexion, le mot de passe temporaire
+   vient de servir à entrer, on ne le refait pas taper. Le jeton courant survit — le
+   serveur ne ferme que les AUTRES sessions — donc rien à refaire côté client sinon
+   rafraîchir le profil, qui ne porte plus le drapeau « doit changer ». */
+function changerMdp(nouveau, ancien){
+  if(!CLOUD || !session) return Promise.reject(new Error('Aucune session ouverte.'));
+  return req('POST', '/api/mdp', { nouveau: nouveau, ancien: ancien || undefined })
+    .then(function(r){
+      if(r && r.eleve) poserSession({ jeton: session.jeton, eleve: r.eleve });
+      return { eleve: session.eleve };
+    });
+}
+
 /* On pousse ce qui traîne AVANT d'effacer quoi que ce soit : un élève qui se
    déconnecte à la fin de l'heure ne doit pas laisser sa dernière mission au poste. */
 function deconnexion(){
@@ -536,7 +551,7 @@ return {
   get: get, set: set, del: del, wipe: wipe, snapshot: snapshot,
   enLigne: function(){ return CLOUD; },
   eleve: function(){ return session ? session.eleve : null; },
-  connexion: connexion, deconnexion: deconnexion,
+  connexion: connexion, deconnexion: deconnexion, changerMdp: changerMdp,
   pousser: function(){ return envoyer(); },
   etat: etat, surEtat: surEtat,
   prefixes: PREFIXES,

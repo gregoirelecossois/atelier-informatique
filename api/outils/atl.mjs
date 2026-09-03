@@ -98,9 +98,12 @@ const commandes = {
     console.log('');
     console.log(`  ${role === 'prof' ? 'ENSEIGNANT' : 'Élève'} : ${prenom} ${nom}${classe ? ' · ' + classe : ''}`);
     console.log(`  Identifiant   : ${c.identifiant}`);
-    console.log(`  Mot de passe  : ${c.motdepasse}`);
+    console.log(`  Mot de passe  : ${c.motdepasse}${role === 'prof' ? '' : '   (provisoire)'}`);
     console.log('');
     console.log('  Note-le maintenant : il n’est plus affiché ensuite.');
+    if (role !== 'prof') {
+      console.log('  À sa première connexion, l’élève devra choisir lui-même son mot de passe.');
+    }
   },
 
   async liste() {
@@ -129,7 +132,8 @@ const commandes = {
     const [identifiant] = positionnels;
     if (!identifiant) throw new Error('Usage : mdp <identifiant> [--mdp X] [--court]');
     const c = await reinitialiserMdp(identifiant, { mdp: mdpImpose, forme, acteur: 'cli' });
-    console.log(`\n  ${c.identifiant} → nouveau mot de passe : ${c.motdepasse}\n`);
+    console.log(`\n  ${c.identifiant} → nouveau mot de passe provisoire : ${c.motdepasse}`);
+    console.log('  Il en choisira un lui-même à sa prochaine connexion.\n');
   },
 
   async activer() { await basculer(true); },
@@ -176,7 +180,8 @@ const commandes = {
     await db.journaliser('cli', 'comptes.import', null, { crees: sortie.length, ignorees });
     console.log(`\n  ${sortie.length} compte(s) créé(s)${ignorees ? `, ${ignorees} ligne(s) ignorée(s)` : ''}.`);
     console.log(`  Identifiants à imprimer : ${nomSortie}`);
-    console.log('  ⚠ Ce fichier contient les mots de passe EN CLAIR : imprime-le, distribue-le, puis SUPPRIME-LE.\n');
+    console.log('  ⚠ Ce fichier contient les mots de passe EN CLAIR : imprime-le, distribue-le, puis SUPPRIME-LE.');
+    console.log('  Ces mots de passe sont PROVISOIRES : chaque élève en choisira un à sa première connexion.\n');
   },
 
   /* Conservation limitée dans le temps (RGPD art. 5.1.e).

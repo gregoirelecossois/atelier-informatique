@@ -708,9 +708,9 @@
   "win_jalon": "Défi réussi ! Bravo, tu maîtrises ! Passe à la suite.",
   "win_review": "Bien joué ! Tu as refait cette mission. On revient à ta mission en cours, ta progression est gardée.",
   "unlocked": "Bravo, tu passes au niveau suivant ! Tu as terminé ce niveau. Un nouveau jeu s'ouvre.",
-  "ease_mole": "On ralentit pour toi ! Les hamsters resteront plus longtemps dehors, pour cette mission et toutes les suivantes du niveau.",
-  "ease_time": "On ralentit pour toi ! Tu auras plus de temps, pour cette mission et toutes les suivantes du niveau.",
-  "ease_speed": "On ralentit pour toi ! Les cibles iront moins vite, pour cette mission et toutes les suivantes du niveau.",
+  "ease_mole": "On ralentit pour toi ! Les hamsters resteront plus longtemps dehors et tu auras un cœur de plus, pour cette mission et toutes les suivantes du niveau. Et si c'est encore trop dur, tu pourras demander encore plus facile, autant de fois que tu veux.",
+  "ease_time": "On ralentit pour toi ! Tu auras plus de temps, pour cette mission et toutes les suivantes du niveau. Et si c'est encore trop dur, tu pourras demander encore plus facile, autant de fois que tu veux.",
+  "ease_speed": "On ralentit pour toi ! Les cibles iront moins vite, pour cette mission et toutes les suivantes du niveau. Et si c'est encore trop dur, tu pourras demander encore plus facile, autant de fois que tu veux.",
   "course_finish": "Parcours terminé ! Incroyable, tu as fini les six niveaux de la souris et vaincu le Démon Gardien. Le clic, le glisser-déposer, le double-clic, le clic droit, la sélection et la molette n'ont plus de secret pour toi. Tu es un vrai champion de la souris !",
   "boss_fail": "Le démon t'a vaincu. Tu as perdu tous tes cœurs. Recommence le combat, tu vas y arriver !",
   "boss_gate": "Boss final. Gruk, le Démon Gardien. Te voilà au sommet de la tour : Gruk, le Démon Gardien t'attend ! Clique sur les flammes pour te protéger. Suis les consignes pour chaque phase du boss. Quand tu as besoin, clic droit sur la potion de vie, en bas à gauche, pour récupérer deux cœurs !",
@@ -935,19 +935,34 @@ function msLevelClean(n){ return loadEase(n)===0; }
 
 /* ---- Aide « Plus facile » (missions à échec : clic N1, défi du double-clic N3) ----
    Après 2 échecs D'AFFILÉE sur une même mission, la popup d'échec propose de ralentir.
-   L'aide vaut pour TOUT le reste du niveau et se cumule : 2 nouveaux échecs d'affilée la
-   remontent d'un cran, jusqu'à MS_EASE_MAX. Jamais appliquée au combat de boss, qui a son
-   propre sélecteur de difficulté (BOSS_MODES) — cf. msCanEase(). Gardée dans le stockage :
-   un élève qui ferme l'atelier après avoir bloqué ne repart pas au réglage le plus dur.
-   Même dispositif que le « Plus facile » de le-clavier.html (préfixe kb_ là-bas). */
-const MS_EASE_MAX=4, MS_EASE_MUL=0.8;
+   L'aide vaut pour TOUT le reste du niveau et se CUMULE SANS FIN : 2 nouveaux échecs
+   d'affilée la remontent d'un cran, et il n'y a jamais de « dernier cran » annoncé à
+   l'élève. Jamais appliquée au combat de boss, qui a son propre sélecteur de difficulté
+   (BOSS_MODES) — cf. msCanEase(). Gardée dans le stockage : un élève qui ferme l'atelier
+   après avoir bloqué ne repart pas au réglage le plus dur.
+   Même dispositif que le « Plus facile » de le-clavier.html (préfixe kb_ là-bas).
+
+   Trois leviers, et c'est ce qui rend le cumul infini utile plutôt que décoratif :
+     • les DURÉES (chrono, temps de sortie du hamster) sont divisées par le facteur brut,
+       sans plancher : chaque cran allonge vraiment, indéfiniment ;
+     • les VITESSES (cibles mobiles) sont multipliées par un facteur PLANCHONNÉ — au-delà,
+       une cible plus lente encore ne se verrait plus, et le plancher évite les cibles figées ;
+     • les VIES gagnent +1 par cran, sans plafond. C'est le levier qui reste utile quand la
+       vitesse a touché son plancher : au 12e cran l'élève a 17 cœurs et ne peut plus perdre.
+   MS_EASE_MAX n'est PAS un plafond pédagogique mais une borne arithmétique : au-delà,
+   0,8^n finit par valoir 0 et une division par zéro donnerait un chrono à Infinity. */
+const MS_EASE_MAX=50, MS_EASE_MUL=0.8, MS_EASE_FLOOR=0.2;
 let msEaseSteps=0;    // nb d'aides accumulées sur le niveau courant
 let msFailStreak=0;   // échecs d'affilée sur la mission en cours
 function loadEase(n){ let e=parseInt(store.get('ms_ease_l'+n)||'0',10); return (isNaN(e)||e<0)?0:Math.min(e,MS_EASE_MAX); }
 function saveEase(){ store.set('ms_ease_l'+currentLevel, String(msEaseSteps)); }
-/* Facteur appliqué aux VITESSES (cibles mobiles) : 1 = normal, 0,8 = 20 % plus lent.
-   Les DURÉES (chrono, temps de sortie du hamster) sont au contraire divisées : elles durent plus longtemps. */
-function msEaseFactor(){ return Math.pow(MS_EASE_MUL, msEaseSteps); }
+function msEaseRaw(){ return Math.pow(MS_EASE_MUL, msEaseSteps); }
+/* Facteur appliqué aux VITESSES : 1 = normal, 0,8 = 20 % plus lent, jamais sous le plancher. */
+function msEaseFactor(){ return Math.max(MS_EASE_FLOOR, msEaseRaw()); }
+/* Une DURÉE allégée : elle dure plus longtemps, sans borne haute. */
+function msEaseLonger(ms){ return ms ? Math.round(ms/msEaseRaw()) : 0; }
+/* Des VIES allégées : +1 cœur par cran. 0 reste 0 (mission sans vies). */
+function msEaseLives(base){ return base ? base+msEaseSteps : 0; }
 /* Allégeable si la mission peut RÉELLEMENT être perdue (des vies ou un chrono) et hors boss.
    Les missions sans vies ni chrono ne peuvent pas échouer : rien à alléger. */
 function msCanEase(){
@@ -1061,8 +1076,12 @@ function hudHTML(opts){
     + (opts.prompt? '<div class="task-prompt" id="hudPrompt"></div>':'')
     + '</div>';
 }
+/* Au-delà de 10 cœurs (« Plus facile » cumulé), la rangée déborderait du bandeau : on
+   bascule sur un compteur. La barre du HUD tient sur une ligne, la page ne défile pas. */
 function setHud(cleared,target,lives,maxLives){
-  if(maxLives){ let h=''; for(let i=0;i<maxLives;i++) h+=(i<lives?'❤️':'<span class="lost">🖤</span>');
+  if(maxLives){ let h;
+    if(maxLives>10){ h='❤️ ×'+Math.max(0,lives); }
+    else { h=''; for(let i=0;i<maxLives;i++) h+=(i<lives?'❤️':'<span class="lost">🖤</span>'); }
     const el=document.getElementById('hudLives'); if(el) el.innerHTML=h; }
   const c=document.getElementById('hudCount'); if(c) c.textContent=cleared+' / '+target+' réussies';
   const m=document.getElementById('hudMeter'); if(m) m.style.width=Math.min(100,cleared/target*100)+'%';
@@ -1149,18 +1168,19 @@ function smokePuffAtEl(el){ const r=el.getBoundingClientRect(), fr=B.field.getBo
    --------------------------------------------------------- */
 function startClick(step){
   stopGame(); MG.cleanup=[];
-  const lives=step.lives||0;
+  // « Plus facile » : cœurs en plus, durées allongées (chrono, temps de sortie du hamster).
+  // On mémorise les valeurs effectives dans MG — la jauge de temps doit se remplir sur le
+  // total ALLÉGÉ, et le HUD doit dessiner les cœurs supplémentaires.
+  const lives=msEaseLives(step.lives||0);
   stage.innerHTML=hudHTML({lives:lives, timer:!!step.timeMs})
     + (step.timeMs? '<div class="mfield clickfield" id="mfield"><div class="timebar" id="timebar"></div></div>'
                    : '<div class="mfield clickfield" id="mfield"></div>');
   const field=document.getElementById('mfield');
-  // « Plus facile » : durées allongées (chrono, temps de sortie du hamster). On mémorise les
-  // valeurs effectives dans MG — la jauge de temps doit se remplir sur le total ALLÉGÉ.
-  const timeTotal=step.timeMs?Math.round(step.timeMs/msEaseFactor()):0;
+  const timeTotal=msEaseLonger(step.timeMs);
   Object.assign(MG,{
     step, field, items:[], cleared:0, lives, maxLives:lives, target:step.target,
     running:true, last:0, nextSpawn:0, raf:0,
-    timeLeft:timeTotal, timeTotal, life:step.life?step.life/msEaseFactor():0, emoji:step.emoji
+    timeLeft:timeTotal, timeTotal, life:msEaseLonger(step.life), emoji:step.emoji
   });
   setHud(0,step.target,lives,lives);
   // ripple feedback sur clic dans le vide
@@ -1320,7 +1340,7 @@ function startDbl(step){
     + (step.timeMs?'<div class="timebar" id="timebar"></div>':'')+'</div>';
   const desk=document.getElementById('desk');
   // « Plus facile » : chrono allongé (cf. startClick pour le même calcul)
-  const timeTotal=step.timeMs?Math.round(step.timeMs/msEaseFactor()):0;
+  const timeTotal=msEaseLonger(step.timeMs);
   Object.assign(MG,{step, opened:0, total:step.target, running:true, last:0, raf:0,
     timeLeft:timeTotal, timeTotal, singleWarned:false});
   setHud(0,MG.total,0,0);
@@ -3044,7 +3064,8 @@ function onWin(){
 }
 function onFail(reason, tip){
   msFailStreak++;
-  // 2 échecs d'affilée : on propose de ralentir pour la suite du niveau
+  // 2 échecs d'affilée : on propose de ralentir pour la suite du niveau. L'offre ne
+  // s'épuise jamais — un élève qui bloque doit toujours pouvoir demander plus facile.
   const offerEase = msFailStreak>=2 && msCanEase() && msEaseSteps<MS_EASE_MAX;
   modal.className='modal bad';
   modal.innerHTML='<span class="m-emoji">🙈</span><h2>'+reason+'</h2>'
@@ -3064,14 +3085,15 @@ function applyEase(){
   const what = s.variant==='mole' ? 'Les hamsters resteront <b>plus longtemps</b> dehors'
              : s.timeMs           ? 'Tu auras <b>plus de temps</b>'
                                   : 'Les cibles iront <b>moins vite</b>';
-  const more = msEaseSteps<MS_EASE_MAX
-    ? 'Et si c\'est encore trop dur, on pourra ralentir <b>encore</b> plus tard.'
-    : 'C\'est le réglage le plus tranquille : tu as tout le temps qu\'il faut.';
+  // Le cœur en plus est le levier qui continue d'aider quand la vitesse a touché son
+  // plancher : on ne l'annonce donc que sur les missions qui ont des vies.
+  const coeur = s.lives ? ' et tu auras <b>un cœur de plus</b>' : '';
   modal.className='modal good';
   modal.innerHTML='<span class="m-emoji">🐢</span>'
-    +'<div class="kicker" style="color:var(--green-d)">Aide '+msEaseSteps+' sur '+MS_EASE_MAX+'</div>'
+    +'<div class="kicker" style="color:var(--green-d)">Aide n° '+msEaseSteps+'</div>'
     +'<h2>On ralentit pour toi !</h2>'
-    +'<p>'+what+', pour cette mission <b>et toutes les suivantes</b> du niveau. '+more+'</p>'
+    +'<p>'+what+coeur+', pour cette mission <b>et toutes les suivantes</b> du niveau. '
+    +'Et si c\'est encore trop dur, tu pourras demander <b>encore</b> plus facile, autant de fois que tu veux.</p>'
     +'<div class="m-actions"><button class="m-btn primary green" id="easeGo">C\'est parti ! 🚀</button></div>';
   modal.dataset.ttsText=(window.TTS_STATIC||{})[s.variant==='mole'?'ease_mole':s.timeMs?'ease_time':'ease_speed'] || '';
   openOverlay();

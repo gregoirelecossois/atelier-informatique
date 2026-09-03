@@ -283,6 +283,46 @@ la taper de tête.
 > présentation n'y échappe : on choisit seulement entre « court et illisible » et
 > « un peu plus long et mémorisable ».
 
+### Le mot de passe que l'élève choisit lui-même
+
+Tout ce qui précède décrit un mot de passe **provisoire**. Il a été imprimé, lu à voix
+haute, parfois recopié sur un cahier : tant qu'il sert, l'empreinte gardée en base ne
+protège pas grand-chose. À sa **première connexion**, l'élève en choisit donc un que
+personne d'autre ne connaît — c'est le drapeau `comptes.doit_changer_mdp`, vrai à la
+création d'un compte élève comme après chaque réinitialisation par l'enseignant.
+
+- La fenêtre de création est **bloquante** (`scripts/compte.js`) : ni Échap ni clic à
+  côté. Sans cela, la moitié de la classe cliquerait « plus tard » et le mot de passe
+  imprimé resterait le vrai mot de passe toute l'année.
+- Le mot de passe est saisi **deux fois** : un mot de passe choisi puis mal retapé est
+  un compte perdu jusqu'à la prochaine réinitialisation.
+- Quatre familles exigées — **majuscule, minuscule, chiffre, symbole** — plus une
+  longueur minimale (`MDP_MIN`, **12** dans `motsdepasse.js`). Les règles sont
+  cochées **en direct** pendant la frappe : un élève de 6e ne lit pas un refus après
+  coup, il regarde ce qui manque encore pendant qu'il tape.
+- `POST /api/mdp` revérifie tout côté serveur (`verifierPolitique`) : la liste affichée
+  guide, elle ne décide pas. Le mot de passe actuel n'est redemandé que pour un
+  changement **volontaire** ; à la première connexion l'élève vient tout juste de s'en
+  servir pour entrer.
+- Le changement ferme **toutes les autres** sessions, jamais celle en cours.
+
+> **Ce que ça vaut, honnêtement.** Un mot de passe **choisi** par un humain de 11 ans
+> n'atteint pas les ~55 bits d'un mot de passe **tiré au hasard**, même avec quatre
+> familles. Ce qui maintient le compte dans le palier « 50 bits avec restriction
+> d'accès » de la recommandation CNIL 2022-100, c'est la **limitation des tentatives**
+> (10 essais par identifiant sur 10 minutes), pas la composition. Le registre de
+> traitement doit dire ça, et pas autre chose. Le gain réel est ailleurs, et il est
+> réel : plus aucun mot de passe d'élève ne circule sur une feuille de papier.
+
+**Pourquoi 12 et pas 8.** « 12 caractères avec majuscules, minuscules, chiffres et
+caractères spéciaux » est la formulation historique de la CNIL, et c'est ici un choix de
+terrain plus qu'un choix réglementaire : les élèves qui arrivent sur cet écran sortent
+de sept niveaux de clavier, dont un entièrement consacré aux symboles — taper douze
+caractères ne leur coûte plus rien. `MDP_MIN` se change dans `motsdepasse.js` et dans sa
+copie de `scripts/compte.js` ; tout le reste (messages affichés, contrôles serveur) en
+découle. À surveiller à la rentrée : si des élèves se font réinitialiser leur mot de
+passe à répétition, c'est ce chiffre qu'il faut baisser, pas les quatre familles.
+
 ---
 
 ## 6. Entretien
