@@ -242,6 +242,37 @@ rien, elle n'est pas servie depuis ce dépôt.
 > Une application qui n'expose **ni** l'un **ni** l'autre reste silencieuse : ni colonne,
 > ni présence. C'est volontaire — un avancement faux serait pire que pas d'avancement.
 
+#### Débloquer un chapitre : par instruction, jamais par écriture directe
+
+Dans la fiche d'un élève, cliquer un chapitre de « Le PC » **n'écrit pas** dans sa
+progression. Le tableau de bord y dépose une **instruction d'un seul nombre** :
+
+```js
+majs['pc_debloquer'] = '5'
+```
+
+L'application la lit à son démarrage (et à `store:maj`, si le professeur a cliqué pendant
+qu'elle était ouverte ailleurs), l'applique **avec sa propre logique**, puis **efface la
+clé** elle-même.
+
+Pourquoi ce détour : la progression de « Le PC » est un unique objet JSON, où débloquer
+signifie marquer `done` tous les chapitres précédents, avec des `stars`, `bestScore`,
+`mistakes`, `seconds` et `hintsUsed` qu'il faudrait **inventer**. Le tableau de bord
+devrait donc embarquer une copie du modèle de données de l'autre dépôt — un modèle qui a
+déjà changé une fois (chapitre 7 scindé en deux, migration `v1 → v2`). Le jour où il
+rebouge, on écrirait silencieusement des données fausses dans la progression d'un élève.
+Avec l'instruction, le contrat entre les deux dépôts tient dans un nombre.
+
+Deux garanties, tenues côté application et vérifiées :
+
+- **rien n'est jamais retiré ni dégradé** — un chapitre déjà réussi garde ses étoiles ;
+- **les résultats fabriqués valent zéro étoile** : ils disent « ce chapitre est ouvert »,
+  pas « il l'a réussi ». Ni l'élève ni le professeur ne doit lire une réussite là où il
+  n'y en a pas eu. L'XP n'est pas touchée non plus.
+
+Tant que l'élève ne s'est pas reconnecté, la fiche affiche « ouverture jusqu'au
+chapitre N **en attente** ».
+
 ### 2.7 Faire ouvrir le domaine
 
 7. **À faire avant la première séance** : demander au référent numérique / à la DSI

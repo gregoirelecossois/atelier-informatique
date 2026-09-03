@@ -64,12 +64,34 @@ window.ATELIERS_TOTAL_NIVEAUX = window.ATELIERS.reduce(function(n, a){ return n 
    Le tableau de bord l'affiche donc à part, après les six colonnes et derrière un
    séparateur. Les totaux sont ici parce que le serveur ne les connaît pas : il ne
    renvoie que des comptes bruts (cf. resumerLePc dans api/server.js).
+
+   Les chapitres sont listés ici pour l'AFFICHAGE seulement — jamais pour écrire dans la
+   progression de l'application. Si « Le PC » en renomme un, le tableau de bord l'affiche
+   simplement comme non terminé : il se dégrade, il ne corrompt rien. Le déblocage, lui,
+   passe par une instruction d'un seul nombre (cf. `debloquer` ci-dessous).
    --------------------------------------------------------------------------- */
 window.APPS_LIEES = [
   { id:'pc', nom:'Le PC', ic:'🖥️', hue:'#0ea5e9',
     sousTitre:'monte ton ordinateur',
     url:'https://gregoirelecossois.github.io/le-pc/',
-    chapitres:10, fiches:15, badges:10 }
+    /* Clé d'instruction : le tableau de bord y écrit un simple numéro de chapitre, que
+       l'application lit à son démarrage, applique AVEC SA PROPRE LOGIQUE, puis efface.
+       Le contrat entre les deux dépôts tient dans ce nombre : c'est ce qui permet à
+       « Le PC » de refondre son modèle de données sans rien casser ici. */
+    debloquer:'pc_debloquer',
+    fiches:15, badges:10,
+    chapitres:[
+      { id:'decouverte',    nom:'La visite guidée' },
+      { id:'nommer',        nom:'Comment ça s\'appelle ?' },
+      { id:'reperer',       nom:'Trouve-le dans la tour' },
+      { id:'roles',         nom:'À quoi ça sert ?' },
+      { id:'montage',       nom:'Le montage' },
+      { id:'cablage',       nom:'Le câblage' },
+      { id:'peripheriques', nom:'Nomme les périphériques' },
+      { id:'branchement',   nom:'Branche les périphériques' },
+      { id:'demontage',     nom:'Le démontage' },
+      { id:'defi',          nom:'Le défi du technicien' }
+    ] }
 ];
 
 /* Retrouve une application liée par son identifiant de présence. Même rôle que
