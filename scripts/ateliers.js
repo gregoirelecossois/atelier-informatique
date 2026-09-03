@@ -51,3 +51,34 @@ window.ATELIER_PAR_FICHIER = function(chemin){
 /* Nombre total de niveaux, tous ateliers confondus — le dénominateur de l'avancement
    global affiché dans le tableau de bord. */
 window.ATELIERS_TOTAL_NIVEAUX = window.ATELIERS.reduce(function(n, a){ return n + a.niveaux.length; }, 0);
+
+/* ---------------------------------------------------------------------------
+   Applications LIÉES — délibérément hors de window.ATELIERS.
+
+   « Le PC » partage les comptes élèves (même origine, même session), mais ce n'est
+   PAS un septième atelier : il vit dans un autre dépôt, il raisonne en chapitres et
+   en étoiles plutôt qu'en niveaux et missions, et il ne compte ni dans l'avancement
+   global, ni dans le compteur de jeux de la page d'accueil, ni dans les trophées.
+   L'ajouter à ATELIERS aurait faussé ces trois-là d'un coup.
+
+   Le tableau de bord l'affiche donc à part, après les six colonnes et derrière un
+   séparateur. Les totaux sont ici parce que le serveur ne les connaît pas : il ne
+   renvoie que des comptes bruts (cf. resumerLePc dans api/server.js).
+   --------------------------------------------------------------------------- */
+window.APPS_LIEES = [
+  { id:'pc', nom:'Le PC', ic:'🖥️', hue:'#0ea5e9',
+    sousTitre:'monte ton ordinateur',
+    url:'https://gregoirelecossois.github.io/le-pc/',
+    chapitres:10, fiches:15, badges:10 }
+];
+
+/* Retrouve une application liée par son identifiant de présence. Même rôle que
+   ATELIER_PAR_FICHIER pour les six ateliers, mais l'application se déclare elle-même
+   (window.ATELIER_POSITION) : elle n'est pas servie depuis ce dépôt, son nom de
+   fichier ne nous apprendrait rien. */
+window.APP_LIEE = function(id){
+  for (var i = 0; i < window.APPS_LIEES.length; i++) {
+    if (window.APPS_LIEES[i].id === id) return window.APPS_LIEES[i];
+  }
+  return null;
+};

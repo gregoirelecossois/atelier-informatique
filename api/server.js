@@ -469,8 +469,38 @@ function resumer(l) {
     id: l.id, identifiant: l.identifiant, prenom: l.prenom, nom: l.nom,
     classe: l.classe, classe_id: l.classe_id, role: l.role, actif: l.actif,
     cree_le: l.cree_le, derniere_connexion: l.derniere_connexion,
-    niveaux, trophees
+    niveaux, trophees, pc: resumerLePc(d)
   };
+}
+
+/* « Le PC » n'est PAS un septième atelier : c'est une application à part, avec ses
+ * chapitres et ses étoiles, et le tableau de bord l'affiche à côté des six, séparément.
+ * Sa progression n'a donc pas la forme <p>_curlevel / <p>_step_l<n> que lit la boucle
+ * ci-dessus — c'est un seul objet JSON, écrit par zustand.
+ *
+ * On en tire des COMPTES, jamais des pourcentages : le serveur ignore volontairement
+ * combien l'application a de chapitres, comme il ignore le contenu des six ateliers.
+ * Les totaux vivent dans scripts/ateliers.js, côté client, où ils sont déjà tenus.
+ *
+ * Renvoie null si l'élève n'y a jamais joué — le tableau de bord grise la colonne
+ * plutôt que d'afficher un zéro qui ressemble à un échec.
+ */
+function resumerLePc(d) {
+  try {
+    const s = JSON.parse(d.pc_progression || 'null')?.state;
+    if (!s) return null;
+    const res = s.results && typeof s.results === 'object' ? s.results : {};
+    const finis = Object.values(res).filter((r) => r && r.done);
+    return {
+      faits: finis.length,
+      etoiles: finis.reduce((t, r) => t + (Number(r.stars) || 0), 0),
+      fiches: Array.isArray(s.discovered) ? s.discovered.length : 0,
+      badges: Array.isArray(s.badges) ? s.badges.length : 0,
+      xp: Number(s.xp) || 0
+    };
+  } catch {
+    return null;   /* progression illisible : comme si elle n'existait pas */
+  }
 }
 
 async function lesClasses() {

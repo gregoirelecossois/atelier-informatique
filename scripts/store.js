@@ -422,14 +422,31 @@ if(CLOUD && session) amorcer(0);
 var BATTEMENT_MS = 45000;
 var aBattu = false;   /* cette page a-t-elle déjà réclamé la présence ? cf. quitter() */
 
+var NULLE_PART = { atelier: null, niveau: null, mission: null };
+
 function ouSuisJe(){
   var a = window.ATELIER_PAR_FICHIER ? window.ATELIER_PAR_FICHIER(location.pathname) : null;
-  if(!a) return { atelier: null, niveau: null, mission: null };
-  var n = parseInt(get(a.id + '_curlevel') || '1', 10) || 1;
+  if(a){
+    var n = parseInt(get(a.id + '_curlevel') || '1', 10) || 1;
+    return {
+      atelier: a.id,
+      niveau: n,
+      mission: parseInt(get(a.id + '_step_l' + n) || '0', 10) || 0
+    };
+  }
+  /* Application LIÉE (« Le PC ») : elle n'est pas servie depuis ce dépôt, son nom de
+     fichier ne nous apprend rien, et elle ne range pas sa progression en niveaux. Elle
+     se déclare donc elle-même. Contrat : renvoyer { atelier, niveau, mission }, avec un
+     `atelier` que scripts/ateliers.js connaît (window.APPS_LIEES). Tout le reste est
+     ignoré — une application tierce ne décide pas de ce qu'affiche le tableau de bord. */
+  var d = null;
+  try{ d = typeof window.ATELIER_POSITION === 'function' ? window.ATELIER_POSITION() : null; }
+  catch(e){ d = null; }
+  if(!d || !d.atelier) return NULLE_PART;
   return {
-    atelier: a.id,
-    niveau: n,
-    mission: parseInt(get(a.id + '_step_l' + n) || '0', 10) || 0
+    atelier: String(d.atelier).slice(0, 40),
+    niveau: parseInt(d.niveau, 10) || 1,
+    mission: parseInt(d.mission, 10) || 0
   };
 }
 

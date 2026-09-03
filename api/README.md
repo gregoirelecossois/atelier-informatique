@@ -219,11 +219,28 @@ Ce qu'il a fallu, et ce qu'il faudra pour la suivante :
    `scripts/config.js` **avant** son propre code, et faire passer toute sa persistance
    par `Store.get/set/del` avec des clés préfixées.
 
-> Le tableau de bord enseignant **n'affiche pas** l'avancement de ces applications :
-> `PREFIXES_JEU` est une liste distincte, et `resumer()` attend une structure précise
-> (`<p>_curlevel`, `<p>_unlocked`, `<p>_step_l<n>`, trophée `<p>.master`). Une
-> application qui ne l'expose pas afficherait un avancement faux. À traiter au cas par
-> cas, quand l'application sait produire ces clés-là.
+#### Dans le tableau de bord
+
+« Le PC » y figure, mais **à part** : après les six colonnes d'ateliers, derrière un
+séparateur. Ce n'est pas un septième atelier — il vit dans un autre dépôt, raisonne en
+chapitres et en étoiles plutôt qu'en niveaux et missions, et il ne compte **ni** dans
+l'avancement global, **ni** dans le compteur de jeux de la page d'accueil, **ni** dans
+les trophées. C'est pourquoi il n'est pas dans `window.ATELIERS` mais dans
+`window.APPS_LIEES` (`scripts/ateliers.js`), et pas dans `PREFIXES_JEU` non plus.
+
+Le partage du travail : le serveur renvoie des **comptes bruts** (`resumerLePc` lit la
+clé `pc_progression` et en tire chapitres finis, étoiles, fiches, badges, XP) et ignore
+comme toujours la structure des jeux ; les **totaux** vivent côté client, dans
+`APPS_LIEES`, où ils sont déjà tenus. Un élève qui n'y a jamais joué a une colonne grisée
+et un tiret, pas un zéro qui ressemblerait à un échec.
+
+Pour la présence « en ce moment », l'application se déclare elle-même : elle pose une
+fonction `window.ATELIER_POSITION` renvoyant `{ atelier, niveau, mission }`, que
+`scripts/store.js` interroge à chaque battement. Son nom de fichier ne nous apprendrait
+rien, elle n'est pas servie depuis ce dépôt.
+
+> Une application qui n'expose **ni** l'un **ni** l'autre reste silencieuse : ni colonne,
+> ni présence. C'est volontaire — un avancement faux serait pire que pas d'avancement.
 
 ### 2.7 Faire ouvrir le domaine
 
