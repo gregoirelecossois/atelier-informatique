@@ -61,8 +61,19 @@ très largement : 300 élèves occupent moins de 5 Mo.
    Récupère **les seuls fichiers de `api/`** — 86 Ko, en une seule ligne :
 
    ```bash
-   mkdir -p ~/api/outils && cd ~/api && B=https://raw.githubusercontent.com/gregoirelecossois/atelier-informatique/main/api && for f in package.json package-lock.json schema.sql env.js db.js auth.js server.js README.md .env.example .gitignore; do curl -sfL -o "$f" "$B/$f"; done && for f in atl.mjs motsdepasse.js; do curl -sfL -o "outils/$f" "$B/outils/$f"; done && ls -a
+   mkdir -p ~/api/outils && cd ~/api && B=https://raw.githubusercontent.com/gregoirelecossois/atelier-informatique/main/api && for f in package.json package-lock.json schema.sql env.js db.js auth.js comptes.js motsdepasse.js version.js server.js README.md .env.example .gitignore; do curl -sfL -o "$f" "$B/$f" || echo "MANQUE $f"; done && for f in atl.mjs empreinte.mjs; do curl -sfL -o "outils/$f" "$B/outils/$f" || echo "MANQUE outils/$f"; done && ls -a
    ```
+
+   > ⚠ **La liste de fichiers est à tenir à jour.** Un module oublié ne se voit pas au
+   > `curl` — il se voit au démarrage, par un `Cannot find module` dans les journaux du
+   > site, ou par une route qui répond « Route inconnue. » alors qu'elle existe dans le
+   > dépôt. Le `|| echo "MANQUE …"` ci-dessus est là pour ça. La liste doit couvrir
+   > **tout `FICHIERS_SUIVIS` de `version.js`** (c'est ce que l'empreinte compare) plus
+   > `package-lock.json`, `README.md`, `.env.example` et `.gitignore` :
+   >
+   > ```bash
+   > cd ~/api && node -e "import('./version.js').then(v=>console.log(v.FICHIERS_SUIVIS.join(' ')))"
+   > ```
 
    ```bash
    cd ~/api && npm install
@@ -129,7 +140,47 @@ très largement : 300 élèves occupent moins de 5 Mo.
    eux-mêmes, avec les fins de ligne normalisées pour qu'une copie Windows et une copie
    Linux donnent le même résultat.
 
-### 2.4 Brancher les jeux
+### 2.4 Redéployer après un changement dans `api/`
+
+**Fusionner une PR ne déploie rien.** Les pages de jeu sont servies par GitHub Pages et
+suivent `main` toutes seules ; l'API, elle, vit dans `~/api` chez alwaysdata et n'a
+aucun lien avec le dépôt. Une nouvelle route côté dépôt et un serveur qui répond
+**« Route inconnue. »** sont donc l'état normal jusqu'à ce que les deux commandes
+suivantes soient passées :
+
+```bash
+mkdir -p ~/api/outils && cd ~/api && B=https://raw.githubusercontent.com/gregoirelecossois/atelier-informatique/main/api && for f in package.json package-lock.json schema.sql env.js db.js auth.js comptes.js motsdepasse.js version.js server.js README.md .env.example .gitignore; do curl -sfL -o "$f" "$B/$f" || echo "MANQUE $f"; done && for f in atl.mjs empreinte.mjs; do curl -sfL -o "outils/$f" "$B/outils/$f" || echo "MANQUE outils/$f"; done && ls -a
+```
+
+Puis **redémarrer le site** dans l'admin alwaysdata (*Sites → ⋯ → Redémarrer*) : le
+processus Node garde en mémoire les modules déjà importés, un fichier réécrit sous ses
+pieds ne change rien tant qu'il n'a pas repris.
+
+Enfin, vérifier — c'est tout l'intérêt de l'empreinte :
+
+```bash
+cd ~/api && node outils/empreinte.mjs https://TONCOMPTE.alwaysdata.net
+```
+
+Tant que ça dit « Le serveur fait tourner un AUTRE code », inutile de chercher le bug
+ailleurs. `.env` n'est jamais écrasé par ces commandes : il n'est pas dans la liste.
+
+Pour interroger une route directement depuis le poste Windows, `curl.exe` et pas `curl` :
+sous PowerShell, `curl` est un **alias d'`Invoke-WebRequest`**, qui ne comprend ni `-s`
+ni `-w` et répond « Argument manquant pour le paramètre SessionVariable ».
+
+```powershell
+curl.exe -s -o - -w "`nHTTP %{http_code}`n" -X POST https://TONCOMPTE.alwaysdata.net/api/mdp -H "Content-Type: application/json" -d "{}"
+```
+
+`401 Connexion requise.` = la route est là et réclame un jeton, c'est le résultat
+attendu. `404 Route inconnue.` = le site n'a pas redémarré.
+
+Le schéma, lui, se rejoue tout seul au démarrage (`db.migrer()`, tout est en
+`if not exists`) — une colonne ajoutée dans `schema.sql` n'a pas besoin d'être appliquée
+à la main.
+
+### 2.5 Brancher les jeux
 
 6. Dans `scripts/config.js`, à la racine du dépôt :
 
@@ -149,7 +200,7 @@ très largement : 300 élèves occupent moins de 5 Mo.
 > pour les pages et l'API : plus rien à déclarer dans `ORIGINES`, et un seul domaine à
 > faire ouvrir dans le proxy du collège.
 
-### 2.5 Faire ouvrir le domaine
+### 2.6 Faire ouvrir le domaine
 
 7. **À faire avant la première séance** : demander au référent numérique / à la DSI
    d'autoriser le domaine dans le filtrage du collège. Sinon, trente élèves devant un
@@ -379,3 +430,6 @@ node outils/atl.mjs purger --oui
 | La pastille affiche « hors ligne » | l'élève continue de jouer, tout est gardé sur le poste et repart au retour du réseau |
 | `/api/sante` ne répond pas | regarder les journaux du site dans l'admin alwaysdata ; le plus souvent une variable de base de données mal saisie |
 | Un correctif déployé semble sans effet | `node outils/empreinte.mjs https://…` : si les empreintes diffèrent, le processus n'a pas repris le nouveau code — redémarrer le site dans l'admin |
+| **« Route inconnue. »** sur une route qui existe dans le dépôt | l'API n'a pas été redéployée : fusionner une PR ne touche pas `~/api`. Voir § 2.4 — recopier les fichiers, **redémarrer le site**, vérifier l'empreinte |
+| `Cannot find module './…'` dans les journaux au démarrage | un fichier manque dans la liste du `curl` de déploiement — la comparer à `FICHIERS_SUIVIS` de `version.js` (§ 2.2) |
+| La fenêtre « Choisis ton mot de passe » n'apparaît jamais | API pas à jour : c'est `profil()` qui porte `doitChangerMdp`, l'ancien serveur ne le renvoyait pas dans `eleve` |
