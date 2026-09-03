@@ -174,7 +174,8 @@ function vueCompte(){
          fenêtre de compte d'un enseignant connecté. Le serveur vérifie le rôle de son
          côté, ce bouton n'est qu'un raccourci. */
       (el.role === 'prof'
-        ? '<a class="atl-btn primaire" href="prof.html" style="display:block;text-align:center;'+
+        ? '<a class="atl-btn primaire" href="'+esc(CFG.tableauBord || 'prof.html')+'" '+
+          'style="display:block;text-align:center;'+
           'text-decoration:none;margin-bottom:9px">📊 Suivi des élèves</a>'
         : '')+
       '<button type="button" class="atl-btn ghost" data-a="mdp" style="width:100%;margin-bottom:9px">'+

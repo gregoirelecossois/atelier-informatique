@@ -17,6 +17,12 @@ window.ATELIER_CONFIG = {
   /* Nom affiché dans l'écran de connexion (juste cosmétique). */
   etablissement: '',
 
+  /* Adresse du tableau de bord enseignant. Absolue, et pas « prof.html » en relatif :
+     ce même fichier est chargé par des applications publiées AILLEURS (« Le PC »), d'où
+     un lien relatif tomberait sur une page qui n'existe pas chez elles.
+     Vide → lien relatif « prof.html », ce qui suffit quand l'atelier est seul. */
+  tableauBord: 'https://gregoirelecossois.github.io/atelier-informatique/prof.html',
+
   /* true  → un élève non connecté voit un avertissement bien visible.
      false → l'avertissement reste discret (utile en démo ou en classe sans comptes). */
   insisterConnexion: true

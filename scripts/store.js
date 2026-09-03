@@ -420,6 +420,7 @@ if(CLOUD && session) amorcer(0);
    niveau des clés déjà présentes. Silencieux tant que personne n'est connecté.
    --------------------------------------------------------------------------- */
 var BATTEMENT_MS = 45000;
+var aBattu = false;   /* cette page a-t-elle déjà réclamé la présence ? cf. quitter() */
 
 function ouSuisJe(){
   var a = window.ATELIER_PAR_FICHIER ? window.ATELIER_PAR_FICHIER(location.pathname) : null;
@@ -434,7 +435,17 @@ function ouSuisJe(){
 
 function battre(){
   if(!mem || !session || document.visibilityState === 'hidden') return;
-  req('POST', '/api/presence', ouSuisJe()).catch(function(){ /* sans conséquence */ });
+  var ou = ouSuisJe();
+  /* Une page qui ne sait pas dire OÙ elle est ne réclame pas la présence : la page
+     d'accueil, et toute application extérieure qui partage les comptes (« Le PC »).
+     Ce n'est pas de la coquetterie — la ligne de présence est UNIQUE par élève
+     (clé primaire compte_id) et s'écrase à chaque battement. Sans ce garde-fou, un
+     élève qui garde un second onglet ouvert, ce qui est la norme en classe, efface
+     toutes les 45 secondes le « N3 · M2 » que le tableau de bord vient d'afficher :
+     il disparaît de l'écran du professeur alors qu'il travaille. */
+  if(!ou.atelier) return;
+  aBattu = true;
+  req('POST', '/api/presence', ou).catch(function(){ /* sans conséquence */ });
 }
 
 /* Départ annoncé : sans lui, un élève qui ferme son onglet resterait affiché
@@ -443,6 +454,10 @@ function battre(){
    requête de survivre à la fermeture de la page. */
 function quitter(){
   if(!mem || !session) return;
+  /* Symétrique du garde-fou de battre() : seule une page qui a RÉCLAMÉ la présence a le
+     droit de l'effacer. Sinon fermer un second onglet — l'accueil, « Le PC » — sortirait
+     du tableau de bord un élève resté en plein atelier dans le premier. */
+  if(!aBattu) return;
   var corps = { parti: true, jeton: session.jeton };
 
   /* sendBeacon d'abord, et ce n'est pas un détail : fermer complètement le navigateur
