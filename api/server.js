@@ -10,6 +10,13 @@
  * navigateurs comme par les filtres des réseaux d'établissement. Corollaire agréable :
  * aucune surface CSRF.
  *
+ * L'ÉTABLISSEMENT EST LA FRONTIÈRE. Une même instance sert plusieurs collèges, et un
+ * enseignant ne voit jamais rien au-delà du sien : ni un élève, ni une classe, ni une
+ * présence, ni un nom. Cela ne tient pas à ce que le tableau de bord affiche, mais à ce
+ * que CHACUNE des routes /api/prof/* accepte de renvoyer — la portée est posée par
+ * sessionProf(), et aucune requête n'y échappe. Une cible d'un autre établissement est
+ * « introuvable » (404) et non « interdite » (403) : un refus confirmerait son existence.
+ *
  * Routes ouvertes à tout compte connecté :
  *   GET    /api/sante                       état du service + empreinte du code déployé
  *   POST   /api/connexion                   {identifiant, motdepasse} → jeton + progression
@@ -31,12 +38,27 @@
  *   DELETE /api/prof/eleve/:id              suppression définitive
  *   POST   /api/prof/eleve/:id/mdp          réinitialise le mot de passe
  *   PUT    /api/prof/eleve/:id/progression  débloque un niveau, corrige un avancement
+ *
+ * Routes réservées au rôle « admin » — la gestion des établissements. Ce compte est
+ * délibérément distinct du compte enseignant : il crée les collèges et les comptes
+ * professeurs, et ne voit AUCUN élève. Aucune route ci-dessous ne renvoie le nom d'un
+ * élève, sa classe ou son avancement — seulement des décomptes.
+ *   GET    /api/admin/etablissements        la liste, avec le nombre de comptes de chacun
+ *   POST   /api/admin/etablissements        crée un établissement et ses classes de base
+ *   PATCH  /api/admin/etablissements/:id    renomme, ferme ou rouvre
+ *   DELETE /api/admin/etablissements/:id    refuse tant qu'il reste un compte
+ *   GET    /api/admin/profs                 les comptes enseignants, tous établissements
+ *   POST   /api/admin/profs                 crée un enseignant → mot de passe, une fois
+ *   PATCH  /api/admin/profs/:id             nom, identifiant, établissement, actif
+ *   DELETE /api/admin/profs/:id             suppression définitive
+ *   POST   /api/admin/profs/:id/mdp         réinitialise le mot de passe
  */
 import './env.js';
 import http from 'node:http';
 import * as db from './db.js';
 import * as auth from './auth.js';
-import { creerCompte, reinitialiserMdp, IDENTIFIANT_OK } from './comptes.js';
+import { creerCompte, reinitialiserMdp, classeDeLEtablissement,
+         poserClassesDeBase, IDENTIFIANT_OK } from './comptes.js';
 import { verifierPolitique } from './motsdepasse.js';
 import { VERSION, DEMARRE } from './version.js';
 
@@ -145,13 +167,20 @@ async function session(req) {
 }
 
 async function sessionDuJeton(jetonClair) {
+  /* La session transporte l'établissement : toute route qui filtre le fait à partir
+     d'ici, jamais d'un paramètre venu du client. Un établissement fermé (`actif` à
+     faux) coupe l'accès sans rien effacer — les sessions en cours tombent au premier
+     appel suivant, ce qu'il faut pour une fin de contrat. */
   const ligne = await db.une(
     `select s.jeton, s.expire_le, s.vue_le,
-            c.id, c.identifiant, c.prenom, c.nom, c.role, c.doit_changer_mdp, cl.nom as classe
+            c.id, c.identifiant, c.prenom, c.nom, c.role, c.doit_changer_mdp,
+            c.etablissement_id, cl.nom as classe, et.nom as etablissement
        from sessions s
        join comptes c  on c.id = s.compte_id
        left join classes cl on cl.id = c.classe_id
-      where s.jeton = $1 and s.expire_le > now() and c.actif`,
+       left join etablissements et on et.id = c.etablissement_id
+      where s.jeton = $1 and s.expire_le > now() and c.actif
+        and (c.etablissement_id is null or et.actif)`,
     [auth.empreinte(jetonClair)]
   );
   if (!ligne) throw new Refus(401, 'Session expirée.');
@@ -172,6 +201,7 @@ async function sessionDuJeton(jetonClair) {
    l'élève ne l'a pas menée au bout, y compris s'il recharge la page pour l'esquiver. */
 function profil(l) {
   return { id: l.id, identifiant: l.identifiant, prenom: l.prenom, nom: l.nom, classe: l.classe, role: l.role,
+           etablissement: l.etablissement || null,
            doitChangerMdp: !!l.doit_changer_mdp };
 }
 
@@ -195,13 +225,18 @@ async function connexion(req) {
   }
 
   const c = await db.une(
-    `select c.*, cl.nom as classe from comptes c
+    `select c.*, cl.nom as classe, et.nom as etablissement,
+            coalesce(et.actif, true) as etablissement_actif
+       from comptes c
        left join classes cl on cl.id = c.classe_id
+       left join etablissements et on et.id = c.etablissement_id
       where c.identifiant = $1`, [identifiant]);
 
   /* Même message et même durée dans tous les cas d'échec : ni le contenu ni le
-     temps de réponse ne doivent révéler qu'un identifiant existe. */
-  const bon = c && c.actif ? await auth.verifier(motdepasse, c.mdp) : await auth.perdreDuTemps();
+     temps de réponse ne doivent révéler qu'un identifiant existe — ni qu'il existe
+     dans un établissement qu'on vient de fermer. */
+  const bon = c && c.actif && c.etablissement_actif
+    ? await auth.verifier(motdepasse, c.mdp) : await auth.perdreDuTemps();
   if (!bon) {
     auth.noterEchec(adresse, identifiant);
     await db.journaliser(identifiant, 'connexion.echec', null, { ip: adresse });
@@ -218,7 +253,7 @@ async function connexion(req) {
   );
   await db.q('update comptes set derniere_connexion = now() where id = $1', [c.id]);
   await db.q('insert into progressions(compte_id) values ($1) on conflict do nothing', [c.id]);
-  await db.journaliser(identifiant, 'connexion', null, { ip: adresse });
+  await db.journaliser(identifiant, 'connexion', null, { ip: adresse }, c.etablissement_id);
 
   const p = await progressionDe(c.id);
   /* `doitChangerMdp` est dans profil() : le client trouve la même information au même
@@ -280,7 +315,7 @@ async function changerMonMdp(req) {
      sinon l'élève serait déconnecté juste après avoir choisi son mot de passe. */
   await db.q('delete from sessions where compte_id = $1 and jeton <> $2', [s.id, s.jeton]);
   /* Le journal note QUE le mot de passe a changé, jamais sa valeur ni sa forme. */
-  await db.journaliser(s.identifiant, 'compte.mdp.choisi', null, { ip: adresse });
+  await db.journaliser(s.identifiant, 'compte.mdp.choisi', null, { ip: adresse }, s.etablissement_id);
 
   return { ok: true, eleve: { ...profil(s), doitChangerMdp: false } };
 }
@@ -354,14 +389,24 @@ async function purgerComptesExpires() {
     const r = await db.q(
       `delete from comptes
         where role = 'eleve' and cree_le < now() - ($1 || ' months')::interval
-        returning identifiant`,
+        returning identifiant, etablissement_id`,
       [String(CONSERVATION_MOIS)]);
     if (!r.rowCount) return;
-    await db.journaliser('systeme', 'comptes.purge', null, {
-      mois: CONSERVATION_MOIS,
-      supprimes: r.rowCount,
-      identifiants: r.rows.map((l) => l.identifiant).slice(0, 200)
-    });
+    /* Une ligne de journal PAR établissement, et non une seule pour tout le monde :
+       un chef d'établissement qui demande ce qui a été effacé chez lui doit pouvoir
+       l'obtenir sans qu'on lui montre les identifiants des autres collèges. */
+    const parEtab = new Map();
+    for (const l of r.rows) {
+      if (!parEtab.has(l.etablissement_id)) parEtab.set(l.etablissement_id, []);
+      parEtab.get(l.etablissement_id).push(l.identifiant);
+    }
+    for (const [etab, identifiants] of parEtab) {
+      await db.journaliser('systeme', 'comptes.purge', null, {
+        mois: CONSERVATION_MOIS,
+        supprimes: identifiants.length,
+        identifiants: identifiants.slice(0, 200)
+      }, etab);
+    }
     console.log(`[api] purge : ${r.rowCount} compte(s) élève au-delà de ${CONSERVATION_MOIS} mois`);
   } catch (e) {
     console.error('[api] purge impossible :', e.message);
@@ -434,10 +479,45 @@ async function battement(req) {
 /* --------------------------------------------------------------------------
    Espace enseignant
    -------------------------------------------------------------------------- */
+/* Toute route enseignante commence ici, et la portée qu'elle renvoie — s.etablissement_id
+   — est la SEULE source de l'établissement pour les requêtes qui suivent. Rien de ce que
+   le client envoie ne peut l'élargir : ni un identifiant de classe, ni un identifiant
+   d'élève, ni une liste d'identifiants. Le second contrôle double la contrainte de base
+   (`comptes_etablissement_check`) : si elle sautait, on refuserait ici plutôt que de
+   servir un `where etablissement_id = null` qui, lui, ne renverrait rien mais laisserait
+   croire à un établissement vide. */
 async function sessionProf(req) {
   const s = await session(req);
   if (s.role !== 'prof') throw new Refus(403, 'Réservé aux enseignants.');
+  if (!s.etablissement_id) throw new Refus(403, 'Compte enseignant sans établissement.');
   return s;
+}
+
+/* Retrouve un compte DANS l'établissement de l'enseignant, et nulle part ailleurs.
+   Un compte d'un autre collège est « introuvable » et non « interdit » : distinguer les
+   deux réponses laisserait énumérer les comptes des voisins en essayant des numéros. */
+async function compteDuProf(s, id) {
+  const l = await db.une(
+    `select c.id, c.identifiant, c.prenom, c.nom, c.role, c.actif, c.cree_le,
+            c.derniere_connexion, c.doit_changer_mdp, c.classe_id, cl.nom as classe
+       from comptes c left join classes cl on cl.id = c.classe_id
+      where c.id = $1 and c.etablissement_id = $2`,
+    [Number(id), s.etablissement_id]);
+  if (!l) throw new Refus(404, 'Compte introuvable.');
+  return l;
+}
+
+/* Un enseignant gère les ÉLÈVES de son établissement, jamais les comptes de ses
+   collègues : réinitialiser le mot de passe d'un autre professeur, c'est prendre sa
+   place. Ces comptes-là appartiennent à l'espace administrateur. Cette seule règle
+   remplace les deux garde-fous d'avant (« on ne se désactive pas soi-même », « on ne
+   supprime pas son propre compte ») : un enseignant n'est pas un élève, il ne peut
+   donc plus se viser lui-même. */
+function eleveSeulement(l) {
+  if (l.role !== 'eleve') {
+    throw new Refus(403, 'Les comptes enseignants se gèrent depuis l\'espace administrateur.');
+  }
+  return l;
 }
 
 const PREFIXES_JEU = ['ms', 'kb', 'tt', 'df', 'nv', 'ml'];
@@ -505,13 +585,15 @@ function resumerLePc(d) {
   }
 }
 
-async function lesClasses() {
-  return (await db.q('select id, nom, ordre from classes order by ordre, nom')).rows;
+async function lesClasses(etablissementId) {
+  return (await db.q(
+    'select id, nom, ordre from classes where etablissement_id = $1 order by ordre, nom',
+    [etablissementId])).rows;
 }
 
 /* Une seule requête pour peindre tout le tableau. Rechargée toutes les 30 s. */
 async function profTableau(req) {
-  await sessionProf(req);
+  const s = await sessionProf(req);
   const r = await db.q(
     `select c.id, c.identifiant, c.prenom, c.nom, c.role, c.actif, c.cree_le, c.derniere_connexion,
             cl.id as classe_id, cl.nom as classe,
@@ -519,30 +601,35 @@ async function profTableau(req) {
        from comptes c
        left join classes cl on cl.id = c.classe_id
        left join progressions p on p.compte_id = c.id
-      order by cl.ordre nulls last, cl.nom, c.nom, c.prenom`);
-  return { eleves: r.rows.map(resumer), classes: await lesClasses() };
+      where c.etablissement_id = $1
+      order by cl.ordre nulls last, cl.nom, c.nom, c.prenom`, [s.etablissement_id]);
+  return { eleves: r.rows.map(resumer), classes: await lesClasses(s.etablissement_id),
+           etablissement: s.etablissement };
 }
 
 /* Volontairement minuscule : c'est CE qui est interrogé toutes les 10 s. */
 async function profPresence(req) {
-  await sessionProf(req);
+  const s = await sessionProf(req);
   const r = await db.q(
-    `select compte_id, atelier, niveau, mission, vu_le
-       from presence where vu_le > now() - ($1 || ' minutes')::interval`, [String(PRESENCE_MINUTES)]);
+    `select p.compte_id, p.atelier, p.niveau, p.mission, p.vu_le
+       from presence p join comptes c on c.id = p.compte_id
+      where c.etablissement_id = $2
+        and p.vu_le > now() - ($1 || ' minutes')::interval`,
+    [String(PRESENCE_MINUTES), s.etablissement_id]);
   return { presents: r.rows, maintenant: new Date().toISOString() };
 }
 
 async function profEleve(req, params) {
-  await sessionProf(req);
-  const l = await db.une(
-    `select c.id, c.identifiant, c.prenom, c.nom, c.role, c.actif, c.cree_le, c.derniere_connexion,
-            c.doit_changer_mdp, cl.id as classe_id, cl.nom as classe
-       from comptes c left join classes cl on cl.id = c.classe_id
-      where c.id = $1`, [Number(params.id)]);
-  if (!l) throw new Refus(404, 'Compte introuvable.');
+  const s = await sessionProf(req);
+  const l = await compteDuProf(s, params.id);
   return { eleve: l, ...(await progressionDe(l.id)) };
 }
 
+/* Le rôle n'est plus lu dans le corps de la requête : le tableau de bord ne crée que des
+   élèves, et un compte enseignant se crée depuis l'espace administrateur. Un rôle accepté
+   ici aurait permis à un professeur de se fabriquer des collègues — et, une fois la route
+   connue, à n'importe qui d'en fabriquer chez lui. `creerCompte` vérifie que la classe
+   demandée appartient bien à cet établissement. */
 async function profCreerEleve(req) {
   const s = await sessionProf(req);
   const corps = await lireCorps(req);
@@ -552,7 +639,8 @@ async function profCreerEleve(req) {
       nom: String(corps.nom || '').trim(),
       classe_id: corps.classe_id != null ? Number(corps.classe_id) : undefined,
       classe: corps.classe,
-      role: corps.role === 'prof' ? 'prof' : 'eleve',
+      etablissement_id: s.etablissement_id,
+      role: 'eleve',
       acteur: s.identifiant
     });
     return c;                       /* contient le mot de passe en clair, une seule fois */
@@ -566,15 +654,23 @@ async function profModifierEleve(req, params) {
   const id = Number(params.id);
   const corps = await lireCorps(req);
 
-  const cible = await db.une('select id, identifiant, role, actif from comptes where id = $1', [id]);
-  if (!cible) throw new Refus(404, 'Compte introuvable.');
+  const cible = eleveSeulement(await compteDuProf(s, id));
 
   const champs = [], valeurs = [];
   const poser = (col, val) => { champs.push(`${col} = $${champs.length + 2}`); valeurs.push(val); };
 
   if (typeof corps.prenom === 'string' && corps.prenom.trim()) poser('prenom', corps.prenom.trim().slice(0, 60));
   if (typeof corps.nom === 'string' && corps.nom.trim()) poser('nom', corps.nom.trim().slice(0, 60));
-  if ('classe_id' in corps) poser('classe_id', corps.classe_id == null ? null : Number(corps.classe_id));
+  if ('classe_id' in corps) {
+    /* Un identifiant de classe vient du client : on ne le pose qu'après avoir vérifié
+       qu'il désigne une classe de CET établissement. Sans ce contrôle, changer un nombre
+       dans la requête suffisait à ranger un élève dans la classe d'un autre collège —
+       il disparaissait alors du tableau de bord de son propre professeur. */
+    try {
+      poser('classe_id', corps.classe_id == null
+        ? null : await classeDeLEtablissement(corps.classe_id, s.etablissement_id));
+    } catch (e) { throw new Refus(400, e.message); }
+  }
 
   if (typeof corps.identifiant === 'string') {
     const id2 = corps.identifiant.trim().toLowerCase();
@@ -587,32 +683,27 @@ async function profModifierEleve(req, params) {
   }
 
   if ('actif' in corps) {
-    if (id === s.id && !corps.actif) throw new Refus(400, 'On ne se désactive pas soi-même.');
     poser('actif', !!corps.actif);
     if (!corps.actif) await db.q('delete from sessions where compte_id = $1', [id]);
   }
 
   if (!champs.length) throw new Refus(400, 'Rien à modifier.');
   await db.q(`update comptes set ${champs.join(', ')} where id = $1`, [id, ...valeurs]);
-  await db.journaliser(s.identifiant, 'compte.modification', cible.identifiant, corps);
+  await db.journaliser(s.identifiant, 'compte.modification', cible.identifiant, corps, s.etablissement_id);
   return { ok: true };
 }
 
 async function profMdpEleve(req, params) {
   const s = await sessionProf(req);
-  const cible = await db.une('select identifiant from comptes where id = $1', [Number(params.id)]);
-  if (!cible) throw new Refus(404, 'Compte introuvable.');
+  const cible = eleveSeulement(await compteDuProf(s, params.id));
   return reinitialiserMdp(cible.identifiant, { acteur: s.identifiant });
 }
 
 async function profSupprimerEleve(req, params) {
   const s = await sessionProf(req);
-  const id = Number(params.id);
-  if (id === s.id) throw new Refus(400, 'On ne supprime pas son propre compte.');
-  const cible = await db.une('select identifiant from comptes where id = $1', [id]);
-  if (!cible) throw new Refus(404, 'Compte introuvable.');
-  await db.q('delete from comptes where id = $1', [id]);
-  await db.journaliser(s.identifiant, 'compte.suppression', cible.identifiant, null);
+  const cible = eleveSeulement(await compteDuProf(s, params.id));
+  await db.q('delete from comptes where id = $1', [cible.id]);
+  await db.journaliser(s.identifiant, 'compte.suppression', cible.identifiant, null, s.etablissement_id);
   return { ok: true };
 }
 
@@ -621,26 +712,29 @@ async function profSupprimerEleve(req, params) {
    qu'un avancement modifié par l'enseignant doit pouvoir s'expliquer. */
 async function profProgressionEleve(req, params) {
   const s = await sessionProf(req);
-  const id = Number(params.id);
-  const cible = await db.une('select identifiant from comptes where id = $1', [id]);
-  if (!cible) throw new Refus(404, 'Compte introuvable.');
+  const cible = eleveSeulement(await compteDuProf(s, params.id));
   const corps = await lireCorps(req);
-  const r = await appliquerProgression(id, corps);
+  const r = await appliquerProgression(cible.id, corps);
   await db.journaliser(s.identifiant, 'progression.modification', cible.identifiant,
-    { majs: corps.majs || {}, suppressions: corps.suppressions || [] });
+    { majs: corps.majs || {}, suppressions: corps.suppressions || [] }, s.etablissement_id);
   return r;
 }
 
+/* « 6eB » n'est unique que dans son établissement : le conflit se lit maintenant sur le
+   couple (établissement, nom en minuscules), qui est exactement l'index unique de la
+   base. Avec l'ancienne unicité globale, deux collèges n'auraient pas pu avoir chacun
+   une 6eB — le second aurait réordonné celle du premier en croyant créer la sienne. */
 async function profCreerClasse(req) {
   const s = await sessionProf(req);
   const corps = await lireCorps(req);
   const nom = String(corps.nom || '').trim().slice(0, 30);
   if (!nom) throw new Refus(400, 'Nom de classe attendu.');
   await db.q(
-    `insert into classes(nom, ordre) values ($1,$2)
-     on conflict (nom) do update set ordre = excluded.ordre`, [nom, Number(corps.ordre || 0)]);
-  await db.journaliser(s.identifiant, 'classe.enregistrement', nom, null);
-  return { classes: await lesClasses() };
+    `insert into classes(nom, ordre, etablissement_id) values ($1,$2,$3)
+     on conflict (etablissement_id, lower(nom)) do update set ordre = excluded.ordre`,
+    [nom, Number(corps.ordre || 0), s.etablissement_id]);
+  await db.journaliser(s.identifiant, 'classe.enregistrement', nom, null, s.etablissement_id);
+  return { classes: await lesClasses(s.etablissement_id) };
 }
 
 /* Remise en ordre des classes, d'un seul coup : le tableau de bord envoie la liste des
@@ -650,19 +744,31 @@ async function profCreerClasse(req) {
 async function profOrdreClasses(req) {
   const s = await sessionProf(req);
   const corps = await lireCorps(req);
-  const ids = Array.isArray(corps.ids) ? corps.ids.map(Number).filter(Number.isInteger) : [];
+  const ids = Array.isArray(corps.ids)
+    ? [...new Set(corps.ids.map(Number).filter(Number.isInteger))] : [];
   if (!ids.length) throw new Refus(400, 'Liste d\'identifiants de classes attendue.');
   if (ids.length > 200) throw new Refus(413, 'Trop de classes en une fois.');
+
+  /* C'est la route la plus exposée de toutes : elle reçoit une liste brute de nombres,
+     sans rien qui rattache ces nombres à qui que ce soit. On refuse le lot entier dès
+     qu'un seul identifiant sort de l'établissement, plutôt que de laisser le `where`
+     ci-dessous ignorer les intrus en silence : un rangement à moitié appliqué serait
+     tout aussi faux, mais invisible. Le décompte suffit parce que la liste est
+     dédoublonnée juste au-dessus. */
+  const n = await db.une(
+    'select count(*)::int as n from classes where etablissement_id = $1 and id = any($2::int[])',
+    [s.etablissement_id, ids]);
+  if (n.n !== ids.length) throw new Refus(404, 'Classe introuvable dans cet établissement.');
 
   /* `with ordinality` : PostgreSQL numérote lui-même les éléments du tableau, ce qui
      évite d'assembler une requête à rallonge — et de la refaire à chaque classe. */
   await db.q(
     `update classes set ordre = v.rang
        from unnest($1::int[]) with ordinality as v(id, rang)
-      where classes.id = v.id`,
-    [ids]);
-  await db.journaliser(s.identifiant, 'classes.ordre', null, { ids });
-  return { classes: await lesClasses() };
+      where classes.id = v.id and classes.etablissement_id = $2`,
+    [ids, s.etablissement_id]);
+  await db.journaliser(s.identifiant, 'classes.ordre', null, { ids }, s.etablissement_id);
+  return { classes: await lesClasses(s.etablissement_id) };
 }
 
 /* Supprimer une classe ne supprime AUCUN élève : `comptes.classe_id` est en
@@ -672,12 +778,223 @@ async function profOrdreClasses(req) {
 async function profSupprimerClasse(req, params) {
   const s = await sessionProf(req);
   const id = Number(params.id);
-  const cible = await db.une('select nom from classes where id = $1', [id]);
+  const cible = await db.une('select nom from classes where id = $1 and etablissement_id = $2',
+    [id, s.etablissement_id]);
   if (!cible) throw new Refus(404, 'Classe introuvable.');
   const n = await db.une('select count(*)::int as n from comptes where classe_id = $1', [id]);
   await db.q('delete from classes where id = $1', [id]);
-  await db.journaliser(s.identifiant, 'classe.suppression', cible.nom, { detaches: n.n });
-  return { ok: true, detaches: n.n, classes: await lesClasses() };
+  await db.journaliser(s.identifiant, 'classe.suppression', cible.nom, { detaches: n.n }, s.etablissement_id);
+  return { ok: true, detaches: n.n, classes: await lesClasses(s.etablissement_id) };
+}
+
+
+/* --------------------------------------------------------------------------
+   Espace administrateur
+
+   Ce compte est délibérément distinct du compte enseignant, même quand c'est la même
+   personne qui les détient. Trois raisons, dans cet ordre :
+
+   - il ne sert qu'exceptionnellement — ouvrir un collège, créer un professeur — et un
+     compte qu'on ouvre trois fois par an ne devrait pas rester connecté toute l'année
+     dans l'onglet du fond ;
+   - il porte le seul pouvoir qui traverse la frontière des établissements, et un
+     pouvoir qui traverse la frontière ne doit pas être un effet de bord du compte avec
+     lequel on fait cours ;
+   - il ne voit AUCUN élève, et c'est vérifiable ligne à ligne ci-dessous : pas une
+     requête ne renvoie un prénom, une classe ou un avancement d'élève, seulement des
+     décomptes. L'administrateur d'une instance partagée est le sous-traitant technique
+     de plusieurs responsables de traitement ; qu'il puisse ouvrir un collège n'implique
+     pas qu'il puisse lire ses élèves, et le code doit le dire aussi clairement que le
+     contrat.
+   -------------------------------------------------------------------------- */
+async function sessionAdmin(req) {
+  const s = await session(req);
+  if (s.role !== 'admin') throw new Refus(403, 'Réservé à l\'administration.');
+  return s;
+}
+
+/* Des décomptes, jamais des noms. */
+async function lesEtablissements() {
+  return (await db.q(
+    `select e.id, e.nom, e.ville, e.actif, e.cree_le,
+            count(*) filter (where c.role = 'eleve') ::int as eleves,
+            count(*) filter (where c.role = 'prof')  ::int as profs,
+            (select count(*)::int from classes cl where cl.etablissement_id = e.id) as classes
+       from etablissements e
+       left join comptes c on c.etablissement_id = e.id
+      group by e.id
+      order by e.nom, e.ville`)).rows;
+}
+
+async function adminEtablissements(req) {
+  await sessionAdmin(req);
+  return { etablissements: await lesEtablissements() };
+}
+
+async function adminCreerEtablissement(req) {
+  const s = await sessionAdmin(req);
+  const corps = await lireCorps(req);
+  const nom = String(corps.nom || '').trim().slice(0, 80);
+  const ville = String(corps.ville || '').trim().slice(0, 60);
+  if (!nom) throw new Refus(400, 'Nom de l\'établissement attendu.');
+
+  const deja = await db.une(
+    'select id from etablissements where lower(nom) = lower($1) and lower(ville) = lower($2)',
+    [nom, ville]);
+  if (deja) throw new Refus(409, `« ${nom} » existe déjà.`);
+
+  const e = await db.une(
+    'insert into etablissements(nom, ville) values ($1,$2) returning id', [nom, ville]);
+  await poserClassesDeBase(e.id);
+  await db.journaliser(s.identifiant, 'etablissement.creation', nom, { ville }, e.id);
+  return { id: e.id, etablissements: await lesEtablissements() };
+}
+
+async function adminModifierEtablissement(req, params) {
+  const s = await sessionAdmin(req);
+  const id = Number(params.id);
+  const corps = await lireCorps(req);
+  const cible = await db.une('select nom from etablissements where id = $1', [id]);
+  if (!cible) throw new Refus(404, 'Établissement introuvable.');
+
+  const champs = [], valeurs = [];
+  const poser = (col, val) => { champs.push(`${col} = $${champs.length + 2}`); valeurs.push(val); };
+  if (typeof corps.nom === 'string' && corps.nom.trim()) poser('nom', corps.nom.trim().slice(0, 80));
+  if (typeof corps.ville === 'string') poser('ville', corps.ville.trim().slice(0, 60));
+  if ('actif' in corps) poser('actif', !!corps.actif);
+  if (!champs.length) throw new Refus(400, 'Rien à modifier.');
+
+  await db.q(`update etablissements set ${champs.join(', ')} where id = $1`, [id, ...valeurs]);
+  /* Fermer un établissement doit couper l'accès tout de suite, pas au bout de douze
+     heures : les sessions ouvertes de ses comptes tombent avec lui. */
+  if ('actif' in corps && !corps.actif) {
+    await db.q(
+      'delete from sessions where compte_id in (select id from comptes where etablissement_id = $1)', [id]);
+  }
+  await db.journaliser(s.identifiant, 'etablissement.modification', cible.nom, corps, id);
+  return { etablissements: await lesEtablissements() };
+}
+
+/* Un établissement ne se supprime pas « avec ses données » d'un clic. La base l'interdit
+   déjà (`comptes.etablissement_id` est en « on delete restrict »), on le dit ici avec le
+   décompte : supprimer un collège en fin de contrat, c'est d'abord supprimer ses comptes,
+   ce qui est une décision qui se prend élève par élève ou par la purge. */
+async function adminSupprimerEtablissement(req, params) {
+  const s = await sessionAdmin(req);
+  const id = Number(params.id);
+  const cible = await db.une('select nom from etablissements where id = $1', [id]);
+  if (!cible) throw new Refus(404, 'Établissement introuvable.');
+
+  const n = await db.une('select count(*)::int as n from comptes where etablissement_id = $1', [id]);
+  if (n.n) {
+    throw new Refus(409,
+      `« ${cible.nom} » compte encore ${n.n} compte${n.n > 1 ? 's' : ''}. ` +
+      'Supprime-les d\'abord, ou ferme l\'établissement au lieu de le supprimer.');
+  }
+  await db.q('delete from etablissements where id = $1', [id]);
+  await db.journaliser(s.identifiant, 'etablissement.suppression', cible.nom, null, null);
+  return { ok: true, etablissements: await lesEtablissements() };
+}
+
+/* Les comptes ENSEIGNANTS, de tous les établissements — et eux seuls. Le `where` porte
+   sur le rôle : c'est ce qui garantit qu'aucun nom d'élève ne sort d'ici. */
+async function lesProfs() {
+  return (await db.q(
+    `select c.id, c.identifiant, c.prenom, c.nom, c.actif, c.cree_le, c.derniere_connexion,
+            c.etablissement_id, e.nom as etablissement
+       from comptes c left join etablissements e on e.id = c.etablissement_id
+      where c.role = 'prof'
+      order by e.nom, c.nom, c.prenom`)).rows;
+}
+
+async function adminProfs(req) {
+  await sessionAdmin(req);
+  return { profs: await lesProfs(), etablissements: await lesEtablissements() };
+}
+
+async function adminCreerProf(req) {
+  const s = await sessionAdmin(req);
+  const corps = await lireCorps(req);
+  const etab = Number(corps.etablissement_id);
+  if (!(await db.une('select 1 from etablissements where id = $1', [etab]))) {
+    throw new Refus(400, 'Établissement inconnu.');
+  }
+  try {
+    const c = await creerCompte({
+      prenom: String(corps.prenom || '').trim(),
+      nom: String(corps.nom || '').trim(),
+      etablissement_id: etab,
+      role: 'prof',
+      acteur: s.identifiant
+    });
+    return { ...c, profs: await lesProfs() };   /* mot de passe en clair, une seule fois */
+  } catch (e) {
+    throw new Refus(400, e.message);
+  }
+}
+
+async function adminProfSeul(id) {
+  const l = await db.une(
+    'select id, identifiant, etablissement_id from comptes where id = $1 and role = $2', [id, 'prof']);
+  if (!l) throw new Refus(404, 'Compte enseignant introuvable.');
+  return l;
+}
+
+async function adminModifierProf(req, params) {
+  const s = await sessionAdmin(req);
+  const id = Number(params.id);
+  const corps = await lireCorps(req);
+  const cible = await adminProfSeul(id);
+
+  const champs = [], valeurs = [];
+  const poser = (col, val) => { champs.push(`${col} = $${champs.length + 2}`); valeurs.push(val); };
+
+  if (typeof corps.prenom === 'string' && corps.prenom.trim()) poser('prenom', corps.prenom.trim().slice(0, 60));
+  if (typeof corps.nom === 'string' && corps.nom.trim()) poser('nom', corps.nom.trim().slice(0, 60));
+
+  if (typeof corps.identifiant === 'string') {
+    const id2 = corps.identifiant.trim().toLowerCase();
+    if (!IDENTIFIANT_OK.test(id2)) {
+      throw new Refus(400, 'Identifiant : minuscules, chiffres, point et tiret, 2 à 31 caractères.');
+    }
+    const pris = await db.une('select 1 from comptes where identifiant = $1 and id <> $2', [id2, id]);
+    if (pris) throw new Refus(409, `L'identifiant « ${id2} » est déjà pris.`);
+    poser('identifiant', id2);
+  }
+
+  /* Muter un professeur d'un établissement à l'autre, c'est lui retirer la vue sur le
+     premier et lui donner celle du second : ses sessions ouvertes tombent, sinon il
+     continuerait un moment à voir les élèves du collège qu'il vient de quitter. */
+  if ('etablissement_id' in corps) {
+    const etab = Number(corps.etablissement_id);
+    if (!(await db.une('select 1 from etablissements where id = $1', [etab]))) {
+      throw new Refus(400, 'Établissement inconnu.');
+    }
+    poser('etablissement_id', etab);
+  }
+  if ('actif' in corps) poser('actif', !!corps.actif);
+  if (!champs.length) throw new Refus(400, 'Rien à modifier.');
+
+  await db.q(`update comptes set ${champs.join(', ')} where id = $1`, [id, ...valeurs]);
+  if (('etablissement_id' in corps) || ('actif' in corps && !corps.actif)) {
+    await db.q('delete from sessions where compte_id = $1', [id]);
+  }
+  await db.journaliser(s.identifiant, 'prof.modification', cible.identifiant, corps, cible.etablissement_id);
+  return { profs: await lesProfs() };
+}
+
+async function adminSupprimerProf(req, params) {
+  const s = await sessionAdmin(req);
+  const cible = await adminProfSeul(Number(params.id));
+  await db.q('delete from comptes where id = $1', [cible.id]);
+  await db.journaliser(s.identifiant, 'prof.suppression', cible.identifiant, null, cible.etablissement_id);
+  return { ok: true, profs: await lesProfs() };
+}
+
+async function adminMdpProf(req, params) {
+  const s = await sessionAdmin(req);
+  const cible = await adminProfSeul(Number(params.id));
+  return reinitialiserMdp(cible.identifiant, { acteur: s.identifiant });
 }
 
 /* --------------------------------------------------------------------------
@@ -702,7 +1019,17 @@ const ROUTES = [
   ['PATCH',  '/api/prof/eleve/:id',            profModifierEleve],
   ['DELETE', '/api/prof/eleve/:id',            profSupprimerEleve],
   ['POST',   '/api/prof/eleve/:id/mdp',        profMdpEleve],
-  ['PUT',    '/api/prof/eleve/:id/progression', profProgressionEleve]
+  ['PUT',    '/api/prof/eleve/:id/progression', profProgressionEleve],
+
+  ['GET',    '/api/admin/etablissements',      adminEtablissements],
+  ['POST',   '/api/admin/etablissements',      adminCreerEtablissement],
+  ['PATCH',  '/api/admin/etablissements/:id',  adminModifierEtablissement],
+  ['DELETE', '/api/admin/etablissements/:id',  adminSupprimerEtablissement],
+  ['GET',    '/api/admin/profs',               adminProfs],
+  ['POST',   '/api/admin/profs',               adminCreerProf],
+  ['PATCH',  '/api/admin/profs/:id',           adminModifierProf],
+  ['DELETE', '/api/admin/profs/:id',           adminSupprimerProf],
+  ['POST',   '/api/admin/profs/:id/mdp',       adminMdpProf]
 ];
 
 function trouverRoute(methode, chemin) {

@@ -13,11 +13,12 @@ API est une couche qu'on ajoute, jamais un passage obligé.
 
 | Table | Contenu |
 |---|---|
-| `classes` | 6e, 5e, 4e, 3e, CAP1, CAP2… |
-| `comptes` | identifiant, prénom, nom, classe, rôle, **empreinte** du mot de passe, dates |
+| `etablissements` | nom, ville, ouvert ou fermé |
+| `classes` | 6e, 5e, 4e, 3e, CAP1, CAP2… **rattachées à un établissement** |
+| `comptes` | identifiant, prénom, nom, classe, **établissement**, rôle, **empreinte** du mot de passe, dates |
 | `progressions` | un objet JSON par élève : `ms_unlocked`, `badges_v1`, etc. |
 | `sessions` | empreinte du jeton, expiration |
-| `journal` | connexions, créations, suppressions (traçabilité) |
+| `journal` | connexions, créations, suppressions (traçabilité), et l'établissement concerné |
 
 Rien d'autre : pas de date de naissance, pas d'adresse, pas d'e-mail élève, pas d'INE,
 aucun champ de commentaire libre. Voir les commentaires de `schema.sql`.
@@ -37,6 +38,121 @@ Durées de conservation, appliquées automatiquement par le serveur :
 > elles portent le nom du collège, son adresse et des contacts nominatifs. Elles vivent
 > donc dans `documents-rgpd/`, ignoré par git. Ce qui précède en est la matière
 > technique, et a bien sa place ici.
+
+> ⚠ **Une instance partagée change ta position juridique.** Tant que le serveur ne sert
+> que ton collège, tu mets en œuvre un traitement dont ton chef d'établissement est le
+> responsable. Dès qu'il en sert un second, tu deviens **sous-traitant** (RGPD art. 28) de
+> chaque établissement qui n'est pas le tien : traiter leurs données pour leur compte, sur
+> leur instruction. Ce qui suit, et qui n'est pas dans ce dépôt :
+>
+> - **un contrat de sous-traitance par établissement** (art. 28.3) — objet, durée,
+>   finalité, catégories de personnes, mesures de sécurité, sort des données en fin de
+>   contrat, et l'engagement de n'agir que sur instruction documentée ;
+> - **ton propre registre**, celui du sous-traitant (art. 30.2), distinct de celui de
+>   chaque responsable de traitement ;
+> - **une obligation d'assistance** : chaque chef d'établissement doit pouvoir obtenir la
+>   liste, l'export ou l'effacement de SES données. Le cloisonnement décrit au § 1 bis
+>   n'est pas qu'une commodité d'affichage, c'est ce qui rend cette assistance possible —
+>   d'où l'établissement inscrit sur chaque ligne de `journal`.
+>
+> **Le DPD de ton académie est le bon interlocuteur**, et il vaut mieux le saisir avant le
+> premier élève du deuxième collège qu'après. Techniquement, `fermer` un établissement
+> (§ 3) coupe l'accès sans rien effacer : c'est la manœuvre de fin de contrat, le temps de
+> restituer avant de supprimer.
+
+---
+
+## 1 bis. Plusieurs établissements sur une seule instance
+
+**L'établissement est la frontière.** Une même installation peut servir plusieurs
+collèges ; chacun est un monde clos. Un enseignant appartient à un établissement et un
+seul, et ne voit jamais rien au-delà : ni un élève, ni une classe, ni une présence, ni un
+nom. Ce n'est pas une préférence d'affichage — c'est la limite juridique du traitement.
+
+### Les trois rôles
+
+| Rôle | Établissement | Ce qu'il voit |
+|---|---|---|
+| `eleve` | le sien | sa progression, rien d'autre |
+| `prof` | **un seul** | tous les élèves et toutes les classes de **son** établissement |
+| `admin` | **aucun** | la liste des établissements et les comptes enseignants — **aucun élève** |
+
+L'administrateur est délibérément **un compte distinct** du compte enseignant, même quand
+c'est la même personne qui détient les deux. Trois raisons, dans cet ordre :
+
+- il ne sert qu'exceptionnellement — ouvrir un collège, créer un professeur — et un compte
+  qu'on ouvre trois fois par an ne devrait pas rester connecté toute l'année dans l'onglet
+  du fond ;
+- il porte le seul pouvoir qui **traverse** la frontière des établissements, et ce
+  pouvoir-là ne doit pas être un effet de bord du compte avec lequel on fait cours ;
+- il ne voit **aucun élève**, et c'est vérifiable ligne à ligne dans `server.js` : pas une
+  route `/api/admin/*` ne renvoie un prénom, une classe ou un avancement d'élève,
+  seulement des décomptes.
+
+### Les identifiants
+
+Ils sont **globaux**, jamais propres à un établissement : l'écran de connexion ne demande
+qu'un identifiant et un mot de passe, sans liste déroulante de collèges — un élève de 6e
+ne doit pas avoir à savoir dans lequel on l'a inscrit.
+
+| Rôle | Forme | Exemple |
+|---|---|---|
+| `eleve` | prénom . initiale, puis `.nom` court, `.nom`, `2`, `3`… | `lea.m` |
+| `prof` | **initiale . NOM** | `g.lecossois` |
+| `admin` | **admin . nom** | `admin.lecossois` |
+
+Le professeur est nommé par son **nom** parce que c'est ainsi qu'on l'appelle dans un
+établissement, et parce que « G. LECOSSOIS » se relit d'un coup d'œil dans une liste là où
+« Grégoire Lecossois » se confond avec un élève. Le préfixe `admin.` n'est pas décoratif :
+la même personne détient souvent les deux comptes, et une ligne de journal doit dire lequel
+des deux a agi — sans compter qu'il libère `g.lecossois` pour le compte qui fait cours.
+
+### Ce que le cloisonnement protège, concrètement
+
+Trois choses se seraient cassées en silence sans lui, et méritent d'être nommées parce que
+**aucune ne se voit à l'écran** :
+
+1. **Résoudre une classe par son nom.** Créer « 6eB » au collège B aurait rendu la 6eB du
+   collège A, déjà en base. Les élèves du second seraient allés grossir la classe du
+   premier. `classeId()` exige désormais un établissement, et lève si on l'omet.
+2. **L'unicité de `classes.nom`.** Elle était **globale** : deux collèges n'auraient pas pu
+   avoir chacun une 6eB. Elle porte maintenant sur `(etablissement_id, lower(nom))`.
+3. **`PUT /api/prof/classes/ordre`.** Elle reçoit une **liste brute de nombres**, sans rien
+   qui les rattache à qui que ce soit — c'est la route la plus exposée de toutes. Elle
+   refuse le lot entier dès qu'un identifiant sort de l'établissement, plutôt que de laisser
+   le `where` ignorer les intrus : un rangement à moitié appliqué serait tout aussi faux,
+   mais invisible.
+
+Une cible d'un autre établissement répond **404 « introuvable »** et non 403 « interdit » :
+un refus confirmerait son existence, et laisserait énumérer les comptes du voisin en
+essayant des numéros.
+
+### Reprendre une base mono-établissement
+
+Le schéma s'en charge tout seul au premier démarrage (`db.migrer()`), et il n'y a rien à
+lancer : les classes et les comptes d'avant sont rattachés au premier établissement, créé
+au besoin sous le nom **« Établissement à renommer »**. Les rattacher silencieusement est
+le seul choix sûr — la seule autre issue serait de les laisser orphelins, donc invisibles
+de tous, c'est-à-dire une base qui s'efface d'elle-même au redémarrage.
+
+Trois choses restent à faire à la main, dans cet ordre :
+
+```bash
+cd ~/api
+node outils/atl.mjs etablissements                              # relever le numéro
+node outils/atl.mjs renommer 1 "Collège Jean Moulin" "Ville"
+node outils/atl.mjs admin Prénom Nom                            # le compte administrateur
+```
+
+Puis, **depuis `admin.html`**, renommer l'identifiant du compte enseignant existant
+(`gregoire.l`, fabriqué par l'ancienne règle) en `g.lecossois` : bouton ✏️ sur sa ligne.
+Ce n'est pas fait automatiquement — changer un identifiant de connexion sous les pieds de
+quelqu'un sans qu'il l'ait demandé n'est jamais une bonne surprise.
+
+> ⚠ **Le chantier se déploie d'un bloc.** Les pages (GitHub Pages) suivent `main` toutes
+> seules ; l'API, non (§ 2.4). Entre les deux, `prof.html` demanderait un établissement à
+> un serveur qui ne sait pas ce que c'est. Redéployer l'API **d'abord**, vérifier
+> l'empreinte, puis fusionner.
 
 ---
 
@@ -187,10 +303,16 @@ Le schéma, lui, se rejoue tout seul au démarrage (`db.migrer()`, tout est en
    ```js
    window.ATELIER_CONFIG = {
      api: 'https://TONCOMPTE.alwaysdata.net',
-     etablissement: 'Collège …',
+     etablissement: '',          // ← à laisser VIDE si le serveur sert plusieurs collèges
      insisterConnexion: true
    };
    ```
+
+   `etablissement` n'est qu'un nom affiché **avant** toute connexion. Ce fichier est le
+   même pour tout le monde : dès que le serveur sert plusieurs collèges, y écrire le nom
+   de l'un serait faux pour les autres. Une fois connecté, le nom vient du **serveur**,
+   avec le profil, et c'est celui-là qui fait foi — il s'affiche dans la barre du tableau
+   de bord et dans la fenêtre de compte.
 
    `ORIGINES` doit contenir **exactement** l'adresse d'où sont servis les jeux, protocole
    compris et sans `/` final. Plusieurs adresses se séparent par des virgules.
@@ -281,12 +403,48 @@ chapitre N **en attente** ».
 
 ---
 
-## 3. Le tableau de bord enseignant
+## 3. L'espace administrateur
+
+`admin.html`, à côté des jeux. Il n'est annoncé nulle part : le bouton « 🏫 Établissements »
+n'apparaît que dans la fenêtre de compte d'un **administrateur** connecté. Comme
+`prof.html`, la page n'est pas secrète — c'est l'API qui vérifie le rôle à chaque requête.
+
+On y fait trois choses, et pas une de plus :
+
+- **ouvrir un établissement** — nom, ville, et les six classes de base (6e, 5e, 4e, 3e,
+  CAP1, CAP2) posées d'office ; l'enseignant les range et les supprime ensuite depuis son
+  tableau de bord ;
+- **créer les comptes enseignants** — un enseignant appartient à un établissement et un
+  seul. Son mot de passe de vingt caractères n'est lisible **qu'une fois**, là, dans la
+  fenêtre. Le muter d'un établissement à l'autre ferme ses sessions ouvertes : sans cela il
+  continuerait un moment à voir les élèves du collège qu'il vient de quitter ;
+- **fermer un établissement** — `actif` à faux. Plus personne ne s'y connecte, les sessions
+  en cours tombent tout de suite, et **rien n'est effacé**. C'est ce qu'il faut d'une fin de
+  contrat : le temps de restituer les données avant de les supprimer, sans qu'elles restent
+  accessibles entre-temps.
+
+Un établissement **ne se supprime pas avec ses données**. La base l'interdit
+(`comptes.etablissement_id` est en `on delete restrict`) et la page le dit avant même
+d'envoyer la requête : il faut d'abord supprimer ses comptes. « Supprimer le collège » se
+lit beaucoup trop facilement comme « supprimer ses élèves », et c'est précisément ce qui
+n'arrivera pas par accident.
+
+> **Ce qu'on ne trouvera jamais sur cette page** : un nom d'élève, une classe, un
+> avancement. Seulement des décomptes. Ouvrir un collège ne donne pas le droit d'en lire
+> les élèves, et le découpage des écrans doit le dire aussi clairement que le contrat.
+
+---
+
+## 4. Le tableau de bord enseignant
 
 `prof.html`, à côté des jeux. Il n'est annoncé nulle part : le bouton « 📊 Suivi des
 élèves » n'apparaît que dans la fenêtre de compte d'un enseignant connecté. La page
 elle-même n'est pas secrète — c'est l'API qui vérifie le rôle à chaque requête, un élève
 qui trouve l'adresse ne voit rien.
+
+Le nom de l'établissement s'affiche **en permanence dans la barre du haut**. Ce n'est pas
+un ornement : c'est le périmètre exact de ce que la page a le droit de montrer, et il vient
+du serveur, jamais de `scripts/config.js`.
 
 Ce qu'on y fait :
 
@@ -306,8 +464,12 @@ Ce qu'on y fait :
   missions avec celle en cours mise en évidence, et un second clic y envoie l'élève.
   Débloquer un niveau entier expédiait souvent l'élève plus loin qu'on ne voulait, et
   afficher les trois cents missions d'emblée aurait noyé la fiche ;
-- **créer un compte**, réinitialiser un mot de passe, corriger un nom, une classe ou un
-  identifiant, désactiver ou supprimer ;
+- **créer un compte élève**, réinitialiser un mot de passe, corriger un nom, une classe ou
+  un identifiant, désactiver ou supprimer. Un enseignant ne gère que des **élèves** : les
+  comptes de ses collègues appartiennent à l'espace administrateur, parce que réinitialiser
+  le mot de passe d'un autre professeur, c'est prendre sa place. Cette seule règle remplace
+  les deux garde-fous d'avant (« on ne se désactive pas soi-même », « on ne supprime pas son
+  propre compte ») : un enseignant n'est pas un élève, il ne peut donc plus se viser ;
 - **ranger les classes** : les pastilles de filtre se **glissent** dans l'ordre voulu, et
   cet ordre est celui de l'année scolaire, pas celui de l'alphabet. Il part au serveur en
   une seule requête (`PUT /api/prof/classes/ordre`) : un glisser déplace potentiellement
@@ -319,33 +481,41 @@ Ce qu'on y fait :
   La confirmation le dit et annonce combien d'élèves sont concernés — « supprimer la
   6eB » se lit trop facilement comme « supprimer ses élèves ».
 
-Toute action de l'enseignant est inscrite dans la table `journal` : un avancement modifié
-doit pouvoir s'expliquer. La suppression d'une classe y note le nombre d'élèves détachés.
+Toute action de l'enseignant est inscrite dans la table `journal`, **avec l'établissement
+concerné** : un avancement modifié doit pouvoir s'expliquer, et un chef d'établissement doit
+pouvoir obtenir le journal de ses données sans qu'on lui montre celui des autres. La
+suppression d'une classe y note le nombre d'élèves détachés.
 
-Deux garde-fous : on ne supprime ni ne désactive son propre compte.
+## 5. Créer les comptes en ligne de commande
 
-## 4. Créer les comptes en ligne de commande
+Le tableau de bord crée les comptes un par un ; l'import d'une classe entière, la purge et
+l'amorçage restent en SSH depuis `~/api`.
 
-Le tableau de bord crée les comptes un par un ; l'import d'une classe entière et la
-purge restent en SSH depuis `~/api` :
+**Toute commande qui touche une classe ou un compte sait dans quel établissement elle
+travaille.** `--etab` accepte un numéro ou un nom. Tant qu'il n'y a qu'**un** établissement
+en base, on peut l'omettre : il n'y a pas d'ambiguïté à lever. Dès qu'il y en a deux,
+l'omettre est une **erreur** et non un choix par défaut — c'est exactement le moment où se
+glisserait un élève créé dans le mauvais collège, invisible de son professeur et visible
+d'un autre, sans que rien à l'écran ne le signale.
+
+Premier démarrage, dans cet ordre :
 
 ```bash
 node outils/atl.mjs init
+node outils/atl.mjs admin Grégoire Lecossois
+node outils/atl.mjs etablissement "Collège Jean Moulin" "Ville"
+node outils/atl.mjs creer Grégoire Lecossois --prof --etab 1
 ```
 
 ```bash
-node outils/atl.mjs creer Grégoire Lecossois --prof --court
-```
-
-```bash
-node outils/atl.mjs creer Léa Martin 6e
+node outils/atl.mjs creer Léa Martin 6e --etab 1
 ```
 
 Import d'une classe entière depuis un fichier `classe.csv` (`prenom;nom;classe`, une
 ligne par élève, en-tête facultatif) :
 
 ```bash
-node outils/atl.mjs importer classe.csv
+node outils/atl.mjs importer classe.csv --etab 1
 ```
 
 L'import écrit à côté un `identifiants-AAAA-MM-JJ.csv` avec les mots de passe **en
@@ -353,12 +523,14 @@ clair** : imprime-le, découpe-le, distribue-le, puis **supprime le fichier**. C
 seule et unique fois où ces mots de passe sont lisibles — la base ne contient que leur
 empreinte.
 
-Autres commandes : `classes`, `classe`, `liste [classe]`, `mdp <identifiant>`,
-`activer` / `desactiver`, `supprimer <identifiant> --oui`, `entropie`.
+Autres commandes : `etablissements`, `renommer <id> <nom> [ville]`, `fermer` / `rouvrir`,
+`classes`, `classe`, `liste [classe]`, `mdp <identifiant>`, `activer` / `desactiver`,
+`supprimer <identifiant> --oui`, `purger`, `entropie`. `node outils/atl.mjs` sans argument
+affiche la liste complète.
 
 ---
 
-## 5. Sécurité — les choix faits, et pourquoi
+## 6. Sécurité — les choix faits, et pourquoi
 
 - **Hachage scrypt** (`node:crypto`), sel aléatoire de 128 bits, plus un poivre gardé
   hors base. scrypt figure dans les fonctions admises par la recommandation CNIL
@@ -374,6 +546,14 @@ Autres commandes : `classes`, `classe`, `liste [classe]`, `mdp <identifiant>`,
 - **Jeton porteur plutôt que cookie** : les pages et l'API vivent sur deux domaines,
   et un cookie tiers se fait bloquer aussi bien par les navigateurs que par les filtres
   d'établissement. Effet de bord agréable : aucune surface CSRF.
+- **Cloisonnement par établissement** : la portée est posée **une fois**, dans
+  `sessionProf()`, à partir de la session — jamais à partir de ce que le client envoie.
+  Aucun identifiant de classe, d'élève ou de liste reçu dans une requête ne peut
+  l'élargir : il est vérifié contre l'établissement de la session avant d'être utilisé.
+  Deux contraintes de base tiennent le reste : `classes.etablissement_id` est `not null`
+  (une classe sans établissement serait visible de tous ou de personne, le serveur refuse
+  de démarrer si la contrainte ne s'applique pas) et `comptes` porte un `check` qui
+  n'autorise l'absence d'établissement que pour le rôle `admin`.
 - **Périmètre des clés** : le serveur n'accepte que les clés de jeu (`ms_`, `kb_`,
   `tt_`, `df_`, `nv_`, `ml_`, `pc_`, `badges_`, `a11y_`). Tout le reste est refusé.
   Cette liste est **jumelle** de `PREFIXES` dans `scripts/store.js` : les deux bougent
@@ -462,7 +642,7 @@ passe à répétition, c'est ce chiffre qu'il faut baisser, pas les quatre famil
 
 ---
 
-## 6. Entretien
+## 7. Entretien
 
 **Après avoir ajouté ou retiré une mission ou un niveau**, deux scripts remettent les
 compteurs d'aplomb — le tableau de bord s'en sert comme dénominateurs :
@@ -506,7 +686,7 @@ node outils/atl.mjs purger --oui
 
 ---
 
-## 7. Dépannage
+## 8. Dépannage
 
 | Symptôme | Piste |
 |---|---|
@@ -519,3 +699,9 @@ node outils/atl.mjs purger --oui
 | **« Route inconnue. »** sur une route qui existe dans le dépôt | l'API n'a pas été redéployée : fusionner une PR ne touche pas `~/api`. Voir § 2.4 — recopier les fichiers, **redémarrer le site**, vérifier l'empreinte |
 | `Cannot find module './…'` dans les journaux au démarrage | un fichier manque dans la liste du `curl` de déploiement — la comparer à `FICHIERS_SUIVIS` de `version.js` (§ 2.2) |
 | La fenêtre « Choisis ton mot de passe » n'apparaît jamais | API pas à jour : c'est `profil()` qui porte `doitChangerMdp`, l'ancien serveur ne le renvoyait pas dans `eleve` |
+| Un établissement nommé **« Établissement à renommer »** apparaît | normal après la reprise d'une base mono-établissement : `node outils/atl.mjs renommer <id> "…" "…"` (§ 1 bis) |
+| « Plusieurs établissements : précise lequel avec `--etab` » | voulu : au-delà d'un établissement, l'outil refuse de deviner |
+| « Établissement obligatoire pour résoudre une classe. » | un appel à `classeId()` sans portée — c'est un bug, pas une configuration : la frontière est refusée à l'entrée plutôt que contournée |
+| Un enseignant ne voit plus aucun élève après une mutation | ses sessions ont été fermées exprès, il se reconnecte et voit son nouvel établissement |
+| « Les comptes enseignants se gèrent depuis l'espace administrateur. » | voulu : un professeur ne gère que des élèves (§ 4) |
+| La barre du tableau de bord n'affiche aucun établissement | API pas à jour : c'est `/api/prof/tableau` qui le renvoie |

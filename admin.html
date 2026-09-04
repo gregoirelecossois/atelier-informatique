@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Établissements — Atelier informatique</title>
+
+<!-- Espace administrateur. Comme prof.html, cette page n'est PAS secrète : tout ce
+     qu'elle affiche vient de /api/admin/*, qui vérifie le rôle « admin » à chaque
+     requête. Un élève ou un enseignant qui l'ouvre voit un écran vide et rien d'autre.
+
+     Ce qu'on ne trouvera JAMAIS ici : un nom d'élève, une classe, un avancement. Le
+     serveur ne les renvoie pas sur ces routes, et la page n'en demande pas. Une instance
+     partagée fait de son exploitant le sous-traitant de plusieurs responsables de
+     traitement ; ouvrir un collège ne donne pas le droit d'en lire les élèves, et le
+     découpage des écrans doit le dire aussi clairement que le contrat. -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --fond:#eef2f7; --carte:#fff; --trait:#dde5ee; --encre:#22303f; --gris:#6b7d91;
+    --bleu:#2563eb; --vert:#16a34a; --orange:#e0a416; --rouge:#dc2626;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-size:15px;}
+  h1,h2,h3{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;margin:0;}
+  button{font-family:inherit;cursor:pointer}
+
+  .barre{position:sticky;top:0;z-index:20;background:var(--carte);border-bottom:2px solid var(--trait);
+         padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .barre h1{font-size:1.25rem}
+  .barre .creneau{margin-right:auto;display:inline-flex}
+  .barre a.btn{text-decoration:none;display:inline-flex;align-items:center}
+  .barre .qui{color:var(--gris);font-size:.85rem;font-weight:700}
+
+  .btn{border:2px solid var(--trait);background:#fff;color:var(--encre);border-radius:999px;
+       padding:8px 15px;font-weight:800;font-size:.85rem;transition:border-color .15s,background .15s}
+  .btn:hover{border-color:#9fb6cd}
+  .btn.primaire{background:var(--bleu);border-color:var(--bleu);color:#fff}
+  .btn.danger{background:#fef2f2;border-color:#fecaca;color:#b91c1c}
+  .btn[disabled]{opacity:.5;cursor:default}
+  .btn.petit{padding:5px 11px;font-size:.78rem}
+
+  .zone{max-width:1100px;margin:0 auto;padding:18px 20px 60px}
+  .titre{display:flex;align-items:center;gap:12px;margin:26px 0 12px}
+  .titre h2{font-size:1.1rem}
+  .titre .pousse{margin-left:auto}
+  .aide{color:var(--gris);font-size:.82rem;line-height:1.5;margin:0 0 14px;max-width:70ch}
+
+  .cartes{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+  .carte{background:var(--carte);border:2px solid var(--trait);border-radius:16px;padding:14px 16px}
+  .carte.ferme{opacity:.6;border-style:dashed}
+  .carte .nom{font-family:Fredoka,system-ui,sans-serif;font-size:1.05rem;font-weight:600}
+  .carte .ville{color:var(--gris);font-size:.8rem;font-weight:700;margin-bottom:10px}
+  .chiffres{display:flex;gap:16px;margin-bottom:12px}
+  .chiffres div{text-align:center}
+  .chiffres .n{font-family:Fredoka,system-ui,sans-serif;font-size:1.3rem;font-weight:600;line-height:1.1}
+  .chiffres .q{font-size:.68rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:.03em}
+  .actes{display:flex;gap:7px;flex-wrap:wrap}
+
+  table{width:100%;border-collapse:collapse;background:var(--carte);
+        border:2px solid var(--trait);border-radius:16px;overflow:hidden}
+  th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--gris);
+     padding:9px 13px;background:#f6f9fc;border-bottom:2px solid var(--trait)}
+  td{padding:9px 13px;border-bottom:1px solid var(--trait);font-weight:700;font-size:.87rem}
+  tr:last-child td{border-bottom:none}
+  tr.inactif td{opacity:.5}
+  td.fin{text-align:right;white-space:nowrap}
+  td code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.95em;
+        background:#f1f5fa;padding:1px 6px;border-radius:5px}
+
+  .vide{text-align:center;color:var(--gris);padding:60px 20px;font-weight:700;line-height:1.6}
+  .vide a{color:var(--bleu)}
+
+  .fond{position:fixed;inset:0;background:rgba(20,30,42,.6);z-index:60;display:flex;
+        align-items:center;justify-content:center;padding:18px}
+  .boite{background:#fff;border-radius:20px;width:min(560px,100%);max-height:92dvh;overflow:auto;
+         padding:22px 24px 20px;box-shadow:0 24px 60px rgba(15,25,38,.35)}
+  .boite h2{font-size:1.3rem;margin-bottom:14px}
+  .boite label{display:block;font-weight:800;font-size:.78rem;margin:0 0 4px}
+  .boite input,.boite select{width:100%;border:2px solid var(--trait);border-radius:11px;padding:9px 12px;
+        font-family:inherit;font-size:.95rem;font-weight:700;color:var(--encre);background:#fbfdff}
+  .boite input:focus,.boite select:focus{outline:none;border-color:var(--bleu);background:#fff}
+  .champs{display:grid;gap:12px;margin-bottom:16px}
+  .boite .actes{margin-top:16px}
+  .boite .actes .pousse{margin-left:auto}
+
+  .msg{border-radius:12px;padding:10px 13px;font-size:.84rem;font-weight:700;margin:0 0 14px;line-height:1.5}
+  .msg.ok{background:#eaf7ef;color:#15803d}
+  .msg.ko{background:#fef2f2;color:#b91c1c}
+  .msg code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.05em;
+        background:rgba(0,0,0,.08);padding:1px 6px;border-radius:5px}
+</style>
+</head>
+<body>
+
+<div class="barre">
+  <h1>🏫 Établissements</h1>
+  <!-- data-atl-compte : scripts/compte.js pose sa pastille ICI plutôt qu'en flottant
+       par-dessus la page — sans cette ancre elle recouvre le titre. -->
+  <span class="creneau" data-atl-compte></span>
+  <span class="qui" id="qui"></span>
+  <a class="btn" href="index.html">🏠 Accueil</a>
+  <button class="btn" id="bQuitter">Déconnexion</button>
+</div>
+
+<div class="zone" id="zone" style="display:none">
+  <div class="titre">
+    <h2>Les établissements</h2>
+    <button class="btn primaire pousse" id="bNouvelEtab">＋ Ouvrir un établissement</button>
+  </div>
+  <p class="aide">
+    Chaque établissement est un monde clos : ses enseignants ne voient que ses élèves et
+    ses classes. Cette page n'affiche que des décomptes — aucun nom d'élève ne sort
+    jamais d'un établissement, pas même ici.
+  </p>
+  <div class="cartes" id="etabs"></div>
+
+  <div class="titre">
+    <h2>Les comptes enseignants</h2>
+    <button class="btn primaire pousse" id="bNouveauProf">＋ Créer un enseignant</button>
+  </div>
+  <p class="aide">
+    Un enseignant appartient à un établissement et un seul. C'est ici qu'on les crée, et
+    seulement ici : le tableau de bord d'un professeur ne crée que des élèves.
+  </p>
+  <div id="profs"></div>
+</div>
+
+<div class="vide" id="vide">Chargement…</div>
+
+<script src="scripts/config.js"></script>
+<script src="scripts/store.js"></script>
+<script src="scripts/compte.js"></script>
+
+<script>
+'use strict';
+
+/* =========================================================================
+   Cette page ne stocke rien et ne décide rien : elle peint ce que /api/admin/*
+   lui répond, et c'est le serveur qui vérifie le rôle à chaque requête.
+   ========================================================================= */
+var etat = { etablissements: [], profs: [] };
+
+function $(s){ return document.querySelector(s); }
+function esc(s){ return String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function api(methode, chemin, corps){
+  var cfg = window.ATELIER_CONFIG || {};
+  var s = JSON.parse(localStorage.getItem('atl_session') || 'null');
+  var init = { method: methode, headers: {}, cache: 'no-store' };
+  if(s && s.jeton) init.headers['Authorization'] = 'Bearer ' + s.jeton;
+  if(corps !== undefined){ init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(corps); }
+  return fetch(String(cfg.api || '').replace(/\/+$/,'') + chemin, init).then(function(r){
+    return r.text().then(function(t){
+      var j = {}; try{ j = t ? JSON.parse(t) : {}; }catch(e){}
+      if(!r.ok){ var e2 = new Error(j.erreur || ('HTTP ' + r.status)); e2.statut = r.status; throw e2; }
+      return j;
+    });
+  });
+}
+
+function quand(iso){
+  if(!iso) return 'jamais';
+  var j = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if(j <= 0) return "aujourd'hui";
+  if(j === 1) return 'hier';
+  if(j < 31) return 'il y a ' + j + ' jours';
+  return new Date(iso).toLocaleDateString('fr-FR');
+}
+
+/* ---- Peinture ------------------------------------------------------------ */
+function peindre(){
+  $('#etabs').innerHTML = etat.etablissements.length
+    ? etat.etablissements.map(carteEtab).join('')
+    : '<p class="aide">Aucun établissement pour l\'instant.</p>';
+
+  $('#profs').innerHTML = etat.profs.length
+    ? '<table><tr><th>Enseignant</th><th>Identifiant</th><th>Établissement</th>' +
+      '<th>Dernière connexion</th><th></th></tr>' + etat.profs.map(ligneProf).join('') + '</table>'
+    : '<p class="aide">Aucun compte enseignant.</p>';
+}
+
+/* Le NOM en capitales et le prénom réduit à son initiale : c'est ainsi qu'un professeur
+   est nommé dans un établissement, et c'est ce qui se relit d'un coup d'œil dans une
+   liste de trente lignes — « G. LECOSSOIS » plutôt que « Grégoire Lecossois ». */
+function nomProf(p){ return (p.prenom || '').charAt(0).toUpperCase() + '. ' + (p.nom || '').toUpperCase(); }
+
+function carteEtab(e){
+  return '<div class="carte' + (e.actif ? '' : ' ferme') + '" data-id="' + e.id + '">' +
+    '<div class="nom">' + esc(e.nom) + (e.actif ? '' : ' <span style="font-size:.75rem;color:var(--gris)">(fermé)</span>') + '</div>' +
+    '<div class="ville">' + esc(e.ville || '—') + '</div>' +
+    '<div class="chiffres">' +
+      '<div><div class="n">' + e.classes + '</div><div class="q">classes</div></div>' +
+      '<div><div class="n">' + e.profs + '</div><div class="q">profs</div></div>' +
+      '<div><div class="n">' + e.eleves + '</div><div class="q">élèves</div></div>' +
+    '</div>' +
+    '<div class="actes">' +
+      '<button class="btn petit" data-a="renommer">✏️ Renommer</button>' +
+      '<button class="btn petit" data-a="basculer">' + (e.actif ? '⏸ Fermer' : '▶ Rouvrir') + '</button>' +
+      '<button class="btn petit danger" data-a="supprimer">🗑</button>' +
+    '</div></div>';
+}
+
+function ligneProf(p){
+  return '<tr' + (p.actif ? '' : ' class="inactif"') + ' data-id="' + p.id + '">' +
+    '<td>' + esc(nomProf(p)) + (p.actif ? '' : ' <span style="font-weight:700;color:var(--gris)">(désactivé)</span>') + '</td>' +
+    '<td><code>' + esc(p.identifiant) + '</code></td>' +
+    '<td>' + esc(p.etablissement || '—') + '</td>' +
+    '<td>' + esc(quand(p.derniere_connexion)) + '</td>' +
+    '<td class="fin">' +
+      '<button class="btn petit" data-a="modifier">✏️</button> ' +
+      '<button class="btn petit" data-a="mdp">🔑</button> ' +
+      '<button class="btn petit danger" data-a="supprimer">🗑</button>' +
+    '</td></tr>';
+}
+
+/* ---- Chargement ---------------------------------------------------------- */
+function charger(){
+  return api('GET', '/api/admin/profs').then(function(r){
+    etat.profs = r.profs; etat.etablissements = r.etablissements;
+    $('#vide').style.display = 'none';
+    $('#zone').style.display = '';
+    peindre();
+  });
+}
+
+/* ---- Fenêtres ------------------------------------------------------------ */
+var fond = null;
+function fermer(){ if(fond){ fond.remove(); fond = null; } }
+function ouvrir(html){
+  fermer();
+  fond = document.createElement('div');
+  fond.className = 'fond';
+  fond.innerHTML = '<div class="boite">' + html + '</div>';
+  fond.addEventListener('mousedown', function(e){ if(e.target === fond) fermer(); });
+  document.body.appendChild(fond);
+  return fond.querySelector('.boite');
+}
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') fermer(); });
+
+function optionsEtab(choisi){
+  return etat.etablissements.map(function(e){
+    return '<option value="' + e.id + '"' + (e.id === choisi ? ' selected' : '') + '>' +
+      esc(e.nom + (e.ville ? ' · ' + e.ville : '')) + '</option>';
+  }).join('');
+}
+
+function fenetreEtab(e){
+  var b = ouvrir(
+    '<h2>' + (e ? 'Renommer l\'établissement' : 'Ouvrir un établissement') + '</h2>' +
+    '<div id="msg"></div>' +
+    '<div class="champs">' +
+      '<div><label>Nom</label><input id="fNom" autofocus value="' + esc(e ? e.nom : '') + '" placeholder="Collège Jean Moulin"></div>' +
+      '<div><label>Ville</label><input id="fVille" value="' + esc(e ? e.ville : '') + '" placeholder="Bordeaux"></div>' +
+    '</div>' +
+    (e ? '' : '<p class="aide">Les six classes de base (6e, 5e, 4e, 3e, CAP1, CAP2) sont posées ' +
+              'd\'office ; l\'enseignant les range et les supprime depuis son tableau de bord.</p>') +
+    '<div class="actes"><button class="btn" id="bAnnuler">Annuler</button>' +
+    '<button class="btn primaire pousse" id="bOk">' + (e ? 'Enregistrer' : 'Ouvrir') + '</button></div>');
+
+  function dire(cl, html){ b.querySelector('#msg').innerHTML = '<div class="msg ' + cl + '">' + html + '</div>'; }
+  b.querySelector('#bAnnuler').onclick = fermer;
+  b.querySelector('#bOk').onclick = function(){
+    var nom = b.querySelector('#fNom').value.trim(), ville = b.querySelector('#fVille').value.trim();
+    if(!nom){ dire('ko', 'Il faut un nom.'); return; }
+    this.disabled = true;
+    var p = e ? api('PATCH', '/api/admin/etablissements/' + e.id, { nom: nom, ville: ville })
+              : api('POST', '/api/admin/etablissements', { nom: nom, ville: ville });
+    p.then(function(){ fermer(); return charger(); })
+     .catch(function(err){ dire('ko', esc(err.message || 'Échec.')); b.querySelector('#bOk').disabled = false; });
+  };
+}
+
+/* Le mot de passe d'un enseignant n'est lisible qu'une fois, ici. On l'affiche en grand,
+   sans refermer la fenêtre tant qu'on n'a pas cliqué : le refermer trop vite, c'est un
+   compte à réinitialiser. */
+function direMotDePasse(b, r, quoi){
+  b.innerHTML =
+    '<h2>' + quoi + '</h2>' +
+    '<div class="msg ok">Identifiant : <code>' + esc(r.identifiant) + '</code><br>' +
+    'Mot de passe : <code>' + esc(r.motdepasse) + '</code></div>' +
+    '<p class="aide">Note-le maintenant, dans un gestionnaire de mots de passe : il n\'est ' +
+    'plus jamais affiché ensuite, la base n\'en garde que l\'empreinte.</p>' +
+    '<div class="actes"><button class="btn primaire pousse" id="bFini">C\'est noté</button></div>';
+  b.querySelector('#bFini').onclick = function(){ fermer(); charger(); };
+}
+
+function fenetreNouveauProf(){
+  if(!etat.etablissements.length){
+    alert('Ouvre d\'abord un établissement : un enseignant appartient toujours à l\'un d\'eux.');
+    return;
+  }
+  var b = ouvrir(
+    '<h2>Créer un compte enseignant</h2>' +
+    '<div id="msg"></div>' +
+    '<div class="champs">' +
+      '<div><label>Prénom</label><input id="nPrenom" autofocus></div>' +
+      '<div><label>Nom</label><input id="nNom"></div>' +
+      '<div><label>Établissement</label><select id="nEtab">' + optionsEtab() + '</select></div>' +
+    '</div>' +
+    '<p class="aide">L\'identifiant est fabriqué à partir du nom — Grégoire Lecossois devient ' +
+    '<code>g.lecossois</code>. Le mot de passe fait vingt caractères : ce compte voit tout un ' +
+    'établissement, et il vit dans un gestionnaire de mots de passe.</p>' +
+    '<div class="actes"><button class="btn" id="bAnnuler">Annuler</button>' +
+    '<button class="btn primaire pousse" id="bCreer">Créer le compte</button></div>');
+
+  function dire(cl, html){ b.querySelector('#msg').innerHTML = '<div class="msg ' + cl + '">' + html + '</div>'; }
+  b.querySelector('#bAnnuler').onclick = fermer;
+  b.querySelector('#bCreer').onclick = function(){
+    var prenom = b.querySelector('#nPrenom').value.trim(), nom = b.querySelector('#nNom').value.trim();
+    if(!prenom || !nom){ dire('ko', 'Prénom et nom, tous les deux.'); return; }
+    this.disabled = true;
+    api('POST', '/api/admin/profs', {
+      prenom: prenom, nom: nom, etablissement_id: Number(b.querySelector('#nEtab').value)
+    }).then(function(r){ direMotDePasse(b, r, 'Compte enseignant créé'); })
+      .catch(function(err){ dire('ko', esc(err.message || 'Échec.')); b.querySelector('#bCreer').disabled = false; });
+  };
+}
+
+function fenetreProf(p){
+  var b = ouvrir(
+    '<h2>' + esc(nomProf(p)) + '</h2>' +
+    '<div id="msg"></div>' +
+    '<div class="champs">' +
+      '<div><label>Prénom</label><input id="fPrenom" value="' + esc(p.prenom) + '"></div>' +
+      '<div><label>Nom</label><input id="fNom" value="' + esc(p.nom) + '"></div>' +
+      '<div><label>Identifiant</label><input id="fId" value="' + esc(p.identifiant) + '"></div>' +
+      '<div><label>Établissement</label><select id="fEtab">' + optionsEtab(p.etablissement_id) + '</select></div>' +
+    '</div>' +
+    '<p class="aide">Changer d\'établissement ferme ses sessions ouvertes : sans cela il ' +
+    'continuerait un moment à voir les élèves du collège qu\'il vient de quitter.</p>' +
+    '<div class="actes"><button class="btn" id="bAnnuler">Annuler</button>' +
+    '<button class="btn" id="bActif">' + (p.actif ? '⏸ Désactiver' : '▶ Réactiver') + '</button>' +
+    '<button class="btn primaire pousse" id="bOk">Enregistrer</button></div>');
+
+  function dire(cl, html){ b.querySelector('#msg').innerHTML = '<div class="msg ' + cl + '">' + html + '</div>'; }
+  function echec(err){ dire('ko', esc(err.message || 'Échec.')); }
+  b.querySelector('#bAnnuler').onclick = fermer;
+  b.querySelector('#bActif').onclick = function(){
+    api('PATCH', '/api/admin/profs/' + p.id, { actif: !p.actif })
+      .then(function(){ fermer(); return charger(); }).catch(echec);
+  };
+  b.querySelector('#bOk').onclick = function(){
+    this.disabled = true;
+    api('PATCH', '/api/admin/profs/' + p.id, {
+      prenom: b.querySelector('#fPrenom').value.trim(),
+      nom: b.querySelector('#fNom').value.trim(),
+      identifiant: b.querySelector('#fId').value.trim(),
+      etablissement_id: Number(b.querySelector('#fEtab').value)
+    }).then(function(){ fermer(); return charger(); })
+      .catch(function(err){ echec(err); b.querySelector('#bOk').disabled = false; });
+  };
+}
+
+/* ---- Actions ------------------------------------------------------------- */
+$('#etabs').addEventListener('click', function(ev){
+  var bouton = ev.target.closest('button[data-a]');
+  if(!bouton) return;
+  var id = Number(ev.target.closest('.carte').getAttribute('data-id'));
+  var e = etat.etablissements.find(function(x){ return x.id === id; });
+  if(!e) return;
+
+  if(bouton.getAttribute('data-a') === 'renommer') return fenetreEtab(e);
+
+  if(bouton.getAttribute('data-a') === 'basculer'){
+    var texte = e.actif
+      ? 'Fermer « ' + e.nom + ' » ?\n\nPlus personne ne s\'y connecte et les sessions en cours ' +
+        'tombent tout de suite. RIEN n\'est effacé : les ' + e.eleves + ' compte(s) élève et leur ' +
+        'progression restent en base, et l\'établissement se rouvre d\'un clic.'
+      : 'Rouvrir « ' + e.nom + ' » ? Ses comptes pourront de nouveau se connecter.';
+    if(!confirm(texte)) return;
+    return api('PATCH', '/api/admin/etablissements/' + id, { actif: !e.actif })
+      .then(charger).catch(function(err){ alert(err.message || 'Échec.'); });
+  }
+
+  /* Le serveur refuse de supprimer un établissement qui a encore des comptes. On le dit
+     ici AVANT de partir en requête : « supprimer le collège » se lit trop facilement
+     comme « supprimer ses élèves », et c'est précisément ce qui n'arrivera pas. */
+  var total = e.eleves + e.profs;
+  if(total){
+    alert('« ' + e.nom + ' » compte encore ' + total + ' compte' + (total > 1 ? 's' : '') + '.\n\n' +
+      'Un établissement ne se supprime pas avec ses données : supprime d\'abord ses comptes, ' +
+      'ou ferme-le, ce qui coupe l\'accès sans rien effacer.');
+    return;
+  }
+  if(!confirm('Supprimer « ' + e.nom + ' » ? Il ne contient aucun compte.')) return;
+  api('DELETE', '/api/admin/etablissements/' + id)
+    .then(charger).catch(function(err){ alert(err.message || 'Échec.'); });
+});
+
+$('#profs').addEventListener('click', function(ev){
+  var bouton = ev.target.closest('button[data-a]');
+  if(!bouton) return;
+  var id = Number(ev.target.closest('tr').getAttribute('data-id'));
+  var p = etat.profs.find(function(x){ return x.id === id; });
+  if(!p) return;
+  var a = bouton.getAttribute('data-a');
+
+  if(a === 'modifier') return fenetreProf(p);
+
+  if(a === 'mdp'){
+    if(!confirm('Nouveau mot de passe pour ' + nomProf(p) + ' ?\n\nSes sessions ouvertes tombent, ' +
+                'et l\'ancien mot de passe ne fonctionne plus.')) return;
+    var b = ouvrir('<h2>…</h2>');
+    return api('POST', '/api/admin/profs/' + id + '/mdp', {})
+      .then(function(r){ direMotDePasse(b, r, 'Nouveau mot de passe'); })
+      .catch(function(err){ fermer(); alert(err.message || 'Échec.'); });
+  }
+
+  if(a === 'supprimer'){
+    if(!confirm('Supprimer définitivement le compte de ' + nomProf(p) + ' ?\n\n' +
+                'Ses élèves ne sont PAS supprimés : ils appartiennent à l\'établissement, ' +
+                'pas à lui.')) return;
+    api('DELETE', '/api/admin/profs/' + id)
+      .then(charger).catch(function(err){ alert(err.message || 'Échec.'); });
+  }
+});
+
+$('#bNouvelEtab').addEventListener('click', function(){ fenetreEtab(null); });
+$('#bNouveauProf').addEventListener('click', fenetreNouveauProf);
+$('#bQuitter').addEventListener('click', function(){
+  Store.deconnexion().then(function(){ location.href = 'index.html'; });
+});
+
+/* ---- Démarrage ----------------------------------------------------------- */
+var demarre = false;
+function demarrer(){
+  if(demarre) return;
+  demarre = true;
+
+  var el = Store.eleve();
+  if(!el){
+    $('#vide').textContent = 'Connecte-toi avec le compte administrateur pour gérer les établissements.';
+    return;
+  }
+  if(el.role !== 'admin'){
+    var cfg = window.ATELIER_CONFIG || {};
+    $('#vide').innerHTML = 'Cette page est réservée à l\'administration des établissements.<br>' +
+      (el.role === 'prof'
+        ? '<a href="' + esc(cfg.tableauBord || 'prof.html') + '">📊 Aller au suivi des élèves</a>'
+        : '<a href="index.html">Retour aux ateliers</a>');
+    return;
+  }
+
+  $('#qui').textContent = el.prenom + ' ' + el.nom;
+  charger().catch(function(e){ $('#vide').textContent = e.message; });
+}
+
+if(!Store.enLigne()){
+  $('#vide').textContent = 'Aucun serveur configuré (scripts/config.js) : cette page demande une API.';
+}else{
+  Store.surEtat(function(e){ if(e === 'ok' || e === 'invite' || e === 'expire') setTimeout(demarrer, 0); });
+  setTimeout(demarrer, 5000);
+}
+</script>
+</body>
+</html>

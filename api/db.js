@@ -47,11 +47,16 @@ export async function migrer() {
   await pool.query(sql);
 }
 
-export async function journaliser(acteur, action, cible, details) {
+/* `etablissement` est le cinquième argument et non le premier parce qu'il n'est pas
+   toujours connu : une purge automatique ou une commande SSH n'appartiennent à aucun
+   collège. Là où il l'est, il doit être passé — c'est ce qui permet de rendre à un chef
+   d'établissement le journal de SES données, et rien que celui-là. */
+export async function journaliser(acteur, action, cible, details, etablissement) {
   try {
     await pool.query(
-      'insert into journal(acteur, action, cible, details) values ($1,$2,$3,$4)',
-      [acteur || null, action, cible || null, details ? JSON.stringify(details) : null]
+      'insert into journal(acteur, action, cible, details, etablissement_id) values ($1,$2,$3,$4,$5)',
+      [acteur || null, action, cible || null, details ? JSON.stringify(details) : null,
+       etablissement != null ? Number(etablissement) : null]
     );
   } catch (e) {
     /* Le journal ne doit jamais faire échouer l'action qu'il décrit. */

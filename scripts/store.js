@@ -35,7 +35,8 @@
  *   wipe(prefixe)                efface toutes les clés d'un préfixe (« Reset complet »)
  *   snapshot()                   copie de tout ce qui est rangé, pour inspection
  *   enLigne()                    une API est-elle configurée ?
- *   eleve()                      {id, prenom, nom, classe} ou null
+ *   eleve()                      {id, identifiant, prenom, nom, classe, role,
+ *                                etablissement} ou null — tel que le serveur l'a renvoyé
  *   connexion(identifiant, mdp)  Promise → {eleve}
  *   deconnexion()                Promise
  *   changerMdp(nouveau, ancien)  Promise → {eleve} (l'élève choisit son mot de passe)
@@ -85,7 +86,10 @@ function brutCles(){
 /* ---------------------------------------------------------------------------
    3. Session
    --------------------------------------------------------------------------- */
-var session = null;   /* {jeton, eleve:{id,identifiant,prenom,nom,classe}} */
+/* `eleve` est recopié tel quel depuis la réponse du serveur : c'est lui qui décide de ce
+   qu'il y met (dont `role` et `etablissement`), et une liste de champs tenue ici en
+   double se serait tôt ou tard mise à en perdre un en silence. */
+var session = null;   /* {jeton, eleve:{id,identifiant,prenom,nom,classe,role,etablissement}} */
 
 (function chargerSession(){
   if(!CLOUD) return;

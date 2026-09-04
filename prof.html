@@ -31,6 +31,8 @@
   .barre .creneau{margin-right:auto;display:inline-flex}
   .barre a.btn{text-decoration:none;display:inline-flex;align-items:center}
   .barre .qui{color:var(--gris);font-size:.85rem;font-weight:700}
+  .barre .etab{font-family:Fredoka,system-ui,sans-serif;font-size:.95rem;font-weight:600;
+    color:var(--bleu);background:#eaf2ff;border-radius:999px;padding:3px 12px;white-space:nowrap}
 
   .btn{border:2px solid var(--trait);background:#fff;color:var(--encre);border-radius:999px;
        padding:8px 15px;font-weight:800;font-size:.85rem;transition:border-color .15s,background .15s}
@@ -156,6 +158,10 @@
 
 <div class="barre">
   <h1>📊 Suivi des élèves</h1>
+  <!-- L'établissement vient du serveur, pas de scripts/config.js : une même instance
+       sert plusieurs collèges, et un enseignant doit voir en permanence dans lequel il
+       travaille — c'est le périmètre exact de ce que la page a le droit d'afficher. -->
+  <span class="etab" id="etab"></span>
   <!-- data-atl-compte : scripts/compte.js pose sa pastille ICI plutôt qu'en flottant
        en haut à gauche, où elle recouvrait le titre. -->
   <span class="creneau" data-atl-compte></span>
@@ -459,6 +465,7 @@ $('#puces').addEventListener('dragend', function(){
 function chargerTableau(){
   return api('GET', '/api/prof/tableau').then(function(r){
     etat.eleves = r.eleves; etat.classes = r.classes;
+    if(r.etablissement) $('#etab').textContent = r.etablissement;
     $('#filtres').style.display = '';
     peindrePuces(); peindre();
   });
@@ -752,6 +759,15 @@ function demarrer(){
     $('#vide').textContent = 'Connecte-toi avec ton compte enseignant pour voir le suivi.';
     return;
   }
+  if(el.role === 'admin'){
+    /* L'administrateur ne voit aucun élève, y compris ici : le serveur lui refuse
+       /api/prof/*, et le lui dire clairement vaut mieux qu'un « réservé aux
+       enseignants » qui laisserait croire à une erreur de compte. */
+    $('#vide').innerHTML = 'Ce compte administre les établissements, il ne voit pas les élèves.<br>' +
+      '<a href="' + esc((window.ATELIER_CONFIG || {}).espaceAdmin || 'admin.html') +
+      '" style="color:var(--bleu)">Aller à l\'espace administrateur</a>';
+    return;
+  }
   if(el.role !== 'prof'){
     $('#vide').innerHTML = 'Cette page est réservée aux enseignants.<br>' +
       '<a href="index.html" style="color:var(--bleu)">Retour aux ateliers</a>';
@@ -759,6 +775,7 @@ function demarrer(){
   }
 
   $('#qui').textContent = el.prenom + ' ' + el.nom;
+  if(el.etablissement) $('#etab').textContent = el.etablissement;
   chargerTableau().then(chargerPresence).catch(function(e){ $('#vide').textContent = e.message; });
 
   minuteurs.push(setInterval(chargerTableau, RYTHME_TABLEAU));
