@@ -46,6 +46,22 @@
   .puce{border:2px solid var(--trait);background:#fff;border-radius:999px;padding:6px 13px;
         font-weight:800;font-size:.82rem;color:var(--gris)}
   .puce.on{background:var(--encre);border-color:var(--encre);color:#fff}
+  /* Classes réordonnables : le curseur annonce qu'on peut les déplacer. */
+  .puce.cls{cursor:grab}
+  .puce.cls:active{cursor:grabbing}
+  .puce.cls.drag{opacity:.4}
+
+  /* Menu du clic droit sur une classe */
+  .menuctx{position:fixed;z-index:80;background:#fff;border:2px solid var(--trait);
+        border-radius:12px;box-shadow:0 12px 30px rgba(15,25,38,.22);padding:5px;min-width:190px}
+  .menuctx-tete{font-size:.72rem;font-weight:800;color:var(--gris);padding:5px 9px 6px;
+        border-bottom:2px solid var(--trait);margin-bottom:4px}
+  .menuctx-item{display:block;width:100%;text-align:left;border:none;background:none;
+        border-radius:8px;padding:8px 9px;font-family:inherit;font-weight:800;font-size:.84rem;
+        color:var(--encre)}
+  .menuctx-item:hover{background:#f1f5fa}
+  .menuctx-item.danger{color:#b91c1c}
+  .menuctx-item.danger:hover{background:#fef2f2}
   .filtres input,.filtres select{border:2px solid var(--trait);border-radius:999px;padding:7px 13px;
         font-family:inherit;font-weight:700;font-size:.85rem;color:var(--encre);background:#fff}
   .filtres input:focus,.filtres select:focus{outline:none;border-color:var(--bleu)}
@@ -374,14 +390,70 @@ function peindre(){
     : 'Aucun compte élève. Crée le premier avec « ＋ Nouveau compte ».';
 }
 
+/* Les pastilles de classe : filtre au clic, réordonnables au glisser, supprimables au
+   clic droit. L'ordre affiché est celui du serveur (classes.ordre), pas l'alphabet :
+   une classe se range où l'enseignant la veut, pas où son nom la place. */
 function peindrePuces(){
-  var noms = [];
-  etat.classes.forEach(function(c){ if(noms.indexOf(c.nom) < 0) noms.push(c.nom); });
   $('#puces').innerHTML = '<button class="puce' + (etat.classe ? '' : ' on') + '" data-c="">Toutes</button>' +
-    noms.map(function(n){
-      return '<button class="puce' + (etat.classe === n ? ' on' : '') + '" data-c="' + esc(n) + '">' + esc(n) + '</button>';
+    etat.classes.map(function(c){
+      return '<button class="puce cls' + (etat.classe === c.nom ? ' on' : '') + '" draggable="true"' +
+        ' data-c="' + esc(c.nom) + '" data-id="' + c.id + '"' +
+        ' title="Glisse pour ranger · clic droit pour supprimer">' + esc(c.nom) + '</button>';
     }).join('');
 }
+
+/* ---- Glisser-déposer des classes ---------------------------------------- */
+var glissee = null;
+
+function ordreCourant(){
+  return Array.prototype.map.call($('#puces').querySelectorAll('.puce.cls'), function(p){
+    return Number(p.getAttribute('data-id'));
+  });
+}
+
+/* On envoie l'ordre tel qu'il est À L'ÉCRAN : c'est ce que l'enseignant vient de
+   construire, et le serveur en fait des rangs. En cas d'échec on recharge, pour ne
+   jamais laisser l'écran affirmer un rangement que la base ignore. */
+function enregistrerOrdre(){
+  var ids = ordreCourant();
+  etat.classes.sort(function(a, b){ return ids.indexOf(a.id) - ids.indexOf(b.id); });
+  api('PUT', '/api/prof/classes/ordre', { ids: ids })
+    .then(function(r){ etat.classes = r.classes; })
+    .catch(function(){ chargerTableau(); });
+}
+
+$('#puces').addEventListener('dragstart', function(e){
+  var p = e.target.closest && e.target.closest('.puce.cls');
+  if(!p){ e.preventDefault(); return; }
+  glissee = p;
+  p.classList.add('drag');
+  e.dataTransfer.effectAllowed = 'move';
+  /* Firefox n'amorce pas le glisser sans données attachées. */
+  try{ e.dataTransfer.setData('text/plain', p.getAttribute('data-id')); }catch(err){}
+});
+
+$('#puces').addEventListener('dragover', function(e){
+  if(!glissee) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  var cible = e.target.closest && e.target.closest('.puce.cls');
+  if(!cible || cible === glissee) return;
+  /* Avant ou après, selon le côté de la pastille où on survole : sans ça, déposer
+     sur la moitié droite insérerait quand même à gauche, et l'ordre obtenu ne serait
+     pas celui qu'on vise. */
+  var r = cible.getBoundingClientRect();
+  var apres = e.clientX > r.left + r.width / 2;
+  cible.parentNode.insertBefore(glissee, apres ? cible.nextSibling : cible);
+});
+
+$('#puces').addEventListener('drop', function(e){ e.preventDefault(); });
+
+$('#puces').addEventListener('dragend', function(){
+  if(!glissee) return;
+  glissee.classList.remove('drag');
+  glissee = null;
+  enregistrerOrdre();
+});
 
 /* ---- Chargements --------------------------------------------------------- */
 function chargerTableau(){
@@ -709,6 +781,64 @@ $('#puces').addEventListener('click', function(e){
   etat.classe = p.getAttribute('data-c') || null;
   peindrePuces(); peindre();
 });
+
+/* ---- Clic droit sur une classe : supprimer ------------------------------- */
+var menu = null;
+
+function fermerMenu(){
+  if(menu && menu.parentNode) menu.parentNode.removeChild(menu);
+  menu = null;
+}
+document.addEventListener('click', fermerMenu);
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') fermerMenu(); });
+window.addEventListener('blur', fermerMenu);
+
+$('#puces').addEventListener('contextmenu', function(e){
+  var p = e.target.closest && e.target.closest('.puce.cls');
+  if(!p) return;
+  e.preventDefault();
+  fermerMenu();
+  var nom = p.getAttribute('data-c'), id = Number(p.getAttribute('data-id'));
+
+  menu = document.createElement('div');
+  menu.className = 'menuctx';
+  menu.innerHTML = '<div class="menuctx-tete">' + esc(nom) + '</div>' +
+    '<button type="button" class="menuctx-item danger">🗑 Supprimer la classe</button>';
+  document.body.appendChild(menu);
+  /* Posé au curseur, puis ramené dans la fenêtre s'il déborde en bas ou à droite. */
+  var r = menu.getBoundingClientRect();
+  menu.style.left = Math.min(e.clientX, window.innerWidth - r.width - 8) + 'px';
+  menu.style.top = Math.min(e.clientY, window.innerHeight - r.height - 8) + 'px';
+
+  menu.querySelector('.menuctx-item').onclick = function(ev){
+    ev.stopPropagation();
+    fermerMenu();
+    supprimerClasse(id, nom);
+  };
+});
+
+/* Supprimer une classe ne supprime AUCUN élève : le serveur les bascule en
+   « Sans classe » avec toute leur progression. On l'annonce avant de demander, parce
+   que « supprimer la 6eB » se lit très facilement comme « supprimer ses élèves ». */
+function supprimerClasse(id, nom){
+  var n = etat.eleves.filter(function(e){ return e.classe === nom; }).length;
+  var texte = n
+    ? 'Supprimer la classe « ' + nom + ' » ?\n\n' +
+      'Ses ' + n + ' élève' + (n > 1 ? 's' : '') + ' ne ' + (n > 1 ? 'sont' : 'est') +
+      ' PAS supprimé' + (n > 1 ? 's' : '') + ' : ' + (n > 1 ? 'ils passent' : 'il passe') +
+      ' en « Sans classe » et garde' + (n > 1 ? 'nt' : '') + ' toute leur progression.\n' +
+      'Tu pourras leur en réattribuer une depuis leur fiche.'
+    : 'Supprimer la classe « ' + nom + ' » ? Elle ne contient aucun élève.';
+  if(!confirm(texte)) return;
+
+  api('DELETE', '/api/prof/classes/' + id).then(function(r){
+    etat.classes = r.classes;
+    if(etat.classe === nom) etat.classe = null;   /* le filtre pointait sur elle */
+    return chargerTableau();
+  }).catch(function(err){
+    alert('Suppression impossible : ' + (err.message || 'erreur inconnue'));
+  });
+}
 $('#cherche').addEventListener('input', function(){ etat.cherche = this.value; peindre(); });
 $('#tri').addEventListener('change', function(){ etat.tri = this.value; peindre(); });
 $('#bNouveau').addEventListener('click', fenetreNouveau);

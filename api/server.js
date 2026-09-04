@@ -23,6 +23,8 @@
  *   GET    /api/prof/tableau                tous les comptes + leur avancement résumé
  *   GET    /api/prof/presence               qui est connecté, et où (interrogé souvent)
  *   POST   /api/prof/classes                crée ou réordonne une classe
+ *   PUT    /api/prof/classes/ordre          {ids} → remet les classes dans cet ordre
+ *   DELETE /api/prof/classes/:id            supprime la classe, détache ses élèves
  *   POST   /api/prof/eleves                 crée un compte → mot de passe en clair, une fois
  *   GET    /api/prof/eleve/:id              fiche complète
  *   PATCH  /api/prof/eleve/:id              nom, prénom, classe, identifiant, actif
@@ -641,6 +643,43 @@ async function profCreerClasse(req) {
   return { classes: await lesClasses() };
 }
 
+/* Remise en ordre des classes, d'un seul coup : le tableau de bord envoie la liste des
+   identifiants dans l'ordre voulu, et leur RANG est leur position. Une requête plutôt
+   qu'une par classe — un glisser-déposer déplace potentiellement tout le monde, et une
+   série d'appels laisserait un ordre à moitié écrit si l'un d'eux échoue. */
+async function profOrdreClasses(req) {
+  const s = await sessionProf(req);
+  const corps = await lireCorps(req);
+  const ids = Array.isArray(corps.ids) ? corps.ids.map(Number).filter(Number.isInteger) : [];
+  if (!ids.length) throw new Refus(400, 'Liste d\'identifiants de classes attendue.');
+  if (ids.length > 200) throw new Refus(413, 'Trop de classes en une fois.');
+
+  /* `with ordinality` : PostgreSQL numérote lui-même les éléments du tableau, ce qui
+     évite d'assembler une requête à rallonge — et de la refaire à chaque classe. */
+  await db.q(
+    `update classes set ordre = v.rang
+       from unnest($1::int[]) with ordinality as v(id, rang)
+      where classes.id = v.id`,
+    [ids]);
+  await db.journaliser(s.identifiant, 'classes.ordre', null, { ids });
+  return { classes: await lesClasses() };
+}
+
+/* Supprimer une classe ne supprime AUCUN élève : `comptes.classe_id` est en
+   « on delete set null », les comptes basculent simplement en « Sans classe » avec
+   toute leur progression. C'est ce que le tableau de bord annonce avant de demander
+   confirmation, et c'est ce que le journal doit refléter — d'où le décompte. */
+async function profSupprimerClasse(req, params) {
+  const s = await sessionProf(req);
+  const id = Number(params.id);
+  const cible = await db.une('select nom from classes where id = $1', [id]);
+  if (!cible) throw new Refus(404, 'Classe introuvable.');
+  const n = await db.une('select count(*)::int as n from comptes where classe_id = $1', [id]);
+  await db.q('delete from classes where id = $1', [id]);
+  await db.journaliser(s.identifiant, 'classe.suppression', cible.nom, { detaches: n.n });
+  return { ok: true, detaches: n.n, classes: await lesClasses() };
+}
+
 /* --------------------------------------------------------------------------
    Aiguillage
    -------------------------------------------------------------------------- */
@@ -656,6 +695,8 @@ const ROUTES = [
   ['GET',    '/api/prof/tableau',              profTableau],
   ['GET',    '/api/prof/presence',             profPresence],
   ['POST',   '/api/prof/classes',              profCreerClasse],
+  ['PUT',    '/api/prof/classes/ordre',        profOrdreClasses],
+  ['DELETE', '/api/prof/classes/:id',          profSupprimerClasse],
   ['POST',   '/api/prof/eleves',               profCreerEleve],
   ['GET',    '/api/prof/eleve/:id',            profEleve],
   ['PATCH',  '/api/prof/eleve/:id',            profModifierEleve],
