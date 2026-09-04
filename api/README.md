@@ -307,10 +307,20 @@ Ce qu'on y fait :
   Débloquer un niveau entier expédiait souvent l'élève plus loin qu'on ne voulait, et
   afficher les trois cents missions d'emblée aurait noyé la fiche ;
 - **créer un compte**, réinitialiser un mot de passe, corriger un nom, une classe ou un
-  identifiant, désactiver ou supprimer.
+  identifiant, désactiver ou supprimer ;
+- **ranger les classes** : les pastilles de filtre se **glissent** dans l'ordre voulu, et
+  cet ordre est celui de l'année scolaire, pas celui de l'alphabet. Il part au serveur en
+  une seule requête (`PUT /api/prof/classes/ordre`) : un glisser déplace potentiellement
+  toute la rangée, et une série d'appels laisserait un rangement à moitié écrit si l'un
+  d'eux échouait ;
+- **supprimer une classe** au clic droit. ⚠️ Cela ne supprime **aucun élève** :
+  `comptes.classe_id` est en `on delete set null`, les comptes basculent en « Sans
+  classe » avec toute leur progression, et on leur en réattribue une depuis leur fiche.
+  La confirmation le dit et annonce combien d'élèves sont concernés — « supprimer la
+  6eB » se lit trop facilement comme « supprimer ses élèves ».
 
 Toute action de l'enseignant est inscrite dans la table `journal` : un avancement modifié
-doit pouvoir s'expliquer.
+doit pouvoir s'expliquer. La suppression d'une classe y note le nombre d'élèves détachés.
 
 Deux garde-fous : on ne supprime ni ne désactive son propre compte.
 
