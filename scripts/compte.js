@@ -167,16 +167,28 @@ function vueCompte(){
     '<div class="atl-box">'+
       '<h2>Ton compte</h2>'+
       '<div class="atl-who"><b>'+esc(el.prenom+' '+el.nom)+'</b>'+
-        '<span>'+esc(el.classe || 'Sans classe')+' · identifiant <b style="display:inline">'+esc(el.identifiant)+'</b></span></div>'+
-      '<p class="atl-sub" style="margin-bottom:16px">Ta progression et tes trophées sont enregistrés sur le serveur du collège : '+
+        '<span>'+esc(el.classe || (el.role === 'eleve' ? 'Sans classe' : el.etablissement || '—'))+
+        ' · identifiant <b style="display:inline">'+esc(el.identifiant)+'</b></span>'+
+        /* L'établissement vient du SERVEUR, avec le profil, et non de scripts/config.js :
+           une même instance sert plusieurs collèges, et le fichier de configuration est
+           le même pour tous. Un enseignant doit voir, sans avoir à le chercher, dans quel
+           établissement il est en train de travailler. */
+        (el.etablissement && el.classe ? '<span>'+esc(el.etablissement)+'</span>' : '')+
+      '</div>'+
+      '<p class="atl-sub" style="margin-bottom:16px">Ta progression et tes trophées sont enregistrés sur le serveur : '+
         'tu les retrouveras sur n\'importe quel poste.</p>'+
-      /* Le tableau de bord n'est jamais annoncé aux élèves : il n'apparaît que dans la
-         fenêtre de compte d'un enseignant connecté. Le serveur vérifie le rôle de son
-         côté, ce bouton n'est qu'un raccourci. */
+      /* Ces raccourcis ne sont jamais annoncés aux élèves : ils n'apparaissent que dans
+         la fenêtre de compte d'un enseignant ou d'un administrateur connecté. Le serveur
+         vérifie le rôle de son côté, ces boutons ne sont que des raccourcis. */
       (el.role === 'prof'
         ? '<a class="atl-btn primaire" href="'+esc(CFG.tableauBord || 'prof.html')+'" '+
           'style="display:block;text-align:center;'+
           'text-decoration:none;margin-bottom:9px">📊 Suivi des élèves</a>'
+        : '')+
+      (el.role === 'admin'
+        ? '<a class="atl-btn primaire" href="'+esc(CFG.espaceAdmin || 'admin.html')+'" '+
+          'style="display:block;text-align:center;'+
+          'text-decoration:none;margin-bottom:9px">🏫 Établissements</a>'
         : '')+
       '<button type="button" class="atl-btn ghost" data-a="mdp" style="width:100%;margin-bottom:9px">'+
         '🔑 Changer mon mot de passe</button>'+
@@ -356,10 +368,16 @@ function vueConnexion(){
          docs/rgpd-mention-information.md, dont ceci est la version courte. */
       '<details class="atl-rgpd"><summary>Que deviennent mes données ?</summary>'+
         "<p>Ton prénom, ton nom, ta classe et ton avancement dans les jeux sont enregistrés "+
-        "sur un serveur du collège, en France. Ça sert à deux choses : que tu retrouves ta "+
-        "progression sur n'importe quel poste, et que ton professeur puisse t'aider si tu "+
-        "bloques. Rien d'autre n'est collecté, rien n'est transmis à qui que ce soit, et "+
-        "tout est effacé au bout de deux ans.</p>"+
+        "sur un serveur en France, mis en place pour ton collège. Ça sert à deux choses : "+
+        "que tu retrouves ta progression sur n'importe quel poste, et que ton professeur "+
+        "puisse t'aider si tu bloques. Rien d'autre n'est collecté, rien n'est transmis à "+
+        "qui que ce soit, et tout est effacé au bout de deux ans.</p>"+
+        /* Le serveur peut servir plusieurs collèges. Le dire ici, en une phrase, plutôt
+           que de laisser croire à un serveur par établissement : c'est justement le
+           point qu'un parent ou un DPD demanderait. Les enseignants d'un collège ne
+           voient QUE leurs élèves, et c'est le serveur qui le garantit. */
+        "<p>Ce serveur peut aussi servir à d'autres collèges. Chacun est séparé : seuls "+
+        "les professeurs de ton collège voient ton nom et ton avancement.</p>"+
         "<p>Tu peux demander à voir, corriger ou effacer tes données : parles-en à ton "+
         "professeur ou au chef d'établissement.</p></details>"+
     '</div>';

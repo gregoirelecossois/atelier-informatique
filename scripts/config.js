@@ -14,7 +14,11 @@
 window.ATELIER_CONFIG = {
   api: 'https://progression-informatique.alwaysdata.net',
 
-  /* Nom affiché dans l'écran de connexion (juste cosmétique). */
+  /* Nom affiché dans l'écran de connexion, AVANT toute connexion — juste cosmétique.
+     À laisser vide dès que le serveur sert plusieurs collèges : ce fichier est le même
+     pour tout le monde, et y écrire le nom d'un établissement serait faux pour les
+     autres. Une fois connecté, le nom du collège vient du serveur avec le profil, et
+     c'est celui-là qui fait foi. */
   etablissement: '',
 
   /* Adresse du tableau de bord enseignant. Absolue, et pas « prof.html » en relatif :
@@ -22,6 +26,10 @@ window.ATELIER_CONFIG = {
      un lien relatif tomberait sur une page qui n'existe pas chez elles.
      Vide → lien relatif « prof.html », ce qui suffit quand l'atelier est seul. */
   tableauBord: 'https://gregoirelecossois.github.io/atelier-informatique/prof.html',
+
+  /* Adresse de l'espace administrateur — les établissements et les comptes enseignants.
+     Même raison d'être absolue que ci-dessus. Vide → lien relatif « admin.html ». */
+  espaceAdmin: 'https://gregoirelecossois.github.io/atelier-informatique/admin.html',
 
   /* true  → un élève non connecté voit un avertissement bien visible.
      false → l'avertissement reste discret (utile en démo ou en classe sans comptes). */

@@ -75,12 +75,15 @@ export function generer(type) {
   return groupes.join('-');
 }
 
-/* Qui reçoit quoi : l'enseignant voit toute la base et range son mot de passe dans un
-   gestionnaire — aucune raison qu'il hérite d'un mot de passe taillé pour être recopié
-   par un élève de 6e. `force` ('court' | 'prononcable') l'emporte sur le rôle. */
+/* Qui reçoit quoi : l'enseignant voit tout son établissement, l'administrateur voit la
+   liste de tous les établissements — l'un comme l'autre rangent leur mot de passe dans
+   un gestionnaire, aucune raison qu'ils héritent d'un mot de passe taillé pour être
+   recopié par un élève de 6e. La règle est écrite « tout sauf l'élève » et non « le
+   prof » : un rôle ajouté plus tard reçoit d'office la forme la plus solide, jamais la
+   plus faible par distraction. `force` ('court' | 'prononcable') l'emporte sur le rôle. */
 export function formePour(role, force) {
   if (force === 'court' || force === 'prononcable' || force === 'coffre') return force;
-  return role === 'prof' ? 'coffre' : 'prononcable';
+  return role === 'eleve' ? 'prononcable' : 'coffre';
 }
 
 /* --------------------------------------------------------------------------
