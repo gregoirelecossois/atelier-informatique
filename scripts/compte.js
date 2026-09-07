@@ -372,12 +372,6 @@ function vueConnexion(){
         "que tu retrouves ta progression sur n'importe quel poste, et que ton professeur "+
         "puisse t'aider si tu bloques. Rien d'autre n'est collecté, rien n'est transmis à "+
         "qui que ce soit, et tout est effacé au bout de deux ans.</p>"+
-        /* Le serveur peut servir plusieurs collèges. Le dire ici, en une phrase, plutôt
-           que de laisser croire à un serveur par établissement : c'est justement le
-           point qu'un parent ou un DPD demanderait. Les enseignants d'un collège ne
-           voient QUE leurs élèves, et c'est le serveur qui le garantit. */
-        "<p>Ce serveur peut aussi servir à d'autres collèges. Chacun est séparé : seuls "+
-        "les professeurs de ton collège voient ton nom et ton avancement.</p>"+
         "<p>Tu peux demander à voir, corriger ou effacer tes données : parles-en à ton "+
         "professeur ou au chef d'établissement.</p></details>"+
     '</div>';
