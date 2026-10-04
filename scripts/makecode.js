@@ -49,11 +49,21 @@ function jeton(){
   catch(e){ return ''; }
 }
 function eleve(){ return (window.Store && Store.eleve && Store.eleve()) || null; }
-function connecte(){ return !!(API && eleve() && jeton()); }
 
 /* Un cache par élève, et un pour le poste sans compte : deux élèves qui se suivent sur le
-   même poste ne voient jamais les projets l'un de l'autre. */
-function cleCache(){ var e = eleve(); return 'atl_mc_' + (e && connecte() ? e.id : 'invite'); }
+   même poste ne voient jamais les projets l'un de l'autre.
+   L'identité est FIGÉE à l'ouverture de la page. Se connecter ou se déconnecter recharge
+   la page, mais entre les deux les projets en mémoire appartiennent toujours à la
+   personne d'avant : relire l'identité à ce moment-là les rangeait sous le nom de la
+   suivante (les projets d'un élève qui se déconnecte finissaient dans le cache invité
+   du poste). `termine` coupe toute écriture une fois la session de la page close. */
+var ident = null, termine = false;
+function figerIdentite(){
+  var e = eleve(), j = jeton(), compte = !!(API && e && j);
+  ident = { cle: 'atl_mc_' + (compte ? e.id : 'invite'), jeton: compte ? j : '' };
+}
+function connecte(){ return !!(ident && ident.jeton && jeton() === ident.jeton); }
+function cleCache(){ return ident ? ident.cle : ''; }
 
 /* ---------------------------------------------------------------------------
    3. Compression — gzip natif du navigateur, puis base64 pour voyager en JSON.
@@ -114,16 +124,18 @@ function liste(){
 }
 
 function lireCache(){
+  if(!cleCache()) return {};
   try{ return JSON.parse(localStorage.getItem(cleCache()) || 'null') || {}; }catch(e){ return {}; }
 }
 /* Le cache est un confort : s'il ne rentre plus (quota du navigateur), on s'en passe. */
 function ecrireCache(){
+  if(termine || !cleCache()) return;
   var p = {}, x = [], id;
   for(id in donnees) if(projets[id] && !supprimes[id]) p[id] = { d: donnees[id], s: sale[id] ? 1 : 0 };
   for(id in supprimes) if(supprimes[id]) x.push(id);
   try{ localStorage.setItem(cleCache(), JSON.stringify({ p: p, x: x })); }catch(e){}
 }
-function effacerCache(){ try{ localStorage.removeItem(cleCache()); }catch(e){} }
+function effacerCache(){ if(cleCache()) try{ localStorage.removeItem(cleCache()); }catch(e){} }
 
 /* ---------------------------------------------------------------------------
    5. Réseau
@@ -188,6 +200,7 @@ function programmer(){
    serveur un projet après l'autre — jamais une rafale. */
 function envoyer(){
   if(minuteur){ clearTimeout(minuteur); minuteur = null; }
+  if(termine) return Promise.resolve();
   if(enVol){ aRefaire = true; return Promise.resolve(); }
   enVol = true;
 
@@ -281,6 +294,7 @@ function cacheImmediat(){
    Si elle échoue, le cache le garde : il repartira à la prochaine ouverture de MakeCode
    sur ce poste. */
 function viderEnUrgence(){
+  if(termine) return;
   var n = 0;
   cacheImmediat().forEach(function(id){
     var d = donnees[id];
@@ -392,26 +406,84 @@ function surSauvegarde(prj){
   if(bloques[h.id]){ delete bloques[h.id]; poserAlerte(''); }
   programmer();
   peindreListe();
+  peindreNom();
 }
 
 function ouvrirAuDemarrage(){
   var l = liste();
-  if(l.length) ouvrir(l[0].header.id); else nouveau();
+  /* Premier passage, aucun projet : on demande quand même un nom, mais sans bouton
+     Annuler — l'élève ne doit pas se retrouver devant un éditeur vide. */
+  if(l.length) ouvrir(l[0].header.id); else nouveau(true);
 }
 
 function ouvrir(id){
   courant = id;
+  peindreNom();
   return versEditeur({ action: 'openheader', headerId: id }).then(fermerPanneau, function(){});
 }
 
-function nouveau(){
+/* `obligatoire` : la fenêtre du nom n'a pas de bouton Annuler (démarrage sans projet). */
+function nouveau(obligatoire){
   if(connecte() && liste().length >= maxServeur){
     ouvrirPanneau('Tu as déjà ' + maxServeur + ' projets : supprime ceux dont tu n\'as plus besoin pour en créer un nouveau.');
     return Promise.resolve();
   }
-  var n = liste().length + 1;
-  return versEditeur({ action: 'newproject', options: { name: 'Mon projet ' + n, dependencies: EXTENSIONS } })
-    .then(fermerPanneau, function(){});
+  return demanderNom({
+    titre: 'Nouveau projet',
+    texte: 'Donne un nom à ton projet. Tu pourras le changer plus tard.',
+    valeur: '',
+    bouton: 'Créer le projet',
+    obligatoire: obligatoire === true
+  }).then(function(nom){
+    if(!nom) return;
+    return versEditeur({ action: 'newproject', options: { name: nom, dependencies: EXTENSIONS } })
+      .then(fermerPanneau, function(){});
+  });
+}
+
+/* MakeCode n'a pas de commande « renommer » en mode contrôleur : il garde sa propre copie
+   du projet, avec l'ancien nom, et la réenregistrerait telle quelle. On lui fait donc
+   IMPORTER une copie portant le nouveau nom (nouvel identifiant), puis on efface
+   l'ancienne. Pour l'élève, c'est le même projet : même code, même historique.
+   « saveproject » d'abord, pour ne pas perdre les toutes dernières modifications. */
+var renommageEnCours = false;
+function renommer(id){
+  id = id || courant;
+  if(!id || !projets[id] || renommageEnCours) return Promise.resolve();
+  var ancien = projets[id].header.name || '';
+  return demanderNom({
+    titre: 'Renommer le projet',
+    valeur: ancien,
+    bouton: 'Renommer'
+  }).then(function(nom){
+    if(!nom || nom === ancien) return;
+    renommageEnCours = true;
+    var avant = id === courant ? versEditeur({ action: 'saveproject' }).catch(function(){}) : Promise.resolve();
+    return avant.then(function(){
+      var p = projets[id];
+      if(!p) return;
+      return versEditeur({ action: 'importproject', project: copieRenommee(p, nom) }).then(function(){
+        supprimer(id);
+        fermerPanneau();
+      }, function(){
+        poserAlerte('Le projet n\'a pas pu être renommé. Réessaie.');
+      });
+    }).then(function(){ renommageEnCours = false; }, function(){ renommageEnCours = false; });
+  });
+}
+
+function copieRenommee(p, nom){
+  var h = JSON.parse(JSON.stringify(p.header)), t = {}, f;
+  h.name = nom;
+  delete h.isDeleted;
+  for(f in p.text) t[f] = p.text[f];
+  /* Le nom vit aussi dans pxt.json : c'est lui qui donne son nom au fichier téléchargé. */
+  try{
+    var cfg = JSON.parse(t['pxt.json']);
+    cfg.name = nom;
+    t['pxt.json'] = JSON.stringify(cfg, null, 4);
+  }catch(e){}
+  return { header: h, text: t };
 }
 
 function supprimer(id){
@@ -422,6 +494,7 @@ function supprimer(id){
   ecrireCache();
   if(supprimes[id]) programmer();
   peindreListe();
+  peindreNom();
 }
 
 window.addEventListener('message', function(ev){
@@ -503,9 +576,77 @@ function peindreListe(){
     return '<li data-id="' + esc(h.id) + '"' + (h.id === courant ? ' class="mc-ouvert"' : '') + '>' +
       '<button type="button" class="mc-ouvrir"><b>' + esc(h.name || 'Sans titre') + '</b>' +
         '<span>' + (h.id === courant ? 'ouvert · ' : '') + 'modifié ' + esc(quand(h.modificationTime)) + '</span></button>' +
-      '<button type="button" class="mc-suppr" title="Supprimer ce projet">🗑️</button>' +
+      '<button type="button" class="mc-icone mc-renom" title="Renommer ce projet">✏️</button>' +
+      '<button type="button" class="mc-icone mc-suppr" title="Supprimer ce projet">🗑️</button>' +
     '</li>';
   }).join('');
+}
+
+/* ---------------------------------------------------------------------------
+   10 bis. Le nom du projet : affiché en haut, demandé à chaque création
+   --------------------------------------------------------------------------- */
+var NOM_MAX = 50;
+
+function peindreNom(){
+  var b = document.getElementById('mcNom');
+  if(!b) return;
+  var p = courant && projets[courant];
+  b.hidden = !p;
+  if(p){
+    b.querySelector('span').textContent = p.header.name || 'Sans titre';
+    b.title = 'Renommer « ' + (p.header.name || 'Sans titre') + ' »';
+  }
+}
+
+/* Fenêtre maison plutôt que prompt() : celle du navigateur fait peur, ne se met pas en
+   forme, et certains navigateurs la bloquent dans une page qui contient un cadre.
+   Renvoie le nom choisi (nettoyé), ou null si l'élève annule. */
+function demanderNom(o){
+  var fen = document.getElementById('mcNomFenetre'),
+      form = fen.querySelector('form'),
+      champ = fen.querySelector('input'),
+      err = fen.querySelector('.mc-erreur'),
+      annuler = fen.querySelector('[data-a=annuler]');
+
+  fen.querySelector('h2').textContent = o.titre;
+  fen.querySelector('.mc-texte').textContent = o.texte || '';
+  fen.querySelector('.mc-texte').hidden = !o.texte;
+  fen.querySelector('[data-a=ok]').textContent = o.bouton;
+  annuler.hidden = !!o.obligatoire;
+  champ.value = o.valeur || '';
+  champ.maxLength = NOM_MAX;
+  err.hidden = true;
+  fen.hidden = false;
+  setTimeout(function(){ champ.focus(); champ.select(); }, 30);
+
+  return new Promise(function(fin){
+    function finir(v){
+      fen.hidden = true;
+      form.onsubmit = null; annuler.onclick = null;
+      fen.removeEventListener('keydown', clavier, true);
+      fen.removeEventListener('mousedown', dehors);
+      fin(v);
+    }
+    function clavier(ev){
+      if(ev.key !== 'Escape') return;
+      ev.stopPropagation();
+      if(!o.obligatoire) finir(null);
+    }
+    function dehors(ev){ if(ev.target === fen && !o.obligatoire) finir(null); }
+
+    form.onsubmit = function(ev){
+      ev.preventDefault();
+      var nom = champ.value.replace(/\s+/g, ' ').trim().slice(0, NOM_MAX);
+      if(!nom){
+        err.textContent = 'Écris un nom pour ton projet.';
+        err.hidden = false; champ.focus(); return;
+      }
+      finir(nom);
+    };
+    annuler.onclick = function(){ finir(null); };
+    fen.addEventListener('keydown', clavier, true);
+    fen.addEventListener('mousedown', dehors);
+  });
 }
 
 function poserPanneau(){
@@ -520,6 +661,7 @@ function poserPanneau(){
     if(!li) return;
     var id = li.getAttribute('data-id');
     if(ev.target.closest('.mc-ouvrir')){ ouvrir(id); return; }
+    if(ev.target.closest('.mc-renom')){ renommer(id); return; }
     if(ev.target.closest('.mc-suppr')){
       /* Confirmation sur place, pas de confirm() : la fenêtre du navigateur fait peur, et
          un élève clique « OK » sans lire. */
@@ -532,7 +674,7 @@ function poserPanneau(){
         supprimer(id);
         /* On ne laisse pas l'éditeur sur un projet qui n'existe plus : il le
            réenregistrerait (sans effet, mais l'élève croirait le garder). */
-        if(etaitOuvert){ var l = liste(); if(l.length) ouvrir(l[0].header.id); else nouveau(); }
+        if(etaitOuvert){ var l = liste(); if(l.length) ouvrir(l[0].header.id); else nouveau(true); }
       };
     }
   });
@@ -557,14 +699,19 @@ function attendreStore(){
 }
 
 function demarrer(){
+  figerIdentite();
   etatEl = document.getElementById('mcEtat');
   poserEtat(connecte() ? 'ok' : (API && eleve() ? 'expire' : 'local'));
   poserPanneau();
   document.getElementById('mcProjets').onclick = function(){ ouvrirPanneau(); };
   document.getElementById('mcNouveau').onclick = function(){ nouveau(); };
+  document.getElementById('mcNom').onclick = function(){ renommer(); };
   chargement = document.getElementById('mcChargement');
 
   attendreStore().then(function(){
+    /* store.js a pu constater entre-temps une session expirée : on refige, AVANT de
+       charger quoi que ce soit. */
+    figerIdentite();
     projetsPrets = chargerProjets().catch(function(){});
 
     cadre = document.createElement('iframe');
@@ -592,7 +739,20 @@ function demarrer(){
       var args = arguments;
       return envoyer().catch(function(){}).then(function(){
         if(rienEnAttente()) effacerCache();
+        termine = true;
       }).then(function(){ return deconnexionAtelier.apply(Store, args); });
+    };
+  }
+  /* Connexion depuis la pastille (la page se recharge ensuite) : les projets en mémoire
+     sont ceux du poste sans compte. On les met en cache tout de suite, puis plus rien ne
+     s'écrit — sinon ils partiraient sur le compte qui vient de se connecter. Connexion
+     refusée (mauvais mot de passe) : on reprend comme avant. */
+  if(window.Store && Store.connexion){
+    var connexionAtelier = Store.connexion;
+    Store.connexion = function(){
+      cacheImmediat();
+      termine = true;
+      return connexionAtelier.apply(Store, arguments).catch(function(e){ termine = false; throw e; });
     };
   }
   if(window.Store && Store.surEtat){
