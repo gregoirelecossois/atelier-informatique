@@ -75,8 +75,9 @@
   .mc-ouvrir:hover{background:#eef3f9}
   .mc-ouvrir b{display:block;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .mc-ouvrir span{color:var(--gris);font-size:.8rem;font-weight:700}
-  .mc-suppr{background:none;border:0;font-size:1.1rem;padding:8px;border-radius:10px;opacity:.6}
-  .mc-suppr:hover{opacity:1;background:#fee2e2}
+  .mc-icone{background:none;border:0;font-size:1.1rem;padding:8px;border-radius:10px;opacity:.6}
+  .mc-icone:hover{opacity:1;background:#eef3f9}
+  .mc-suppr:hover{background:#fee2e2}
   .mc-question{flex:1;font-weight:800;font-size:.88rem;padding:8px 6px}
   .mc-non,.mc-oui{border:0;border-radius:999px;padding:8px 13px;font-weight:800;font-size:.85rem}
   .mc-non{background:#eef3f9;color:#3c4d61}
@@ -86,8 +87,34 @@
     margin-top:4px}
   .mc-note{padding:0 20px 16px;margin:0;color:var(--gris);font-size:.78rem;line-height:1.45}
 
+  /* Nom du projet ouvert, dans la barre : un clic pour le renommer. */
+  .mc-nom{display:inline-flex;align-items:center;gap:6px;max-width:30vw;border:2px dashed var(--trait);
+    background:#fff;color:var(--encre);border-radius:10px;padding:5px 10px;font-weight:800;font-size:.9rem}
+  .mc-nom:hover{border-color:var(--bleu);border-style:solid}
+  .mc-nom span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mc-nom[hidden]{display:none}
+
+  /* Fenêtre « nom du projet » : au-dessus du panneau, qu'elle peut recouvrir. */
+  #mcNomFenetre{position:fixed;inset:0;z-index:2147481200;background:rgba(20,30,42,.55);display:flex;
+    align-items:flex-start;justify-content:center;padding:90px 16px 16px}
+  #mcNomFenetre[hidden]{display:none}
+  #mcNomFenetre form{background:#fff;border-radius:20px;width:min(420px,100%);padding:22px 22px 18px;
+    box-shadow:0 24px 60px rgba(15,25,38,.35)}
+  #mcNomFenetre h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.3rem;margin:0 0 6px}
+  .mc-texte{margin:0 0 14px;color:var(--gris);font-size:.88rem;line-height:1.4}
+  #mcNomFenetre label{display:block;font-weight:800;font-size:.82rem;margin:0 0 5px}
+  #mcNomFenetre input{width:100%;border:2px solid var(--trait);border-radius:12px;padding:11px 13px;
+    font-family:inherit;font-size:1rem;font-weight:700;color:var(--encre);background:#fbfdff}
+  #mcNomFenetre input:focus{outline:none;border-color:var(--bleu);background:#fff}
+  .mc-erreur{margin:10px 0 0;background:#fef2f2;border:2px solid #fecaca;color:#b91c1c;border-radius:12px;
+    padding:8px 12px;font-size:.84rem;font-weight:700}
+  .mc-boutons{display:flex;gap:9px;justify-content:flex-end;margin-top:16px}
+  .mc-boutons .btn{padding:9px 16px;font-size:.9rem}
+  .mc-boutons [hidden]{display:none}
+
   @media (max-width:760px){
-    .topbar h1 span,.retour span,.mc-etat{display:none}
+    .topbar h1,.retour span,.mc-etat{display:none}
+    .mc-nom{max-width:38vw}
     .topbar{gap:7px;padding:0 9px}
   }
 </style>
@@ -97,6 +124,7 @@
 <header class="topbar">
   <a class="retour" href="index.html" title="Retour à l'atelier">←<span> Atelier</span></a>
   <h1>MakeCode <span>micro:bit</span></h1>
+  <button type="button" class="mc-nom" id="mcNom" hidden><span></span>✏️</button>
   <button type="button" class="btn" id="mcProjets">📁 Mes projets</button>
   <button type="button" class="btn primaire" id="mcNouveau">➕ Nouveau projet</button>
   <span class="espace"></span>
@@ -122,10 +150,24 @@
       <button type="button" class="btn primaire" data-a="nouveau">➕ Nouveau projet</button>
     </div>
     <p class="mc-note">Chaque nouveau projet contient déjà les blocs de la <b>voiture robot</b>.
-      Pour renommer un projet, change son nom en bas de l'éditeur, à côté du bouton Télécharger.<br>
+      Pour renommer un projet, clique sur son nom en haut de la page, ou sur ✏️ ci-dessus.<br>
       Connecté·e, tes projets sont enregistrés sur le serveur du collège : tu les retrouves sur
       n'importe quel poste. Ils sont effacés en même temps que ton compte.</p>
   </div>
+</div>
+
+<div id="mcNomFenetre" hidden>
+  <form role="dialog" aria-modal="true" aria-labelledby="mcNomTitre" novalidate>
+    <h2 id="mcNomTitre"></h2>
+    <p class="mc-texte"></p>
+    <label for="mcNomChamp">Nom du projet</label>
+    <input id="mcNomChamp" type="text" autocomplete="off" spellcheck="false" placeholder="Par exemple : Robot suiveur de ligne">
+    <p class="mc-erreur" hidden></p>
+    <div class="mc-boutons">
+      <button type="button" class="btn" data-a="annuler">Annuler</button>
+      <button type="submit" class="btn primaire" data-a="ok"></button>
+    </div>
+  </form>
 </div>
 
 <script src="scripts/makecode.js"></script>
