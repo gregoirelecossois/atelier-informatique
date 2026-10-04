@@ -28,6 +28,8 @@
  *   GET    /api/makecode/projets            tous ses projets MakeCode, compressés
  *   PUT    /api/makecode/projet             {id, donnees} → enregistre un projet
  *   DELETE /api/makecode/projet             {id} → supprime un projet
+ *   GET    /api/makecode/modeles            modèles proposés à sa classe (prof : tous)
+ *   GET    /api/makecode/modele/:id         un modèle, compressé, pour en partir
  *
  * Routes réservées au rôle « prof » — le tableau de bord :
  *   GET    /api/prof/tableau                tous les comptes + leur avancement résumé
@@ -44,6 +46,10 @@
  *   GET    /api/prof/annee                  règles de passage à l'année suivante
  *   PUT    /api/prof/annee/regles           {regles | null} → les enregistre (null : défaut)
  *   POST   /api/prof/annee                  {attendu, forcer?} → fait passer l'année
+ *   GET    /api/prof/makecode/modeles       modèles de l'établissement, avec leurs classes
+ *   PUT    /api/prof/makecode/modele        {source, nom, donnees, classes} → publie
+ *   PATCH  /api/prof/makecode/modele/:id    {nom?, classes?}
+ *   DELETE /api/prof/makecode/modele/:id    retire le modèle (les copies des élèves restent)
  *
  * Routes réservées au rôle « admin » — la gestion des établissements. Ce compte est
  * délibérément distinct du compte enseignant : il crée les collèges et les comptes
@@ -121,6 +127,10 @@ const MC_TABLE_MAX_MO = Number(process.env.MC_TABLE_MAX_MO || 40);
 const MC_PROJET_MAX = 64 * 1024;
 const MC_ECRITURES_MINUTE = 30;
 const MC_ID_OK = /^[A-Za-z0-9-]{8,64}$/;
+/* Modèles proposés par les enseignants (voir modeles_makecode dans schema.sql). Ils
+   comptent dans MC_TABLE_MAX_MO comme les projets. */
+const MC_MODELES_MAX = Number(process.env.MC_MODELES_MAX || 60);
+const MC_MODELE_NOM_MAX = 50;
 
 /* --------------------------------------------------------------------------
    Utilitaires HTTP
@@ -195,7 +205,7 @@ async function sessionDuJeton(jetonClair) {
   const ligne = await db.une(
     `select s.jeton, s.expire_le, s.vue_le,
             c.id, c.identifiant, c.prenom, c.nom, c.role, c.doit_changer_mdp,
-            c.etablissement_id, cl.nom as classe, et.nom as etablissement
+            c.etablissement_id, c.classe_id, cl.nom as classe, et.nom as etablissement
        from sessions s
        join comptes c  on c.id = s.compte_id
        left join classes cl on cl.id = c.classe_id
@@ -523,7 +533,8 @@ setInterval(() => {
 let mcOccupation = { octets: 0, mesure: 0 };
 async function mcPlace() {
   if (Date.now() - mcOccupation.mesure > 60_000) {
-    const r = await db.une(`select pg_total_relation_size('projets_makecode') as n`);
+    const r = await db.une(`select pg_total_relation_size('projets_makecode')
+                                 + pg_total_relation_size('modeles_makecode') as n`);
     mcOccupation = { octets: Number(r.n), mesure: Date.now() };
   }
   if (mcOccupation.octets > MC_TABLE_MAX_MO * 1024 * 1024) {
@@ -579,6 +590,171 @@ async function mcSupprimer(req) {
   mcRythme(s.id);
   await db.q('delete from projets_makecode where compte_id = $1 and id = $2', [s.id, id]);
   return { ok: true };
+}
+
+/* --------------------------------------------------------------------------
+   Modèles MakeCode
+   Un enseignant propose un de ses projets à des classes ; l'élève le voit dans
+   « Nouveau projet » et en part pour créer sa propre copie (côté navigateur, avec un
+   nouvel identifiant). Le serveur ne recopie rien chez l'élève : il sert le modèle,
+   c'est tout. Comme les projets, les modèles voyagent compressés et ne sont pas ouverts.
+   -------------------------------------------------------------------------- */
+
+/* Ce qu'un compte a le droit de voir : un élève, les modèles proposés à SA classe ; un
+   enseignant, tous ceux de son établissement (pour tester ce que voient les élèves, ou
+   partir du modèle d'un collègue). Un administrateur n'appartient à aucun collège. */
+function mcModelesVisibles(s) {
+  if (s.role === 'prof' && s.etablissement_id) {
+    return { ou: 'm.etablissement_id = $1', params: [s.etablissement_id] };
+  }
+  if (s.role === 'eleve' && s.etablissement_id && s.classe_id) {
+    return {
+      ou: `m.etablissement_id = $1 and exists (select 1 from modeles_makecode_classes mc
+                                                where mc.modele_id = m.id and mc.classe_id = $2)`,
+      params: [s.etablissement_id, s.classe_id]
+    };
+  }
+  return null;
+}
+
+async function mcModeles(req) {
+  const s = await session(req);
+  const v = mcModelesVisibles(s);
+  if (!v) return { modeles: [] };
+  const r = await db.q(
+    `select m.id, m.nom, m.maj_le from modeles_makecode m where ${v.ou} order by lower(m.nom), m.id`, v.params);
+  return { modeles: r.rows };
+}
+
+async function mcModele(req, params) {
+  const s = await session(req);
+  const v = mcModelesVisibles(s);
+  const l = v && await db.une(
+    `select m.id, m.nom, m.donnees from modeles_makecode m where m.id = $${v.params.length + 1} and ${v.ou}`,
+    [...v.params, Number(params.id)]);
+  if (!l) throw new Refus(404, 'Ce modèle n\'est plus proposé. Demande à ton professeur.');
+  return l;
+}
+
+/* La liste complète, pour le panneau de l'enseignant : chaque modèle avec ses classes,
+   et les classes de l'établissement pour les cases à cocher. */
+async function lesModeles(etablissementId) {
+  const r = await db.q(
+    `select m.id, m.source, m.nom, m.maj_le,
+            nullif(trim(coalesce(a.prenom, '') || ' ' || coalesce(a.nom, '')), '') as auteur,
+            coalesce(array_agg(mc.classe_id) filter (where mc.classe_id is not null), '{}') as classes
+       from modeles_makecode m
+       left join comptes a on a.id = m.auteur_id
+       left join modeles_makecode_classes mc on mc.modele_id = m.id
+      where m.etablissement_id = $1
+      group by m.id, a.prenom, a.nom
+      order by lower(m.nom), m.id`,
+    [etablissementId]);
+  return r.rows;
+}
+
+async function profModelesListe(s) {
+  return { modeles: await lesModeles(s.etablissement_id), classes: await lesClasses(s.etablissement_id),
+           max: MC_MODELES_MAX };
+}
+
+async function profModeles(req) {
+  return profModelesListe(await sessionProf(req));
+}
+
+function nomDeModele(v) {
+  const nom = String(v || '').replace(/\s+/g, ' ').trim().slice(0, MC_MODELE_NOM_MAX);
+  if (!nom) throw new Refus(400, 'Donne un nom au modèle.');
+  return nom;
+}
+
+/* Les classes cochées, vérifiées UNE PAR UNE contre l'établissement de l'enseignant :
+   une classe d'un autre collège est « introuvable », comme partout ailleurs. */
+async function classesDuModele(s, liste) {
+  if (!Array.isArray(liste)) throw new Refus(400, 'Liste de classes invalide.');
+  const ids = [...new Set(liste.map(Number))];
+  if (ids.some((n) => !Number.isInteger(n) || n <= 0)) throw new Refus(400, 'Liste de classes invalide.');
+  if (!ids.length) return ids;
+  const r = await db.q('select id from classes where etablissement_id = $1 and id = any($2::int[])',
+    [s.etablissement_id, ids]);
+  if (r.rows.length !== ids.length) throw new Refus(404, 'Classe introuvable.');
+  return ids;
+}
+
+async function poserClassesDuModele(client, modeleId, classes) {
+  await client.query('delete from modeles_makecode_classes where modele_id = $1', [modeleId]);
+  if (classes.length) {
+    await client.query(
+      `insert into modeles_makecode_classes(modele_id, classe_id)
+       select $1, unnest($2::int[])`, [modeleId, classes]);
+  }
+}
+
+/* Publier, ou republier : le même projet (même `source`) met à jour son modèle — nouveau
+   contenu, nouveau nom, nouvelles classes. Les copies déjà faites par les élèves ne
+   bougent pas : elles leur appartiennent. */
+async function profPublierModele(req) {
+  const s = await sessionProf(req);
+  const corps = await lireCorps(req);
+  const source = String(corps.source || '');
+  if (!MC_ID_OK.test(source)) throw new Refus(400, 'Identifiant de projet invalide.');
+  const nom = nomDeModele(corps.nom);
+  const donnees = String(corps.donnees || '');
+  if (!/^(gz|js):/.test(donnees)) throw new Refus(400, 'Projet illisible.');
+  if (donnees.length > MC_PROJET_MAX) throw new Refus(413, 'Ce projet est trop gros pour devenir un modèle.');
+  const classes = await classesDuModele(s, corps.classes);
+  mcRythme(s.id);
+  await mcPlace();
+
+  await db.transaction(async (client) => {
+    const r = await client.query(
+      `insert into modeles_makecode(etablissement_id, auteur_id, source, nom, donnees)
+       select $1, $2, $3, $4, $5
+        where exists (select 1 from modeles_makecode where etablissement_id = $1 and source = $3)
+           or (select count(*) from modeles_makecode where etablissement_id = $1) < $6
+       on conflict (etablissement_id, source)
+         do update set nom = excluded.nom, donnees = excluded.donnees, auteur_id = excluded.auteur_id, maj_le = now()
+       returning id`,
+      [s.etablissement_id, s.id, source, nom, donnees, MC_MODELES_MAX]);
+    if (!r.rows[0]) {
+      throw new Refus(409, `Ton établissement a déjà ${MC_MODELES_MAX} modèles : retire ceux qui ne servent plus.`);
+    }
+    await poserClassesDuModele(client, r.rows[0].id, classes);
+  });
+  await db.journaliser(s.identifiant, 'makecode.modele.publication', nom, { classes }, s.etablissement_id);
+  return profModelesListe(s);
+}
+
+async function modeleDuProf(s, id) {
+  const l = await db.une('select id, nom from modeles_makecode where id = $1 and etablissement_id = $2',
+    [Number(id), s.etablissement_id]);
+  if (!l) throw new Refus(404, 'Modèle introuvable.');
+  return l;
+}
+
+/* Renommer, ou changer les classes, sans toucher au contenu — c'est ce qui reste
+   possible quand l'enseignant a supprimé le projet d'origine. */
+async function profModifierModele(req, params) {
+  const s = await sessionProf(req);
+  const m = await modeleDuProf(s, params.id);
+  const corps = await lireCorps(req);
+  const nom = 'nom' in corps ? nomDeModele(corps.nom) : null;
+  const classes = 'classes' in corps ? await classesDuModele(s, corps.classes) : null;
+  await db.transaction(async (client) => {
+    if (nom) await client.query('update modeles_makecode set nom = $2 where id = $1', [m.id, nom]);
+    if (classes) await poserClassesDuModele(client, m.id, classes);
+  });
+  await db.journaliser(s.identifiant, 'makecode.modele.modification', nom || m.nom,
+    classes ? { classes } : null, s.etablissement_id);
+  return profModelesListe(s);
+}
+
+async function profRetirerModele(req, params) {
+  const s = await sessionProf(req);
+  const m = await modeleDuProf(s, params.id);
+  await db.q('delete from modeles_makecode where id = $1', [m.id]);
+  await db.journaliser(s.identifiant, 'makecode.modele.retrait', m.nom, null, s.etablissement_id);
+  return profModelesListe(s);
 }
 
 /* --------------------------------------------------------------------------
@@ -1145,6 +1321,8 @@ const ROUTES = [
   ['GET',    '/api/makecode/projets',          mcLister],
   ['PUT',    '/api/makecode/projet',           mcEcrire],
   ['DELETE', '/api/makecode/projet',           mcSupprimer],
+  ['GET',    '/api/makecode/modeles',          mcModeles],
+  ['GET',    '/api/makecode/modele/:id',       mcModele],
 
   ['GET',    '/api/prof/tableau',              profTableau],
   ['GET',    '/api/prof/presence',             profPresence],
@@ -1160,6 +1338,10 @@ const ROUTES = [
   ['GET',    '/api/prof/annee',                profAnnee],
   ['PUT',    '/api/prof/annee/regles',         profReglesAnnee],
   ['POST',   '/api/prof/annee',                profPasserAnnee],
+  ['GET',    '/api/prof/makecode/modeles',     profModeles],
+  ['PUT',    '/api/prof/makecode/modele',      profPublierModele],
+  ['PATCH',  '/api/prof/makecode/modele/:id',  profModifierModele],
+  ['DELETE', '/api/prof/makecode/modele/:id',  profRetirerModele],
 
   ['GET',    '/api/admin/etablissements',      adminEtablissements],
   ['POST',   '/api/admin/etablissements',      adminCreerEtablissement],

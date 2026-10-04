@@ -113,6 +113,38 @@ create table if not exists projets_makecode (
   primary key (compte_id, id)
 );
 
+-- Modèles MakeCode : un projet qu'un enseignant propose à une ou plusieurs classes.
+-- L'élève le retrouve dans « Nouveau projet » et en part pour créer SA copie, rangée
+-- ensuite dans projets_makecode comme n'importe quel projet. Rien n'est écrit chez
+-- l'élève tant qu'il n'a pas choisi : un modèle publié ou corrigé n'écrase jamais
+-- le travail commencé.
+-- Un modèle appartient à l'ÉTABLISSEMENT, pas à son auteur : un collègue du même
+-- collège le voit et le gère (même règle que les classes et les comptes). `auteur_id`
+-- n'est qu'indicatif, et un compte enseignant supprimé laisse ses modèles en place.
+-- `source` est l'identifiant MakeCode du projet de l'enseignant : republier le même
+-- projet met le modèle à jour au lieu d'en créer un second.
+-- Aucune donnée d'élève ici : c'est du contenu écrit par l'enseignant.
+create table if not exists modeles_makecode (
+  id               serial primary key,
+  etablissement_id int  not null references etablissements(id) on delete cascade,
+  auteur_id        int  references comptes(id) on delete set null,
+  source           text not null,
+  nom              text not null,
+  donnees          text not null,
+  maj_le           timestamptz not null default now(),
+  unique (etablissement_id, source)
+);
+
+-- À quelles classes un modèle est proposé. Une classe supprimée disparaît d'ici toute
+-- seule ; un modèle qui n'est plus proposé à aucune classe reste visible des
+-- enseignants, qui peuvent le reproposer ou le retirer.
+create table if not exists modeles_makecode_classes (
+  modele_id int not null references modeles_makecode(id) on delete cascade,
+  classe_id int not null references classes(id) on delete cascade,
+  primary key (modele_id, classe_id)
+);
+create index if not exists modeles_makecode_classes_classe_idx on modeles_makecode_classes(classe_id);
+
 -- --------------------------------------------------------------------------
 -- Passage d'une base mono-établissement à une base cloisonnée.
 -- Ces trois blocs ne font rien sur une base déjà à jour, et rien non plus sur une

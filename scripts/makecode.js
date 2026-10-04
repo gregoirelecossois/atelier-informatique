@@ -422,20 +422,28 @@ function ouvrir(id){
   return versEditeur({ action: 'openheader', headerId: id }).then(fermerPanneau, function(){});
 }
 
-/* `obligatoire` : la fenêtre du nom n'a pas de bouton Annuler (démarrage sans projet). */
+/* `obligatoire` : la fenêtre du nom n'a pas de bouton Annuler (démarrage sans projet).
+   Si le professeur a proposé des modèles à la classe, la même fenêtre les présente :
+   l'élève part d'un projet vide ou d'un modèle (cf. section 12). */
 function nouveau(obligatoire){
   if(connecte() && liste().length >= maxServeur){
     ouvrirPanneau('Tu as déjà ' + maxServeur + ' projets : supprime ceux dont tu n\'as plus besoin pour en créer un nouveau.');
     return Promise.resolve();
   }
-  return demanderNom({
+  var o = {
     titre: 'Nouveau projet',
     texte: 'Donne un nom à ton projet. Tu pourras le changer plus tard.',
     valeur: '',
     bouton: 'Créer le projet',
     obligatoire: obligatoire === true
+  };
+  return modelesProposes().then(function(modeles){
+    o.modeles = modeles;
+    if(modeles.length) o.texte = 'Pars d\'un projet vide ou d\'un projet préparé par ton professeur, puis donne-lui un nom.';
+    return demanderNom(o);
   }).then(function(nom){
     if(!nom) return;
+    if(o.choisi) return depuisModele(o.choisi, nom);
     return versEditeur({ action: 'newproject', options: { name: nom, dependencies: EXTENSIONS } })
       .then(fermerPanneau, function(){});
   });
@@ -561,21 +569,26 @@ function ouvrirPanneau(message){
   panneau.querySelector('.mc-msg').textContent = message || '';
   panneau.querySelector('.mc-msg').hidden = !message;
   peindreListe();
+  chargerModelesProf();
 }
 function fermerPanneau(){ if(panneau) panneau.hidden = true; }
 
 function peindreListe(){
   if(!panneau || panneau.hidden) return;
-  var l = liste(), ul = panneau.querySelector('.mc-liste');
+  peindreModeles();
+  var l = liste(), ul = panneau.querySelector('.mc-projets'), prof = estProf();
   panneau.querySelector('.mc-compte').textContent = connecte()
     ? l.length + ' projet' + (l.length > 1 ? 's' : '') + ' sur ' + maxServeur
     : l.length + ' projet' + (l.length > 1 ? 's' : '') + ' sur ce poste';
   if(!l.length){ ul.innerHTML = '<li class="mc-vide">Aucun projet pour l\'instant.</li>'; return; }
   ul.innerHTML = l.map(function(p){
-    var h = p.header;
+    var h = p.header, m = prof && modeleDeSource(h.id);
     return '<li data-id="' + esc(h.id) + '"' + (h.id === courant ? ' class="mc-ouvert"' : '') + '>' +
       '<button type="button" class="mc-ouvrir"><b>' + esc(h.name || 'Sans titre') + '</b>' +
-        '<span>' + (h.id === courant ? 'ouvert · ' : '') + 'modifié ' + esc(quand(h.modificationTime)) + '</span></button>' +
+        '<span>' + (h.id === courant ? 'ouvert · ' : '') + 'modifié ' + esc(quand(h.modificationTime)) +
+        (m ? ' · 📘 proposé à ' + esc(nomsDesClasses(m.classes)) : '') + '</span></button>' +
+      (prof && modelesProf ? '<button type="button" class="mc-icone mc-publier" title="' +
+        (m ? 'Mettre à jour le modèle proposé aux élèves' : 'Proposer ce projet à des classes') + '">📤</button>' : '') +
       '<button type="button" class="mc-icone mc-renom" title="Renommer ce projet">✏️</button>' +
       '<button type="button" class="mc-icone mc-suppr" title="Supprimer ce projet">🗑️</button>' +
     '</li>';
@@ -616,12 +629,41 @@ function demanderNom(o){
   champ.value = o.valeur || '';
   champ.maxLength = NOM_MAX;
   err.hidden = true;
+
+  /* Modèles du professeur : un choix de départ au-dessus du nom. Choisir un modèle
+     propose son nom, sauf si l'élève a déjà écrit le sien. `o.choisi` porte le choix. */
+  var choix = fen.querySelector('.mc-choix'), nomAuto = '';
+  o.choisi = null;
+  if(o.modeles && o.modeles.length){
+    var origine = estProf() ? 'modèle de l\'établissement' : 'préparé par ton professeur';
+    choix.innerHTML = '<p class="mc-choix-titre">Partir de…</p><div class="mc-choix-liste">' +
+      '<label><input type="radio" name="mcDepart" value="" checked>' +
+        '<span><b>Un projet vide</b><small>avec les blocs de la voiture robot</small></span></label>' +
+      o.modeles.map(function(m){
+        return '<label><input type="radio" name="mcDepart" value="' + esc(m.id) + '">' +
+          '<span><b>📘 ' + esc(m.nom) + '</b><small>' + origine + '</small></span></label>';
+      }).join('') + '</div>';
+    choix.hidden = false;
+    choix.onchange = function(ev){
+      var v = ev.target.value, m = null;
+      o.modeles.forEach(function(x){ if(String(x.id) === v) m = x; });
+      o.choisi = m;
+      if(!champ.value.trim() || champ.value === nomAuto){
+        nomAuto = m ? m.nom.slice(0, NOM_MAX) : '';
+        champ.value = nomAuto;
+      }
+    };
+  }else{
+    choix.hidden = true; choix.innerHTML = ''; choix.onchange = null;
+  }
+
   fen.hidden = false;
   setTimeout(function(){ champ.focus(); champ.select(); }, 30);
 
   return new Promise(function(fin){
     function finir(v){
       fen.hidden = true;
+      choix.onchange = null;
       form.onsubmit = null; annuler.onclick = null;
       fen.removeEventListener('keydown', clavier, true);
       fen.removeEventListener('mousedown', dehors);
@@ -656,11 +698,13 @@ function poserPanneau(){
   panneau.querySelector('[data-a=fermer]').onclick = fermerPanneau;
   panneau.querySelector('[data-a=nouveau]').onclick = function(){ nouveau(); };
 
-  panneau.querySelector('.mc-liste').addEventListener('click', function(ev){
+  poserModeles();
+  panneau.querySelector('.mc-projets').addEventListener('click', function(ev){
     var li = ev.target.closest('li[data-id]');
     if(!li) return;
     var id = li.getAttribute('data-id');
     if(ev.target.closest('.mc-ouvrir')){ ouvrir(id); return; }
+    if(ev.target.closest('.mc-publier')){ publier(id); return; }
     if(ev.target.closest('.mc-renom')){ renommer(id); return; }
     if(ev.target.closest('.mc-suppr')){
       /* Confirmation sur place, pas de confirm() : la fenêtre du navigateur fait peur, et
@@ -675,6 +719,213 @@ function poserPanneau(){
         /* On ne laisse pas l'éditeur sur un projet qui n'existe plus : il le
            réenregistrerait (sans effet, mais l'élève croirait le garder). */
         if(etaitOuvert){ var l = liste(); if(l.length) ouvrir(l[0].header.id); else nouveau(true); }
+      };
+    }
+  });
+}
+
+/* ---------------------------------------------------------------------------
+   12. Modèles proposés par le professeur
+       Le professeur propose un de ses projets à des classes (📤 dans « Mes projets ») ;
+       l'élève le voit dans « Nouveau projet » et en part. MakeCode IMPORTE alors une
+       copie, avec un nouvel identifiant (même mécanisme que le renommage) : elle
+       appartient à l'élève, et le modèle peut être corrigé ou retiré sans y toucher.
+   --------------------------------------------------------------------------- */
+function estProf(){ var e = eleve(); return connecte() && !!e && e.role === 'prof'; }
+
+/* Récupérés au démarrage, puis rafraîchis à chaque « Nouveau projet ». Jamais
+   bloquant : si le serveur tarde, la fenêtre s'ouvre avec ce qu'on connaît déjà. */
+var modelesConnus = [];
+function rafraichirModeles(){
+  if(!connecte()) return Promise.resolve(modelesConnus = []);
+  return req('GET', '/api/makecode/modeles').then(function(r){
+    modelesConnus = r.modeles || [];
+    return modelesConnus;
+  }, function(){ return modelesConnus; });
+}
+function modelesProposes(){
+  if(!connecte()) return Promise.resolve([]);
+  var delai = new Promise(function(ok){ setTimeout(function(){ ok(modelesConnus); }, 1500); });
+  return Promise.race([rafraichirModeles(), delai]);
+}
+
+/* Ce qui ne doit pas suivre la copie : les liens de publication et de synchronisation
+   du projet du professeur, et son historique des versions (ses essais à lui). */
+var CHAMPS_PUBLICATION = ['pubId', 'pubCurrent', 'pubVersions', 'pubPermalink', 'githubId', 'githubTag',
+  'githubCurrent', 'cloudUserId', 'cloudVersion', 'cloudCurrent', 'cloudLastSyncTime',
+  'blobId', 'blobVersion', 'blobCurrent'];
+function copieDepuisModele(prj, nom){
+  var c = copieRenommee(prj, nom), maintenant = Math.round(Date.now() / 1000);
+  CHAMPS_PUBLICATION.forEach(function(k){ delete c.header[k]; });
+  delete c.text._history;
+  c.header.modificationTime = c.header.recentUse = maintenant;
+  return c;
+}
+
+function depuisModele(m, nom){
+  return req('GET', '/api/makecode/modele/' + encodeURIComponent(m.id))
+    .then(function(r){ return decompresser(r.donnees); })
+    .then(function(prj){
+      if(!prj || !prj.header || !prj.text) throw new Error('illisible');
+      return versEditeur({ action: 'importproject', project: copieDepuisModele(prj, nom) });
+    })
+    .then(fermerPanneau, function(err){
+      rafraichirModeles();
+      ouvrirPanneau((err && err.statut === 404 && err.message) ||
+        'Le projet de ton professeur n\'a pas pu être ouvert. Réessaie.');
+    });
+}
+
+/* --- Côté professeur ------------------------------------------------------ */
+var modelesProf = null;   /* {modeles:[{id, source, nom, maj_le, auteur, classes}], classes, max} */
+
+function chargerModelesProf(){
+  if(!estProf()) return Promise.resolve();
+  return req('GET', '/api/prof/makecode/modeles').then(function(r){
+    modelesProf = r; peindreListe();
+  }, function(){});
+}
+function modeleDeSource(id){
+  var r = null;
+  if(modelesProf) modelesProf.modeles.forEach(function(m){ if(m.source === id) r = m; });
+  return r;
+}
+function nomsDesClasses(ids){
+  var noms = [];
+  ((modelesProf && modelesProf.classes) || []).forEach(function(c){ if(ids.indexOf(c.id) >= 0) noms.push(c.nom); });
+  return noms.length ? noms.join(', ') : 'aucune classe';
+}
+
+/* Fenêtre « nom + classes ». `o.envoyer(v)` fait le travail et renvoie une promesse :
+   un refus s'affiche dans la fenêtre, qui ne se ferme qu'une fois l'envoi réussi. */
+function fenetreModele(o){
+  var fen = document.getElementById('mcModeleFenetre'),
+      form = fen.querySelector('form'),
+      champ = fen.querySelector('input[type=text]'),
+      boite = fen.querySelector('.mc-classes'),
+      err = fen.querySelector('.mc-erreur'),
+      ok = fen.querySelector('[data-a=ok]'),
+      annuler = fen.querySelector('[data-a=annuler]');
+
+  fen.querySelector('h2').textContent = o.titre;
+  fen.querySelector('.mc-texte').textContent = o.texte || '';
+  fen.querySelector('.mc-texte').hidden = !o.texte;
+  ok.textContent = o.bouton; ok.disabled = false;
+  champ.value = o.nom || ''; champ.maxLength = NOM_MAX;
+  var classes = (modelesProf && modelesProf.classes) || [];
+  boite.innerHTML = classes.length ? classes.map(function(c){
+    return '<label><input type="checkbox" value="' + c.id + '"' + (o.classes.indexOf(c.id) >= 0 ? ' checked' : '') +
+      '><span>' + esc(c.nom) + '</span></label>';
+  }).join('') : '<p class="mc-texte">Aucune classe dans l\'établissement : crée-les d\'abord dans le tableau de bord.</p>';
+  err.hidden = true;
+  boite.onchange = function(){ err.hidden = true; };
+  fen.hidden = false;
+  setTimeout(function(){ champ.focus(); champ.select(); }, 30);
+
+  function finir(){
+    fen.hidden = true;
+    form.onsubmit = null; annuler.onclick = null;
+    fen.removeEventListener('keydown', clavier, true);
+    fen.removeEventListener('mousedown', dehors);
+  }
+  function clavier(ev){ if(ev.key === 'Escape'){ ev.stopPropagation(); finir(); } }
+  function dehors(ev){ if(ev.target === fen) finir(); }
+  function erreur(msg){ err.textContent = msg; err.hidden = false; }
+
+  form.onsubmit = function(ev){
+    ev.preventDefault();
+    var nom = champ.value.replace(/\s+/g, ' ').trim().slice(0, NOM_MAX);
+    var coches = [].map.call(boite.querySelectorAll('input:checked'), function(i){ return Number(i.value); });
+    if(!nom){ erreur('Écris un nom pour le modèle.'); champ.focus(); return; }
+    if(!coches.length){ erreur('Coche au moins une classe.'); return; }
+    ok.disabled = true;
+    o.envoyer({ nom: nom, classes: coches }).then(function(){
+      finir();
+      rafraichirModeles();
+    }, function(e){
+      ok.disabled = false;
+      erreur((e && e.message && e.statut) ? e.message : 'L\'envoi a échoué. Vérifie la connexion et réessaie.');
+    });
+  };
+  annuler.onclick = finir;
+  fen.addEventListener('keydown', clavier, true);
+  fen.addEventListener('mousedown', dehors);
+}
+
+/* Proposer un projet (ou remettre à jour son modèle). La version envoyée est celle du
+   moment : « saveproject » d'abord si c'est le projet ouvert, comme pour renommer. */
+function publier(id){
+  if(!projets[id] || !modelesProf) return;
+  var m = modeleDeSource(id);
+  fenetreModele({
+    titre: m ? 'Mettre à jour le modèle' : 'Proposer ce projet à des classes',
+    texte: m
+      ? 'Le modèle prend la version actuelle de ton projet. Les élèves qui en sont déjà partis gardent leur copie.'
+      : 'Tes élèves le retrouveront dans « Nouveau projet » et en partiront pour créer leur propre copie. Ton projet ne change pas.',
+    nom: m ? m.nom : projets[id].header.name,
+    classes: m ? m.classes : [],
+    bouton: m ? 'Mettre à jour' : 'Proposer',
+    envoyer: function(v){
+      var avant = id === courant ? versEditeur({ action: 'saveproject' }).catch(function(){}) : Promise.resolve();
+      return avant.then(function(){
+        var p = projets[id], t = {}, f;
+        if(!p){ var e = new Error('Ce projet n\'existe plus.'); e.statut = 404; throw e; }
+        for(f in p.text) if(f !== '_history') t[f] = p.text[f];
+        return compresser({ header: p.header, text: t });
+      }).then(function(d){
+        return req('PUT', '/api/prof/makecode/modele', { source: id, nom: v.nom, donnees: d, classes: v.classes });
+      }).then(function(r){ modelesProf = r; peindreListe(); });
+    }
+  });
+}
+
+function modifierModele(m){
+  fenetreModele({
+    titre: 'Modifier le modèle',
+    texte: 'Pour changer son contenu, modifie ton projet puis clique sur 📤 à côté de lui.',
+    nom: m.nom, classes: m.classes, bouton: 'Enregistrer',
+    envoyer: function(v){
+      return req('PATCH', '/api/prof/makecode/modele/' + m.id, { nom: v.nom, classes: v.classes })
+        .then(function(r){ modelesProf = r; peindreListe(); });
+    }
+  });
+}
+
+function peindreModeles(){
+  var bloc = panneau.querySelector('.mc-bloc-modeles');
+  bloc.hidden = !estProf();
+  if(bloc.hidden) return;
+  var ul = bloc.querySelector('.mc-modeles');
+  if(!modelesProf){ ul.innerHTML = '<li class="mc-vide">Chargement…</li>'; return; }
+  if(!modelesProf.modeles.length){ ul.innerHTML = '<li class="mc-vide">Aucun modèle proposé pour l\'instant.</li>'; return; }
+  ul.innerHTML = modelesProf.modeles.map(function(m){
+    var maj = quand(Math.round(Date.parse(m.maj_le) / 1000));
+    return '<li data-modele="' + m.id + '"><div class="mc-infos"><b>📘 ' + esc(m.nom) + '</b>' +
+        '<span>' + esc(nomsDesClasses(m.classes)) + ' · mis à jour ' + esc(maj) +
+        (m.auteur ? ' · par ' + esc(m.auteur) : '') + '</span></div>' +
+      '<button type="button" class="mc-icone mc-modif" title="Changer le nom ou les classes">✏️</button>' +
+      '<button type="button" class="mc-icone mc-retirer" title="Ne plus proposer ce modèle">🗑️</button>' +
+    '</li>';
+  }).join('');
+}
+
+function poserModeles(){
+  panneau.querySelector('.mc-modeles').addEventListener('click', function(ev){
+    var li = ev.target.closest('li[data-modele]');
+    if(!li || !modelesProf) return;
+    var m = null, id = Number(li.getAttribute('data-modele'));
+    modelesProf.modeles.forEach(function(x){ if(x.id === id) m = x; });
+    if(!m) return;
+    if(ev.target.closest('.mc-modif')){ modifierModele(m); return; }
+    if(ev.target.closest('.mc-retirer')){
+      li.innerHTML = '<span class="mc-question">Ne plus proposer « ' + esc(m.nom) + ' » ? ' +
+        'Les élèves qui en sont partis gardent leur projet.</span>' +
+        '<button type="button" class="mc-non">Non</button><button type="button" class="mc-oui">Oui, retirer</button>';
+      li.querySelector('.mc-non').onclick = peindreModeles;
+      li.querySelector('.mc-oui').onclick = function(){
+        req('DELETE', '/api/prof/makecode/modele/' + m.id).then(function(r){
+          modelesProf = r; peindreListe(); rafraichirModeles();
+        }, function(e){ ouvrirPanneau((e && e.statut && e.message) || 'Le modèle n\'a pas pu être retiré. Réessaie.'); });
       };
     }
   });
@@ -713,6 +964,7 @@ function demarrer(){
        charger quoi que ce soit. */
     figerIdentite();
     projetsPrets = chargerProjets().catch(function(){});
+    rafraichirModeles();
 
     cadre = document.createElement('iframe');
     cadre.id = 'mcCadre';

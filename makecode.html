@@ -67,7 +67,8 @@
   .mc-compte{color:var(--gris);font-size:.82rem;font-weight:700;margin-right:auto}
   .mc-msg{margin:0 20px 10px;background:#fffbf0;border:2px solid #f3d27a;border-radius:12px;padding:9px 12px;
     font-size:.86rem;font-weight:700;line-height:1.4}
-  .mc-liste{list-style:none;margin:0;padding:0 12px;overflow:auto}
+  .mc-defile{overflow:auto;min-height:0}
+  .mc-liste{list-style:none;margin:0;padding:0 12px}
   .mc-liste li{display:flex;align-items:center;gap:8px;border:2px solid var(--trait);border-radius:14px;
     margin:0 0 8px;padding:4px 6px 4px 4px}
   .mc-liste li.mc-ouvert{border-color:var(--bleu);background:#f4f8ff}
@@ -83,6 +84,13 @@
   .mc-non{background:#eef3f9;color:#3c4d61}
   .mc-oui{background:#fee2e2;color:#b91c1c}
   .mc-vide{justify-content:center;color:var(--gris);font-weight:700;padding:18px!important}
+  .mc-bloc-modeles{margin:14px 0 4px;padding-top:12px;border-top:2px dashed var(--trait)}
+  .mc-bloc-modeles[hidden]{display:none}
+  .mc-bloc-modeles h3{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.05rem;margin:0 20px 4px}
+  .mc-aide{margin:0 20px 10px;color:var(--gris);font-size:.8rem;line-height:1.45}
+  .mc-infos{flex:1;min-width:0;padding:8px 10px}
+  .mc-infos b{display:block;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mc-infos span{color:var(--gris);font-size:.8rem;font-weight:700}
   .mc-pied{padding:12px 20px 18px;display:flex;gap:9px;justify-content:flex-end;border-top:2px solid var(--trait);
     margin-top:4px}
   .mc-note{padding:0 20px 16px;margin:0;color:var(--gris);font-size:.78rem;line-height:1.45}
@@ -95,19 +103,35 @@
   .mc-nom[hidden]{display:none}
 
   /* Fenêtre « nom du projet » : au-dessus du panneau, qu'elle peut recouvrir. */
-  #mcNomFenetre{position:fixed;inset:0;z-index:2147481200;background:rgba(20,30,42,.55);display:flex;
+  #mcNomFenetre,#mcModeleFenetre{position:fixed;inset:0;z-index:2147481200;background:rgba(20,30,42,.55);display:flex;
     align-items:flex-start;justify-content:center;padding:90px 16px 16px}
-  #mcNomFenetre[hidden]{display:none}
-  #mcNomFenetre form{background:#fff;border-radius:20px;width:min(420px,100%);padding:22px 22px 18px;
+  #mcNomFenetre[hidden],#mcModeleFenetre[hidden]{display:none}
+  #mcNomFenetre form,#mcModeleFenetre form{background:#fff;border-radius:20px;width:min(420px,100%);padding:22px 22px 18px;
     box-shadow:0 24px 60px rgba(15,25,38,.35)}
-  #mcNomFenetre h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.3rem;margin:0 0 6px}
+  #mcNomFenetre h2,#mcModeleFenetre h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.3rem;margin:0 0 6px}
   .mc-texte{margin:0 0 14px;color:var(--gris);font-size:.88rem;line-height:1.4}
-  #mcNomFenetre label{display:block;font-weight:800;font-size:.82rem;margin:0 0 5px}
-  #mcNomFenetre input{width:100%;border:2px solid var(--trait);border-radius:12px;padding:11px 13px;
+  #mcNomFenetre form>label,#mcModeleFenetre form>label{display:block;font-weight:800;font-size:.82rem;margin:0 0 5px}
+  #mcNomFenetre input[type=text],#mcModeleFenetre input[type=text]{width:100%;border:2px solid var(--trait);border-radius:12px;padding:11px 13px;
     font-family:inherit;font-size:1rem;font-weight:700;color:var(--encre);background:#fbfdff}
-  #mcNomFenetre input:focus{outline:none;border-color:var(--bleu);background:#fff}
+  #mcNomFenetre input[type=text]:focus,#mcModeleFenetre input[type=text]:focus{outline:none;border-color:var(--bleu);background:#fff}
   .mc-erreur{margin:10px 0 0;background:#fef2f2;border:2px solid #fecaca;color:#b91c1c;border-radius:12px;
     padding:8px 12px;font-size:.84rem;font-weight:700}
+  /* Point de départ d'un nouveau projet : vide, ou un modèle du professeur. */
+  .mc-choix[hidden]{display:none}
+  .mc-choix-titre,.mc-sous-titre{font-weight:800;font-size:.82rem;margin:0 0 5px}
+  .mc-sous-titre{margin-top:14px}
+  .mc-choix-liste{display:flex;flex-direction:column;gap:6px;max-height:min(40dvh,260px);overflow:auto;margin:0 0 14px}
+  .mc-choix-liste label{display:flex;align-items:center;gap:10px;border:2px solid var(--trait);border-radius:12px;
+    padding:8px 11px;cursor:pointer}
+  .mc-choix-liste label:has(input:checked){border-color:var(--bleu);background:#f4f8ff}
+  .mc-choix-liste span{min-width:0}
+  .mc-choix-liste b{display:block;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mc-choix-liste small{color:var(--gris);font-weight:700;font-size:.78rem}
+  .mc-classes{display:flex;flex-wrap:wrap;gap:6px}
+  .mc-classes label{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--trait);border-radius:999px;
+    padding:5px 12px 5px 9px;font-weight:800;font-size:.86rem;cursor:pointer}
+  .mc-classes label:has(input:checked){border-color:var(--bleu);background:#f4f8ff}
+  .mc-boutons button:disabled{opacity:.55;cursor:wait}
   .mc-boutons{display:flex;gap:9px;justify-content:flex-end;margin-top:16px}
   .mc-boutons .btn{padding:9px 16px;font-size:.9rem}
   .mc-boutons [hidden]{display:none}
@@ -145,7 +169,16 @@
       <button type="button" class="btn" data-a="fermer">Fermer</button>
     </div>
     <p class="mc-msg" hidden></p>
-    <ul class="mc-liste"></ul>
+    <div class="mc-defile">
+      <ul class="mc-liste mc-projets"></ul>
+      <!-- Enseignant seulement (scripts/makecode.js, section 12). -->
+      <section class="mc-bloc-modeles" hidden>
+        <h3>📘 Modèles proposés aux élèves</h3>
+        <p class="mc-aide">Clique sur 📤 à côté d'un de tes projets pour le proposer à des classes :
+          tes élèves le retrouveront dans « Nouveau projet » et en partiront pour créer leur propre copie.</p>
+        <ul class="mc-liste mc-modeles"></ul>
+      </section>
+    </div>
     <div class="mc-pied">
       <button type="button" class="btn primaire" data-a="nouveau">➕ Nouveau projet</button>
     </div>
@@ -160,8 +193,25 @@
   <form role="dialog" aria-modal="true" aria-labelledby="mcNomTitre" novalidate>
     <h2 id="mcNomTitre"></h2>
     <p class="mc-texte"></p>
+    <div class="mc-choix" hidden></div>
     <label for="mcNomChamp">Nom du projet</label>
     <input id="mcNomChamp" type="text" autocomplete="off" spellcheck="false" placeholder="Par exemple : Robot suiveur de ligne">
+    <p class="mc-erreur" hidden></p>
+    <div class="mc-boutons">
+      <button type="button" class="btn" data-a="annuler">Annuler</button>
+      <button type="submit" class="btn primaire" data-a="ok"></button>
+    </div>
+  </form>
+</div>
+
+<div id="mcModeleFenetre" hidden>
+  <form role="dialog" aria-modal="true" aria-labelledby="mcModeleTitre" novalidate>
+    <h2 id="mcModeleTitre"></h2>
+    <p class="mc-texte"></p>
+    <label for="mcModeleNom">Nom du modèle</label>
+    <input id="mcModeleNom" type="text" autocomplete="off" spellcheck="false">
+    <p class="mc-sous-titre">Proposé aux classes</p>
+    <div class="mc-classes"></div>
     <p class="mc-erreur" hidden></p>
     <div class="mc-boutons">
       <button type="button" class="btn" data-a="annuler">Annuler</button>
