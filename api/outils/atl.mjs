@@ -319,8 +319,8 @@ const commandes = {
      Le serveur fait déjà cette purge tout seul, une fois par jour : cette commande
      sert à REGARDER ce qui va partir, ou à forcer le passage tout de suite. */
   async purger() {
-    const mois = Number(options.mois || process.env.CONSERVATION_MOIS || 24);
-    if (!Number.isFinite(mois) || mois < 1) throw new Error('Usage : purger [--mois 24] [--oui]');
+    const mois = Number(options.mois || process.env.CONSERVATION_MOIS || 60);
+    if (!Number.isFinite(mois) || mois < 1) throw new Error('Usage : purger [--mois 60] [--oui]');
 
     const vises = await db.q(
       `select identifiant, cree_le from comptes

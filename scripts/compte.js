@@ -375,7 +375,8 @@ function vueConnexion(){
         "sur un serveur en France, mis en place pour ton collège. Ça sert à deux choses : "+
         "que tu retrouves ta progression sur n'importe quel poste, et que ton professeur "+
         "puisse t'aider si tu bloques. Rien d'autre n'est collecté, rien n'est transmis à "+
-        "qui que ce soit, et tout est effacé au bout de deux ans.</p>"+
+        "qui que ce soit, et tout est effacé à la fin de ta 3e (ou de ton CAP), au plus "+
+        "tard cinq ans après la création de ton compte.</p>"+
         "<p>Tu peux demander à voir, corriger ou effacer tes données : parles-en à ton "+
         "professeur ou au chef d'établissement.</p></details>"+
     '</div>';

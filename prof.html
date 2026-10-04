@@ -188,7 +188,28 @@
   .imp-apercu td{padding:4px 8px;border-bottom:1px solid var(--trait)}
   .imp-apercu code{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
 
-  @media (max-width:560px){ .grille{grid-template-columns:1fr} .barre h1{font-size:1.05rem} }
+  /* ---- nouvelle année ---- */
+  .na-liste{display:flex;flex-direction:column;gap:6px;margin-bottom:4px}
+  .na-ligne{display:grid;grid-template-columns:minmax(90px,1fr) 150px minmax(220px,1.4fr);gap:12px;
+        align-items:center;border:2px solid var(--trait);border-radius:12px;padding:7px 12px;background:#fbfdff}
+  .na-ligne.passe{border-color:#bfd3fb;background:#f3f7ff}
+  .na-ligne.sup{border-color:#fecaca;background:#fef6f6}
+  .na-ligne.absente{opacity:.6}
+  .na-classe{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:1rem}
+  .na-nb{font-size:.82rem;font-weight:800;color:var(--gris)}
+  .boite .na-ligne select{padding:6px 10px;font-size:.88rem}
+  .msg.na-resume{background:#f1f5fa;color:var(--encre);margin:12px 0 0}
+  .na-bilan{margin:0 0 14px;padding-left:22px;line-height:1.7;font-weight:700}
+  .na-partants{margin-top:8px}
+  .na-partants summary{cursor:pointer}
+  .na-partants ul{margin:6px 0 0;padding-left:20px;columns:2;font-weight:700}
+  .na-partants small{font-weight:600;opacity:.75}
+  .boite .na-coche{display:flex;align-items:center;gap:8px;font-size:.9rem;margin:0 0 12px;cursor:pointer}
+  .boite .na-coche input{width:18px;height:18px;margin:0;accent-color:var(--rouge)}
+
+  @media (max-width:560px){ .grille{grid-template-columns:1fr} .barre h1{font-size:1.05rem}
+    .na-ligne{grid-template-columns:1fr auto;gap:6px 12px} .na-ligne select{grid-column:1 / -1}
+    .na-partants ul{columns:1} }
 </style>
 </head>
 <body>
@@ -206,6 +227,7 @@
   <a class="btn" href="index.html">🏠 Accueil</a>
   <button class="btn" id="bNouveau">＋ Nouveau compte</button>
   <button class="btn" id="bPronote">📋 Importer de Pronote</button>
+  <button class="btn" id="bAnnee" title="Faire passer les élèves dans la classe supérieure">🎓 Nouvelle année</button>
   <button class="btn" id="bQuitter">Déconnexion</button>
 </div>
 
@@ -907,6 +929,7 @@ $('#cherche').addEventListener('input', function(){ etat.cherche = this.value; p
 $('#tri').addEventListener('change', function(){ etat.tri = this.value; peindre(); });
 $('#bNouveau').addEventListener('click', fenetreNouveau);
 $('#bPronote').addEventListener('click', function(){ window.ImportPronote.ouvrir(); });
+$('#bAnnee').addEventListener('click', function(){ window.NouvelleAnnee.ouvrir(); });
 $('#bQuitter').addEventListener('click', function(){
   minuteurs.forEach(clearInterval);
   Store.deconnexion().then(function(){ location.href = 'index.html'; });
@@ -921,7 +944,8 @@ if(!Store.enLigne()){
   setTimeout(demarrer, 5000);
 }
 </script>
-<!-- Après le script de la page : l'import se sert de ses api(), ouvrir(), etat… -->
+<!-- Après le script de la page : l'import et la nouvelle année se servent de ses api(), ouvrir(), etat… -->
 <script src="scripts/import-pronote.js"></script>
+<script src="scripts/nouvelle-annee.js"></script>
 </body>
 </html>
