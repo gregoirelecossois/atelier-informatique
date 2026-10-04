@@ -227,6 +227,10 @@ var REGLES = [
   { texte: 'un chiffre',                          ok: function(m){ return /[0-9]/.test(m); } },
   { texte: 'un symbole (! ? @ # € + - _ …)',      ok: function(m){ return /[^0-9A-Za-zÀ-ÖØ-öø-ÿ\s]/.test(m); } }
 ];
+/* Lu par l'import Pronote du tableau de bord (scripts/import-pronote.js), qui recopie
+   ces règles sur les fiches d'identifiants projetées aux élèves : une seule liste à
+   tenir ici plutôt qu'une troisième copie. */
+window.ATL_REGLES_MDP = REGLES.map(function(r){ return r.texte; });
 
 /* `premiere` : première connexion — la fenêtre est bloquante et ne demande pas le mot
    de passe actuel (l'élève vient de s'en servir pour entrer). Sinon c'est un changement
