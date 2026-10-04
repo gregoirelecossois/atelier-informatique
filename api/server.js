@@ -92,13 +92,13 @@ const CLE_OK = /^[a-z0-9_]{1,64}$/;
 
 const SESSION_MS = 12 * 60 * 60 * 1000;   /* une journée de classe, largement */
 
-/* Durée de conservation d'un compte élève, comptée depuis sa CRÉATION (RGPD art. 5.1.e).
-   Passé ce délai le compte est supprimé, progression et trophées compris. Compter depuis
-   la création plutôt que depuis la dernière connexion est un choix : c'est une échéance
-   connue d'avance, la même pour tout le monde, qu'on peut annoncer aux familles dans la
-   mention d'information — mais un élève encore présent au bout de deux ans repart de zéro.
-   Il suffit alors de lui recréer un compte. */
-const CONSERVATION_MOIS = Number(process.env.CONSERVATION_MOIS || 24);
+/* Durée de conservation d'un compte élève (RGPD art. 5.1.e). Un compte vit jusqu'à la fin
+   du cursus : c'est la « 🎓 Nouvelle année » qui supprime les comptes de 3e et de CAP2
+   (comptes.js, passerAnneeSuivante). Ce délai-ci n'est que le PLAFOND, compté depuis la
+   CRÉATION : une échéance connue d'avance, annonçable aux familles, qui rattrape les
+   comptes oubliés — un élève parti en cours d'année, une nouvelle année jamais lancée.
+   60 mois = les quatre années de collège et un redoublement. */
+const CONSERVATION_MOIS = Number(process.env.CONSERVATION_MOIS || 60);
 
 /* Durée de conservation du journal des connexions et des actions enseignantes. Il
    contient identifiants et adresses IP : douze mois, la durée usuelle pour des traces

@@ -28,7 +28,7 @@ Durées de conservation, appliquées automatiquement par le serveur :
 
 | Donnée | Durée |
 |---|---|
-| Compte élève, progression, trophées | 24 mois après la **création** du compte (`CONSERVATION_MOIS`) |
+| Compte élève, progression, trophées | jusqu'à la **fin du cursus** : supprimé à la sortie de 3e ou de CAP2 par la « 🎓 Nouvelle année » ; **au plus tard 60 mois** après sa création (`CONSERVATION_MOIS`), automatiquement |
 | Projets MakeCode | supprimés avec le compte (même échéance), ou plus tôt par l'élève |
 | Journal des connexions et actions | 12 mois (`JOURNAL_MOIS`) |
 | Session | 12 heures |
@@ -226,7 +226,7 @@ très largement : 300 élèves occupent moins de 5 Mo.
    | `PGUSER` / `PGPASSWORD` / `PGDATABASE` | ceux de l'étape 1 |
    | `POIVRE` | un secret généré une fois (voir ci-dessous) |
    | `ORIGINES` | `https://gregoirelecossois.github.io` |
-   | `CONSERVATION_MOIS` | `24` |
+   | `CONSERVATION_MOIS` | `60` |
    | `JOURNAL_MOIS` | `12` |
 
    Génère le poivre **une seule fois** et garde-le dans ton gestionnaire de mots de passe :
@@ -752,10 +752,14 @@ de la page d'accueil annoncent le même nombre de niveaux.
 pg_dump -Fc "$PGDATABASE" > ~/sauvegardes/atelier-$(date +%F).dump
 ```
 
-**Purge — automatique, rien à lancer.** Un compte élève est supprimé **24 mois après sa
-création**, progression et trophées compris. Le serveur s'en charge au démarrage puis une
-fois par jour, et chaque passage laisse une trace dans la table `journal`. La durée se
-règle avec `CONSERVATION_MOIS`.
+**Fin de vie d'un compte.** Un compte élève vit jusqu'à la fin de son cursus : la
+« 🎓 Nouvelle année » du tableau de bord supprime les comptes de 3e et de CAP2 (§ 4).
+
+**Purge — automatique, rien à lancer.** Filet de sécurité : un compte élève est supprimé
+**60 mois après sa création** quoi qu'il arrive, progression et trophées compris — un élève
+parti en cours de scolarité, une nouvelle année jamais lancée. Le serveur s'en charge au
+démarrage puis une fois par jour, et chaque passage laisse une trace dans la table
+`journal`. La durée se règle avec `CONSERVATION_MOIS`.
 
 Pour voir d'avance ce qui va partir, sans rien supprimer :
 
@@ -769,10 +773,13 @@ Et pour forcer le passage tout de suite :
 node outils/atl.mjs purger --oui
 ```
 
-> **À savoir** : le délai court depuis la **création**, pas depuis la dernière connexion.
+> **À savoir** : le plafond court depuis la **création**, pas depuis la dernière connexion.
 > C'est une échéance connue d'avance, identique pour tous, qu'on peut annoncer aux
-> familles dans la mention d'information. En contrepartie, un élève encore présent au
-> bout de deux ans repart de zéro : il suffit de lui recréer un compte.
+> familles. 60 mois couvrent les quatre années de collège et un redoublement ; au-delà
+> (deux redoublements), l'élève repart d'un compte neuf. Un élève qui quitte le collège
+> en cours de scolarité se supprime à la main depuis sa fiche — sinon il attend le plafond.
+> Le plafond était de 24 mois jusqu'au 4 octobre 2026 : un élève créé en 6e aurait perdu
+> son compte en 4e.
 
 ---
 

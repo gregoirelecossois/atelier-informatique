@@ -103,7 +103,8 @@ create index if not exists presence_vu_idx on presence(vu_le desc);
 --
 -- ⚠ C'est la seule table qui contienne du TEXTE LIBRE écrit par l'élève : le nom du projet,
 -- et ce qu'il fait afficher à sa carte. Même durée de vie que le compte (cascade), donc
--- même purge à 24 mois ; à mentionner au registre et dans la mention d'information.
+-- même fin de vie (nouvelle année ou plafond de 60 mois) ; à mentionner au registre
+-- et dans la mention d'information.
 create table if not exists projets_makecode (
   compte_id int  not null references comptes(id) on delete cascade,
   id        text not null,
