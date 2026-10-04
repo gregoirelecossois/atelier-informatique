@@ -530,6 +530,18 @@ Ce qu'on y fait :
   le mot de passe d'un autre professeur, c'est prendre sa place. Cette seule règle remplace
   les deux garde-fous d'avant (« on ne se désactive pas soi-même », « on ne supprime pas son
   propre compte ») : un enseignant n'est pas un élève, il ne peut donc plus se viser ;
+- **importer une liste Pronote** (« 📋 Importer de Pronote ») : on colle le tableau des
+  élèves copié depuis Pronote (colonnes Nom, Prénom, Classe ; les autres sont ignorées),
+  on coche les classes voulues et on choisit pour chacune la classe de l'atelier — « 5EME A »
+  propose d'office « 5e » si elle existe, sinon de créer « 5EME A ». Un élève qui a déjà un
+  compte est décoché. Les comptes passent **un par un** par `POST /api/prof/eleves`, comme
+  « ＋ Nouveau compte » : aucune route nouvelle, rien à redéployer, et deux homonymes ne
+  peuvent pas se disputer le même identifiant. À la fin, deux fichiers fabriqués dans le
+  navigateur (`scripts/bureautique.js`, sans bibliothèque) : un **Word à projeter**, une
+  page paysage par classe avec identifiant, mot de passe provisoire et la marche à suivre ;
+  et un **Excel**, le tableau des comptes créés (nom, prénom, classe Pronote, classe de
+  l'atelier, identifiant, mot de passe provisoire). Les mots de passe ne vivent que dans la mémoire de la fenêtre : elle
+  demande confirmation avant de se fermer tant qu'aucun fichier n'a été téléchargé ;
 - **ranger les classes** : les pastilles de filtre se **glissent** dans l'ordre voulu, et
   cet ordre est celui de l'année scolaire, pas celui de l'alphabet. Il part au serveur en
   une seule requête (`PUT /api/prof/classes/ordre`) : un glisser déplace potentiellement
@@ -548,8 +560,8 @@ suppression d'une classe y note le nombre d'élèves détachés.
 
 ## 5. Créer les comptes en ligne de commande
 
-Le tableau de bord crée les comptes un par un ; l'import d'une classe entière, la purge et
-l'amorçage restent en SSH depuis `~/api`.
+Le tableau de bord crée les comptes un par un ou depuis une liste Pronote collée (§ 4) ;
+la purge, l'amorçage et l'import d'un fichier CSV restent en SSH depuis `~/api`.
 
 **Toute commande qui touche une classe ou un compte sait dans quel établissement elle
 travaille.** `--etab` accepte un numéro ou un nom. Tant qu'il n'y a qu'**un** établissement
