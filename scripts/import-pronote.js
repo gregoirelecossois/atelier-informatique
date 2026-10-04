@@ -4,9 +4,8 @@
  * les comptes sont créés d'un coup. À la fin, deux fichiers :
  *   - un Word à PROJETER : une page par classe, identifiant et mot de passe provisoire
  *     en gros caractères, avec la marche à suivre pour choisir son propre mot de passe ;
- *   - un Excel pour l'application « Comptes élèves » (import-mdp-reseau-educonnect), qui
- *     sait en recopier les identifiants dans les colonnes « Atelier Informatique » du
- *     classeur, avant l'export vers KeePass.
+ *   - un Excel : le tableau des comptes créés, une ligne par élève, à archiver ou à
+ *     reprendre dans un autre outil.
  *
  * Aucune route nouvelle côté serveur : chaque compte passe par POST /api/prof/eleves,
  * exactement comme « ＋ Nouveau compte ». Même identifiant fabriqué, même mot de passe,
@@ -361,9 +360,8 @@ function fichierWord(){
   imp.telecharge = true;
 }
 
-/* Colonnes lues par l'étape « Atelier informatique » de l'application Comptes élèves.
-   La classe PRONOTE y figure telle quelle : c'est elle que l'application sait associer
-   aux feuilles de son classeur (« 5EME A » → feuille 5eme). */
+/* Une ligne par élève, avec la classe PRONOTE telle quelle à côté de celle de l'atelier :
+   c'est elle qui permet de rapprocher ce tableau des autres listes de l'établissement. */
 function fichierExcel(){
   var lignes = [];
   parClasse().forEach(function(g){
@@ -402,10 +400,8 @@ function ecranResultat(){
       'fois tes élèves connectés — à la première connexion, chacun choisit le sien et le provisoire ne sert plus.</div>' +
       '<div class="imp-fichiers">' +
         '<button class="btn primaire" id="iWord">📄 Fiches à projeter (Word)</button>' +
-        '<button class="btn" id="iExcel">📊 Tableau pour « Comptes élèves » (Excel)</button>' +
+        '<button class="btn" id="iExcel">📊 Tableau des comptes (Excel)</button>' +
       '</div>' +
-      '<p class="aide imp-aide">Le fichier Excel s\'importe dans l\'application <b>Comptes élèves</b>, ' +
-        'étape facultative « Atelier informatique », avant l\'export vers KeePass.</p>' +
       '<details class="imp-apercu"><summary>Voir les identifiants à l\'écran</summary>' +
         '<table>' + apercu + '</table></details>' : '') +
     '<div class="actes"><button class="btn primaire pousse" id="iFermer">Fermer</button></div>', 'large', retenir);

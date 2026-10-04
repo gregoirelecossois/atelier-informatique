@@ -539,9 +539,8 @@ Ce qu'on y fait :
   peuvent pas se disputer le même identifiant. À la fin, deux fichiers fabriqués dans le
   navigateur (`scripts/bureautique.js`, sans bibliothèque) : un **Word à projeter**, une
   page paysage par classe avec identifiant, mot de passe provisoire et la marche à suivre ;
-  et un **Excel** que l'application « Comptes élèves » (étape facultative « Atelier
-  informatique ») recopie dans les colonnes Atelier Informatique / MDP de son classeur avant
-  l'export KeePass. Les mots de passe ne vivent que dans la mémoire de la fenêtre : elle
+  et un **Excel**, le tableau des comptes créés (nom, prénom, classe Pronote, classe de
+  l'atelier, identifiant, mot de passe provisoire). Les mots de passe ne vivent que dans la mémoire de la fenêtre : elle
   demande confirmation avant de se fermer tant qu'aucun fichier n'a été téléchargé ;
 - **ranger les classes** : les pastilles de filtre se **glissent** dans l'ordre voulu, et
   cet ordre est celui de l'année scolaire, pas celui de l'alphabet. Il part au serveur en

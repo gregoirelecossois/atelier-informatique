@@ -219,8 +219,8 @@ function docxIdentifiants(classes, options){
  *
  * Les textes passent par la table des chaînes partagées (sharedStrings) plutôt qu'en
  * « inlineStr » : c'est la forme qu'Excel écrit lui-même, donc celle que tous les
- * lecteurs comprennent — y compris l'application « Comptes élèves », qui ne lit pas les
- * chaînes en ligne.
+ * lecteurs comprennent, y compris les plus rudimentaires, qui ignorent les chaînes en
+ * ligne.
  *
  * entetes : ['NOM', 'Prénom', …] ; lignes : [['DUPONT', 'Léa', …], …] ; largeurs en caractères
  */
