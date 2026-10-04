@@ -20,6 +20,7 @@ API est une couche qu'on ajoute, jamais un passage obligé.
 | `sessions` | empreinte du jeton, expiration |
 | `journal` | connexions, créations, suppressions (traçabilité), et l'établissement concerné |
 | `projets_makecode` | les projets MakeCode de l'élève, compressés — voir § 2.8 |
+| `modeles_makecode`, `modeles_makecode_classes` | les projets que les enseignants proposent à leurs classes — voir § 2.8 |
 
 Rien d'autre : pas de date de naissance, pas d'adresse, pas d'e-mail élève, pas d'INE,
 aucun champ de commentaire libre. Voir les commentaires de `schema.sql`.
@@ -425,6 +426,34 @@ Routes (tout compte connecté, chacun ne voit que les siens) :
 | `GET /api/makecode/projets` | tous les projets de l'élève, compressés, et le quota |
 | `PUT /api/makecode/projet` | `{id, donnees}` → enregistre un projet |
 | `DELETE /api/makecode/projet` | `{id}` → le supprime |
+| `GET /api/makecode/modeles` | les modèles proposés à la classe de l'élève (enseignant : tous ceux du collège) |
+| `GET /api/makecode/modele/:id` | un modèle, compressé, pour en partir |
+
+**Modèles proposés par l'enseignant.** Connecté avec son compte enseignant sur
+`makecode.html`, le professeur prépare un projet comme d'habitude, puis clique sur 📤
+à côté de lui dans « Mes projets » et coche les classes. Les élèves de ces classes le
+retrouvent dans « Nouveau projet » (« Partir de… ») : MakeCode en importe une **copie**,
+avec un nouvel identifiant, qui leur appartient et se range avec leurs autres projets.
+
+- Rien n'est écrit chez l'élève tant qu'il n'a pas choisi : pas de place prise sur ses
+  30 projets, aucun risque d'écraser un travail commencé.
+- Recliquer sur 📤 après avoir modifié le projet **met à jour** le modèle (même projet
+  d'origine = même modèle). Les copies déjà faites ne bougent pas.
+- Un modèle appartient à l'**établissement**, pas à son auteur : les collègues du même
+  collège le voient (section « Modèles proposés aux élèves » de leur panneau), peuvent
+  en changer le nom ou les classes, ou le retirer. Il survit à la suppression du compte
+  de son auteur.
+- Ni l'historique des versions du projet du professeur ni ses liens de partage ne
+  suivent la copie.
+
+Routes enseignant (rôle `prof`, limitées à l'établissement comme toutes les autres) :
+
+| Route | Rôle |
+|---|---|
+| `GET /api/prof/makecode/modeles` | les modèles du collège, avec leurs classes, et la liste des classes |
+| `PUT /api/prof/makecode/modele` | `{source, nom, donnees, classes}` → publie, ou met à jour le modèle de ce projet |
+| `PATCH /api/prof/makecode/modele/:id` | `{nom?, classes?}` → renomme, change les classes |
+| `DELETE /api/prof/makecode/modele/:id` | retire le modèle (les copies des élèves restent) |
 
 **Ménager le serveur.** MakeCode enregistre à chaque bloc posé. La page n'envoie
 qu'après 5 s de calme (jamais plus de 30 s sans sauvegarde), seulement si le projet a
@@ -437,7 +466,8 @@ ajoute ses propres garde-fous :
 | Projets par élève | 30 | `MC_PROJETS_MAX` |
 | Taille d'un projet (compressé) | 64 Ko — au-delà, la page renvoie sans l'historique des versions | — |
 | Écritures par élève | 30 par minute | — |
-| Place totale des projets | 40 Mo, puis refus des nouveaux envois | `MC_TABLE_MAX_MO` |
+| Modèles par établissement | 60 | `MC_MODELES_MAX` |
+| Place totale des projets et des modèles | 40 Mo, puis refus des nouveaux envois | `MC_TABLE_MAX_MO` |
 
 Le dernier protège **tout le reste** : le plan gratuit a 100 Mo pour tout, et un disque
 plein ferait échouer aussi l'enregistrement de la progression des ateliers. Les projets
@@ -455,6 +485,10 @@ l'extension sur GitHub et ses ressources).
 - `projets_makecode` est la seule table qui contienne du **texte libre écrit par
   l'élève** (le nom du projet, ce qu'il fait afficher à sa carte). Finalité : retrouver ses
   programmes d'un poste à l'autre. Même durée de vie que le compte.
+- `modeles_makecode` ne contient **aucune donnée d'élève** : ce sont des projets écrits
+  par les enseignants, rattachés à l'établissement. Ils restent jusqu'à ce qu'un
+  enseignant les retire, ou jusqu'à la suppression de l'établissement. Publier, modifier
+  ou retirer un modèle est inscrit au journal.
 - L'éditeur étant servi par Microsoft, ouvrir `makecode.html` envoie l'adresse IP du
   poste à Microsoft — **exactement comme** ouvrir `makecode.microbit.org` directement,
   ce que les élèves font déjà. En mode contrôleur, MakeCode n'enregistre pas les projets
