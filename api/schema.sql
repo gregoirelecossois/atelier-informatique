@@ -96,6 +96,22 @@ create table if not exists presence (
 );
 create index if not exists presence_vu_idx on presence(vu_le desc);
 
+-- Projets MakeCode (makecode.html). Une ligne par projet, `id` étant l'identifiant que
+-- MakeCode donne lui-même au projet. `donnees` est le projet compressé par le navigateur
+-- (gzip puis base64, préfixe « gz: ») : le serveur le range sans l'ouvrir. Il n'a pas à
+-- savoir ce qu'un élève a programmé — seulement à le lui rendre sur un autre poste.
+--
+-- ⚠ C'est la seule table qui contienne du TEXTE LIBRE écrit par l'élève : le nom du projet,
+-- et ce qu'il fait afficher à sa carte. Même durée de vie que le compte (cascade), donc
+-- même purge à 24 mois ; à mentionner au registre et dans la mention d'information.
+create table if not exists projets_makecode (
+  compte_id int  not null references comptes(id) on delete cascade,
+  id        text not null,
+  donnees   text not null,
+  maj_le    timestamptz not null default now(),
+  primary key (compte_id, id)
+);
+
 -- --------------------------------------------------------------------------
 -- Passage d'une base mono-établissement à une base cloisonnée.
 -- Ces trois blocs ne font rien sur une base déjà à jour, et rien non plus sur une

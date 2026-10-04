@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MakeCode micro:bit — Atelier informatique</title>
+
+<!-- L'éditeur affiché ici est celui de Microsoft (makecode.microbit.org), dans un cadre.
+     Cette page ne fait que lui fournir les projets de l'élève et les ranger : voir
+     scripts/makecode.js. Ouvrir cette page fait donc appel aux serveurs de Microsoft,
+     exactement comme ouvrir makecode.microbit.org directement. -->
+
+<!-- Polices servies EN LOCAL, comme partout dans l'atelier (cf. assets/fonts/README.md). -->
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+
+<script src="scripts/config.js"></script>
+<script src="scripts/store.js"></script>
+
+<style>
+  :root{
+    --fond:#eef2f7; --carte:#fff; --trait:#dde5ee; --encre:#22303f; --gris:#6b7d91;
+    --bleu:#2563eb; --vert:#16a34a; --orange:#e0a416; --rouge:#dc2626;
+    --barre:52px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--fond);color:var(--encre);
+    font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;}
+  button{font-family:inherit;cursor:pointer}
+
+  /* Barre volontairement mince : l'éditeur a besoin de toute la hauteur. */
+  .topbar{height:var(--barre);display:flex;align-items:center;gap:10px;padding:0 14px;
+    background:var(--carte);border-bottom:2px solid var(--trait);}
+  .topbar h1{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.15rem;margin:0;
+    white-space:nowrap}
+  .topbar h1 span{color:var(--gris);font-weight:500}
+  .retour{color:var(--gris);text-decoration:none;font-weight:800;font-size:.85rem;white-space:nowrap}
+  .retour:hover{color:var(--bleu)}
+  .btn{border:2px solid var(--trait);background:#fff;color:var(--encre);border-radius:999px;
+    padding:6px 13px;font-weight:800;font-size:.85rem;white-space:nowrap;transition:border-color .15s}
+  .btn:hover{border-color:#9fb6cd}
+  .btn.primaire{background:var(--bleu);border-color:var(--bleu);color:#fff}
+  .btn.primaire:hover{filter:brightness(1.07)}
+  .espace{flex:1}
+
+  .mc-etat{font-size:.8rem;font-weight:800;color:var(--gris);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;max-width:38vw;display:inline-flex;align-items:center;gap:6px}
+  .mc-etat::before{content:"";width:9px;height:9px;border-radius:50%;flex:none;background:var(--vert)}
+  .mc-etat.warn::before{background:var(--orange)}
+  .mc-etat.bad{color:var(--rouge)}
+  .mc-etat.bad::before{background:var(--rouge)}
+  .mc-etat.busy::before{background:#0891b2;animation:mc-pulse 1s ease-in-out infinite}
+  @keyframes mc-pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+  #mcZone{position:relative;height:calc(100dvh - var(--barre))}
+  #mcCadre{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#fff}
+  #mcChargement{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;
+    padding:24px;text-align:center;background:var(--fond);font-weight:800;color:var(--gris);line-height:1.5}
+
+  /* Panneau « Mes projets » */
+  #mcPanneau{position:fixed;inset:0;z-index:2147481000;background:rgba(20,30,42,.55);display:flex;
+    align-items:flex-start;justify-content:center;padding:70px 16px 16px}
+  #mcPanneau[hidden]{display:none}
+  .mc-boite{background:#fff;border-radius:20px;width:min(520px,100%);max-height:calc(100dvh - 90px);
+    display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(15,25,38,.35)}
+  .mc-tete{display:flex;align-items:center;gap:10px;padding:18px 20px 12px}
+  .mc-tete h2{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;font-size:1.3rem;margin:0}
+  .mc-compte{color:var(--gris);font-size:.82rem;font-weight:700;margin-right:auto}
+  .mc-msg{margin:0 20px 10px;background:#fffbf0;border:2px solid #f3d27a;border-radius:12px;padding:9px 12px;
+    font-size:.86rem;font-weight:700;line-height:1.4}
+  .mc-liste{list-style:none;margin:0;padding:0 12px;overflow:auto}
+  .mc-liste li{display:flex;align-items:center;gap:8px;border:2px solid var(--trait);border-radius:14px;
+    margin:0 0 8px;padding:4px 6px 4px 4px}
+  .mc-liste li.mc-ouvert{border-color:var(--bleu);background:#f4f8ff}
+  .mc-ouvrir{flex:1;min-width:0;text-align:left;background:none;border:0;padding:8px 10px;border-radius:10px}
+  .mc-ouvrir:hover{background:#eef3f9}
+  .mc-ouvrir b{display:block;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mc-ouvrir span{color:var(--gris);font-size:.8rem;font-weight:700}
+  .mc-suppr{background:none;border:0;font-size:1.1rem;padding:8px;border-radius:10px;opacity:.6}
+  .mc-suppr:hover{opacity:1;background:#fee2e2}
+  .mc-question{flex:1;font-weight:800;font-size:.88rem;padding:8px 6px}
+  .mc-non,.mc-oui{border:0;border-radius:999px;padding:8px 13px;font-weight:800;font-size:.85rem}
+  .mc-non{background:#eef3f9;color:#3c4d61}
+  .mc-oui{background:#fee2e2;color:#b91c1c}
+  .mc-vide{justify-content:center;color:var(--gris);font-weight:700;padding:18px!important}
+  .mc-pied{padding:12px 20px 18px;display:flex;gap:9px;justify-content:flex-end;border-top:2px solid var(--trait);
+    margin-top:4px}
+  .mc-note{padding:0 20px 16px;margin:0;color:var(--gris);font-size:.78rem;line-height:1.45}
+
+  @media (max-width:760px){
+    .topbar h1 span,.retour span,.mc-etat{display:none}
+    .topbar{gap:7px;padding:0 9px}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="retour" href="index.html" title="Retour à l'atelier">←<span> Atelier</span></a>
+  <h1>MakeCode <span>micro:bit</span></h1>
+  <button type="button" class="btn" id="mcProjets">📁 Mes projets</button>
+  <button type="button" class="btn primaire" id="mcNouveau">➕ Nouveau projet</button>
+  <span class="espace"></span>
+  <span class="mc-etat" id="mcEtat"></span>
+  <!-- scripts/compte.js pose ici la pastille du compte (connexion, déconnexion). -->
+  <span data-atl-compte></span>
+</header>
+
+<main id="mcZone">
+  <div id="mcChargement">Chargement de MakeCode…</div>
+</main>
+
+<div id="mcPanneau" hidden>
+  <div class="mc-boite" role="dialog" aria-modal="true" aria-labelledby="mcTitre">
+    <div class="mc-tete">
+      <h2 id="mcTitre">Mes projets</h2>
+      <span class="mc-compte"></span>
+      <button type="button" class="btn" data-a="fermer">Fermer</button>
+    </div>
+    <p class="mc-msg" hidden></p>
+    <ul class="mc-liste"></ul>
+    <div class="mc-pied">
+      <button type="button" class="btn primaire" data-a="nouveau">➕ Nouveau projet</button>
+    </div>
+    <p class="mc-note">Chaque nouveau projet contient déjà les blocs de la <b>voiture robot</b>.
+      Pour renommer un projet, change son nom en bas de l'éditeur, à côté du bouton Télécharger.<br>
+      Connecté·e, tes projets sont enregistrés sur le serveur du collège : tu les retrouves sur
+      n'importe quel poste. Ils sont effacés en même temps que ton compte.</p>
+  </div>
+</div>
+
+<script src="scripts/makecode.js"></script>
+<script src="scripts/compte.js"></script>
+</body>
+</html>

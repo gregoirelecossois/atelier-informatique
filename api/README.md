@@ -19,6 +19,7 @@ API est une couche qu'on ajoute, jamais un passage obligé.
 | `progressions` | un objet JSON par élève : `ms_unlocked`, `badges_v1`, etc. |
 | `sessions` | empreinte du jeton, expiration |
 | `journal` | connexions, créations, suppressions (traçabilité), et l'établissement concerné |
+| `projets_makecode` | les projets MakeCode de l'élève, compressés — voir § 2.8 |
 
 Rien d'autre : pas de date de naissance, pas d'adresse, pas d'e-mail élève, pas d'INE,
 aucun champ de commentaire libre. Voir les commentaires de `schema.sql`.
@@ -28,6 +29,7 @@ Durées de conservation, appliquées automatiquement par le serveur :
 | Donnée | Durée |
 |---|---|
 | Compte élève, progression, trophées | 24 mois après la **création** du compte (`CONSERVATION_MOIS`) |
+| Projets MakeCode | supprimés avec le compte (même échéance), ou plus tôt par l'élève |
 | Journal des connexions et actions | 12 mois (`JOURNAL_MOIS`) |
 | Session | 12 heures |
 | Présence en séance | dernier état seulement, périmé après 2 minutes |
@@ -400,6 +402,64 @@ chapitre N **en attente** ».
 7. **À faire avant la première séance** : demander au référent numérique / à la DSI
    d'autoriser le domaine dans le filtrage du collège. Sinon, trente élèves devant un
    écran de connexion qui tourne.
+
+### 2.8 MakeCode micro:bit avec les comptes de l'atelier
+
+`makecode.html` affiche l'éditeur **officiel** de Microsoft (`makecode.microbit.org`)
+dans un cadre, en mode « contrôleur » (`?controller=1`). Dans ce mode MakeCode ne garde
+rien lui-même : il demande ses projets à la page qui l'héberge et lui renvoie chaque
+modification. C'est `scripts/makecode.js` qui fait le relais — vers le serveur quand
+l'élève est connecté, vers le navigateur du poste sinon. Aucune copie de MakeCode à
+maintenir : Microsoft fait les mises à jour, la page ne fait que ranger.
+
+Chaque **nouveau** projet reçoit l'extension « Voiture robot »
+(`gregoirelecossois/robot-car-fr`), **épinglée sur un commit** : une modification de
+l'extension en cours d'année ne change pas les blocs sous les doigts des élèves. Pour
+passer à une version plus récente, remplacer l'empreinte après `#` dans `EXTENSIONS`, en
+haut de `scripts/makecode.js`.
+
+Routes (tout compte connecté, chacun ne voit que les siens) :
+
+| Route | Rôle |
+|---|---|
+| `GET /api/makecode/projets` | tous les projets de l'élève, compressés, et le quota |
+| `PUT /api/makecode/projet` | `{id, donnees}` → enregistre un projet |
+| `DELETE /api/makecode/projet` | `{id}` → le supprime |
+
+**Ménager le serveur.** MakeCode enregistre à chaque bloc posé. La page n'envoie
+qu'après 5 s de calme (jamais plus de 30 s sans sauvegarde), seulement si le projet a
+réellement changé, et compressé (gzip : un projet de 2 à 40 Ko en pèse 1 à 8). Mesuré :
+une séance de travail normale donne quelques envois, pas des centaines. Le serveur
+ajoute ses propres garde-fous :
+
+| Garde-fou | Valeur | Réglage |
+|---|---|---|
+| Projets par élève | 30 | `MC_PROJETS_MAX` |
+| Taille d'un projet (compressé) | 64 Ko — au-delà, la page renvoie sans l'historique des versions | — |
+| Écritures par élève | 30 par minute | — |
+| Place totale des projets | 40 Mo, puis refus des nouveaux envois | `MC_TABLE_MAX_MO` |
+
+Le dernier protège **tout le reste** : le plan gratuit a 100 Mo pour tout, et un disque
+plein ferait échouer aussi l'enregistrement de la progression des ateliers. Les projets
+s'arrêtent bien avant. Aucun refus côté projets ne touche `progressions` : tables et
+routes à part.
+
+Un refus (quota, place) ne fait rien perdre : le projet reste dans le cache du poste,
+l'élève voit le message dans la barre, et l'envoi reprend dès qu'il y a de la place.
+
+**À faire ouvrir** dans le filtrage du collège (§ 2.7), en plus du domaine de l'atelier :
+`makecode.microbit.org`, `makecode.com` et `*.makecode.com` (MakeCode y va chercher
+l'extension sur GitHub et ses ressources).
+
+**RGPD — à reporter dans les documents de l'établissement :**
+- `projets_makecode` est la seule table qui contienne du **texte libre écrit par
+  l'élève** (le nom du projet, ce qu'il fait afficher à sa carte). Finalité : retrouver ses
+  programmes d'un poste à l'autre. Même durée de vie que le compte.
+- L'éditeur étant servi par Microsoft, ouvrir `makecode.html` envoie l'adresse IP du
+  poste à Microsoft — **exactement comme** ouvrir `makecode.microbit.org` directement,
+  ce que les élèves font déjà. En mode contrôleur, MakeCode n'enregistre pas les projets
+  chez Microsoft (connexion Microsoft et partage en ligne y sont désactivés) : ils sont
+  rangés dans le navigateur et sur ce serveur.
 
 ---
 

@@ -25,6 +25,9 @@
  *   POST   /api/mdp                         {nouveau, ancien?} → l'élève choisit son mot de passe
  *   PUT    /api/progression                 {majs, suppressions} → nouvelle version
  *   POST   /api/presence                    battement : où en est l'élève en ce moment
+ *   GET    /api/makecode/projets            tous ses projets MakeCode, compressés
+ *   PUT    /api/makecode/projet             {id, donnees} → enregistre un projet
+ *   DELETE /api/makecode/projet             {id} → supprime un projet
  *
  * Routes réservées au rôle « prof » — le tableau de bord :
  *   GET    /api/prof/tableau                tous les comptes + leur avancement résumé
@@ -100,6 +103,20 @@ const JOURNAL_MOIS = Number(process.env.JOURNAL_MOIS || 12);
 const CORPS_MAX = 256 * 1024;
 const VALEUR_MAX = 4096;
 const CLES_MAX = 500;
+
+/* Projets MakeCode. Un projet micro:bit compressé pèse 3 à 8 Ko ; 64 Ko en laisse dix
+   fois plus, et reste sous la limite des envois « keepalive » du navigateur (64 Ko), ceux
+   qui partent quand l'élève ferme l'onglet. Le rythme est réglé côté navigateur (un envoi
+   par projet toutes les 30 s au plus) : MC_ECRITURES_MINUTE n'est que le filet d'une page
+   qui se mettrait à boucler.
+   MC_TABLE_MAX_MO protège tout le reste : l'hébergement gratuit a 100 Mo pour TOUT, et un
+   disque plein ferait échouer aussi l'écriture des progressions des ateliers. Les projets
+   s'arrêtent bien avant — les jeux, eux, continuent. */
+const MC_PROJETS_MAX = Number(process.env.MC_PROJETS_MAX || 30);
+const MC_TABLE_MAX_MO = Number(process.env.MC_TABLE_MAX_MO || 40);
+const MC_PROJET_MAX = 64 * 1024;
+const MC_ECRITURES_MINUTE = 30;
+const MC_ID_OK = /^[A-Za-z0-9-]{8,64}$/;
 
 /* --------------------------------------------------------------------------
    Utilitaires HTTP
@@ -473,6 +490,90 @@ async function battement(req) {
             mission = excluded.mission, vu_le = now()`,
     [s.id, corps.atelier ? String(corps.atelier).slice(0, 40) : null,
      entier(corps.niveau, 99), entier(corps.mission, 999)]);
+  return { ok: true };
+}
+
+/* --------------------------------------------------------------------------
+   Projets MakeCode
+   makecode.html affiche l'éditeur officiel (makecode.microbit.org) en mode
+   « contrôleur » : c'est la page, et non Microsoft, qui garde les projets. Elle les
+   compresse avant l'envoi ; le serveur les range tels quels, sans les ouvrir.
+   Tables et routes à part : rien ici ne touche à `progressions`, et un refus sur un
+   projet (quota, place) ne peut pas faire échouer une sauvegarde de jeu.
+   -------------------------------------------------------------------------- */
+const mcRythmes = new Map();   /* compte_id → { debut, n } sur une fenêtre d'une minute */
+
+function mcRythme(compteId) {
+  const maintenant = Date.now();
+  let r = mcRythmes.get(compteId);
+  if (!r || maintenant - r.debut > 60_000) { r = { debut: maintenant, n: 0 }; mcRythmes.set(compteId, r); }
+  if (++r.n > MC_ECRITURES_MINUTE) throw new Refus(429, 'Trop de sauvegardes d\'un coup. Réessaie dans une minute.');
+}
+setInterval(() => {
+  const limite = Date.now() - 60_000;
+  for (const [k, r] of mcRythmes) if (r.debut < limite) mcRythmes.delete(k);
+}, 10 * 60_000).unref();
+
+/* La taille de la table n'est mesurée qu'une fois par minute : une requête de plus à
+   chaque sauvegarde pour un chiffre qui bouge de quelques kilo-octets, c'est du gâchis. */
+let mcOccupation = { octets: 0, mesure: 0 };
+async function mcPlace() {
+  if (Date.now() - mcOccupation.mesure > 60_000) {
+    const r = await db.une(`select pg_total_relation_size('projets_makecode') as n`);
+    mcOccupation = { octets: Number(r.n), mesure: Date.now() };
+  }
+  if (mcOccupation.octets > MC_TABLE_MAX_MO * 1024 * 1024) {
+    console.error(`[api] projets MakeCode : ${MC_TABLE_MAX_MO} Mo atteints, écritures refusées`);
+    throw new Refus(507, 'L\'espace réservé aux projets MakeCode est plein. Ton projet reste sur ce poste : préviens ton professeur.');
+  }
+}
+
+function mcId(corps) {
+  const id = String(corps.id || '');
+  if (!MC_ID_OK.test(id)) throw new Refus(400, 'Identifiant de projet invalide.');
+  return id;
+}
+
+async function mcLister(req) {
+  const s = await session(req);
+  const r = await db.q(
+    'select id, donnees, maj_le from projets_makecode where compte_id = $1 order by maj_le desc', [s.id]);
+  return { projets: r.rows, max: MC_PROJETS_MAX };
+}
+
+/* Le quota se vérifie DANS l'insertion : un projet déjà en ligne se met toujours à jour,
+   un nouveau n'entre que s'il reste de la place. Aucune ligne renvoyée = quota atteint. */
+async function mcEcrire(req) {
+  const s = await session(req);
+  const corps = await lireCorps(req);
+  const id = mcId(corps);
+  const donnees = String(corps.donnees || '');
+  if (!/^(gz|js):/.test(donnees)) throw new Refus(400, 'Projet illisible.');
+  if (donnees.length > MC_PROJET_MAX) {
+    throw new Refus(413, 'Ce projet est trop gros pour être sauvegardé en ligne. Il reste gardé sur ce poste.');
+  }
+  mcRythme(s.id);
+  await mcPlace();
+
+  const r = await db.une(
+    `insert into projets_makecode(compte_id, id, donnees)
+     select $1, $2, $3
+      where exists (select 1 from projets_makecode where compte_id = $1 and id = $2)
+         or (select count(*) from projets_makecode where compte_id = $1) < $4
+     on conflict (compte_id, id) do update set donnees = excluded.donnees, maj_le = now()
+     returning maj_le`,
+    [s.id, id, donnees, MC_PROJETS_MAX]);
+  if (!r) {
+    throw new Refus(409, `Tu as déjà ${MC_PROJETS_MAX} projets en ligne : supprime ceux dont tu n'as plus besoin.`);
+  }
+  return { maj_le: r.maj_le };
+}
+
+async function mcSupprimer(req) {
+  const s = await session(req);
+  const id = mcId(await lireCorps(req));
+  mcRythme(s.id);
+  await db.q('delete from projets_makecode where compte_id = $1 and id = $2', [s.id, id]);
   return { ok: true };
 }
 
@@ -1008,6 +1109,9 @@ const ROUTES = [
   ['POST',   '/api/mdp',                       changerMonMdp],
   ['PUT',    '/api/progression',               ecrireProgression],
   ['POST',   '/api/presence',                  battement],
+  ['GET',    '/api/makecode/projets',          mcLister],
+  ['PUT',    '/api/makecode/projet',           mcEcrire],
+  ['DELETE', '/api/makecode/projet',           mcSupprimer],
 
   ['GET',    '/api/prof/tableau',              profTableau],
   ['GET',    '/api/prof/presence',             profPresence],
