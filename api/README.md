@@ -552,6 +552,24 @@ Ce qu'on y fait :
   classe » avec toute leur progression, et on leur en réattribue une depuis leur fiche.
   La confirmation le dit et annonce combien d'élèves sont concernés — « supprimer la
   6eB » se lit trop facilement comme « supprimer ses élèves ».
+- **démarrer une nouvelle année** (« 🎓 Nouvelle année ») : chaque classe reçoit une règle —
+  ses élèves **passent** dans une autre classe avec toute leur progression, leurs comptes
+  sont **supprimés**, ou rien ne change. Par défaut 6e → 5e → 4e → 3e et CAP1 → CAP2, les
+  comptes de **3e et de CAP2 sont supprimés**, toute autre classe ne bouge pas
+  (`PASSAGE_DEFAUT` de `comptes.js`). Les règles se modifient dans la fenêtre et sont
+  **enregistrées sur le serveur, par établissement** (`etablissements.passage`, `null` =
+  défaut) : on les retrouve d'un poste à l'autre et d'une année sur l'autre. Une règle peut
+  viser une classe qui n'existe plus : elle est recréée au passage, au rang de la classe
+  de départ.
+  Le passage se fait en **une seule transaction** (`passerAnneeSuivante`) : toutes les
+  classes sont lues avant le premier déplacement, l'ordre des règles est donc indifférent
+  et personne ne saute deux classes. Le tableau de bord envoie ce qu'il a affiché (nombre de
+  comptes déplacés et supprimés) ; si le serveur trouve autre chose, il refuse au lieu
+  d'exécuter ce qui n'a pas été confirmé. La confirmation liste les comptes qui vont
+  disparaître et exige de cocher « J'ai compris ». Un second passage moins de **300 jours**
+  après le précédent (`etablissements.passage_le`) est refusé, sauf à cocher « Recommencer
+  quand même ». Le journal garde les réglages (`passage.reglages`) et chaque passage
+  (`passage.annee`, avec les identifiants supprimés). Seuls les comptes **élèves** bougent.
 
 Toute action de l'enseignant est inscrite dans la table `journal`, **avec l'établissement
 concerné** : un avancement modifié doit pouvoir s'expliquer, et un chef d'établissement doit

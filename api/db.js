@@ -41,6 +41,24 @@ export async function une(texte, params) {
   return r.rows[0] || null;
 }
 
+/* Plusieurs requêtes qui réussissent ou échouent ENSEMBLE, sur une même connexion.
+   `fn` reçoit le client et l'utilise à la place de q() : une requête lancée sur la
+   réserve (q, une, journaliser) partirait sur une autre connexion, hors transaction. */
+export async function transaction(fn) {
+  const client = await pool.connect();
+  try {
+    await client.query('begin');
+    const r = await fn(client);
+    await client.query('commit');
+    return r;
+  } catch (e) {
+    try { await client.query('rollback'); } catch { /* connexion perdue : rien à annuler */ }
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
 /* Applique schema.sql. Rejouable : tout y est en « if not exists ». */
 export async function migrer() {
   const sql = fs.readFileSync(path.join(ICI, 'schema.sql'), 'utf8');

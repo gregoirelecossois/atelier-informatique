@@ -163,3 +163,161 @@ export async function reinitialiserMdp(identifiant, { mdp, forme, acteur } = {})
 
   return { id: c.id, identifiant, motdepasse: clair };
 }
+
+/* --------------------------------------------------------------------------
+ * Passage à l'année suivante
+ *
+ * Une règle par classe de départ : ses élèves PASSENT dans une autre classe, ou leurs
+ * comptes sont SUPPRIMÉS (fin de 3e, fin de CAP). Une classe sans règle ne bouge pas.
+ * Les règles se lisent par NOM de classe, insensible à la casse, et non par identifiant
+ * numérique : on les règle une année pour la suivante, et une « 5e » supprimée puis
+ * recréée entre-temps doit rester la même 5e.
+ *
+ * Le défaut couvre les classes que pose poserClassesDeBase(). Les autres classes (6eB,
+ * ULIS…) ne bougent pas tant que l'enseignant ne leur a pas donné de règle.
+ * -------------------------------------------------------------------------- */
+export const PASSAGE_DEFAUT = [
+  { de: '6e',   action: 'passer', vers: '5e' },
+  { de: '5e',   action: 'passer', vers: '4e' },
+  { de: '4e',   action: 'passer', vers: '3e' },
+  { de: '3e',   action: 'supprimer' },
+  { de: 'CAP1', action: 'passer', vers: 'CAP2' },
+  { de: 'CAP2', action: 'supprimer' }
+];
+
+/* Un passage refait moins de 300 jours après le précédent ferait monter tout le monde
+   d'une classe de trop : il faut alors le demander explicitement (`forcer`). */
+export const PASSAGE_JOURS_MIN = 300;
+
+function refus(code, message) { return Object.assign(new Error(message), { code }); }
+
+/* Les règles viennent du navigateur : on les relit entièrement plutôt que de les croire.
+   Un même départ ne peut avoir qu'une règle — deux règles pour la 4e, ce seraient deux
+   destinations pour les mêmes élèves. */
+export function normaliserPassage(brut) {
+  if (!Array.isArray(brut)) throw refus(400, 'Liste de règles attendue.');
+  if (brut.length > 100) throw refus(413, 'Trop de règles.');
+  const vus = new Set();
+  const regles = [];
+  for (const r of brut) {
+    const de = String(r?.de ?? '').trim().slice(0, 30);
+    if (!de) throw refus(400, 'Chaque règle doit nommer sa classe de départ.');
+    if (vus.has(de.toLowerCase())) throw refus(400, `La classe « ${de} » a deux règles.`);
+    vus.add(de.toLowerCase());
+
+    if (r.action === 'supprimer') { regles.push({ de, action: 'supprimer' }); continue; }
+    if (r.action !== 'passer') throw refus(400, `Règle de « ${de} » : action inconnue.`);
+    const vers = String(r.vers ?? '').trim().slice(0, 30);
+    if (!vers) throw refus(400, `Règle de « ${de} » : classe d'arrivée manquante.`);
+    if (vers.toLowerCase() === de.toLowerCase()) {
+      throw refus(400, `« ${de} » ne peut pas passer dans elle-même.`);
+    }
+    regles.push({ de, action: 'passer', vers });
+  }
+  return regles;
+}
+
+export async function reglesDePassage(etablissementId) {
+  const e = await db.une('select passage, passage_le from etablissements where id = $1',
+    [Number(etablissementId)]);
+  if (!e) throw refus(404, 'Établissement introuvable.');
+  return { regles: e.passage || PASSAGE_DEFAUT, parDefaut: !e.passage, derniere: e.passage_le,
+           joursMin: PASSAGE_JOURS_MIN };
+}
+
+/* `null` remet le défaut — et le défaut n'est pas recopié en base, cf. schema.sql. */
+export async function enregistrerPassage(etablissementId, brut, acteur) {
+  const regles = brut == null ? null : normaliserPassage(brut);
+  await db.q('update etablissements set passage = $2 where id = $1',
+    [Number(etablissementId), regles ? JSON.stringify(regles) : null]);
+  await db.journaliser(acteur, 'passage.reglages', null, { regles }, etablissementId);
+  return reglesDePassage(etablissementId);
+}
+
+/* Applique les règles ENREGISTRÉES, en une seule transaction : un passage à moitié
+ * fait — les 3e supprimés mais les 4e pas encore montés — ne se rattrape pas en le
+ * relançant, il ferait monter une seconde fois ceux qui étaient déjà passés.
+ *
+ * Toutes les classes sont lues AVANT le premier déplacement. Sans cette photographie,
+ * l'ordre des règles compterait : appliquer « 5e → 4e » avant « 4e → 3e » enverrait
+ * les anciens 5e jusqu'en 3e. Avec elle, l'ordre est indifférent, et même un échange
+ * (A → B et B → A) fait ce qu'on attend.
+ *
+ * `attendu` = { deplaces, supprimes } tels que le tableau de bord les a annoncés à
+ * l'enseignant. S'ils ne correspondent plus (un collègue a déplacé un élève entre-temps,
+ * le passage vient d'être fait dans un autre onglet), on refuse : on n'exécute que ce
+ * qui a été montré et confirmé.
+ *
+ * Seuls les ÉLÈVES bougent ; un compte enseignant rangé dans une classe reste où il est.
+ * La suppression emporte progression, sessions, présence et projets MakeCode (cascade).
+ */
+export async function passerAnneeSuivante(etablissementId, { attendu, forcer, acteur } = {}) {
+  const etab = Number(etablissementId);
+  const bilan = await db.transaction(async (t) => {
+    /* `for update` : deux passages lancés en même temps (deux onglets, deux collègues)
+       s'attendent l'un l'autre, et le second trouve la date posée par le premier. */
+    const e = (await t.query(
+      'select passage, passage_le from etablissements where id = $1 for update', [etab])).rows[0];
+    if (!e) throw refus(404, 'Établissement introuvable.');
+    if (e.passage_le && !forcer &&
+        Date.now() - new Date(e.passage_le).getTime() < PASSAGE_JOURS_MIN * 864e5) {
+      throw refus(409, `La nouvelle année a déjà été démarrée le ${
+        new Date(e.passage_le).toLocaleDateString('fr-FR')}.`);
+    }
+    const regles = e.passage || PASSAGE_DEFAUT;
+
+    const photo = [];
+    for (const r of regles) {
+      const { rows } = await t.query(
+        `select c.id, c.identifiant from comptes c join classes cl on cl.id = c.classe_id
+          where c.etablissement_id = $1 and c.role = 'eleve' and lower(cl.nom) = lower($2)`,
+        [etab, r.de]);
+      photo.push({ ...r, comptes: rows });
+    }
+    const compter = (action) => photo.filter((p) => p.action === action)
+      .reduce((n, p) => n + p.comptes.length, 0);
+    const res = { deplaces: compter('passer'), supprimes: compter('supprimer') };
+    if (attendu && (Number(attendu.deplaces) !== res.deplaces ||
+                    Number(attendu.supprimes) !== res.supprimes)) {
+      throw refus(409, 'Les classes ont changé depuis l\'aperçu. Rouvre la fenêtre pour voir ' +
+        'ce qui va réellement se passer.');
+    }
+
+    const supprimes = [];
+    const classes = [];
+    for (const p of photo) {
+      const ids = p.comptes.map((c) => c.id);
+      if (p.action === 'supprimer') {
+        if (ids.length) await t.query('delete from comptes where id = any($1::int[])', [ids]);
+        supprimes.push(...p.comptes.map((c) => c.identifiant));
+        classes.push({ de: p.de, action: 'supprimer', n: ids.length });
+        continue;
+      }
+      /* La classe d'arrivée est créée si elle manque, comme partout ailleurs (classeId) :
+         la règle a été réglée l'an dernier, la classe a pu être supprimée depuis. Elle
+         prend le rang de la classe de départ, pour ne pas surgir en tête des pastilles. */
+      if (ids.length) {
+        const cible = (await t.query(
+          'select id from classes where etablissement_id = $1 and lower(nom) = lower($2)',
+          [etab, p.vers])).rows[0] || (await t.query(
+          `insert into classes(nom, ordre, etablissement_id)
+           select $1, coalesce((select ordre from classes
+                                 where etablissement_id = $2 and lower(nom) = lower($3)), 0), $2
+           returning id`,
+          [p.vers, etab, p.de])).rows[0];
+        await t.query('update comptes set classe_id = $2 where id = any($1::int[])', [ids, cible.id]);
+      }
+      classes.push({ de: p.de, action: 'passer', vers: p.vers, n: ids.length });
+    }
+
+    await t.query('update etablissements set passage_le = now() where id = $1', [etab]);
+    return { ...res, classes, identifiants: supprimes };
+  });
+
+  /* Après la transaction : journaliser() écrit sur une autre connexion de la réserve. */
+  await db.journaliser(acteur, 'passage.annee', null, {
+    deplaces: bilan.deplaces, supprimes: bilan.supprimes, classes: bilan.classes,
+    identifiants: bilan.identifiants.slice(0, 500)
+  }, etab);
+  return { deplaces: bilan.deplaces, supprimes: bilan.supprimes, classes: bilan.classes };
+}

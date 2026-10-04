@@ -168,3 +168,13 @@ alter table comptes add constraint comptes_role_check check (role in ('eleve','p
 alter table comptes drop constraint if exists comptes_etablissement_check;
 alter table comptes add constraint comptes_etablissement_check
   check (role = 'admin' or etablissement_id is not null);
+
+-- Passage à l'année suivante (« 🎓 Nouvelle année » du tableau de bord). Les règles
+-- vivent ICI, par établissement, et pas dans le navigateur : l'enseignant les règle une
+-- fois, depuis n'importe quel poste, et un collègue du même collège retrouve les mêmes.
+-- `passage` à null veut dire « réglages par défaut » (PASSAGE_DEFAUT de comptes.js) :
+-- on ne recopie pas le défaut en base, pour qu'un défaut corrigé profite à tous ceux
+-- qui n'y ont pas touché. `passage_le` date le dernier passage effectué — c'est lui qui
+-- empêche de faire monter tout le monde de deux classes par un double clic.
+alter table etablissements add column if not exists passage    jsonb;
+alter table etablissements add column if not exists passage_le timestamptz;
