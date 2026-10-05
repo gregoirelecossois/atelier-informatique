@@ -215,11 +215,12 @@ alter table etablissements add column if not exists passage_le timestamptz;
 -- ---------------------------------------------------------------------------
 -- Travail à la maison (« devoirs »), SANS compte.
 --
--- Une page d'exercices pour téléphone (dépôt le-pc, maison.html) où l'élève entre par
--- son prénom et sa classe, sans identifiant ni mot de passe : à la maison, un mot de
--- passe oublié est un devoir non fait. Ce n'est donc PAS un compte, et rien ici n'est
--- relié à `comptes` : une ligne par téléphone et par devoir, que l'élève écrase au fil
--- de son avancée.
+-- Des pages d'exercices pour téléphone, ouvertes depuis une page d'entrée unique
+-- (atelier-informatique/maison.html), où l'élève entre par son prénom et sa classe, sans
+-- identifiant ni mot de passe : à la maison, un mot de passe oublié est un devoir non
+-- fait. Ce n'est donc PAS un compte : une ligne par téléphone et par devoir, que l'élève
+-- écrase au fil de son avancée. L'enseignant peut ensuite la relier à un compte
+-- (compte_id, plus bas) — l'élève, lui, n'en sait rien et n'en a pas besoin.
 --
 -- Ce qui est gardé : le prénom tapé, la classe choisie dans la liste de l'établissement,
 -- le nombre d'étapes faites et le score. Rien d'autre — ni nom, ni adresse IP, ni détail
@@ -247,3 +248,25 @@ create table if not exists devoirs_passages (
   maj_le           timestamptz not null default now()
 );
 create index if not exists devoirs_passages_etab_idx on devoirs_passages(etablissement_id, devoir);
+
+-- Relier une ligne à un compte de l'Atelier, APRÈS COUP et côté enseignant.
+--
+-- L'élève reste sans compte : il tape un prénom. C'est l'enseignant qui dit « ce Mohamad
+-- de 5e, c'est Mohamed B. » — ou le serveur, quand c'est évident (voir devoirPassage).
+-- Plusieurs lignes peuvent pointer le même compte : deux devoirs, deux téléphones, un
+-- prénom mal tapé la deuxième fois. Le suivi les fusionne sous le compte.
+--
+--   compte_id  le compte relié ; null = pas (ou plus) relié. Un compte supprimé délie ses
+--              lignes sans les effacer : elles redeviennent un simple prénom.
+--   lien       qui a décidé : null = personne encore (le serveur peut relier tout seul),
+--              'prenom' / 'appareil' = relié automatiquement, 'prof' = décidé par
+--              l'enseignant — y compris « relié à personne ». Une décision de l'enseignant
+--              n'est jamais défaite par le serveur.
+--   appareil   identifiant tiré au hasard par la page d'entrée (maison.html), le même pour
+--              tous les devoirs faits sur ce téléphone. Il ne sort jamais vers le tableau :
+--              il sert seulement à reconnaître, au devoir suivant, un élève déjà relié.
+alter table devoirs_passages add column if not exists compte_id int references comptes(id) on delete set null;
+alter table devoirs_passages add column if not exists lien      text;
+alter table devoirs_passages add column if not exists appareil  text;
+create index if not exists devoirs_passages_appareil_idx on devoirs_passages(etablissement_id, appareil);
+create index if not exists devoirs_passages_compte_idx   on devoirs_passages(compte_id);
