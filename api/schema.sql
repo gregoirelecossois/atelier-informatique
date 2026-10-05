@@ -211,3 +211,39 @@ alter table comptes add constraint comptes_etablissement_check
 -- empêche de faire monter tout le monde de deux classes par un double clic.
 alter table etablissements add column if not exists passage    jsonb;
 alter table etablissements add column if not exists passage_le timestamptz;
+
+-- ---------------------------------------------------------------------------
+-- Travail à la maison (« devoirs »), SANS compte.
+--
+-- Une page d'exercices pour téléphone (dépôt le-pc, maison.html) où l'élève entre par
+-- son prénom et sa classe, sans identifiant ni mot de passe : à la maison, un mot de
+-- passe oublié est un devoir non fait. Ce n'est donc PAS un compte, et rien ici n'est
+-- relié à `comptes` : une ligne par téléphone et par devoir, que l'élève écrase au fil
+-- de son avancée.
+--
+-- Ce qui est gardé : le prénom tapé, la classe choisie dans la liste de l'établissement,
+-- le nombre d'étapes faites et le score. Rien d'autre — ni nom, ni adresse IP, ni détail
+-- des réponses. Le prénom n'est fait que de lettres : aucun champ libre.
+--
+-- `id` est tiré au hasard par le navigateur de l'élève et lui sert de clé de reprise.
+-- `code_devoir` est le code que porte le lien distribué aux élèves : c'est lui, et pas
+-- un numéro, qui rattache une ligne à son établissement — l'établissement reste la
+-- frontière, y compris pour une page ouverte sans connexion.
+alter table etablissements add column if not exists code_devoir text;
+create unique index if not exists etablissements_code_devoir_idx on etablissements(code_devoir);
+
+create table if not exists devoirs_passages (
+  id               text primary key,
+  etablissement_id int  not null references etablissements(id) on delete cascade,
+  devoir           text not null,
+  prenom           text not null,
+  classe_id        int  references classes(id) on delete set null,
+  etape            int  not null default 0,
+  etapes           int  not null default 0,
+  score            int  not null default 0,
+  score_max        int  not null default 0,
+  termine          boolean not null default false,
+  debut_le         timestamptz not null default now(),
+  maj_le           timestamptz not null default now()
+);
+create index if not exists devoirs_passages_etab_idx on devoirs_passages(etablissement_id, devoir);

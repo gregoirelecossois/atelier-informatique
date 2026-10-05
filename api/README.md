@@ -21,6 +21,7 @@ API est une couche qu'on ajoute, jamais un passage obligé.
 | `journal` | connexions, créations, suppressions (traçabilité), et l'établissement concerné |
 | `projets_makecode` | les projets MakeCode de l'élève, compressés — voir § 2.8 |
 | `modeles_makecode`, `modeles_makecode_classes` | les projets que les enseignants proposent à leurs classes — voir § 2.8 |
+| `devoirs_passages` | travail à la maison **sans compte** : prénom tapé, classe choisie, étapes faites, score — voir § 4 bis |
 
 Rien d'autre : pas de date de naissance, pas d'adresse, pas d'e-mail élève, pas d'INE,
 aucun champ de commentaire libre. Voir les commentaires de `schema.sql`.
@@ -34,6 +35,7 @@ Durées de conservation, appliquées automatiquement par le serveur :
 | Journal des connexions et actions | 12 mois (`JOURNAL_MOIS`) |
 | Session | 12 heures |
 | Présence en séance | dernier état seulement, périmé après 2 minutes |
+| Travail à la maison (prénom, classe, étapes, score) | 12 mois après la dernière activité (`DEVOIRS_MOIS`), ou plus tôt par l'enseignant |
 
 > **Les documents RGPD de l'établissement ne sont pas dans ce dépôt.** La fiche de
 > registre (art. 30) et la mention d'information (art. 13) appartiennent au chef
@@ -609,6 +611,93 @@ Toute action de l'enseignant est inscrite dans la table `journal`, **avec l'éta
 concerné** : un avancement modifié doit pouvoir s'expliquer, et un chef d'établissement doit
 pouvoir obtenir le journal de ses données sans qu'on lui montre celui des autres. La
 suppression d'une classe y note le nombre d'élèves détachés.
+
+## 4 bis. Le travail à la maison, sans compte
+
+Des pages d'exercices pour téléphone, que l'élève fait chez lui. La première est publiée
+par le dépôt `le-pc` (`maison.html`, « Le PC à la maison » : cinq missions, une petite
+leçon puis un jeu, vingt minutes au plus) ; d'autres peuvent s'ajouter dans l'année.
+
+**Le suivi a sa propre page, `travail-maison.html`**, distincte du tableau de bord de
+l'Atelier (`prof.html`) : ce ne sont ni les mêmes élèves — un prénom tapé n'est pas un
+compte — ni la même question. On y entre avec **l'identifiant d'enseignant de l'Atelier** ;
+une session ouverte sur l'une des deux pages vaut pour l'autre (même domaine, même
+`scripts/store.js`). Elle liste les travaux et, pour celui qu'on choisit : le lien à
+distribuer, puis par classe qui l'a ouvert, jusqu'où, avec quel score.
+
+**L'élève n'a ni identifiant ni mot de passe.** Il ouvre le lien, écrit son prénom, touche
+sa classe, et commence. C'est le but : à la maison, un mot de passe oublié est un devoir
+non fait. La contrepartie est écrite ici pour qu'elle ne surprenne personne :
+
+- **ce suivi dit qui a travaillé, il ne certifie rien.** Rien n'empêche un élève de taper
+  le prénom d'un autre. C'est un cahier de texte, pas une évaluation ;
+- deux élèves du même prénom dans la même classe donnent deux lignes identiques (la
+  page les marque « ×2 ») ; le même élève sur deux téléphones aussi ;
+- « Pas encore vus » compare les prénoms reçus à ceux des **comptes** de la classe : un
+  surnom ou une faute de frappe fausse la liste.
+
+### Ce qui est enregistré
+
+Une ligne par téléphone et par travail, dans `devoirs_passages` : le **prénom tapé**, la
+**classe choisie** dans la liste de l'établissement, le **nombre d'étapes faites**, le
+**score**, la date de début et de dernière activité. Rien d'autre : ni nom, ni adresse IP
+(elle ne sert qu'à limiter le rythme, en mémoire), ni détail des réponses. Le prénom
+n'accepte que des lettres — pas de champ libre ici non plus.
+
+> ⚠ **C'est une collecte de plus, et elle porte un score.** La note d'information remise
+> au chef d'établissement dit « ni notes, ni évaluations » : si ce suivi est utilisé, elle
+> est à compléter (finalité : savoir qui a fait un travail donné à la maison ; données :
+> prénom, classe, avancement, score ; durée : `DEVOIRS_MOIS`). La page l'annonce à l'élève
+> avant qu'il n'écrive son prénom : « Ton professeur verra ton prénom, ta classe et ton
+> score. Rien d'autre. »
+
+### Le lien, et le code qu'il porte
+
+```
+https://gregoirelecossois.github.io/le-pc/maison.html?c=CODE
+```
+
+`CODE` est propre à l'établissement (`etablissements.code_devoir`), créé la première fois
+qu'un enseignant ouvre « Travail à la maison ». C'est lui qui rattache un téléphone à ce
+collège et à aucun autre : **l'établissement reste la frontière**, y compris sans
+connexion. La page de suivi affiche le lien complet, avec un bouton « Copier » ;
+l'adresse de chaque page vient de `url` dans `scripts/travaux.js`.
+
+Sans code, ou avec un code inconnu, la page fonctionne en **entraînement** : les jeux
+marchent, rien n'est envoyé, et c'est dit à l'élève.
+
+### Les routes
+
+| Route | Qui | Rôle |
+|---|---|---|
+| `GET /api/devoir/classes?c=CODE` | sans connexion | les noms des classes, pour que l'élève touche la sienne |
+| `POST /api/devoir/passage` | sans connexion | `{c, id, devoir, prenom, classe, etape, etapes, score, max}` — l'état complet, rejouable |
+| `GET /api/prof/devoirs` | enseignant | le code du lien et les lignes de **son** établissement |
+| `DELETE /api/prof/devoirs` | enseignant | `{id}` une ligne, ou `{devoir, classe?}` toute une série |
+
+Ce sont les **seules routes qui écrivent sans authentification**. Ce qui les borne : le
+code, un rythme par adresse IP (240 appels par dix minutes), une classe qui doit exister
+dans l'établissement, un prénom fait de lettres, et un plafond de lignes par établissement
+(`DEVOIRS_MAX`, 3000 par défaut — au-delà, les nouveaux élèves ne sont plus enregistrés,
+leur page continue de fonctionner). Un score ou une étape ne redescendent jamais
+(`greatest`), quel que soit l'ordre d'arrivée des envois.
+
+### Ajouter un autre travail dans l'année
+
+Rien à changer côté serveur, rien à redéployer : la colonne `devoir` porte un identifiant
+libre, et le serveur range ce qu'on lui envoie.
+
+1. **La page d'exercices** — où qu'elle soit publiée, pourvu que son domaine figure dans
+   `ORIGINES` — lit le code dans son adresse (`?c=CODE`), demande les classes
+   (`GET /api/devoir/classes`) et envoie son état (`POST /api/devoir/passage`) avec **son
+   propre identifiant** dans `devoir` : `velo-1`, `scratch-1`… `src/maison/suivi.ts`, dans
+   le dépôt `le-pc`, est le modèle à reprendre.
+2. **Une entrée dans `scripts/travaux.js`** : identifiant, titre, niveau, adresse, nom des
+   étapes. Le travail apparaît aussitôt dans `travail-maison.html`, avec son lien.
+
+Un travail qui envoie des lignes **sans** être au catalogue s'affiche quand même, sous son
+identifiant brut. Ne jamais renommer un identifiant une fois le travail distribué : les
+lignes déjà reçues resteraient sous l'ancien.
 
 ## 5. Créer les comptes en ligne de commande
 
