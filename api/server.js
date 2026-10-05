@@ -34,7 +34,7 @@
  * Routes ouvertes SANS connexion — le travail à la maison (page d'entrée maison.html, puis
  * une page par devoir, comme le-pc/maison.html). Le code de l'établissement, porté par le
  * lien donné aux élèves, tient lieu de portée :
- *   GET    /api/devoir/classes?c=CODE       les noms des classes, pour que l'élève choisisse
+ *   GET    /api/devoir/classes?c=CODE       les noms des classes, et à quelles classes va chaque travail
  *   POST   /api/devoir/passage              {c, id, appareil?, devoir, prenom, classe, etape…} → où il en est
  *
  * Routes réservées au rôle « prof » — le tableau de bord, et travail-maison.html :
@@ -59,6 +59,7 @@
  *   GET    /api/prof/devoirs                code du lien + qui a fait le travail à la maison
  *   DELETE /api/prof/devoirs                {id} une ligne, {ids} ces lignes, ou {devoir, classe?} une série
  *   PUT    /api/prof/devoirs/lien           {ids, compte} → relie des lignes à un compte (null : à personne)
+ *   PUT    /api/prof/devoirs/attribution    {devoir, classes} → à quelles classes ce travail est donné
  *
  * Routes réservées au rôle « admin » — la gestion des établissements. Ce compte est
  * délibérément distinct du compte enseignant : il crée les collèges et les comptes
@@ -1376,7 +1377,24 @@ async function devoirClasses(req) {
   devoirRythme(req);
   const code = new URL(req.url || '/', 'http://x').searchParams.get('c');
   const etab = await etablissementDuCode(code);
-  return { classes: (await lesClasses(etab)).map((c) => c.nom) };
+  return { classes: (await lesClasses(etab)).map((c) => c.nom), attributions: await attributionsDe(etab) };
+}
+
+/* { devoir : [noms de classes] } pour les travaux dont l'enseignant a changé les classes.
+   Un travail absent garde les classes par défaut du catalogue (scripts/travaux.js).
+   C'est la page d'entrée qui s'en sert, sans connexion : des noms de classes et des
+   identifiants de travaux, rien qui touche un élève. Une classe supprimée depuis
+   disparaît ici d'elle-même — la jointure ne la trouve plus. */
+async function attributionsDe(etab) {
+  const r = await db.q(
+    `select a.devoir,
+            coalesce(json_agg(cl.nom order by cl.ordre, cl.nom) filter (where cl.id is not null), '[]') as classes
+       from devoirs_attributions a
+       left join lateral jsonb_array_elements_text(a.classes) as x(id) on true
+       left join classes cl on cl.id = x.id::int and cl.etablissement_id = a.etablissement_id
+      where a.etablissement_id = $1
+      group by a.devoir`, [etab]);
+  return Object.fromEntries(r.rows.map((x) => [x.devoir, x.classes]));
 }
 
 async function devoirPassage(req) {
@@ -1519,7 +1537,8 @@ async function profDevoirs(req) {
        from devoirs_passages p left join classes cl on cl.id = p.classe_id
       where p.etablissement_id = $1
       order by p.devoir, cl.ordre nulls last, cl.nom, lower(p.prenom), p.debut_le`, [s.etablissement_id]);
-  return { code: await codeDevoir(s.etablissement_id), passages: r.rows, conservationMois: DEVOIRS_MOIS };
+  return { code: await codeDevoir(s.etablissement_id), passages: r.rows, conservationMois: DEVOIRS_MOIS,
+           attributions: await attributionsDe(s.etablissement_id) };
 }
 
 /* {id} : une ligne. {devoir, classe?} : toute la série d'un devoir, d'une classe ou de
@@ -1593,6 +1612,31 @@ async function profLierDevoirs(req) {
   return { ok: true, relies: r.rowCount };
 }
 
+/* {devoir, classes} : ce travail est donné à ces classes (des noms), et à elles seules.
+   [] = à aucune classe : la tuile disparaît chez les élèves, les lignes déjà reçues
+   restent. Toutes les classes doivent être de l'établissement de la session. */
+async function profAttribuerDevoir(req) {
+  const s = await sessionProf(req);
+  const corps = await lireCorps(req);
+  const devoir = String(corps.devoir || '');
+  if (!DEVOIR_NOM_OK.test(devoir)) throw new Refus(400, 'Travail inconnu.');
+  if (!Array.isArray(corps.classes) || corps.classes.length > 30) throw new Refus(400, 'Classes manquantes.');
+
+  const noms = [...new Set(corps.classes.map((c) => String(c).trim().toLowerCase()))];
+  const r = noms.length
+    ? await db.q('select id from classes where etablissement_id = $1 and lower(nom) = any($2::text[])',
+        [s.etablissement_id, noms])
+    : { rows: [] };
+  if (r.rows.length !== noms.length) throw new Refus(404, 'Classe introuvable.');
+
+  await db.q(
+    `insert into devoirs_attributions(etablissement_id, devoir, classes) values ($1, $2, $3)
+     on conflict (etablissement_id, devoir) do update set classes = excluded.classes, maj_le = now()`,
+    [s.etablissement_id, devoir, JSON.stringify(r.rows.map((x) => x.id))]);
+  await db.journaliser(s.identifiant, 'devoirs.attribution', devoir, { classes: noms }, s.etablissement_id);
+  return { ok: true, attributions: await attributionsDe(s.etablissement_id) };
+}
+
 async function purgerDevoirs() {
   try {
     const r = await db.q(
@@ -1645,6 +1689,7 @@ const ROUTES = [
   ['GET',    '/api/prof/devoirs',              profDevoirs],
   ['DELETE', '/api/prof/devoirs',              profSupprimerDevoirs],
   ['PUT',    '/api/prof/devoirs/lien',         profLierDevoirs],
+  ['PUT',    '/api/prof/devoirs/attribution',  profAttribuerDevoir],
 
   ['GET',    '/api/admin/etablissements',      adminEtablissements],
   ['POST',   '/api/admin/etablissements',      adminCreerEtablissement],

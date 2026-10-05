@@ -20,7 +20,10 @@
  *   titre     le nom affiché, à l'élève comme à l'enseignant
  *   ic        un emoji
  *   matiere   « Technologie », « Sciences »… — sert à regrouper quand la liste grandit
- *   niveaux   les classes à qui la tuile s'affiche : ['5e', '3e']. [] = toutes.
+ *   niveaux   les classes à qui la tuile s'affiche PAR DÉFAUT : ['5e', '3e']. [] = toutes.
+ *             L'enseignant les change ensuite d'un clic dans travail-maison.html (« Pour
+ *             quelles classes ? ») : ce choix, rangé sur le serveur pour son établissement,
+ *             l'emporte sur celui-ci.
  *   duree     ce qu'on annonce à l'élève
  *   resume    une phrase : ce que l'élève y fait
  *   url       l'adresse de la page, SANS le code — la page d'entrée ajoute « ?c=CODE »
@@ -35,6 +38,10 @@
  *
  * L'ordre du tableau est l'ordre d'affichage : le plus récent en premier.
  */
+/* Les classes que propose la page d'entrée (une tuile chacune), et donc les seules à qui
+   un travail peut être donné. Ce sont les noms que l'Atelier crée d'office. */
+window.CLASSES_MAISON = ['6e', '5e', '4e', '3e'];
+
 window.TRAVAUX = [
   {
     id: 'pc-1',
