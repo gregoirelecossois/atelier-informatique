@@ -180,8 +180,12 @@ var CLE_ELEVE = 'maison_eleve_v1';
 var CLE_AVANCEES = 'maison_avancees_v1';
 /* Les quatre classes du collège, toujours les mêmes : l'élève touche la sienne. Le serveur
    n'enregistre un travail que si sa classe existe sous ce nom dans l'établissement — ce
-   sont les noms que l'Atelier crée d'office. */
-var CLASSES = ['6e', '5e', '4e', '3e'];
+   sont les noms que l'Atelier crée d'office (scripts/travaux.js, CLASSES_MAISON). */
+var CLASSES = window.CLASSES_MAISON || ['6e', '5e', '4e', '3e'];
+/* À quelles classes l'enseignant a donné chaque travail, tel que le serveur l'a dit à la
+   dernière visite : { code, attributions: { devoir: [classes] } }. Gardé pour que la page
+   s'affiche juste tout de suite, même sans réseau ; rafraîchi à chaque visite. */
+var CLE_ATTRIBUTIONS = 'maison_attributions_v1';
 /* La même règle que le serveur : des lettres, et ce qui les relie. */
 var PRENOM_OK = /^\p{L}[\p{L} '’-]{0,23}$/u;
 
@@ -218,6 +222,8 @@ ecrire('maison_appareil_v1', appareil);   /* survit à « Ce n'est pas moi » : 
 var CODE = CODE_URL || (eleve && eleve.code) || '';
 var ENTREE = location.href.replace(/[?#].*$/, '');
 var SUIVI = !!API && /^[a-z0-9]{6,16}$/.test(CODE);
+var gardees = lire(CLE_ATTRIBUTIONS);
+var attributions = gardees && gardees.code === CODE && gardees.attributions ? gardees.attributions : {};
 
 function enregistrer(prenom, classe){
   eleve = { appareil: appareil, prenom: prenom, classe: classe, code: CODE, entree: ENTREE };
@@ -262,10 +268,13 @@ $('#formulaire').addEventListener('submit', function(ev){
 });
 
 /* ---- 2. Les tuiles ---- */
+/* Les classes choisies par l'enseignant dans le suivi, sinon celles du catalogue
+   (`niveaux`, [] = toutes). */
 function pourMaClasse(t){
   if(t.masque || !t.url) return false;
-  var n = Array.isArray(t.niveaux) ? t.niveaux : [];
-  return !n.length || n.some(function(x){ return plat(x) === plat(eleve.classe); });
+  var n = Array.isArray(attributions[t.id]) ? attributions[t.id]
+        : Array.isArray(t.niveaux) && t.niveaux.length ? t.niveaux : CLASSES;
+  return n.some(function(x){ return plat(x) === plat(eleve.classe); });
 }
 function lienDe(t){
   return t.url + (SUIVI ? (t.url.indexOf('?') < 0 ? '?' : '&') + 'c=' + encodeURIComponent(CODE) : '');
@@ -325,11 +334,19 @@ function peindrePied(demande){
   }
 }
 
-/* Un lien périmé se dit tout de suite, plutôt qu'après vingt minutes de travail perdu
-   pour le professeur. Rien d'autre ne part vers le serveur depuis cette page. */
+/* Une seule question au serveur, en lecture : les classes à qui va chaque travail — et du
+   même coup, un lien périmé se dit tout de suite, plutôt qu'après vingt minutes de
+   travail perdu pour le professeur. Rien d'autre ne part vers le serveur d'ici. */
 function verifierLien(){
   if(!SUIVI) return;
   fetch(API + '/api/devoir/classes?c=' + encodeURIComponent(CODE), { cache: 'no-store' }).then(function(r){
+    if(r.ok) r.json().then(function(j){
+      var nouvelles = j && j.attributions && typeof j.attributions === 'object' ? j.attributions : {};
+      var change = JSON.stringify(nouvelles) !== JSON.stringify(attributions);
+      attributions = nouvelles;
+      ecrire(CLE_ATTRIBUTIONS, { code: CODE, attributions: attributions });
+      if(change && eleve && !$('#ecranTuiles').hidden) peindreTuiles();
+    }).catch(function(){});
     if(r.status === 404 && eleve){
       $('#avertir').hidden = false; $('#avertir').className = 'avertir ko';
       $('#avertir').textContent = '⚠ Ce lien ne marche plus. Demande le nouveau lien à ton professeur.';

@@ -75,11 +75,13 @@
 
   /* ---- la liste des travaux ---- */
   .travaux{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:22px}
-  .travail{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+  .travail{display:flex;flex-direction:column;text-align:left;width:100%;
         background:var(--carte);border:2px solid var(--trait);border-radius:16px;padding:13px 15px;
         color:inherit;transition:border-color .15s}
   .travail:hover{border-color:#9fb6cd}
   .travail.on{border-color:var(--bleu);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .travail .ouvrir{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+        background:none;border:0;padding:0;color:inherit;font:inherit}
   .travail .ic{font-size:1.7rem;line-height:1.1;flex:none}
   .travail .corps{min-width:0;flex:1}
   .travail .titre{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:1.08rem;display:block}
@@ -146,6 +148,18 @@
   .badge{background:#fff7e0;color:#854d0e;border-radius:999px;padding:1px 8px;font-size:.74rem;margin-left:4px}
   .puce.on .badge{background:#fde68a}
   .travail.masque{opacity:.6}
+
+  /* ---- pour quelles classes : une pastille par classe, allumée = la tuile s'affiche ---- */
+  .pour{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px dashed var(--trait)}
+  .pour .pour-l{font-size:.76rem;font-weight:800;color:var(--gris);margin-right:2px}
+  .cl{border:2px solid var(--trait);background:#fff;border-radius:999px;padding:3px 11px;
+      font-weight:800;font-size:.8rem;color:var(--gris);transition:background .12s,border-color .12s,color .12s}
+  .cl:hover{border-color:#9fb6cd;color:var(--encre)}
+  .cl.on{background:var(--vert);border-color:var(--vert);color:#fff}
+  .cl.on:hover{background:#15803d;border-color:#15803d}
+  .cl[disabled]{opacity:.5;cursor:default}
+  .pour .aucune{font-size:.76rem;font-weight:800;color:#b45309}
+  .pour .defaut{font-size:.72rem;font-weight:700;color:var(--gris);margin-left:auto}
 
   /* ---- relier une ligne à un compte ---- */
   td.eleve{white-space:normal;min-width:190px}
@@ -238,7 +252,7 @@
 var RYTHME = 30000;
 
 var etat = {
-  passages: [], code: '', conservationMois: 12,
+  passages: [], code: '', conservationMois: 12, attributions: {},
   eleves: [], classes: [], eleveParId: {},
   vue: 'travail',         /* 'travail' | 'eleves' */
   travail: null,          /* identifiant du travail affiché */
@@ -315,10 +329,23 @@ function leTravail(){
   var liste = travaux();
   return liste.filter(function(t){ return t.id === etat.travail; })[0] || liste[0] || null;
 }
-function niveauxDe(t){ return Array.isArray(t.niveaux) ? t.niveaux : []; }
+/* Les classes que propose la page d'entrée et qui existent dans l'établissement : ce sont
+   les seules à qui un travail peut être donné. */
+function classesMaison(){
+  return (window.CLASSES_MAISON || ['6e', '5e', '4e', '3e']).map(function(n){
+    var c = etat.classes.filter(function(x){ return plat(x.nom) === plat(n); })[0];
+    return c ? c.nom : null;
+  }).filter(Boolean);
+}
+/* À qui va ce travail : le choix de l'enseignant s'il en a fait un (rangé sur le serveur),
+   sinon les classes par défaut du catalogue (`niveaux`, [] = toutes). */
+function choisi(t){ return Array.isArray(etat.attributions[t.id]); }
+function niveauxDe(t){
+  if(choisi(t)) return etat.attributions[t.id];
+  return Array.isArray(t.niveaux) && t.niveaux.length ? t.niveaux : classesMaison();
+}
 function pourClasse(t, classe){
-  var n = niveauxDe(t);
-  return !n.length || n.some(function(x){ return plat(x) === plat(classe); });
+  return niveauxDe(t).some(function(x){ return plat(x) === plat(classe); });
 }
 function lignesDe(id){ return etat.passages.filter(function(p){ return p.devoir === id; }); }
 
@@ -493,17 +520,17 @@ function peindreTravaux(){
   $('#travaux').hidden = etat.vue !== 'travail';
   $('#travaux').innerHTML = travaux().map(function(t){
     var g = grouper(lignesDe(t.id)), finis = g.filter(function(x){ return x.termine; }).length;
-    var meta = [t.matiere, niveauxDe(t).join(', '), t.duree].filter(Boolean).join(' · ');
+    var meta = [t.matiere, t.duree].filter(Boolean).join(' · ');
     var on = courant && t.id === courant.id;
-    return '<button class="travail' + (on ? ' on' : '') + (t.masque ? ' masque' : '') + '" data-travail="' + esc(t.id) + '"' +
-      (on ? ' aria-current="true"' : '') + '>' +
+    return '<div class="travail' + (on ? ' on' : '') + (t.masque ? ' masque' : '') + '">' +
+      '<button class="ouvrir" data-travail="' + esc(t.id) + '"' + (on ? ' aria-current="true"' : '') + '>' +
       '<span class="ic" aria-hidden="true">' + esc(t.ic || '📄') + '</span>' +
       '<span class="corps"><span class="titre">' + esc(t.titre) + '</span>' +
       '<span class="meta">' + (meta ? esc(meta) : '&nbsp;') + (t.masque ? ' · <b>caché aux élèves</b>' : '') + '</span>' +
       (g.length
         ? '<span class="compte">' + pluriel(g.length, 'élève', 'élèves') + ' · <b>' + pluriel(finis, 'terminé', 'terminés') + '</b></span>'
         : '<span class="compte zero">Pas encore ouvert</span>') +
-      '</span></button>';
+      '</span></button>' + pastilles(t) + '</div>';
   }).join('');
   tous('[data-travail]').forEach(function(b){
     b.addEventListener('click', function(){
@@ -511,6 +538,54 @@ function peindreTravaux(){
       try{ history.replaceState(null, '', '#' + etat.travail); }catch(e){}
       peindre();
     });
+  });
+  tous('[data-attribuer]').forEach(function(b){
+    b.addEventListener('click', function(){ basculer(b.getAttribute('data-attribuer'), b.getAttribute('data-cl')); });
+  });
+}
+
+/* « Pour 6e 5e 4e 3e » sous chaque carte : allumée = les élèves de cette classe voient la
+   tuile sur la page d'entrée. Un clic allume ou éteint, c'est enregistré aussitôt. */
+function pastilles(t){
+  if(t.inconnu || !t.url) return '';
+  var cls = classesMaison(), n = niveauxDe(t);
+  if(!cls.length) return '';
+  var actives = cls.filter(function(c){ return n.some(function(x){ return plat(x) === plat(c); }); });
+  return '<div class="pour" role="group" aria-label="Classes qui voient « ' + esc(t.titre) + ' »">' +
+    '<span class="pour-l">Pour</span>' +
+    cls.map(function(c){
+      var on = actives.indexOf(c) >= 0;
+      return '<button class="cl' + (on ? ' on' : '') + '" data-attribuer="' + esc(t.id) + '" data-cl="' + esc(c) + '"' +
+        ' aria-pressed="' + on + '"' + (t.masque ? ' disabled' : '') +
+        ' title="' + (on ? 'Les ' + esc(c) + ' voient ce travail. Cliquer pour le leur retirer.'
+                         : 'Cliquer pour donner ce travail aux ' + esc(c) + '.') + '">' + esc(c) + '</button>';
+    }).join('') +
+    (!actives.length && !t.masque ? '<span class="aucune">aucune classe : caché aux élèves</span>' : '') +
+    (!choisi(t) && !t.masque ? '<span class="defaut" title="Les classes prévues dans scripts/travaux.js. Ton premier clic les remplace.">par défaut</span>' : '') +
+    '</div>';
+}
+
+/* Allumer ou éteindre une classe pour un travail. Affiché tout de suite, puis enregistré ;
+   en cas de refus, on revient à l'état d'avant. */
+function basculer(id, classe){
+  var t = travaux().filter(function(x){ return x.id === id; })[0];
+  if(!t) return;
+  var avant = choisi(t) ? etat.attributions[id].slice() : null;
+  var n = niveauxDe(t).filter(function(x){ return classesMaison().some(function(c){ return plat(c) === plat(x); }); });
+  var dedans = n.some(function(x){ return plat(x) === plat(classe); });
+  var apres = dedans ? n.filter(function(x){ return plat(x) !== plat(classe); }) : n.concat([classe]);
+  /* Dans l'ordre des classes, pas dans l'ordre des clics. */
+  apres = classesMaison().filter(function(c){ return apres.some(function(x){ return plat(x) === plat(c); }); });
+  etat.attributions[id] = apres;
+  peindre();
+  api('PUT', '/api/prof/devoirs/attribution', { devoir: id, classes: apres }).then(function(r){
+    etat.attributions = r.attributions || etat.attributions;
+    empreinte = '';
+    peindre();
+  }).catch(function(e){
+    if(avant) etat.attributions[id] = avant; else delete etat.attributions[id];
+    peindre();
+    alert('Pas enregistré : ' + e.message);
   });
 }
 
@@ -557,7 +632,7 @@ function peindreFiche(){
   }
   var groupes = grouper(lignesDe(t.id)), classe = classeDe(t);
   var vus = groupes.filter(function(g){ return !classe || plat(g.classe) === plat(classe); });
-  var meta = [t.matiere, niveauxDe(t).length ? 'pour ' + niveauxDe(t).join(', ') : 'toutes les classes', t.duree].filter(Boolean).join(' · ');
+  var meta = [t.matiere, t.inconnu ? '' : niveauxDe(t).length ? 'pour ' + niveauxDe(t).join(', ') : 'aucune classe', t.duree].filter(Boolean).join(' · ');
 
   var doublons = {};
   groupes.forEach(function(g){ if(!g.eleve){ var k = plat(g.classe) + '|' + plat(g.nom); doublons[k] = (doublons[k] || 0) + 1; } });
@@ -756,6 +831,7 @@ function charger(force){
     etat.passages = r[0].passages || [];
     etat.code = r[0].code || '';
     etat.conservationMois = r[0].conservationMois || 12;
+    etat.attributions = r[0].attributions || {};
     etat.eleves = r[1].eleves || [];
     etat.classes = r[1].classes || [];
     etat.eleveParId = {};

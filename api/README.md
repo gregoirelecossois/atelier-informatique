@@ -633,8 +633,13 @@ compte — ni la même question. On y entre avec **l'identifiant d'enseignant de
 une session ouverte sur l'une des deux pages vaut pour l'autre (même domaine, même
 `scripts/store.js`). En haut, le lien de l'année ; puis deux vues :
 
-- **Par travail** : pour le travail choisi, par classe, qui l'a ouvert, jusqu'où, avec
-  quel score, et « Pas encore vus » — les comptes de la classe qu'aucune ligne ne relie ;
+- **Par travail** : chaque carte porte ses pastilles de classes (« Pour 6e 5e 4e 3e ») —
+  allumée, les élèves de cette classe voient la tuile ; un clic allume ou éteint, c'est
+  enregistré aussitôt pour l'établissement (`devoirs_attributions`), sans toucher au
+  catalogue. Tant que personne n'a cliqué, ce sont les classes par défaut de
+  `scripts/travaux.js` (« par défaut »). Puis, pour le travail choisi, par classe, qui l'a
+  ouvert, jusqu'où, avec quel score, et « Pas encore vus » — les comptes de la classe
+  qu'aucune ligne ne relie ;
 - **Par élève** : une classe, ses comptes en lignes, les travaux en colonnes. C'est là
   qu'on voit qu'un élève a fait le PC mais pas le vélo, quel que soit le prénom tapé.
 
@@ -712,11 +717,12 @@ marchent, rien n'est envoyé, et c'est dit à l'élève.
 
 | Route | Qui | Rôle |
 |---|---|---|
-| `GET /api/devoir/classes?c=CODE` | sans connexion | les noms des classes, pour que l'élève touche la sienne |
+| `GET /api/devoir/classes?c=CODE` | sans connexion | les noms des classes, et `attributions` : `{devoir: [classes]}` pour les travaux dont l'enseignant a changé les classes |
 | `POST /api/devoir/passage` | sans connexion | `{c, id, appareil?, devoir, prenom, classe, etape, etapes, score, max}` — l'état complet, rejouable |
 | `GET /api/prof/devoirs` | enseignant | le code du lien et les lignes de **son** établissement, avec `compte_id`, `lien` et une `suggestion` |
 | `DELETE /api/prof/devoirs` | enseignant | `{id}` une ligne, `{ids}` ces lignes, ou `{devoir, classe?}` toute une série |
 | `PUT /api/prof/devoirs/lien` | enseignant | `{ids, compte}` relie ces lignes à ce compte (`null` : à personne) ; journalisé |
+| `PUT /api/prof/devoirs/attribution` | enseignant | `{devoir, classes}` ce travail est donné à ces classes, et à elles seules (`[]` : à aucune) ; journalisé |
 
 Ce sont les **seules routes qui écrivent sans authentification**. Ce qui les borne : le
 code, un rythme par adresse IP (240 appels par dix minutes), une classe qui doit exister
@@ -737,10 +743,11 @@ libre, et le serveur range ce qu'on lui envoie.
    identifiant** dans `devoir` (`velo-1`, `scratch-1`…) et l'`appareil`, et écrit son
    avancée dans `maison_avancees_v1` pour la tuile. `src/maison/suivi.ts`, dans le dépôt
    `le-pc`, est le modèle à reprendre.
-2. **Une entrée dans `scripts/travaux.js`** : identifiant, titre, classes visées
-   (`niveaux`), adresse, nom des étapes. Sa tuile apparaît chez les élèves de ces classes,
-   et sa fiche dans `travail-maison.html`. `masque: true` retire la tuile sans perdre les
-   résultats.
+2. **Une entrée dans `scripts/travaux.js`** : identifiant, titre, classes visées par
+   défaut (`niveaux`), adresse, nom des étapes. Sa tuile apparaît chez les élèves de ces
+   classes, et sa fiche dans `travail-maison.html` — où l'on change ensuite les classes
+   d'un clic, sans revenir au catalogue. `masque: true` retire la tuile partout sans perdre
+   les résultats.
 
 Un travail qui envoie des lignes **sans** être au catalogue s'affiche quand même, sous son
 identifiant brut. Ne jamais renommer un identifiant une fois le travail distribué : les

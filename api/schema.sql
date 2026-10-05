@@ -270,3 +270,19 @@ alter table devoirs_passages add column if not exists lien      text;
 alter table devoirs_passages add column if not exists appareil  text;
 create index if not exists devoirs_passages_appareil_idx on devoirs_passages(etablissement_id, appareil);
 create index if not exists devoirs_passages_compte_idx   on devoirs_passages(compte_id);
+
+-- À quelles classes un travail à la maison est donné, établissement par établissement.
+--
+-- scripts/travaux.js propose des classes par défaut (`niveaux`) ; l'enseignant les change
+-- depuis travail-maison.html, sans toucher au code ni redéployer. Une ligne ici remplace
+-- le défaut pour CET établissement : `classes` est la liste des identifiants de classes
+-- (des numéros et non des noms : une classe renommée reste attribuée), et une liste vide
+-- veut dire « à aucune classe » — la tuile disparaît chez les élèves, les résultats restent.
+-- Une classe supprimée sort de la liste à la lecture (voir attributionsDe).
+create table if not exists devoirs_attributions (
+  etablissement_id int  not null references etablissements(id) on delete cascade,
+  devoir           text not null,
+  classes          jsonb not null default '[]'::jsonb,
+  maj_le           timestamptz not null default now(),
+  primary key (etablissement_id, devoir)
+);
