@@ -31,6 +31,11 @@
  *   GET    /api/makecode/modeles            modèles proposés à sa classe (prof : tous)
  *   GET    /api/makecode/modele/:id         un modèle, compressé, pour en partir
  *
+ * Routes ouvertes SANS connexion — le travail à la maison (maison.html, dépôt le-pc).
+ * Le code de l'établissement, porté par le lien donné aux élèves, tient lieu de portée :
+ *   GET    /api/devoir/classes?c=CODE       les noms des classes, pour que l'élève choisisse
+ *   POST   /api/devoir/passage              {c, id, devoir, prenom, classe, etape…} → où il en est
+ *
  * Routes réservées au rôle « prof » — le tableau de bord :
  *   GET    /api/prof/tableau                tous les comptes + leur avancement résumé
  *   GET    /api/prof/presence               qui est connecté, et où (interrogé souvent)
@@ -50,6 +55,8 @@
  *   PUT    /api/prof/makecode/modele        {source, nom, donnees, classes} → publie
  *   PATCH  /api/prof/makecode/modele/:id    {nom?, classes?}
  *   DELETE /api/prof/makecode/modele/:id    retire le modèle (les copies des élèves restent)
+ *   GET    /api/prof/devoirs                code du lien + qui a fait le travail à la maison
+ *   DELETE /api/prof/devoirs                {id} une ligne, ou {devoir, classe?} toute une série
  *
  * Routes réservées au rôle « admin » — la gestion des établissements. Ce compte est
  * délibérément distinct du compte enseignant : il crée les collèges et les comptes
@@ -67,6 +74,7 @@
  */
 import './env.js';
 import http from 'node:http';
+import crypto from 'node:crypto';
 import * as db from './db.js';
 import * as auth from './auth.js';
 import { creerCompte, reinitialiserMdp, classeDeLEtablissement,
@@ -131,6 +139,23 @@ const MC_ID_OK = /^[A-Za-z0-9-]{8,64}$/;
    comptent dans MC_TABLE_MAX_MO comme les projets. */
 const MC_MODELES_MAX = Number(process.env.MC_MODELES_MAX || 60);
 const MC_MODELE_NOM_MAX = 50;
+
+/* Travail à la maison (voir devoirs_passages dans schema.sql). Ces routes sont les seules
+   qui écrivent sans connexion : tout y est borné. DEVOIRS_MOIS est la durée de vie d'une
+   ligne, comptée depuis la dernière activité — un devoir se regarde dans les semaines
+   qui suivent, pas l'année d'après. DEVOIRS_MAX plafonne le nombre de lignes d'un
+   établissement : au-delà, les nouveaux élèves ne sont plus enregistrés (leur page
+   continue de fonctionner), ceux déjà inscrits continuent d'avancer. */
+const DEVOIRS_MOIS = Number(process.env.DEVOIRS_MOIS || 12);
+const DEVOIRS_MAX = Number(process.env.DEVOIRS_MAX || 3000);
+const DEVOIR_APPELS_FENETRE = 10 * 60_000;
+const DEVOIR_APPELS_MAX = 240;     /* par adresse IP : une classe entière derrière la même box du collège */
+const DEVOIR_ID_OK = /^[A-Za-z0-9-]{16,64}$/;
+const DEVOIR_NOM_OK = /^[a-z0-9-]{1,30}$/;
+const DEVOIR_CODE_OK = /^[a-z0-9]{6,16}$/;
+/* Un prénom : des lettres, et ce qui les relie. Pas de chiffre, pas de ponctuation — ce
+   champ est le seul que l'élève tape, et il ne doit pas pouvoir devenir un commentaire. */
+const DEVOIR_PRENOM_OK = /^\p{L}[\p{L} '’-]{0,23}$/u;
 
 /* --------------------------------------------------------------------------
    Utilitaires HTTP
@@ -1308,6 +1333,175 @@ async function adminMdpProf(req, params) {
 }
 
 /* --------------------------------------------------------------------------
+   Travail à la maison — sans compte
+   L'élève ouvre un lien sur son téléphone, tape son prénom, choisit sa classe, et la
+   page envoie ici où il en est : étapes faites, score. Pas de session, donc pas de
+   jeton : la portée vient du CODE de l'établissement, que le lien transporte. Un code
+   inconnu est « introuvable », comme partout ailleurs.
+
+   Ce qui protège ces routes, faute d'authentification :
+     - le code (il faut avoir reçu le lien) ;
+     - un rythme par adresse IP, tenu en mémoire — l'adresse n'est PAS enregistrée ;
+     - une classe qui doit exister dans l'établissement, un prénom fait de lettres ;
+     - un plafond de lignes par établissement.
+   Rien de tout cela n'empêche un élève de taper le prénom d'un autre : ce suivi dit qui
+   a travaillé, il ne certifie rien. C'est écrit aussi dans le README (§ 4 bis).
+   -------------------------------------------------------------------------- */
+const devoirRythmes = new Map();   /* adresse IP → { debut, n } */
+
+function devoirRythme(req) {
+  const adresse = ip(req), maintenant = Date.now();
+  let r = devoirRythmes.get(adresse);
+  if (!r || maintenant - r.debut > DEVOIR_APPELS_FENETRE) { r = { debut: maintenant, n: 0 }; devoirRythmes.set(adresse, r); }
+  if (++r.n > DEVOIR_APPELS_MAX) throw new Refus(429, 'Trop d\'envois. Réessaie dans quelques minutes.');
+}
+setInterval(() => {
+  const limite = Date.now() - DEVOIR_APPELS_FENETRE;
+  for (const [k, r] of devoirRythmes) if (r.debut < limite) devoirRythmes.delete(k);
+}, 10 * 60_000).unref();
+
+async function etablissementDuCode(code) {
+  const c = String(code || '').trim().toLowerCase();
+  if (!DEVOIR_CODE_OK.test(c)) throw new Refus(404, 'Lien inconnu.');
+  const e = await db.une('select id from etablissements where code_devoir = $1 and actif', [c]);
+  if (!e) throw new Refus(404, 'Lien inconnu.');
+  return e.id;
+}
+
+/* Les noms de classes, et rien d'autre : l'élève choisit la sienne au lieu de la taper
+   (« 5eme », « 5 e », « cinquième »…), ce qui la rend comparable côté enseignant. */
+async function devoirClasses(req) {
+  devoirRythme(req);
+  const code = new URL(req.url || '/', 'http://x').searchParams.get('c');
+  const etab = await etablissementDuCode(code);
+  return { classes: (await lesClasses(etab)).map((c) => c.nom) };
+}
+
+async function devoirPassage(req) {
+  devoirRythme(req);
+  const corps = await lireCorps(req);
+  const etab = await etablissementDuCode(corps.c);
+
+  const id = String(corps.id || '');
+  const devoir = String(corps.devoir || '');
+  const prenom = String(corps.prenom || '').normalize('NFC').replace(/\s+/g, ' ').trim();
+  if (!DEVOIR_ID_OK.test(id) || !DEVOIR_NOM_OK.test(devoir)) throw new Refus(400, 'Envoi incomplet.');
+  if (!DEVOIR_PRENOM_OK.test(prenom)) throw new Refus(400, 'Écris ton prénom avec des lettres seulement.');
+
+  const classe = await db.une(
+    'select id from classes where etablissement_id = $1 and lower(nom) = lower($2)',
+    [etab, String(corps.classe || '').trim()]);
+  if (!classe) throw new Refus(400, 'Classe inconnue.');
+
+  const entier = (v, max) => {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) && n >= 0 ? Math.min(n, max) : 0;
+  };
+  const etapes = entier(corps.etapes, 50), max = entier(corps.max, 500);
+  const etape = Math.min(entier(corps.etape, 50), etapes), score = Math.min(entier(corps.score, 500), max);
+  const termine = etapes > 0 && etape >= etapes;
+
+  const deja = await db.une('select etablissement_id, devoir from devoirs_passages where id = $1', [id]);
+  /* Un identifiant déjà pris ailleurs (autre collège, autre devoir) n'est ni repris ni
+     signalé : on répond comme pour un envoi mal formé. */
+  if (deja && (deja.etablissement_id !== etab || deja.devoir !== devoir)) throw new Refus(400, 'Envoi incomplet.');
+  if (!deja) {
+    const n = await db.une('select count(*)::int as n from devoirs_passages where etablissement_id = $1', [etab]);
+    if (n.n >= DEVOIRS_MAX) throw new Refus(507, 'Le suivi est plein pour le moment.');
+  }
+
+  /* greatest() : deux envois peuvent arriver dans le désordre (réseau de téléphone, onglet
+     rouvert). Un score ou une étape ne redescendent jamais, quel que soit l'ordre. */
+  await db.q(
+    `insert into devoirs_passages(id, etablissement_id, devoir, prenom, classe_id, etape, etapes, score, score_max, termine)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+     on conflict (id) do update
+        set prenom = excluded.prenom, classe_id = excluded.classe_id,
+            etape = greatest(devoirs_passages.etape, excluded.etape),
+            etapes = excluded.etapes,
+            score = greatest(devoirs_passages.score, excluded.score),
+            score_max = excluded.score_max,
+            termine = devoirs_passages.termine or excluded.termine,
+            maj_le = now()`,
+    [id, etab, devoir, prenom, classe.id, etape, etapes, score, max, termine]);
+  return { ok: true };
+}
+
+/* Le code du lien est créé à la première visite de l'enseignant : tant que personne n'a
+   ouvert « Travail à la maison », l'établissement n'a aucune porte sans connexion. */
+async function codeDevoir(etablissementId) {
+  const e = await db.une('select code_devoir from etablissements where id = $1', [etablissementId]);
+  if (e && e.code_devoir) return e.code_devoir;
+  const ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';   /* sans i/l/o/0/1 : le code se dicte */
+  for (let essai = 0; essai < 5; essai++) {
+    const code = Array.from(crypto.randomBytes(8), (o) => ALPHABET[o % ALPHABET.length]).join('');
+    try {
+      const r = await db.une(
+        `update etablissements set code_devoir = coalesce(code_devoir, $2) where id = $1 returning code_devoir`,
+        [etablissementId, code]);
+      return r.code_devoir;
+    } catch (e2) {
+      if (e2.code !== '23505') throw e2;   /* code déjà pris par un autre établissement : on retire */
+    }
+  }
+  throw new Refus(500, 'Code du lien impossible à créer.');
+}
+
+async function profDevoirs(req) {
+  const s = await sessionProf(req);
+  const r = await db.q(
+    `select p.id, p.devoir, p.prenom, cl.nom as classe, p.etape, p.etapes, p.score, p.score_max,
+            p.termine, p.debut_le, p.maj_le
+       from devoirs_passages p left join classes cl on cl.id = p.classe_id
+      where p.etablissement_id = $1
+      order by p.devoir, cl.ordre nulls last, cl.nom, lower(p.prenom), p.debut_le`, [s.etablissement_id]);
+  return { code: await codeDevoir(s.etablissement_id), passages: r.rows, conservationMois: DEVOIRS_MOIS };
+}
+
+/* {id} : une ligne. {devoir, classe?} : toute la série d'un devoir, d'une classe ou de
+   toutes. Toujours bornée à l'établissement de la session. */
+async function profSupprimerDevoirs(req) {
+  const s = await sessionProf(req);
+  const corps = await lireCorps(req);
+  let r;
+  if (corps.id) {
+    r = await db.q('delete from devoirs_passages where id = $1 and etablissement_id = $2',
+      [String(corps.id), s.etablissement_id]);
+  } else if (corps.devoir) {
+    let classe = null;
+    if (corps.classe) {
+      const c = await db.une(
+        'select id from classes where etablissement_id = $1 and lower(nom) = lower($2)',
+        [s.etablissement_id, String(corps.classe).trim()]);
+      if (!c) throw new Refus(404, 'Classe introuvable.');
+      classe = c.id;
+    }
+    r = await db.q(
+      `delete from devoirs_passages
+        where etablissement_id = $1 and devoir = $2 and ($3::int is null or classe_id = $3)`,
+      [s.etablissement_id, String(corps.devoir), classe]);
+  } else {
+    throw new Refus(400, 'Rien à supprimer.');
+  }
+  if (r.rowCount) {
+    await db.journaliser(s.identifiant, 'devoirs.suppression', corps.id ? null : String(corps.devoir),
+      { lignes: r.rowCount, classe: corps.classe || null }, s.etablissement_id);
+  }
+  return { ok: true, supprimes: r.rowCount };
+}
+
+async function purgerDevoirs() {
+  try {
+    const r = await db.q(
+      `delete from devoirs_passages where maj_le < now() - ($1 || ' months')::interval`,
+      [String(DEVOIRS_MOIS)]);
+    if (r.rowCount) console.log(`[api] devoirs : ${r.rowCount} ligne(s) au-delà de ${DEVOIRS_MOIS} mois`);
+  } catch (e) {
+    console.error('[api] purge des devoirs impossible :', e.message);
+  }
+}
+
+/* --------------------------------------------------------------------------
    Aiguillage
    -------------------------------------------------------------------------- */
 const ROUTES = [
@@ -1323,6 +1517,9 @@ const ROUTES = [
   ['DELETE', '/api/makecode/projet',           mcSupprimer],
   ['GET',    '/api/makecode/modeles',          mcModeles],
   ['GET',    '/api/makecode/modele/:id',       mcModele],
+
+  ['GET',    '/api/devoir/classes',            devoirClasses],
+  ['POST',   '/api/devoir/passage',            devoirPassage],
 
   ['GET',    '/api/prof/tableau',              profTableau],
   ['GET',    '/api/prof/presence',             profPresence],
@@ -1342,6 +1539,8 @@ const ROUTES = [
   ['PUT',    '/api/prof/makecode/modele',      profPublierModele],
   ['PATCH',  '/api/prof/makecode/modele/:id',  profModifierModele],
   ['DELETE', '/api/prof/makecode/modele/:id',  profRetirerModele],
+  ['GET',    '/api/prof/devoirs',              profDevoirs],
+  ['DELETE', '/api/prof/devoirs',              profSupprimerDevoirs],
 
   ['GET',    '/api/admin/etablissements',      adminEtablissements],
   ['POST',   '/api/admin/etablissements',      adminCreerEtablissement],
@@ -1407,12 +1606,12 @@ try {
 serveur.listen(PORT, HOTE, () => {
   console.log(`[api] à l'écoute sur ${HOTE}:${PORT}`);
   console.log(`[api] origines autorisées : ${ORIGINES.length ? ORIGINES.join(', ') : '(aucune — appels navigateur bloqués)'}`);
-  console.log(`[api] conservation : comptes élèves ${CONSERVATION_MOIS} mois, journal ${JOURNAL_MOIS} mois`);
+  console.log(`[api] conservation : comptes élèves ${CONSERVATION_MOIS} mois, journal ${JOURNAL_MOIS} mois, travail à la maison ${DEVOIRS_MOIS} mois`);
   console.log(`[api] empreinte du code : ${VERSION}`);
 });
 
 /* Au démarrage — après une minute, le temps que le service se pose — puis chaque jour. */
-function menageQuotidien(){ purgerComptesExpires(); purgerJournal(); }
+function menageQuotidien(){ purgerComptesExpires(); purgerJournal(); purgerDevoirs(); }
 setTimeout(menageQuotidien, 60_000).unref();
 setInterval(menageQuotidien, 24 * 60 * 60 * 1000).unref();
 
