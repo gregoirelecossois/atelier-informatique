@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e14">
+<meta name="robots" content="noindex, nofollow">
+<title>À la maison</title>
+
+<!-- LA PAGE D'ENTRÉE DES ÉLÈVES pour le travail à la maison, la même toute l'année :
+         maison.html?c=CODE      (le lien affiché par travail-maison.html)
+
+     L'élève y écrit son prénom et touche sa classe UNE fois. Ensuite, à chaque visite, il
+     voit une tuile par travail de scripts/travaux.js prévu pour sa classe, et la touche
+     pour l'ouvrir. Ajouter un travail au catalogue fait apparaître sa tuile : le lien ne
+     change jamais.
+
+     PAS DE COMPTE, PAS DE SESSION. Cette page n'envoie rien au serveur : elle range qui
+     est l'élève dans le navigateur du téléphone, et chaque page de travail, qui vit sur le
+     même domaine (gregoirelecossois.github.io), le relit là. Les clés partagées :
+
+       maison_eleve_v1     { appareil, prenom, classe, code, entree }
+                           appareil = tiré au hasard une fois, le même pour tous les
+                           travaux faits sur ce téléphone. Le serveur s'en sert pour relier
+                           tout seul un devoir à l'élève que l'enseignant a déjà reconnu.
+       maison_avancees_v1  { <id du travail> : { etape, etapes, score, max } }
+                           écrit par chaque page de travail, lu ici pour la tuile.
+       maison_appareil_v1  l'identifiant du téléphone, seul : il survit à « Ce n'est pas
+                           toi ? », puisque c'est toujours le même téléphone.
+
+     Rien d'autre n'est gardé, et rien ne part d'ici : le prénom ne quitte le téléphone
+     qu'avec l'avancée d'un travail (POST /api/devoir/passage, depuis la page du travail). -->
+
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+
+<style>
+  :root{
+    --fond:#0b0e14; --carte:#161c28; --carte-2:#1f2737;
+    --trait:rgba(255,255,255,.11); --trait-fort:rgba(255,255,255,.24);
+    --encre:#eef2f8; --doux:#aeb8c9; --accent:#4dd0e1; --accent-encre:#06222a;
+    --soleil:#ffd166; --ok:#5fd47a; --ok-fond:#12301c; --ko:#ff7f7f; --ko-fond:#3a1a1c;
+    --titre:"Fredoka","Trebuchet MS",system-ui,"Fluent Emoji",sans-serif;
+    --texte:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,"Fluent Emoji",sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--fond);color:var(--encre);font-family:var(--texte);font-size:18px;line-height:1.5;
+       -webkit-font-smoothing:antialiased;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  h1,h2{font-family:var(--titre);font-weight:600;margin:0;line-height:1.2;text-wrap:balance}
+  p{margin:0}
+  button,input{font:inherit;color:inherit}
+  button{cursor:pointer}
+  button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--soleil);outline-offset:2px}
+  [hidden]{display:none!important}
+
+  .ecran{max-width:520px;min-height:100dvh;margin:0 auto;display:flex;flex-direction:column;gap:14px;
+         padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(22px + env(safe-area-inset-bottom,0px))}
+
+  .btn{min-height:56px;padding:12px 20px;border-radius:999px;border:2px solid var(--trait-fort);background:var(--carte-2);
+       font-family:var(--titre);font-weight:600;font-size:1.1rem;transition:transform .08s}
+  .btn:active{transform:scale(.97)}
+  .btn.primaire{background:var(--accent);border-color:var(--accent);color:var(--accent-encre)}
+  .btn.primaire.pale{opacity:.55}
+  .btn.geant{min-height:64px;font-size:1.3rem;margin-top:8px;width:100%}
+  .btn.danger{background:var(--ko-fond);border-color:var(--ko);color:#ffd3d3}
+  .lien-discret{background:none;border:none;color:var(--doux);font-size:.9rem;text-decoration:underline;
+       text-underline-offset:3px;padding:12px 8px;align-self:center}
+
+  /* ---- 1. Qui es-tu ? ---- */
+  .accueil{justify-content:center;text-align:center}
+  .maisonnette{font-size:4.2rem;line-height:1;margin-bottom:2px;animation:flotte 3.2s ease-in-out infinite}
+  @keyframes flotte{50%{transform:translateY(-6px)}}
+  .accueil h1{font-size:2.3rem}
+  .accueil h1 span{display:block;color:var(--accent)}
+  .soustitre{color:var(--doux);font-weight:700}
+  .fiche{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--carte);border:1px solid var(--trait);
+         border-radius:22px;padding:18px;margin-top:6px}
+  .fiche label,.fiche .label{font-family:var(--titre);font-weight:600;font-size:1.05rem;margin-top:6px}
+  .fiche input{width:100%;min-height:56px;padding:10px 16px;border-radius:14px;border:2px solid var(--trait-fort);
+         background:var(--fond);font-size:1.2rem;font-weight:700}
+  .fiche input::placeholder{color:#6f7b8d;font-weight:600}
+  .fiche input:focus{border-color:var(--accent);outline:none}
+  .classes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .classe{min-height:60px;border-radius:14px;border:2px solid var(--trait-fort);background:var(--fond);
+          font-family:var(--titre);font-weight:600;font-size:1.1rem}
+  .classe.on{background:var(--accent);border-color:var(--accent);color:var(--accent-encre)}
+  .erreur{color:var(--ko);font-weight:700;font-size:.95rem}
+  .mention{color:var(--doux);font-size:.88rem}
+
+  /* ---- 2. Les tuiles ---- */
+  .tete{display:flex;align-items:center;gap:12px;margin-top:4px}
+  .tete .salut{flex:1;min-width:0}
+  .tete h1{font-size:1.75rem;overflow-wrap:anywhere}
+  .puce-classe{flex:none;font-family:var(--titre);font-weight:600;font-size:1.15rem;color:var(--accent-encre);
+       background:var(--accent);border-radius:14px;padding:8px 14px}
+  .avertir{border-radius:14px;padding:10px 14px;font-weight:700;font-size:.92rem;line-height:1.4;
+       background:var(--carte);border:1px solid var(--trait);color:var(--doux)}
+  .avertir.ko{background:var(--ko-fond);border-color:var(--ko);color:#ffd3d3}
+
+  .tuiles{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+  .tuile{display:flex;gap:14px;align-items:center;width:100%;text-align:left;text-decoration:none;color:inherit;
+       background:var(--carte);border:2px solid var(--trait-fort);border-radius:22px;padding:16px;
+       transition:transform .08s,border-color .15s;animation:arrive .35s ease-out both}
+  .tuile:active{transform:scale(.98)}
+  .tuile.fini{border-color:color-mix(in srgb,var(--ok) 55%,transparent)}
+  .tuile.nouveau{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
+  @keyframes arrive{from{opacity:0;transform:translateY(8px)}}
+  .tuile .ic{flex:none;width:64px;height:64px;border-radius:18px;background:var(--carte-2);display:grid;place-items:center;font-size:2.2rem}
+  .tuile .corps{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .tuile .titre{font-family:var(--titre);font-weight:600;font-size:1.25rem;line-height:1.2}
+  .tuile .meta{color:var(--doux);font-size:.85rem;font-weight:700}
+  .tuile .resume{color:var(--doux);font-size:.92rem;line-height:1.35}
+  .tuile .etat{display:flex;align-items:center;gap:8px;margin-top:6px;font-weight:800;font-size:.9rem}
+  .tuile .barre{flex:1;height:10px;border-radius:999px;background:var(--carte-2);overflow:hidden}
+  .tuile .barre i{display:block;height:100%;background:var(--soleil);border-radius:999px}
+  .tuile.fini .barre i{background:var(--ok)}
+  .etiquette{font-family:var(--titre);font-weight:600;font-size:.85rem;border-radius:999px;padding:2px 10px}
+  .etiquette.nouveau{background:var(--accent);color:var(--accent-encre)}
+  .etiquette.fini{background:var(--ok-fond);color:var(--ok)}
+  .tuile .fleche{flex:none;font-size:1.5rem;color:var(--doux)}
+
+  .rien{text-align:center;color:var(--doux);font-weight:700;background:var(--carte);border:2px dashed var(--trait-fort);
+       border-radius:22px;padding:30px 20px;line-height:1.5}
+  .rien .ic{font-size:2.6rem;display:block;margin-bottom:6px}
+
+  .pied{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:10px}
+  .confirme{background:var(--carte);border:1px solid var(--trait);border-radius:18px;padding:14px;text-align:center;width:100%}
+  .confirme p{margin-bottom:10px;font-weight:700}
+  .deux-btn{display:flex;gap:8px}
+  .deux-btn .btn{flex:1;min-height:50px;font-size:1rem}
+
+  @media (prefers-reduced-motion:reduce){ .maisonnette,.tuile{animation:none} }
+</style>
+</head>
+<body>
+
+<!-- 1. Qui es-tu ? — la seule fois où l'élève écrit quelque chose. -->
+<main class="ecran accueil" id="ecranAccueil" hidden>
+  <div class="maisonnette" aria-hidden="true">🏠</div>
+  <h1>Mes révisions <span>à la maison</span></h1>
+  <p class="soustitre">Sur ton téléphone, toute l'année</p>
+
+  <form class="fiche" id="formulaire" novalidate>
+    <label for="prenom">Ton prénom</label>
+    <input id="prenom" name="prenom" autocomplete="given-name" autocapitalize="words" autocorrect="off"
+           spellcheck="false" maxlength="24" enterkeyhint="done" placeholder="Écris ton prénom">
+    <p class="erreur" id="errPrenom" hidden>Écris ton prénom avec des lettres seulement.</p>
+
+    <span class="label" id="l-classe">Ta classe</span>
+    <div class="classes" role="radiogroup" aria-labelledby="l-classe" id="classes"></div>
+    <p class="erreur" id="errClasse" hidden>Choisis ta classe.</p>
+
+    <button type="submit" class="btn primaire geant pale" id="bPartir">C'est parti ! →</button>
+  </form>
+
+  <p class="mention" id="mention"></p>
+</main>
+
+<!-- 2. Les tuiles — l'écran de toutes les visites suivantes. -->
+<main class="ecran" id="ecranTuiles" hidden>
+  <header class="tete">
+    <div class="salut">
+      <h1 id="salut"></h1>
+      <p class="soustitre" id="consigne"></p>
+    </div>
+    <span class="puce-classe" id="pClasse"></span>
+  </header>
+  <p class="avertir" id="avertir" hidden></p>
+  <ul class="tuiles" id="tuiles"></ul>
+  <footer class="pied" id="pied"></footer>
+</main>
+
+<script src="scripts/config.js"></script>
+<script src="scripts/travaux.js"></script>
+<script>
+'use strict';
+
+var CLE_ELEVE = 'maison_eleve_v1';
+var CLE_AVANCEES = 'maison_avancees_v1';
+/* Les quatre classes du collège, toujours les mêmes : l'élève touche la sienne. Le serveur
+   n'enregistre un travail que si sa classe existe sous ce nom dans l'établissement — ce
+   sont les noms que l'Atelier crée d'office. */
+var CLASSES = ['6e', '5e', '4e', '3e'];
+/* La même règle que le serveur : des lettres, et ce qui les relie. */
+var PRENOM_OK = /^\p{L}[\p{L} '’-]{0,23}$/u;
+
+var cfg = window.ATELIER_CONFIG || {};
+var API = String(cfg.api || '').replace(/\/+$/, '');
+var CODE_URL = (new URLSearchParams(location.search).get('c') || '').trim().toLowerCase();
+
+function $(s){ return document.querySelector(s); }
+function esc(s){ return String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function plat(t){ return String(t == null ? '' : t).normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase(); }
+
+/* ---- Le téléphone : tout est entouré de try, la navigation privée peut tout refuser ---- */
+function lire(cle){ try{ return JSON.parse(localStorage.getItem(cle) || 'null'); }catch(e){ return null; } }
+function ecrire(cle, v){ try{ if(v == null) localStorage.removeItem(cle); else localStorage.setItem(cle, JSON.stringify(v)); }catch(e){} }
+
+function nouvelId(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  var o = new Uint8Array(16); crypto.getRandomValues(o);
+  return Array.prototype.map.call(o, function(b){ return ('0' + b.toString(16)).slice(-2); }).join('');
+}
+/* « léa », « LÉA », « jean-noël » → « Léa », « Jean-Noël ». */
+function prenomPropre(brut){
+  return String(brut || '').normalize('NFC').replace(/\s+/g, ' ').trim().toLocaleLowerCase('fr')
+    .replace(/(^|[ '’-])(\p{L})/gu, function(_, sep, l){ return sep + l.toLocaleUpperCase('fr'); });
+}
+
+/* L'élève de ce téléphone. Le code du lien y est gardé : une page ajoutée aux favoris
+   sans « ?c=… » continue d'envoyer au bon collège. */
+var eleve = lire(CLE_ELEVE);
+if(eleve && (typeof eleve.prenom !== 'string' || CLASSES.indexOf(eleve.classe) < 0)) eleve = null;
+var appareil = (eleve && eleve.appareil) || (lire('maison_appareil_v1')) || nouvelId();
+ecrire('maison_appareil_v1', appareil);   /* survit à « Ce n'est pas moi » : c'est le téléphone */
+var CODE = CODE_URL || (eleve && eleve.code) || '';
+var ENTREE = location.href.replace(/[?#].*$/, '');
+var SUIVI = !!API && /^[a-z0-9]{6,16}$/.test(CODE);
+
+function enregistrer(prenom, classe){
+  eleve = { appareil: appareil, prenom: prenom, classe: classe, code: CODE, entree: ENTREE };
+  ecrire(CLE_ELEVE, eleve);
+}
+
+/* ---- 1. Qui es-tu ? ---- */
+var choix = '';
+function peindreAccueil(){
+  $('#ecranTuiles').hidden = true; $('#ecranAccueil').hidden = false;
+  $('#classes').innerHTML = CLASSES.map(function(c){
+    return '<button type="button" role="radio" aria-checked="false" class="classe" data-classe="' + c + '">' + c + '</button>';
+  }).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-classe]'), function(b){
+    b.addEventListener('click', function(){
+      choix = b.getAttribute('data-classe');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-classe]'), function(x){
+        var on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+      $('#errClasse').hidden = true; pret();
+    });
+  });
+  $('#mention').textContent = SUIVI
+    ? 'Ton professeur verra ton prénom, ta classe et ton score, et pourra les relier à ton compte de l’Atelier. Rien d’autre.'
+    : 'Mode entraînement : rien n’est envoyé à ton professeur.';
+}
+function pret(){
+  var ok = PRENOM_OK.test(prenomPropre($('#prenom').value)) && !!choix;
+  $('#bPartir').classList.toggle('pale', !ok);
+  return ok;
+}
+$('#prenom').addEventListener('input', function(){ $('#errPrenom').hidden = true; pret(); });
+$('#formulaire').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var p = prenomPropre($('#prenom').value);
+  $('#errPrenom').hidden = PRENOM_OK.test(p);
+  $('#errClasse').hidden = !!choix;
+  if(!pret()) return;
+  enregistrer(p, choix);
+  peindreTuiles();
+  window.scrollTo(0, 0);
+});
+
+/* ---- 2. Les tuiles ---- */
+function pourMaClasse(t){
+  if(t.masque || !t.url) return false;
+  var n = Array.isArray(t.niveaux) ? t.niveaux : [];
+  return !n.length || n.some(function(x){ return plat(x) === plat(eleve.classe); });
+}
+function lienDe(t){
+  return t.url + (SUIVI ? (t.url.indexOf('?') < 0 ? '?' : '&') + 'c=' + encodeURIComponent(CODE) : '');
+}
+
+function peindreTuiles(){
+  $('#ecranAccueil').hidden = true; $('#ecranTuiles').hidden = false;
+  var mes = (window.TRAVAUX || []).filter(pourMaClasse);
+  var avancees = lire(CLE_AVANCEES) || {};
+
+  $('#salut').textContent = 'Salut ' + eleve.prenom + ' !';
+  $('#pClasse').textContent = eleve.classe;
+  $('#consigne').textContent = mes.length > 1 ? 'Choisis une révision.' : mes.length ? 'Ta révision t’attend.' : '';
+
+  if(!SUIVI){
+    $('#avertir').hidden = false; $('#avertir').className = 'avertir';
+    $('#avertir').textContent = 'Mode entraînement : ton professeur ne verra pas ton travail. Demande-lui le bon lien.';
+  }
+
+  $('#tuiles').innerHTML = mes.length ? mes.map(function(t, i){
+    var a = avancees[t.id], fait = a && a.etapes ? Math.min(a.etape, a.etapes) : 0;
+    var fini = !!(a && a.etapes && a.etape >= a.etapes);
+    var etat = !a
+      ? '<span class="etat"><span class="etiquette nouveau">Nouveau</span></span>'
+      : '<span class="etat"><span class="barre"><i style="width:' + Math.round(fait * 100 / Math.max(1, a.etapes)) + '%"></i></span>' +
+        (fini ? '<span class="etiquette fini">Fini ✓</span>' : '<span>' + fait + ' / ' + a.etapes + '</span>') +
+        (a.max ? '<span>· ' + a.score + ' / ' + a.max + '</span>' : '') + '</span>';
+    return '<li><a class="tuile' + (fini ? ' fini' : !a ? ' nouveau' : '') + '" href="' + esc(lienDe(t)) + '" style="animation-delay:' + (i * 0.06) + 's">' +
+      '<span class="ic" aria-hidden="true">' + esc(t.ic || '📄') + '</span>' +
+      '<span class="corps"><span class="titre">' + esc(t.titre) + '</span>' +
+        '<span class="meta">' + esc([t.matiere, t.duree].filter(Boolean).join(' · ')) + '</span>' +
+        (t.resume ? '<span class="resume">' + esc(t.resume) + '</span>' : '') + etat +
+      '</span><span class="fleche" aria-hidden="true">›</span></a></li>';
+  }).join('')
+  : '<li class="rien"><span class="ic" aria-hidden="true">🌱</span>Rien pour l’instant en ' + esc(eleve.classe) + '.<br>' +
+    'Ton professeur ajoutera bientôt des révisions ici : garde cette page !</li>';
+
+  peindrePied(false);
+}
+
+function peindrePied(demande){
+  $('#pied').innerHTML = demande
+    ? '<div class="confirme"><p>Recommencer avec un autre prénom ?</p><div class="deux-btn">' +
+        '<button type="button" class="btn" id="bNon">Non, je reste</button>' +
+        '<button type="button" class="btn danger" id="bOui">Oui, changer</button></div></div>'
+    : '<button type="button" class="lien-discret" id="bPasMoi">' + esc(eleve.prenom) + ' · ' + esc(eleve.classe) + ' — Ce n’est pas toi ?</button>';
+  if(demande){
+    $('#bNon').addEventListener('click', function(){ peindrePied(false); });
+    $('#bOui').addEventListener('click', function(){
+      /* Le travail déjà fait reste chez le professeur ; ici, on repart de zéro. */
+      ecrire(CLE_ELEVE, null); ecrire(CLE_AVANCEES, null); eleve = null;
+      $('#prenom').value = ''; choix = ''; $('#bPartir').classList.add('pale');
+      peindreAccueil(); window.scrollTo(0, 0);
+    });
+  } else {
+    $('#bPasMoi').addEventListener('click', function(){ peindrePied(true); });
+  }
+}
+
+/* Un lien périmé se dit tout de suite, plutôt qu'après vingt minutes de travail perdu
+   pour le professeur. Rien d'autre ne part vers le serveur depuis cette page. */
+function verifierLien(){
+  if(!SUIVI) return;
+  fetch(API + '/api/devoir/classes?c=' + encodeURIComponent(CODE), { cache: 'no-store' }).then(function(r){
+    if(r.status === 404 && eleve){
+      $('#avertir').hidden = false; $('#avertir').className = 'avertir ko';
+      $('#avertir').textContent = '⚠ Ce lien ne marche plus. Demande le nouveau lien à ton professeur.';
+    }
+  }).catch(function(){ /* pas de réseau : la page de travail réessaiera ses envois */ });
+}
+
+/* Le code a changé (nouveau lien distribué) : on le retient pour la suite. */
+if(eleve && CODE_URL && eleve.code !== CODE_URL){ eleve.code = CODE_URL; eleve.entree = ENTREE; ecrire(CLE_ELEVE, eleve); }
+if(eleve && eleve.appareil !== appareil){ eleve.appareil = appareil; ecrire(CLE_ELEVE, eleve); }
+
+if(eleve) peindreTuiles(); else peindreAccueil();
+verifierLien();
+/* Retour depuis une page de travail (bouton « précédent ») : la tuile doit montrer
+   l'avancée toute fraîche, pas celle d'il y a vingt minutes. */
+window.addEventListener('pageshow', function(e){ if(e.persisted && eleve) peindreTuiles(); });
+</script>
+</body>
+</html>

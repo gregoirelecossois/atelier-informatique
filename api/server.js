@@ -31,10 +31,11 @@
  *   GET    /api/makecode/modeles            modèles proposés à sa classe (prof : tous)
  *   GET    /api/makecode/modele/:id         un modèle, compressé, pour en partir
  *
- * Routes ouvertes SANS connexion — le travail à la maison (maison.html, dépôt le-pc).
- * Le code de l'établissement, porté par le lien donné aux élèves, tient lieu de portée :
+ * Routes ouvertes SANS connexion — le travail à la maison (page d'entrée maison.html, puis
+ * une page par devoir, comme le-pc/maison.html). Le code de l'établissement, porté par le
+ * lien donné aux élèves, tient lieu de portée :
  *   GET    /api/devoir/classes?c=CODE       les noms des classes, pour que l'élève choisisse
- *   POST   /api/devoir/passage              {c, id, devoir, prenom, classe, etape…} → où il en est
+ *   POST   /api/devoir/passage              {c, id, appareil?, devoir, prenom, classe, etape…} → où il en est
  *
  * Routes réservées au rôle « prof » — le tableau de bord, et travail-maison.html :
  *   GET    /api/prof/tableau                tous les comptes + leur avancement résumé
@@ -56,7 +57,8 @@
  *   PATCH  /api/prof/makecode/modele/:id    {nom?, classes?}
  *   DELETE /api/prof/makecode/modele/:id    retire le modèle (les copies des élèves restent)
  *   GET    /api/prof/devoirs                code du lien + qui a fait le travail à la maison
- *   DELETE /api/prof/devoirs                {id} une ligne, ou {devoir, classe?} toute une série
+ *   DELETE /api/prof/devoirs                {id} une ligne, {ids} ces lignes, ou {devoir, classe?} une série
+ *   PUT    /api/prof/devoirs/lien           {ids, compte} → relie des lignes à un compte (null : à personne)
  *
  * Routes réservées au rôle « admin » — la gestion des établissements. Ce compte est
  * délibérément distinct du compte enseignant : il crée les collèges et les comptes
@@ -1401,6 +1403,9 @@ async function devoirPassage(req) {
   const etape = Math.min(entier(corps.etape, 50), etapes), score = Math.min(entier(corps.score, 500), max);
   const termine = etapes > 0 && etape >= etapes;
 
+  /* Facultatif : les pages ouvertes depuis la page d'entrée le transmettent. */
+  const appareil = DEVOIR_ID_OK.test(String(corps.appareil || '')) ? String(corps.appareil) : null;
+
   const deja = await db.une('select etablissement_id, devoir from devoirs_passages where id = $1', [id]);
   /* Un identifiant déjà pris ailleurs (autre collège, autre devoir) n'est ni repris ni
      signalé : on répond comme pour un envoi mal formé. */
@@ -1412,9 +1417,9 @@ async function devoirPassage(req) {
 
   /* greatest() : deux envois peuvent arriver dans le désordre (réseau de téléphone, onglet
      rouvert). Un score ou une étape ne redescendent jamais, quel que soit l'ordre. */
-  await db.q(
-    `insert into devoirs_passages(id, etablissement_id, devoir, prenom, classe_id, etape, etapes, score, score_max, termine)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+  const ligne = await db.une(
+    `insert into devoirs_passages(id, etablissement_id, devoir, prenom, classe_id, etape, etapes, score, score_max, termine, appareil)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
      on conflict (id) do update
         set prenom = excluded.prenom, classe_id = excluded.classe_id,
             etape = greatest(devoirs_passages.etape, excluded.etape),
@@ -1422,9 +1427,57 @@ async function devoirPassage(req) {
             score = greatest(devoirs_passages.score, excluded.score),
             score_max = excluded.score_max,
             termine = devoirs_passages.termine or excluded.termine,
-            maj_le = now()`,
-    [id, etab, devoir, prenom, classe.id, etape, etapes, score, max, termine]);
+            appareil = coalesce(excluded.appareil, devoirs_passages.appareil),
+            maj_le = now()
+     returning lien`,
+    [id, etab, devoir, prenom, classe.id, etape, etapes, score, max, termine, appareil]);
+  /* Tant que personne n'a tranché, on retente à chaque envoi : un compte créé entre-temps
+     dans l'Atelier finit par être trouvé. L'élève n'en voit rien — ni le nom du compte,
+     ni même qu'il en existe un : la réponse est la même dans tous les cas. */
+  if (ligne && ligne.lien == null) await relierToutSeul(id, etab, classe.id, prenom, appareil);
   return { ok: true };
+}
+
+/* « Léa », « LÉA », « lea » ; « Jean-Noël », « jean noel » : le même prénom. */
+function prenomPlat(t) {
+  return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[\s'’-]+/g, ' ').trim();
+}
+
+/* Relier une ligne toute seule, mais seulement quand il n'y a AUCUN doute — sinon
+   l'enseignant choisit dans le suivi. Deux cas, dans cet ordre :
+     1. le même téléphone a déjà une ligne reliée, sous le MÊME prénom tapé : c'est
+        l'élève que l'enseignant a déjà reconnu (« Momo » = Mohamed B.) ;
+     2. un seul compte élève actif de la classe porte ce prénom.
+   Deux comptes possibles, ou aucun : on ne relie pas. Une fausse liaison est pire
+   qu'une liaison manquante — elle mélange les devoirs de deux élèves sans que rien ne
+   le signale. */
+async function relierToutSeul(id, etab, classeId, prenom, appareil) {
+  const cle = prenomPlat(prenom);
+  let compte = null, comment = null;
+
+  if (appareil) {
+    const r = await db.q(
+      `select p.prenom, p.compte_id
+         from devoirs_passages p join comptes c on c.id = p.compte_id
+        where p.etablissement_id = $1 and p.appareil = $2 and p.id <> $3
+          and c.etablissement_id = $1 and c.role = 'eleve'`,
+      [etab, appareil, id]);
+    const ids = new Set(r.rows.filter((x) => prenomPlat(x.prenom) === cle).map((x) => x.compte_id));
+    if (ids.size === 1) { compte = [...ids][0]; comment = 'appareil'; }
+  }
+  if (!compte) {
+    const r = await db.q(
+      `select id, prenom from comptes
+        where etablissement_id = $1 and classe_id = $2 and role = 'eleve' and actif`,
+      [etab, classeId]);
+    const ids = r.rows.filter((c) => prenomPlat(c.prenom) === cle).map((c) => c.id);
+    if (ids.length === 1) { compte = ids[0]; comment = 'prenom'; }
+  }
+  if (!compte) return;
+  /* `lien is null` : un enseignant qui aurait tranché entre-temps garde le dernier mot. */
+  await db.q('update devoirs_passages set compte_id = $2, lien = $3 where id = $1 and lien is null',
+    [id, compte, comment]);
 }
 
 /* Le code du lien est créé à la première visite de l'enseignant : tant que personne n'a
@@ -1451,7 +1504,18 @@ async function profDevoirs(req) {
   const s = await sessionProf(req);
   const r = await db.q(
     `select p.id, p.devoir, p.prenom, cl.nom as classe, p.etape, p.etapes, p.score, p.score_max,
-            p.termine, p.debut_le, p.maj_le
+            p.termine, p.debut_le, p.maj_le, p.compte_id, p.lien,
+            /* Une ligne pas encore reliée, faite sur un téléphone dont une AUTRE ligne l'est :
+               on propose ce compte à l'enseignant — s'il est de la classe choisie. Un
+               téléphone de famille passe d'un frère de 3e à une sœur de 5e : proposer l'une
+               pour l'autre serait pire que ne rien proposer. L'identifiant du téléphone,
+               lui, ne sort pas. */
+            case when p.compte_id is null and p.appareil is not null then
+              (select q.compte_id from devoirs_passages q join comptes c on c.id = q.compte_id
+                where q.etablissement_id = p.etablissement_id and q.appareil = p.appareil
+                  and q.id <> p.id and c.classe_id = p.classe_id
+                order by q.maj_le desc limit 1)
+            end as suggestion
        from devoirs_passages p left join classes cl on cl.id = p.classe_id
       where p.etablissement_id = $1
       order by p.devoir, cl.ordre nulls last, cl.nom, lower(p.prenom), p.debut_le`, [s.etablissement_id]);
@@ -1467,6 +1531,13 @@ async function profSupprimerDevoirs(req) {
   if (corps.id) {
     r = await db.q('delete from devoirs_passages where id = $1 and etablissement_id = $2',
       [String(corps.id), s.etablissement_id]);
+  } else if (Array.isArray(corps.ids)) {
+    /* Les lignes affichées : depuis qu'elles se fusionnent sous un compte, ce que montre le
+       suivi pour « la 5e » n'est plus exactement « les lignes où l'élève a touché 5e ». */
+    const ids = [...new Set(corps.ids.map(String))];
+    if (!ids.length || ids.length > 3000 || !ids.every((i) => DEVOIR_ID_OK.test(i))) throw new Refus(400, 'Rien à supprimer.');
+    r = await db.q('delete from devoirs_passages where etablissement_id = $1 and id = any($2::text[])',
+      [s.etablissement_id, ids]);
   } else if (corps.devoir) {
     let classe = null;
     if (corps.classe) {
@@ -1484,10 +1555,42 @@ async function profSupprimerDevoirs(req) {
     throw new Refus(400, 'Rien à supprimer.');
   }
   if (r.rowCount) {
-    await db.journaliser(s.identifiant, 'devoirs.suppression', corps.id ? null : String(corps.devoir),
+    await db.journaliser(s.identifiant, 'devoirs.suppression', corps.devoir ? String(corps.devoir) : null,
       { lignes: r.rowCount, classe: corps.classe || null }, s.etablissement_id);
   }
   return { ok: true, supprimes: r.rowCount };
+}
+
+/* {ids, compte} : relie ces lignes à ce compte, ou à personne (compte = null). Les deux
+   sont une DÉCISION de l'enseignant (lien = 'prof') : le serveur ne reviendra plus dessus,
+   ni pour relier une ligne déliée exprès, ni pour en déplacer une. Lignes et compte
+   doivent être de l'établissement de la session ; un seul intrus, et rien n'est fait. */
+async function profLierDevoirs(req) {
+  const s = await sessionProf(req);
+  const corps = await lireCorps(req);
+  const ids = Array.isArray(corps.ids) ? [...new Set(corps.ids.map(String))] : [];
+  if (!ids.length || ids.length > 200 || !ids.every((i) => DEVOIR_ID_OK.test(i))) throw new Refus(400, 'Lignes manquantes.');
+
+  let compte = null;
+  if (corps.compte != null) {
+    const c = await db.une(
+      `select id from comptes where id = $1 and etablissement_id = $2 and role = 'eleve'`,
+      [Number(corps.compte), s.etablissement_id]);
+    if (!c) throw new Refus(404, 'Compte introuvable.');
+    compte = c.id;
+  }
+  const n = await db.une(
+    'select count(*)::int as n from devoirs_passages where etablissement_id = $1 and id = any($2::text[])',
+    [s.etablissement_id, ids]);
+  if (n.n !== ids.length) throw new Refus(404, 'Ligne introuvable.');
+
+  const r = await db.q(
+    `update devoirs_passages set compte_id = $3, lien = 'prof'
+      where etablissement_id = $1 and id = any($2::text[])`,
+    [s.etablissement_id, ids, compte]);
+  await db.journaliser(s.identifiant, compte ? 'devoirs.lien' : 'devoirs.delien', compte ? String(compte) : null,
+    { lignes: r.rowCount }, s.etablissement_id);
+  return { ok: true, relies: r.rowCount };
 }
 
 async function purgerDevoirs() {
@@ -1541,6 +1644,7 @@ const ROUTES = [
   ['DELETE', '/api/prof/makecode/modele/:id',  profRetirerModele],
   ['GET',    '/api/prof/devoirs',              profDevoirs],
   ['DELETE', '/api/prof/devoirs',              profSupprimerDevoirs],
+  ['PUT',    '/api/prof/devoirs/lien',         profLierDevoirs],
 
   ['GET',    '/api/admin/etablissements',      adminEtablissements],
   ['POST',   '/api/admin/etablissements',      adminCreerEtablissement],

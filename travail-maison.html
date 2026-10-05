@@ -9,8 +9,11 @@
 <!-- Page enseignant, DISTINCTE du tableau de bord de l'Atelier (prof.html).
      Le suivi de l'Atelier dit où en est chaque COMPTE dans les six ateliers. Celle-ci
      dit qui a fait un travail donné à la maison, sur téléphone et SANS compte. Ce ne
-     sont ni les mêmes élèves (un prénom tapé n'est pas un compte), ni la même question :
-     les deux ne partagent donc pas un écran.
+     sont ni les mêmes élèves (un prénom tapé n'est pas un compte — on peut ensuite l'y
+     relier, ici), ni la même question : les deux ne partagent donc pas un écran.
+
+     Les élèves, eux, entrent par maison.html, la page d'entrée de l'année, dont le lien
+     s'affiche en haut de celle-ci.
 
      Ce qu'elles partagent, c'est la porte : on entre ici avec son identifiant
      d'enseignant de l'Atelier, et une session ouverte sur l'une vaut pour l'autre
@@ -135,7 +138,43 @@
   .actes{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
   .actes .pousse{margin-left:auto}
 
-  a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+  /* ---- le lien de l'année, les deux vues ---- */
+  .entree{background:var(--carte);border:2px solid var(--trait);border-radius:20px;padding:16px 20px;margin-bottom:16px}
+  .entree label{display:block;font-weight:800;font-size:.82rem;margin:0 0 6px}
+  .vues{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+  .vues .puce{font-size:.9rem;padding:8px 16px}
+  .badge{background:#fff7e0;color:#854d0e;border-radius:999px;padding:1px 8px;font-size:.74rem;margin-left:4px}
+  .puce.on .badge{background:#fde68a}
+  .travail.masque{opacity:.6}
+
+  /* ---- relier une ligne à un compte ---- */
+  td.eleve{white-space:normal;min-width:190px}
+  .relie{font-size:.72rem;font-weight:800;color:#15803d;background:#eaf7ef;border-radius:999px;padding:1px 7px}
+  .arelier{font-size:.72rem;font-weight:800;color:#854d0e;background:#fff7e0;border-radius:999px;padding:1px 7px}
+  .crayon{border:0;background:none;color:var(--gris);font-size:.9rem;padding:0 4px}
+  .crayon:hover{color:var(--bleu)}
+  .lier{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:5px}
+  select.relier{border:2px solid var(--trait);border-radius:9px;padding:4px 6px;font-family:inherit;font-weight:700;
+        font-size:.8rem;color:var(--encre);background:#fbfdff;max-width:220px}
+  select.relier:focus{outline:none;border-color:var(--bleu)}
+  .btn.oui{background:#eaf7ef;border-color:#bbe5c8;color:#15803d}
+  .envois{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+  .envois span{font-size:.72rem;font-weight:700;color:var(--gris);background:#f1f5fa;border-radius:999px;padding:1px 4px 1px 8px}
+  .envois button{border:0;background:none;color:var(--gris);font-weight:800;padding:0 4px}
+  .envois button:hover{color:var(--rouge)}
+
+  /* ---- par élève ---- */
+  table.grille{min-width:0}
+  .grille th:not(:first-child){text-align:center;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+  td.case{text-align:center;line-height:1.15}
+  td.case b{display:block;font-size:.95rem;font-variant-numeric:tabular-nums}
+  td.case span{font-size:.72rem;font-weight:700;color:var(--gris)}
+  td.case.fini{background:#eaf7ef} td.case.fini b{color:#15803d}
+  td.case.cours{background:#fffaeb} td.case.cours b{color:#854d0e}
+  td.case.aucun{color:#b8c4d1}
+  h3.sous{font-size:1.05rem;margin:22px 0 10px}
+
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
   @media (max-width:560px){ .barre h1{font-size:1.05rem} .fiche{padding:16px 14px} .zone{padding:14px 12px 50px} }
 </style>
 </head>
@@ -163,8 +202,11 @@
   </form>
 
   <div id="suivi" hidden>
+    <div class="entree" id="entree"></div>
+    <div class="vues" id="vues" role="tablist"></div>
     <div class="travaux" id="travaux"></div>
     <div class="fiche" id="fiche"></div>
+    <div class="fiche" id="parEleve" hidden></div>
   </div>
 
   <div id="vide" class="vide">Chargement…</div>
@@ -180,27 +222,40 @@
 /* =========================================================================
    Cette page ne stocke rien et ne décide rien : elle peint ce que répondent
    /api/prof/devoirs (les lignes reçues, le code du lien) et /api/prof/tableau
-   (les comptes des classes, pour « pas encore vus »). Le catalogue des
-   travaux vient de scripts/travaux.js.
+   (les comptes de l'établissement). Le catalogue des travaux vient de
+   scripts/travaux.js.
 
    Un travail = une valeur de `devoir`. La page affiche ceux du catalogue,
    plus tout identifiant inconnu pour lequel des lignes existent.
+
+   UNE LIGNE = un téléphone qui a ouvert un travail sous un prénom tapé.
+   L'enseignant peut la RELIER à un compte de l'Atelier (ou le serveur le fait
+   tout seul quand c'est évident). Les lignes reliées au même compte sont
+   FUSIONNÉES : pour un travail, on garde la meilleure étape et le meilleur
+   score ; d'un travail à l'autre, la vue « Par élève » les met côte à côte,
+   même si l'élève a tapé « Mohamad » ici et « Mohamed » là.
    ========================================================================= */
 var RYTHME = 30000;
 
 var etat = {
   passages: [], code: '', conservationMois: 12,
-  eleves: [], classes: [],
+  eleves: [], classes: [], eleveParId: {},
+  vue: 'travail',         /* 'travail' | 'eleves' */
   travail: null,          /* identifiant du travail affiché */
-  classe: {}              /* travail → classe filtrée ('' = toutes) ; absent = pas encore choisi */
+  classe: {},             /* travail → classe filtrée ('' = toutes) ; absent = pas encore choisi */
+  classeEleves: null,     /* classe affichée dans la vue « Par élève » */
+  edition: null           /* clé du groupe dont on change le compte */
 };
 var minuteur = null, demarre = false, empreinte = '';
 
 function $(s){ return document.querySelector(s); }
+function tous(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
 function esc(s){ return String(s == null ? '' : s)
   .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-/* Sans accents ni casse : « ines » et « Inès » sont le même prénom. */
-function plat(t){ return String(t == null ? '' : t).normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase(); }
+/* Sans accents ni casse, tirets et espaces confondus : « Jean-Noël » = « jean noel ».
+   La même règle que le serveur (prenomPlat, api/server.js). */
+function plat(t){ return String(t == null ? '' : t).normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .toLowerCase().replace(/[\s'’-]+/g, ' ').trim(); }
 function pluriel(n, un, plusieurs){ return n + ' ' + (n > 1 ? plusieurs : un); }
 function quand(iso){
   var d = new Date(iso), min = Math.max(0, Math.round((Date.now() - d) / 60000));
@@ -209,6 +264,21 @@ function quand(iso){
   if(min < 60 * 24) return 'il y a ' + Math.round(min / 60) + ' h';
   var j = Math.round(min / 1440);
   return j < 30 ? 'il y a ' + j + ' jour' + (j > 1 ? 's' : '') : 'le ' + d.toLocaleDateString('fr-FR');
+}
+/* Distance d'édition : « Mohamad » est à 1 de « Mohamed ». Pour proposer, jamais pour décider. */
+function distance(a, b){
+  if(a === b) return 0;
+  var l = [], i, j;
+  for(j = 0; j <= b.length; j++) l[j] = j;
+  for(i = 1; i <= a.length; i++){
+    var diag = l[0]; l[0] = i;
+    for(j = 1; j <= b.length; j++){
+      var haut = l[j];
+      l[j] = Math.min(l[j] + 1, l[j - 1] + 1, diag + (a[i - 1] === b[j - 1] ? 0 : 1));
+      diag = haut;
+    }
+  }
+  return l[b.length];
 }
 
 /* ---- Réseau -------------------------------------------------------------- */
@@ -235,7 +305,7 @@ function travaux(){
     if(connus[p.devoir]) return;
     connus[p.devoir] = true;
     /* Un travail qui envoie des lignes sans être au catalogue : on l'affiche quand même. */
-    liste.push({ id: p.devoir, titre: p.devoir, ic: '📄', matiere: '', niveau: '', duree: '',
+    liste.push({ id: p.devoir, titre: p.devoir, ic: '📄', matiere: '', niveaux: [], duree: '',
                  resume: 'Ce travail n\'est pas décrit dans scripts/travaux.js : il s\'affiche sous son identifiant.',
                  url: '', etapes: [], inconnu: true });
   });
@@ -245,41 +315,199 @@ function leTravail(){
   var liste = travaux();
   return liste.filter(function(t){ return t.id === etat.travail; })[0] || liste[0] || null;
 }
+function niveauxDe(t){ return Array.isArray(t.niveaux) ? t.niveaux : []; }
+function pourClasse(t, classe){
+  var n = niveauxDe(t);
+  return !n.length || n.some(function(x){ return plat(x) === plat(classe); });
+}
 function lignesDe(id){ return etat.passages.filter(function(p){ return p.devoir === id; }); }
 
 function classeExiste(nom){
   return etat.classes.some(function(c){ return plat(c.nom) === plat(nom); });
 }
-/* La classe filtrée pour un travail. Au premier affichage : son niveau, s'il existe
-   dans l'établissement — un travail de 5e s'ouvre sur la 5e. */
+/* La classe filtrée pour un travail. Au premier affichage : son niveau s'il n'en vise
+   qu'un et qu'il existe dans l'établissement ; sinon toutes. */
 function classeDe(t){
-  if(etat.classe[t.id] === undefined) etat.classe[t.id] = t.niveau && classeExiste(t.niveau) ? t.niveau : '';
+  if(etat.classe[t.id] === undefined){
+    var n = niveauxDe(t);
+    etat.classe[t.id] = n.length === 1 && classeExiste(n[0]) ? n[0] : '';
+  }
   return etat.classe[t.id];
 }
-function lienDe(t){
-  if(!t.url || !etat.code) return '';
-  return t.url + (t.url.indexOf('?') < 0 ? '?' : '&') + 'c=' + encodeURIComponent(etat.code);
+/* LE lien des élèves, le même toute l'année : la page d'entrée, à côté de celle-ci. */
+function lienEntree(){
+  if(!etat.code) return '';
+  return new URL('maison.html', location.href).href.replace(/[?#].*$/, '') + '?c=' + encodeURIComponent(etat.code);
+}
+function eleves(){
+  return etat.eleves.filter(function(e){ return e.role === 'eleve'; });
+}
+function nomCourt(e){ return e.prenom + ' ' + String(e.nom || '').charAt(0) + '.'; }
+function nomLong(e){ return e.prenom + ' ' + (e.nom || ''); }
+function ordreClasse(nom){
+  for(var i = 0; i < etat.classes.length; i++) if(plat(etat.classes[i].nom) === plat(nom)) return i;
+  return 999;
+}
+
+/* ---- Les groupes : les lignes d'un travail, fusionnées par compte ---------- */
+function grouper(lignes){
+  var parCle = {}, liste = [];
+  lignes.forEach(function(p){
+    var e = p.compte_id != null ? etat.eleveParId[p.compte_id] : null;
+    var cle = e ? 'c' + e.id : 'p' + p.id;
+    var g = parCle[cle];
+    if(!g){
+      g = parCle[cle] = { cle: cle, eleve: e || null, lignes: [], etape: 0, etapes: 0, score: 0, score_max: 0,
+                          termine: false, maj_le: p.maj_le,
+                          classe: e ? (e.classe || '') : (p.classe || ''),
+                          nom: e ? nomLong(e) : p.prenom };
+      liste.push(g);
+    }
+    g.lignes.push(p);
+    /* Deux envois pour le même travail (deux téléphones, un prénom refait) : on garde le
+       meilleur de chacun, comme le serveur le fait déjà pour un même téléphone. */
+    g.etape = Math.max(g.etape, p.etape); g.etapes = Math.max(g.etapes, p.etapes);
+    g.score = Math.max(g.score, p.score); g.score_max = Math.max(g.score_max, p.score_max);
+    g.termine = g.termine || p.termine;
+    if(p.maj_le > g.maj_le) g.maj_le = p.maj_le;
+  });
+  liste.forEach(function(g){ g.ids = g.lignes.map(function(p){ return p.id; }); });
+  liste.sort(function(a, b){
+    return ordreClasse(a.classe) - ordreClasse(b.classe) || (a.eleve ? 0 : 1) - (b.eleve ? 0 : 1) ||
+      plat(a.eleve ? a.eleve.nom + ' ' + a.eleve.prenom : a.nom).localeCompare(plat(b.eleve ? b.eleve.nom + ' ' + b.eleve.prenom : b.nom));
+  });
+  return liste;
+}
+
+/* Un compte à proposer pour une ligne pas encore reliée — jamais relié sans clic :
+   d'abord celui d'une autre ligne du même téléphone (le serveur le dit dans
+   `suggestion`), puis un prénom de la classe très proche et sans ex æquo. */
+function suggestion(g){
+  for(var i = 0; i < g.lignes.length; i++){
+    var s = g.lignes[i].suggestion;
+    if(s != null && etat.eleveParId[s]) return { eleve: etat.eleveParId[s], pourquoi: 'même téléphone qu\'un autre devoir déjà relié' };
+  }
+  var cle = plat(g.nom), meilleurs = [], d0 = 99;
+  if(cle.length < 3) return null;
+  eleves().forEach(function(e){
+    if(e.actif === false || plat(e.classe) !== plat(g.classe)) return;
+    var d = distance(cle, plat(e.prenom));
+    if(d < d0){ d0 = d; meilleurs = [e]; } else if(d === d0) meilleurs.push(e);
+  });
+  if(meilleurs.length === 1 && d0 <= 2) return { eleve: meilleurs[0], pourquoi: 'prénom proche dans la même classe' };
+  return null;
+}
+
+/* La liste déroulante « Relier à… » : la classe de la ligne d'abord, du plus proche
+   au plus lointain, puis les autres classes (un élève qui s'est trompé de tuile). */
+function choixCompte(g, avecPersonne){
+  var cle = plat(g.lignes[0].prenom), memeClasse = [], autres = {};
+  eleves().forEach(function(e){
+    if(e.actif === false) return;
+    if(plat(e.classe) === plat(g.lignes[0].classe)) memeClasse.push(e);
+    else (autres[e.classe || '—'] = autres[e.classe || '—'] || []).push(e);
+  });
+  memeClasse.sort(function(a, b){
+    return distance(cle, plat(a.prenom)) - distance(cle, plat(b.prenom)) || plat(a.nom).localeCompare(plat(b.nom));
+  });
+  var opt = function(e){
+    return '<option value="' + e.id + '"' + (g.eleve && g.eleve.id === e.id ? ' selected' : '') + '>' + esc(nomLong(e)) + '</option>';
+  };
+  var h = '<select class="relier" data-ids="' + esc(g.ids.join(',')) + '" aria-label="Relier ' + esc(g.lignes[0].prenom) + ' à un élève de l\'Atelier">' +
+    '<option value="">' + (g.eleve ? 'Changer d\'élève…' : 'Relier à un élève…') + '</option>' +
+    (avecPersonne ? '<option value="0">— Ne le relier à personne</option>' : '');
+  if(memeClasse.length) h += '<optgroup label="' + esc(g.lignes[0].classe || 'Sans classe') + '">' + memeClasse.map(opt).join('') + '</optgroup>';
+  Object.keys(autres).sort(function(a, b){ return ordreClasse(a) - ordreClasse(b); }).forEach(function(c){
+    h += '<optgroup label="' + esc(c) + '">' + autres[c].sort(function(a, b){ return plat(a.nom).localeCompare(plat(b.nom)); }).map(opt).join('') + '</optgroup>';
+  });
+  return h + '</select>';
+}
+
+/* La cellule « Élève » : le compte relié, ou le prénom tapé et de quoi le relier. */
+function celluleEleve(g, doublons){
+  if(g.eleve && etat.edition !== g.cle){
+    var tapes = {}, autres = [];
+    g.lignes.forEach(function(p){ if(plat(p.prenom) !== plat(g.eleve.prenom) && !tapes[plat(p.prenom)]){ tapes[plat(p.prenom)] = 1; autres.push(p.prenom); } });
+    var auto = g.lignes.every(function(p){ return p.lien === 'prenom' || p.lien === 'appareil'; });
+    var detail = (autres.length ? 'a écrit « ' + autres.map(esc).join(' », « ') + ' »' : '') +
+      (g.lignes.length > 1 ? (autres.length ? ' · ' : '') + pluriel(g.lignes.length, 'envoi fusionné', 'envois fusionnés') : '');
+    return '<td class="eleve"><span class="prenom">' + esc(nomLong(g.eleve)) + '</span>' +
+      ' <span class="relie" title="' + (auto ? 'Relié automatiquement au compte de l\'Atelier' : 'Relié par toi au compte de l\'Atelier') + '">✓' + (auto ? ' auto' : '') + '</span>' +
+      ' <button class="crayon" data-editer="' + esc(g.cle) + '" title="Changer l\'élève relié" aria-label="Changer l\'élève relié à cette ligne">✎</button>' +
+      (detail ? '<span class="ou">' + detail + '</span>' : '') +
+      (g.lignes.length > 1 ? '<span class="envois">' + g.lignes.map(function(p){
+        return '<span>' + esc(p.prenom) + ' · ' + p.etape + '/' + p.etapes +
+          ' <button data-delier="' + esc(p.id) + '" title="Sortir cet envoi de la fusion" aria-label="Délier l\'envoi de ' + esc(p.prenom) + '">×</button></span>';
+      }).join('') + '</span>' : '') +
+      '</td>';
+  }
+  var k = plat(g.classe) + '|' + plat(g.nom);
+  var meme = !g.eleve && doublons && doublons[k] > 1
+    ? ' <span class="double" title="Même prénom dans la même classe : deux élèves, ou le même élève sur deux téléphones.">×' + doublons[k] + '</span>' : '';
+  var s = !g.eleve ? suggestion(g) : null;
+  return '<td class="eleve">' +
+    (g.eleve ? '<span class="prenom">' + esc(nomLong(g.eleve)) + '</span>'
+             : '<span class="prenom">' + esc(g.nom) + '</span>' + meme + ' <span class="arelier">à relier</span>') +
+    '<span class="lier">' +
+      (s ? '<button class="btn petit oui" data-lier="' + esc(g.ids.join(',')) + '" data-compte="' + s.eleve.id + '" title="Proposé : ' + esc(s.pourquoi) + '">✓ ' + esc(nomCourt(s.eleve)) + ' ?</button>' : '') +
+      choixCompte(g, !!g.eleve) +
+      (etat.edition === g.cle ? ' <button class="btn petit" data-annuler="1">Annuler</button>' : '') +
+    '</span></td>';
 }
 
 /* ---- Peinture ------------------------------------------------------------ */
+function peindreLien(){
+  var url = lienEntree();
+  $('#entree').innerHTML = url
+    ? '<label for="lien">Le lien à donner aux élèves — le même toute l\'année</label>' +
+      '<div class="lien"><input id="lien" readonly value="' + esc(url) + '">' +
+      '<button class="btn primaire" id="bCopier">Copier</button>' +
+      '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener">Ouvrir</a></div>' +
+      '<p class="note">L\'élève y écrit son prénom et choisit sa classe une seule fois, puis trouve une tuile par travail ' +
+      'prévu pour sa classe. Ajouter un travail dans <code>scripts/travaux.js</code> fait apparaître sa tuile, sans nouveau lien. ' +
+      'Les lignes s\'effacent toutes seules ' + esc(String(etat.conservationMois)) + ' mois après la dernière activité.</p>'
+    : '<div class="msg ko">Le code du lien n\'a pas pu être créé.</div>';
+  if($('#bCopier')) $('#bCopier').addEventListener('click', function(){
+    var champ = $('#lien'), bouton = this;
+    var fait = function(){ bouton.textContent = 'Copié ✓'; setTimeout(function(){ bouton.textContent = 'Copier'; }, 1800); };
+    var aLaMain = function(){ champ.focus(); champ.select(); try{ if(document.execCommand('copy')) fait(); }catch(e){} };
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(champ.value).then(fait, aLaMain);
+    else aLaMain();
+  });
+  if($('#lien')) $('#lien').addEventListener('focus', function(){ this.select(); });
+}
+
+function peindreVues(){
+  var arelier = etat.passages.filter(function(p){ return p.compte_id == null || !etat.eleveParId[p.compte_id]; }).length;
+  $('#vues').innerHTML =
+    '<button class="puce' + (etat.vue === 'travail' ? ' on' : '') + '" data-vue="travail">📋 Par travail</button>' +
+    '<button class="puce' + (etat.vue === 'eleves' ? ' on' : '') + '" data-vue="eleves">👥 Par élève' +
+      (arelier ? ' <span class="badge" title="Lignes pas encore reliées à un compte">' + arelier + ' à relier</span>' : '') + '</button>';
+  tous('[data-vue]').forEach(function(b){
+    b.addEventListener('click', function(){ etat.vue = b.getAttribute('data-vue'); etat.edition = null; peindre(); });
+  });
+}
+
 function peindreTravaux(){
   var courant = leTravail();
+  $('#travaux').hidden = etat.vue !== 'travail';
   $('#travaux').innerHTML = travaux().map(function(t){
-    var l = lignesDe(t.id), finis = l.filter(function(p){ return p.termine; }).length;
-    var meta = [t.matiere, t.niveau, t.duree].filter(Boolean).join(' · ');
-    return '<button class="travail' + (courant && t.id === courant.id ? ' on' : '') + '" data-travail="' + esc(t.id) + '"' +
-      (courant && t.id === courant.id ? ' aria-current="true"' : '') + '>' +
+    var g = grouper(lignesDe(t.id)), finis = g.filter(function(x){ return x.termine; }).length;
+    var meta = [t.matiere, niveauxDe(t).join(', '), t.duree].filter(Boolean).join(' · ');
+    var on = courant && t.id === courant.id;
+    return '<button class="travail' + (on ? ' on' : '') + (t.masque ? ' masque' : '') + '" data-travail="' + esc(t.id) + '"' +
+      (on ? ' aria-current="true"' : '') + '>' +
       '<span class="ic" aria-hidden="true">' + esc(t.ic || '📄') + '</span>' +
       '<span class="corps"><span class="titre">' + esc(t.titre) + '</span>' +
-      (meta ? '<span class="meta">' + esc(meta) + '</span>' : '<span class="meta">&nbsp;</span>') +
-      (l.length
-        ? '<span class="compte">' + pluriel(l.length, 'élève', 'élèves') + ' · <b>' + pluriel(finis, 'terminé', 'terminés') + '</b></span>'
+      '<span class="meta">' + (meta ? esc(meta) : '&nbsp;') + (t.masque ? ' · <b>caché aux élèves</b>' : '') + '</span>' +
+      (g.length
+        ? '<span class="compte">' + pluriel(g.length, 'élève', 'élèves') + ' · <b>' + pluriel(finis, 'terminé', 'terminés') + '</b></span>'
         : '<span class="compte zero">Pas encore ouvert</span>') +
       '</span></button>';
   }).join('');
-  Array.prototype.forEach.call(document.querySelectorAll('[data-travail]'), function(b){
+  tous('[data-travail]').forEach(function(b){
     b.addEventListener('click', function(){
-      etat.travail = b.getAttribute('data-travail');
+      etat.travail = b.getAttribute('data-travail'); etat.edition = null;
       try{ history.replaceState(null, '', '#' + etat.travail); }catch(e){}
       peindre();
     });
@@ -297,153 +525,241 @@ function barreEtapes(p, t){
     ? '<span class="ou">à faire : ' + esc(t.etapes[p.etape]) + '</span>' : '';
   return '<span class="etapes">' + h + '</span><span class="nb">' + p.etape + ' / ' + n + '</span>' + suite;
 }
+function pastille(g){
+  return g.termine ? '<span class="pastille fini">Terminé</span>'
+       : g.etape > 0 ? '<span class="pastille cours">En cours</span>'
+       : '<span class="pastille ouvert">Ouvert</span>';
+}
+function score(g){
+  var pc = g.score_max ? Math.round(g.score * 100 / g.score_max) : 0;
+  return '<b>' + g.score + '</b> / ' + g.score_max + (g.score_max && g.etape > 0 ? ' <small>' + pc + ' %</small>' : '');
+}
 
-function ligne(p, t, doublons){
-  var pc = p.score_max ? Math.round(p.score * 100 / p.score_max) : 0;
-  var txt = p.termine ? '<span class="pastille fini">Terminé</span>'
-          : p.etape > 0 ? '<span class="pastille cours">En cours</span>'
-          : '<span class="pastille ouvert">Ouvert</span>';
-  var k = plat(p.classe) + '|' + plat(p.prenom);
-  var meme = doublons[k] > 1
-    ? ' <span class="double" title="Même prénom dans la même classe : deux élèves, ou le même élève sur deux téléphones.">×' + doublons[k] + '</span>' : '';
-  return '<tr>' +
-    '<td class="prenom">' + esc(p.prenom) + meme + '</td>' +
-    '<td>' + esc(p.classe || '—') + '</td>' +
-    '<td>' + txt + '</td>' +
-    '<td>' + barreEtapes(p, t) + '</td>' +
-    '<td class="score"><b>' + p.score + '</b> / ' + p.score_max +
-      (p.score_max && p.etape > 0 ? ' <small>' + pc + ' %</small>' : '') + '</td>' +
-    '<td class="quand">' + esc(quand(p.maj_le)) + '</td>' +
-    '<td><button class="btn petit" data-suppr="' + esc(p.id) + '" title="Effacer cette ligne" aria-label="Effacer la ligne de ' +
-      esc(p.prenom) + '">🗑</button></td>' +
+function ligne(g, t, doublons){
+  return '<tr>' + celluleEleve(g, doublons) +
+    '<td>' + esc(g.classe || '—') + '</td>' +
+    '<td>' + pastille(g) + '</td>' +
+    '<td>' + barreEtapes(g, t) + '</td>' +
+    '<td class="score">' + score(g) + '</td>' +
+    '<td class="quand">' + esc(quand(g.maj_le)) + '</td>' +
+    '<td><button class="btn petit" data-suppr="' + esc(g.ids.join(',')) + '" title="Effacer" aria-label="Effacer la ligne de ' +
+      esc(g.nom) + '">🗑</button></td>' +
   '</tr>';
 }
 
 function peindreFiche(){
   var t = leTravail();
+  $('#fiche').hidden = etat.vue !== 'travail';
+  if(etat.vue !== 'travail') return;
   if(!t){
     $('#fiche').innerHTML = '<div class="rien">Aucun travail au catalogue. Ajoute-en un dans <code>scripts/travaux.js</code>.</div>';
     return;
   }
-  var tous = lignesDe(t.id), classe = classeDe(t);
-  var lignes = tous.filter(function(p){ return !classe || plat(p.classe) === plat(classe); });
-  var url = lienDe(t), meta = [t.matiere, t.niveau, t.duree].filter(Boolean).join(' · ');
+  var groupes = grouper(lignesDe(t.id)), classe = classeDe(t);
+  var vus = groupes.filter(function(g){ return !classe || plat(g.classe) === plat(classe); });
+  var meta = [t.matiere, niveauxDe(t).length ? 'pour ' + niveauxDe(t).join(', ') : 'toutes les classes', t.duree].filter(Boolean).join(' · ');
 
   var doublons = {};
-  tous.forEach(function(p){ var k = plat(p.classe) + '|' + plat(p.prenom); doublons[k] = (doublons[k] || 0) + 1; });
+  groupes.forEach(function(g){ if(!g.eleve){ var k = plat(g.classe) + '|' + plat(g.nom); doublons[k] = (doublons[k] || 0) + 1; } });
 
   /* Les classes en filtre : celles de l'établissement, dans son ordre, puis celles qui
      n'existeraient plus mais ont encore des lignes. */
   var noms = etat.classes.map(function(c){ return c.nom; });
-  tous.forEach(function(p){ if(p.classe && !noms.some(function(n){ return plat(n) === plat(p.classe); })) noms.push(p.classe); });
-  var avec = {}; tous.forEach(function(p){ avec[plat(p.classe)] = (avec[plat(p.classe)] || 0) + 1; });
+  groupes.forEach(function(g){ if(g.classe && !noms.some(function(n){ return plat(n) === plat(g.classe); })) noms.push(g.classe); });
+  var avec = {}; groupes.forEach(function(g){ avec[plat(g.classe)] = (avec[plat(g.classe)] || 0) + 1; });
   var puces = '<button class="puce' + (!classe ? ' on' : '') + '" data-classe="">Toutes</button>' +
-    noms.filter(function(n){ return avec[plat(n)] || plat(n) === plat(classe) || plat(n) === plat(t.niveau); })
+    noms.filter(function(n){ return avec[plat(n)] || plat(n) === plat(classe) || niveauxDe(t).some(function(x){ return plat(x) === plat(n); }); })
       .map(function(n){
         return '<button class="puce' + (plat(classe) === plat(n) ? ' on' : '') + '" data-classe="' + esc(n) + '">' +
           esc(n) + (avec[plat(n)] ? ' · ' + avec[plat(n)] : '') + '</button>';
       }).join('');
 
-  var finis = lignes.filter(function(p){ return p.termine; }).length;
+  var finis = vus.filter(function(g){ return g.termine; }).length;
+  var arelier = vus.filter(function(g){ return !g.eleve; }).length;
 
-  /* Pas encore vus : les comptes élèves de la classe dont le prénom n'est dans aucune ligne. */
-  var vus = {}; lignes.forEach(function(p){ vus[plat(p.prenom)] = true; });
-  var inscrits = classe ? etat.eleves.filter(function(e){
-    return e.role === 'eleve' && e.actif !== false && plat(e.classe) === plat(classe); }) : [];
-  var manquants = inscrits.filter(function(e){ return !vus[plat(e.prenom)]; });
+  /* Pas encore vus : les comptes de la classe qu'aucune ligne de ce travail ne relie. */
+  var relies = {}; groupes.forEach(function(g){ if(g.eleve) relies[g.eleve.id] = true; });
+  var inscrits = classe ? eleves().filter(function(e){ return e.actif !== false && plat(e.classe) === plat(classe); }) : [];
+  var manquants = inscrits.filter(function(e){ return !relies[e.id]; });
 
   $('#fiche').innerHTML =
     '<div class="fiche-tete"><h2>' + esc(t.ic || '') + ' ' + esc(t.titre) + '</h2>' +
-      (meta ? '<span class="meta">' + esc(meta) + '</span>' : '') + '</div>' +
+      (meta ? '<span class="meta">' + esc(meta) + '</span>' : '') +
+      (t.masque ? '<span class="meta">caché aux élèves</span>' : '') + '</div>' +
     '<p class="resume">' + esc(t.resume || '') + '</p>' +
-
-    (url
-      ? '<label for="lien">Le lien à donner aux élèves</label>' +
-        '<div class="lien"><input id="lien" readonly value="' + esc(url) + '">' +
-        '<button class="btn primaire" id="bCopier">Copier</button>' +
-        '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener">Ouvrir</a></div>' +
-        '<p class="note">Sans compte : l\'élève écrit son prénom, choisit sa classe, et commence. Ce lien est celui de ton ' +
-        'établissement. Les lignes s\'effacent toutes seules ' + esc(String(etat.conservationMois)) +
-        ' mois après la dernière activité.</p>'
-      : (t.inconnu ? '' : '<div class="msg ko">Pas de lien à distribuer : <code>url</code> est vide pour ce travail dans scripts/travaux.js.</div>')) +
+    (!t.url && !t.inconnu ? '<div class="msg ko">Pas de tuile chez les élèves : <code>url</code> est vide pour ce travail dans scripts/travaux.js.</div>' : '') +
 
     '<div class="filtres">' + puces +
-      '<span class="qui">' + (lignes.length
-        ? pluriel(lignes.length, 'élève a ouvert le travail', 'élèves ont ouvert le travail') + ' · ' +
+      '<span class="qui">' + (vus.length
+        ? pluriel(vus.length, 'élève a ouvert le travail', 'élèves ont ouvert le travail') + ' · ' +
           pluriel(finis, 'l\'a terminé', 'l\'ont terminé')
         : '') + '</span></div>' +
 
-    (lignes.length
+    (vus.length
       ? '<div class="cadre"><table><thead><tr>' +
-        '<th>Prénom</th><th>Classe</th><th>État</th><th>Jusqu\'où</th><th>Score</th><th>Dernière activité</th><th></th>' +
-        '</tr></thead><tbody>' + lignes.map(function(p){ return ligne(p, t, doublons); }).join('') + '</tbody></table></div>'
-      : '<div class="rien">' + (tous.length
+        '<th>Élève</th><th>Classe</th><th>État</th><th>Jusqu\'où</th><th>Score</th><th>Dernière activité</th><th></th>' +
+        '</tr></thead><tbody>' + vus.map(function(g){ return ligne(g, t, doublons); }).join('') + '</tbody></table></div>' +
+        (arelier ? '<p class="note">« à relier » : un prénom qui ne correspond à aucun compte de la classe, ou à plusieurs. ' +
+          'Relie-le à un élève de l\'Atelier : ses devoirs suivants faits sur le même téléphone se relieront tout seuls.</p>' : '')
+      : '<div class="rien">' + (groupes.length
           ? 'Aucun élève de ' + esc(classe) + ' n\'a encore ouvert ce travail.'
-          : 'Personne n\'a encore ouvert ce travail.<br>Donne le lien aux élèves : ils apparaissent ici dès leur prénom écrit.') + '</div>') +
+          : 'Personne n\'a encore ouvert ce travail.<br>Donne le lien ci-dessus aux élèves : ils apparaissent ici dès qu\'ils l\'ont ouvert.') + '</div>') +
 
     (classe && inscrits.length
       ? '<div class="manque"><b>Pas encore vus en ' + esc(classe) + ' (' + manquants.length + ' sur ' + inscrits.length + ')</b> ' +
         (manquants.length
-          ? manquants.map(function(e){ return '<span>' + esc(e.prenom) + ' ' + esc(String(e.nom || '').charAt(0)) + '.</span>'; }).join('')
-          : '<em>Tous les prénoms de la classe sont là.</em>') +
-        '<p class="note">Comparé aux prénoms des comptes de la classe dans l\'Atelier. Un surnom ou une faute de frappe fausse cette liste.</p></div>'
-      : (!classe && lignes.length ? '<p class="note">Choisis une classe pour voir qui ne l\'a pas encore ouvert.</p>' : '')) +
+          ? manquants.map(function(e){ return '<span>' + esc(nomCourt(e)) + '</span>'; }).join('')
+          : '<em>Tous les élèves de la classe sont là.</em>') +
+        '<p class="note">Les comptes de la classe dans l\'Atelier qu\'aucune ligne ne relie.' +
+          (arelier ? ' Il reste ' + pluriel(arelier, 'ligne', 'lignes') + ' à relier : un élève de cette liste s\'y cache peut-être.' : '') + '</p></div>'
+      : (!classe && vus.length ? '<p class="note">Choisis une classe pour voir qui ne l\'a pas encore ouvert.</p>' : '')) +
 
     '<div class="actes">' +
       '<button class="btn" id="bActualiser">↻ Actualiser</button>' +
-      (lignes.length ? '<button class="btn danger pousse" id="bVider">🗑 Effacer ' +
+      (vus.length ? '<button class="btn danger pousse" id="bVider">🗑 Effacer ' +
         (classe ? 'les lignes de ' + esc(classe) : 'toutes les lignes') + '</button>' : '') +
     '</div>';
 
-  brancherFiche(t, classe, lignes);
-}
-
-function brancherFiche(t, classe, lignes){
-  Array.prototype.forEach.call(document.querySelectorAll('#fiche [data-classe]'), function(b){
-    b.addEventListener('click', function(){ etat.classe[t.id] = b.getAttribute('data-classe') || ''; peindreFiche(); });
+  tous('#fiche [data-classe]').forEach(function(b){
+    b.addEventListener('click', function(){ etat.classe[t.id] = b.getAttribute('data-classe') || ''; etat.edition = null; peindreFiche(); });
   });
-  Array.prototype.forEach.call(document.querySelectorAll('#fiche [data-suppr]'), function(b){
-    b.addEventListener('click', function(){
-      var id = b.getAttribute('data-suppr');
-      var p = etat.passages.filter(function(x){ return x.id === id; })[0];
-      if(!p || !confirm('Effacer la ligne de ' + p.prenom + ' (' + (p.classe || 'sans classe') + ') ?\n\n' +
-        'Si l\'élève rouvre le travail sur le même téléphone, sa ligne reviendra avec son score.')) return;
-      api('DELETE', '/api/prof/devoirs', { id: id }).then(function(){ return charger(true); }).catch(function(e){ alert(e.message); });
-    });
-  });
-  if($('#bCopier')) $('#bCopier').addEventListener('click', function(){
-    var champ = $('#lien'), bouton = this;
-    var fait = function(){ bouton.textContent = 'Copié ✓'; setTimeout(function(){ bouton.textContent = 'Copier'; }, 1800); };
-    var aLaMain = function(){ champ.focus(); champ.select(); try{ if(document.execCommand('copy')) fait(); }catch(e){} };
-    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(champ.value).then(fait, aLaMain);
-    else aLaMain();
-  });
-  if($('#lien')) $('#lien').addEventListener('focus', function(){ this.select(); });
   $('#bActualiser').addEventListener('click', function(){ charger(true); });
   if($('#bVider')) $('#bVider').addEventListener('click', function(){
-    if(!confirm('Effacer ' + pluriel(lignes.length, 'ligne', 'lignes') + ' de « ' + t.titre + ' »' + (classe ? ' en ' + classe : '') + ' ?\n\n' +
+    var ids = [].concat.apply([], vus.map(function(g){ return g.ids; }));
+    if(!confirm('Effacer ' + pluriel(vus.length, 'élève', 'élèves') + ' de « ' + t.titre + ' »' + (classe ? ' en ' + classe : '') + ' ?\n\n' +
       'Les scores sont perdus côté suivi. Les élèves gardent leur avancée sur leur téléphone.')) return;
-    var corps = { devoir: t.id };
-    if(classe) corps.classe = classe;
-    api('DELETE', '/api/prof/devoirs', corps).then(function(){ return charger(true); }).catch(function(e){ alert(e.message); });
+    api('DELETE', '/api/prof/devoirs', { ids: ids }).then(function(){ return charger(true); }).catch(function(e){ alert(e.message); });
+  });
+  brancherLignes('#fiche');
+}
+
+/* ---- Par élève : la classe, ses comptes, et tous les travaux côte à côte ---- */
+function peindreEleves(){
+  var zone = $('#parEleve');
+  zone.hidden = etat.vue !== 'eleves';
+  if(etat.vue !== 'eleves') return;
+
+  var noms = etat.classes.map(function(c){ return c.nom; });
+  if(etat.classeEleves == null || !noms.some(function(n){ return plat(n) === plat(etat.classeEleves); })){
+    /* Par défaut : la première classe visée par un travail, sinon la première tout court. */
+    var vise = noms.filter(function(n){ return travaux().some(function(t){ return niveauxDe(t).some(function(x){ return plat(x) === plat(n); }); }); });
+    etat.classeEleves = vise[0] || noms[0] || '';
+  }
+  var classe = etat.classeEleves;
+
+  var comptes = eleves().filter(function(e){ return plat(e.classe) === plat(classe); })
+    .sort(function(a, b){ return plat(a.nom + ' ' + a.prenom).localeCompare(plat(b.nom + ' ' + b.prenom)); });
+  var ids = {}; comptes.forEach(function(e){ ids[e.id] = true; });
+
+  /* Les colonnes : les travaux prévus pour cette classe, plus ceux qu'un de ses élèves a
+     faits quand même (un 4e qui a ouvert le travail des 5e). */
+  var cols = travaux().filter(function(t){
+    return (!t.inconnu && pourClasse(t, classe)) ||
+      lignesDe(t.id).some(function(p){ return p.compte_id != null && ids[p.compte_id]; });
+  });
+
+  var cellule = function(e, t){
+    var g = grouper(lignesDe(t.id).filter(function(p){ return p.compte_id === e.id; }))[0];
+    if(!g) return '<td class="case aucun">—</td>';
+    return '<td class="case ' + (g.termine ? 'fini' : g.etape > 0 ? 'cours' : 'ouvert') + '" title="' +
+      esc(t.titre + ' : ' + g.etape + ' / ' + g.etapes + ', score ' + g.score + ' / ' + g.score_max + ', ' + quand(g.maj_le)) + '">' +
+      '<b>' + g.etape + '/' + g.etapes + '</b><span>' + g.score + ' / ' + g.score_max + '</span></td>';
+  };
+
+  var orphelins = grouper(etat.passages.filter(function(p){
+    return (p.compte_id == null || !etat.eleveParId[p.compte_id]) && plat(p.classe) === plat(classe);
+  }));
+  var titreDe = {}; travaux().forEach(function(t){ titreDe[t.id] = t; });
+
+  zone.innerHTML =
+    '<div class="filtres">' + noms.map(function(n){
+      return '<button class="puce' + (plat(n) === plat(classe) ? ' on' : '') + '" data-classe-eleves="' + esc(n) + '">' + esc(n) + '</button>';
+    }).join('') + '<span class="qui">' + pluriel(comptes.length, 'compte', 'comptes') + '</span></div>' +
+
+    (comptes.length && cols.length
+      ? '<div class="cadre"><table class="grille"><thead><tr><th>Élève</th>' +
+          cols.map(function(t){ return '<th title="' + esc(t.titre) + '">' + esc(t.ic || '📄') + ' ' + esc(t.titre) + '</th>'; }).join('') +
+        '</tr></thead><tbody>' + comptes.map(function(e){
+          return '<tr><td class="prenom">' + esc(e.nom) + ' ' + esc(e.prenom) + (e.actif === false ? ' <small>(désactivé)</small>' : '') + '</td>' +
+            cols.map(function(t){ return cellule(e, t); }).join('') + '</tr>';
+        }).join('') + '</tbody></table></div>' +
+        '<p class="note">Chaque case fusionne tout ce que l\'élève a envoyé pour ce travail, quel que soit le prénom tapé ou le téléphone : ' +
+          'étapes faites, puis score. « — » : rien de relié à ce compte.</p>'
+      : '<div class="rien">' + (!comptes.length ? 'Aucun compte en ' + esc(classe) + ' dans l\'Atelier.' : 'Aucun travail prévu pour la ' + esc(classe) + ' pour l\'instant.') + '</div>') +
+
+    (orphelins.length
+      ? '<h3 class="sous">À relier en ' + esc(classe) + ' (' + orphelins.length + ')</h3>' +
+        '<div class="cadre"><table><thead><tr><th>Prénom tapé</th><th>Travail</th><th>Jusqu\'où</th><th>Score</th><th>Dernière activité</th></tr></thead><tbody>' +
+        orphelins.map(function(g){
+          var t = titreDe[g.lignes[0].devoir] || { titre: g.lignes[0].devoir, etapes: [] };
+          return '<tr>' + celluleEleve(g, null) + '<td>' + esc(t.ic || '') + ' ' + esc(t.titre) + '</td>' +
+            '<td><span class="nb">' + g.etape + ' / ' + g.etapes + '</span></td><td class="score">' + score(g) + '</td>' +
+            '<td class="quand">' + esc(quand(g.maj_le)) + '</td></tr>';
+        }).join('') + '</tbody></table></div>'
+      : '');
+
+  tous('[data-classe-eleves]').forEach(function(b){
+    b.addEventListener('click', function(){ etat.classeEleves = b.getAttribute('data-classe-eleves'); etat.edition = null; peindreEleves(); });
+  });
+  brancherLignes('#parEleve');
+}
+
+/* Relier, délier, effacer : les mêmes gestes dans les deux vues. */
+function lier(ids, compte){
+  return api('PUT', '/api/prof/devoirs/lien', { ids: ids, compte: compte })
+    .then(function(){ etat.edition = null; return charger(true); })
+    .catch(function(e){ alert(e.message); });
+}
+function brancherLignes(racine){
+  tous(racine + ' select.relier').forEach(function(s){
+    s.addEventListener('change', function(){
+      if(s.value === '') return;
+      s.disabled = true;
+      lier(s.getAttribute('data-ids').split(','), s.value === '0' ? null : Number(s.value));
+    });
+  });
+  tous(racine + ' [data-lier]').forEach(function(b){
+    b.addEventListener('click', function(){ b.disabled = true; lier(b.getAttribute('data-lier').split(','), Number(b.getAttribute('data-compte'))); });
+  });
+  tous(racine + ' [data-delier]').forEach(function(b){
+    b.addEventListener('click', function(){ lier([b.getAttribute('data-delier')], null); });
+  });
+  tous(racine + ' [data-editer]').forEach(function(b){
+    b.addEventListener('click', function(){ etat.edition = b.getAttribute('data-editer'); peindre(); });
+  });
+  tous(racine + ' [data-annuler]').forEach(function(b){
+    b.addEventListener('click', function(){ etat.edition = null; peindre(); });
+  });
+  tous(racine + ' [data-suppr]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var ids = b.getAttribute('data-suppr').split(',');
+      var p = etat.passages.filter(function(x){ return x.id === ids[0]; })[0];
+      if(!p || !confirm('Effacer ' + (ids.length > 1 ? 'les ' + ids.length + ' envois de ' : 'la ligne de ') + p.prenom + ' (' + (p.classe || 'sans classe') + ') ?\n\n' +
+        'Si l\'élève rouvre le travail sur le même téléphone, sa ligne reviendra avec son score.')) return;
+      api('DELETE', '/api/prof/devoirs', { ids: ids }).then(function(){ return charger(true); }).catch(function(e){ alert(e.message); });
+    });
   });
 }
 
-function peindre(){ peindreTravaux(); peindreFiche(); }
+function peindre(){ peindreLien(); peindreVues(); peindreTravaux(); peindreFiche(); peindreEleves(); }
 
 /* ---- Chargement ---------------------------------------------------------- */
 function charger(force){
   return Promise.all([api('GET', '/api/prof/devoirs'), api('GET', '/api/prof/tableau')]).then(function(r){
     /* Rien de neuf : on ne repeint pas — un rafraîchissement toutes les 30 s qui
-       redessine tout ferait sauter le défilement et la sélection du lien. */
-    var nouvelle = JSON.stringify([r[0], r[1].classes, r[1].eleves.map(function(e){ return [e.prenom, e.nom, e.classe, e.role, e.actif]; })]);
+       redessine tout ferait sauter le défilement, la sélection du lien, ou une liste
+       « Relier à… » ouverte. */
+    var nouvelle = JSON.stringify([r[0], r[1].classes, r[1].eleves.map(function(e){ return [e.id, e.prenom, e.nom, e.classe, e.role, e.actif]; })]);
     if(nouvelle === empreinte && force !== true) return;
+    if(force !== true && (etat.edition || (document.activeElement && document.activeElement.tagName === 'SELECT'))) return;
     empreinte = nouvelle;
     etat.passages = r[0].passages || [];
     etat.code = r[0].code || '';
     etat.conservationMois = r[0].conservationMois || 12;
     etat.eleves = r[1].eleves || [];
     etat.classes = r[1].classes || [];
+    etat.eleveParId = {};
+    etat.eleves.forEach(function(e){ if(e.role === 'eleve') etat.eleveParId[e.id] = e; });
     if(r[1].etablissement){ $('#etab').textContent = r[1].etablissement; $('#etab').hidden = false; }
     $('#vide').hidden = true; $('#suivi').hidden = false;
     peindre();
