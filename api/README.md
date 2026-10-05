@@ -614,9 +614,16 @@ suppression d'une classe y note le nombre d'élèves détachés.
 
 ## 4 bis. Le travail à la maison, sans compte
 
-« 📱 Travail à la maison », dans le tableau de bord, suit une page d'exercices pour
-téléphone publiée par le dépôt `le-pc` (`maison.html`, « Le PC à la maison » : cinq
-missions, une petite leçon puis un jeu, vingt minutes au plus).
+Des pages d'exercices pour téléphone, que l'élève fait chez lui. La première est publiée
+par le dépôt `le-pc` (`maison.html`, « Le PC à la maison » : cinq missions, une petite
+leçon puis un jeu, vingt minutes au plus) ; d'autres peuvent s'ajouter dans l'année.
+
+**Le suivi a sa propre page, `travail-maison.html`**, distincte du tableau de bord de
+l'Atelier (`prof.html`) : ce ne sont ni les mêmes élèves — un prénom tapé n'est pas un
+compte — ni la même question. On y entre avec **l'identifiant d'enseignant de l'Atelier** ;
+une session ouverte sur l'une des deux pages vaut pour l'autre (même domaine, même
+`scripts/store.js`). Elle liste les travaux et, pour celui qu'on choisit : le lien à
+distribuer, puis par classe qui l'a ouvert, jusqu'où, avec quel score.
 
 **L'élève n'a ni identifiant ni mot de passe.** Il ouvre le lien, écrit son prénom, touche
 sa classe, et commence. C'est le but : à la maison, un mot de passe oublié est un devoir
@@ -624,8 +631,8 @@ non fait. La contrepartie est écrite ici pour qu'elle ne surprenne personne :
 
 - **ce suivi dit qui a travaillé, il ne certifie rien.** Rien n'empêche un élève de taper
   le prénom d'un autre. C'est un cahier de texte, pas une évaluation ;
-- deux élèves du même prénom dans la même classe donnent deux lignes identiques (le
-  tableau les marque « ×2 ») ; le même élève sur deux téléphones aussi ;
+- deux élèves du même prénom dans la même classe donnent deux lignes identiques (la
+  page les marque « ×2 ») ; le même élève sur deux téléphones aussi ;
 - « Pas encore vus » compare les prénoms reçus à ceux des **comptes** de la classe : un
   surnom ou une faute de frappe fausse la liste.
 
@@ -653,8 +660,8 @@ https://gregoirelecossois.github.io/le-pc/maison.html?c=CODE
 `CODE` est propre à l'établissement (`etablissements.code_devoir`), créé la première fois
 qu'un enseignant ouvre « Travail à la maison ». C'est lui qui rattache un téléphone à ce
 collège et à aucun autre : **l'établissement reste la frontière**, y compris sans
-connexion. Le tableau de bord affiche le lien complet, avec un bouton « Copier » ;
-l'adresse de la page vient de `devoirMaison` dans `scripts/config.js`.
+connexion. La page de suivi affiche le lien complet, avec un bouton « Copier » ;
+l'adresse de chaque page vient de `url` dans `scripts/travaux.js`.
 
 Sans code, ou avec un code inconnu, la page fonctionne en **entraînement** : les jeux
 marchent, rien n'est envoyé, et c'est dit à l'élève.
@@ -675,11 +682,22 @@ dans l'établissement, un prénom fait de lettres, et un plafond de lignes par �
 leur page continue de fonctionner). Un score ou une étape ne redescendent jamais
 (`greatest`), quel que soit l'ordre d'arrivée des envois.
 
-### Ajouter un autre travail
+### Ajouter un autre travail dans l'année
 
-La colonne `devoir` porte un identifiant libre (`pc-1` aujourd'hui). Une autre page n'a
-qu'à envoyer le sien : le tableau de bord range les lignes par travail, et
-`scripts/devoirs.js` (`TITRES`) lui donne un nom lisible.
+Rien à changer côté serveur, rien à redéployer : la colonne `devoir` porte un identifiant
+libre, et le serveur range ce qu'on lui envoie.
+
+1. **La page d'exercices** — où qu'elle soit publiée, pourvu que son domaine figure dans
+   `ORIGINES` — lit le code dans son adresse (`?c=CODE`), demande les classes
+   (`GET /api/devoir/classes`) et envoie son état (`POST /api/devoir/passage`) avec **son
+   propre identifiant** dans `devoir` : `velo-1`, `scratch-1`… `src/maison/suivi.ts`, dans
+   le dépôt `le-pc`, est le modèle à reprendre.
+2. **Une entrée dans `scripts/travaux.js`** : identifiant, titre, niveau, adresse, nom des
+   étapes. Le travail apparaît aussitôt dans `travail-maison.html`, avec son lien.
+
+Un travail qui envoie des lignes **sans** être au catalogue s'affiche quand même, sous son
+identifiant brut. Ne jamais renommer un identifiant une fois le travail distribué : les
+lignes déjà reçues resteraient sous l'ancien.
 
 ## 5. Créer les comptes en ligne de commande
 

@@ -36,7 +36,7 @@
  *   GET    /api/devoir/classes?c=CODE       les noms des classes, pour que l'élève choisisse
  *   POST   /api/devoir/passage              {c, id, devoir, prenom, classe, etape…} → où il en est
  *
- * Routes réservées au rôle « prof » — le tableau de bord :
+ * Routes réservées au rôle « prof » — le tableau de bord, et travail-maison.html :
  *   GET    /api/prof/tableau                tous les comptes + leur avancement résumé
  *   GET    /api/prof/presence               qui est connecté, et où (interrogé souvent)
  *   POST   /api/prof/classes                crée ou réordonne une classe
@@ -1428,7 +1428,7 @@ async function devoirPassage(req) {
 }
 
 /* Le code du lien est créé à la première visite de l'enseignant : tant que personne n'a
-   ouvert « Travail à la maison », l'établissement n'a aucune porte sans connexion. */
+   ouvert travail-maison.html, l'établissement n'a aucune porte sans connexion. */
 async function codeDevoir(etablissementId) {
   const e = await db.une('select code_devoir from etablissements where id = $1', [etablissementId]);
   if (e && e.code_devoir) return e.code_devoir;

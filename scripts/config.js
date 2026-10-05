@@ -31,12 +31,6 @@ window.ATELIER_CONFIG = {
      Même raison d'être absolue que ci-dessus. Vide → lien relatif « admin.html ». */
   espaceAdmin: 'https://gregoirelecossois.github.io/atelier-informatique/admin.html',
 
-  /* Adresse de la page « Le PC à la maison » (dépôt le-pc) : des exercices pour
-     téléphone, SANS compte. Le tableau de bord y ajoute le code de l'établissement
-     pour fabriquer le lien à donner aux élèves. Vide → le bouton « Travail à la
-     maison » du tableau de bord explique qu'il n'y a pas de page à distribuer. */
-  devoirMaison: 'https://gregoirelecossois.github.io/le-pc/maison.html',
-
   /* true  → un élève non connecté voit un avertissement bien visible.
      false → l'avertissement reste discret (utile en démo ou en classe sans comptes). */
   insisterConnexion: true

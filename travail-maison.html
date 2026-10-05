@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Travail à la maison — suivi enseignant</title>
+
+<!-- Page enseignant, DISTINCTE du tableau de bord de l'Atelier (prof.html).
+     Le suivi de l'Atelier dit où en est chaque COMPTE dans les six ateliers. Celle-ci
+     dit qui a fait un travail donné à la maison, sur téléphone et SANS compte. Ce ne
+     sont ni les mêmes élèves (un prénom tapé n'est pas un compte), ni la même question :
+     les deux ne partagent donc pas un écran.
+
+     Ce qu'elles partagent, c'est la porte : on entre ici avec son identifiant
+     d'enseignant de l'Atelier, et une session ouverte sur l'une vaut pour l'autre
+     (même domaine, même scripts/store.js).
+
+     Comme prof.html, elle n'est PAS secrète : tout ce qu'elle affiche vient de l'API,
+     qui vérifie le rôle « prof » à chaque requête. La sécurité est côté serveur. -->
+
+<!-- Polices servies EN LOCAL (cf. assets/fonts/README.md) : jamais de CDN. -->
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+
+<style>
+  :root{
+    --fond:#eef2f7; --carte:#fff; --trait:#dde5ee; --encre:#22303f; --gris:#6b7d91;
+    --bleu:#2563eb; --vert:#16a34a; --orange:#e0a416; --rouge:#dc2626;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font-family:"Nunito",system-ui,"Fluent Emoji",sans-serif;font-size:15px;}
+  h1,h2,h3{font-family:"Fredoka","Fluent Emoji",sans-serif;font-weight:600;margin:0;}
+  button{font-family:inherit;cursor:pointer}
+  [hidden]{display:none!important}
+
+  .barre{position:sticky;top:0;z-index:20;background:var(--carte);border-bottom:2px solid var(--trait);
+         padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .barre h1{font-size:1.25rem}
+  .barre .creneau{margin-right:auto;display:inline-flex}
+  .barre a.btn{text-decoration:none;display:inline-flex;align-items:center}
+  .barre .qui{color:var(--gris);font-size:.85rem;font-weight:700}
+  .barre .etab{font-family:Fredoka,system-ui,sans-serif;font-size:.95rem;font-weight:600;
+    color:var(--bleu);background:#eaf2ff;border-radius:999px;padding:3px 12px;white-space:nowrap}
+
+  .btn{border:2px solid var(--trait);background:#fff;color:var(--encre);border-radius:999px;
+       padding:8px 15px;font-weight:800;font-size:.85rem;transition:border-color .15s,background .15s;
+       text-decoration:none;display:inline-flex;align-items:center}
+  .btn:hover{border-color:#9fb6cd}
+  .btn.primaire{background:var(--bleu);border-color:var(--bleu);color:#fff}
+  .btn.danger{background:#fef2f2;border-color:#fecaca;color:#b91c1c}
+  .btn[disabled]{opacity:.5;cursor:default}
+  .btn.petit{padding:5px 11px;font-size:.78rem}
+
+  .zone{max-width:1180px;margin:0 auto;padding:18px 20px 60px}
+  .vide{text-align:center;color:var(--gris);padding:60px 20px;font-weight:700}
+  .note{color:var(--gris);font-size:.8rem;margin:8px 0 0;line-height:1.45}
+  .msg{border-radius:12px;padding:10px 13px;font-size:.84rem;font-weight:700;margin:0 0 14px;line-height:1.4}
+  .msg.ko{background:#fef2f2;color:#b91c1c}
+  .msg code{font-family:ui-monospace,Menlo,Consolas,monospace}
+
+  /* ---- connexion ---- */
+  .porte{max-width:400px;margin:8vh auto 0;background:var(--carte);border:2px solid var(--trait);
+         border-radius:20px;padding:26px 26px 22px}
+  .porte h2{font-size:1.35rem;margin-bottom:4px}
+  .porte p{color:var(--gris);font-size:.88rem;font-weight:700;margin:0 0 18px;line-height:1.45}
+  .porte label{display:block;font-weight:800;font-size:.78rem;margin:12px 0 4px}
+  .porte input{width:100%;border:2px solid var(--trait);border-radius:11px;padding:10px 12px;
+        font-family:inherit;font-size:1rem;font-weight:700;color:var(--encre);background:#fbfdff}
+  .porte input:focus{outline:none;border-color:var(--bleu);background:#fff}
+  .porte .btn{width:100%;justify-content:center;margin-top:18px;padding:11px 15px;font-size:.95rem}
+
+  /* ---- la liste des travaux ---- */
+  .travaux{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:22px}
+  .travail{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+        background:var(--carte);border:2px solid var(--trait);border-radius:16px;padding:13px 15px;
+        color:inherit;transition:border-color .15s}
+  .travail:hover{border-color:#9fb6cd}
+  .travail.on{border-color:var(--bleu);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .travail .ic{font-size:1.7rem;line-height:1.1;flex:none}
+  .travail .corps{min-width:0;flex:1}
+  .travail .titre{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:1.08rem;display:block}
+  .travail .meta{font-size:.76rem;font-weight:800;color:var(--gris);display:block;margin:1px 0 7px}
+  .travail .compte{font-size:.82rem;font-weight:800;display:block}
+  .travail .compte b{color:var(--vert)}
+  .travail .compte.zero{color:var(--gris);font-weight:700}
+
+  /* ---- le travail affiché ---- */
+  .fiche{background:var(--carte);border:2px solid var(--trait);border-radius:20px;padding:20px 22px}
+  .fiche-tete{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:4px}
+  .fiche-tete h2{font-size:1.4rem}
+  .fiche-tete .meta{font-size:.8rem;font-weight:800;color:var(--gris);background:#f1f5fa;border-radius:999px;padding:2px 10px}
+  .fiche .resume{color:var(--gris);font-weight:700;font-size:.9rem;margin:0 0 16px}
+  .fiche label{display:block;font-weight:800;font-size:.78rem;margin:0 0 4px}
+  .lien{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .lien input{flex:1 1 280px;min-width:0;border:2px solid var(--trait);border-radius:11px;padding:9px 12px;
+        font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem;font-weight:700;color:var(--encre);background:#fbfdff}
+  .lien input:focus{outline:none;border-color:var(--bleu);background:#fff}
+
+  .filtres{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:20px 0 12px}
+  .filtres .qui{margin-left:auto;color:var(--gris);font-size:.85rem;font-weight:700}
+  .puce{border:2px solid var(--trait);background:#fff;border-radius:999px;padding:6px 13px;
+        font-weight:800;font-size:.82rem;color:var(--gris)}
+  .puce.on{background:var(--encre);border-color:var(--encre);color:#fff}
+
+  .cadre{overflow-x:auto;border:2px solid var(--trait);border-radius:14px}
+  table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:660px}
+  th{text-align:left;background:#f1f5fa;padding:8px 12px;font-family:Fredoka,system-ui,sans-serif;
+        font-weight:600;font-size:.82rem;color:var(--gris);white-space:nowrap}
+  td{padding:8px 12px;border-top:1px solid var(--trait);vertical-align:middle;white-space:nowrap}
+  .prenom{font-weight:800;font-size:.98rem}
+  .double{font-size:.72rem;font-weight:800;color:#a16207;background:#fff7e0;border-radius:999px;padding:1px 7px;cursor:help}
+  .pastille{font-size:.74rem;font-weight:800;border-radius:999px;padding:3px 10px}
+  .pastille.fini{background:#eaf7ef;color:#15803d}
+  .pastille.cours{background:#fff7e0;color:#854d0e}
+  .pastille.ouvert{background:#f1f5fa;color:var(--gris)}
+  .etapes{display:inline-flex;gap:3px;vertical-align:middle;margin-right:8px}
+  .etapes i{width:18px;height:10px;border-radius:3px;background:#e2e9f1}
+  .etapes i.on{background:var(--vert)}
+  .nb{font-weight:800;font-variant-numeric:tabular-nums;color:var(--gris);font-size:.82rem}
+  .ou{display:block;font-size:.74rem;color:var(--gris);font-weight:700;margin-top:2px}
+  .score{font-variant-numeric:tabular-nums;color:var(--gris)}
+  .score b{color:var(--encre);font-size:1.05rem}
+  .score small{font-weight:800;margin-left:4px}
+  .quand{color:var(--gris);font-size:.82rem}
+  .rien{padding:34px 20px;border:2px dashed var(--trait);border-radius:14px;text-align:center;
+        color:var(--gris);font-weight:700;line-height:1.5}
+
+  .manque{margin-top:14px;padding:12px 14px;border-radius:14px;background:#fff7e0;font-size:.88rem;line-height:1.9}
+  .manque b{margin-right:6px}
+  .manque span{display:inline-block;background:#fff;border:2px solid #f3dfa4;border-radius:999px;
+        padding:0 10px;margin:0 4px 4px 0;font-weight:800}
+  .manque .note{margin-top:4px}
+
+  .actes{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+  .actes .pousse{margin-left:auto}
+
+  a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+  @media (max-width:560px){ .barre h1{font-size:1.05rem} .fiche{padding:16px 14px} .zone{padding:14px 12px 50px} }
+</style>
+</head>
+<body>
+
+<div class="barre">
+  <h1>📱 Travail à la maison</h1>
+  <span class="etab" id="etab" hidden></span>
+  <span class="creneau"></span>
+  <span class="qui" id="qui"></span>
+  <button class="btn" id="bQuitter" hidden>Déconnexion</button>
+</div>
+
+<div class="zone">
+  <!-- La porte : l'identifiant d'enseignant de l'Atelier informatique. -->
+  <form class="porte" id="porte" hidden novalidate>
+    <h2>Suivi du travail à la maison</h2>
+    <p>Connecte-toi avec ton identifiant d'enseignant de l'Atelier informatique.</p>
+    <div id="porteMsg"></div>
+    <label for="pId">Identifiant</label>
+    <input id="pId" name="identifiant" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="g.nom">
+    <label for="pMdp">Mot de passe</label>
+    <input id="pMdp" name="motdepasse" type="password" autocomplete="current-password">
+    <button class="btn primaire" type="submit" id="pEntrer">Se connecter</button>
+  </form>
+
+  <div id="suivi" hidden>
+    <div class="travaux" id="travaux"></div>
+    <div class="fiche" id="fiche"></div>
+  </div>
+
+  <div id="vide" class="vide">Chargement…</div>
+</div>
+
+<script src="scripts/config.js"></script>
+<script src="scripts/store.js"></script>
+<script src="scripts/travaux.js"></script>
+
+<script>
+'use strict';
+
+/* =========================================================================
+   Cette page ne stocke rien et ne décide rien : elle peint ce que répondent
+   /api/prof/devoirs (les lignes reçues, le code du lien) et /api/prof/tableau
+   (les comptes des classes, pour « pas encore vus »). Le catalogue des
+   travaux vient de scripts/travaux.js.
+
+   Un travail = une valeur de `devoir`. La page affiche ceux du catalogue,
+   plus tout identifiant inconnu pour lequel des lignes existent.
+   ========================================================================= */
+var RYTHME = 30000;
+
+var etat = {
+  passages: [], code: '', conservationMois: 12,
+  eleves: [], classes: [],
+  travail: null,          /* identifiant du travail affiché */
+  classe: {}              /* travail → classe filtrée ('' = toutes) ; absent = pas encore choisi */
+};
+var minuteur = null, demarre = false, empreinte = '';
+
+function $(s){ return document.querySelector(s); }
+function esc(s){ return String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+/* Sans accents ni casse : « ines » et « Inès » sont le même prénom. */
+function plat(t){ return String(t == null ? '' : t).normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase(); }
+function pluriel(n, un, plusieurs){ return n + ' ' + (n > 1 ? plusieurs : un); }
+function quand(iso){
+  var d = new Date(iso), min = Math.max(0, Math.round((Date.now() - d) / 60000));
+  if(min < 1) return 'à l\'instant';
+  if(min < 60) return 'il y a ' + min + ' min';
+  if(min < 60 * 24) return 'il y a ' + Math.round(min / 60) + ' h';
+  var j = Math.round(min / 1440);
+  return j < 30 ? 'il y a ' + j + ' jour' + (j > 1 ? 's' : '') : 'le ' + d.toLocaleDateString('fr-FR');
+}
+
+/* ---- Réseau -------------------------------------------------------------- */
+function api(methode, chemin, corps){
+  var cfg = window.ATELIER_CONFIG || {};
+  var s = null; try{ s = JSON.parse(localStorage.getItem('atl_session') || 'null'); }catch(e){}
+  var init = { method: methode, headers: {}, cache: 'no-store' };
+  if(s && s.jeton) init.headers['Authorization'] = 'Bearer ' + s.jeton;
+  if(corps !== undefined){ init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(corps); }
+  return fetch(String(cfg.api || '').replace(/\/+$/,'') + chemin, init).then(function(r){
+    return r.text().then(function(t){
+      var j = {}; try{ j = t ? JSON.parse(t) : {}; }catch(e){}
+      if(!r.ok){ var e2 = new Error(j.erreur || ('HTTP ' + r.status)); e2.statut = r.status; throw e2; }
+      return j;
+    });
+  });
+}
+
+/* ---- Le catalogue, complété par ce qui arrive ---------------------------- */
+function travaux(){
+  var liste = (window.TRAVAUX || []).slice(), connus = {};
+  liste.forEach(function(t){ connus[t.id] = true; });
+  etat.passages.forEach(function(p){
+    if(connus[p.devoir]) return;
+    connus[p.devoir] = true;
+    /* Un travail qui envoie des lignes sans être au catalogue : on l'affiche quand même. */
+    liste.push({ id: p.devoir, titre: p.devoir, ic: '📄', matiere: '', niveau: '', duree: '',
+                 resume: 'Ce travail n\'est pas décrit dans scripts/travaux.js : il s\'affiche sous son identifiant.',
+                 url: '', etapes: [], inconnu: true });
+  });
+  return liste;
+}
+function leTravail(){
+  var liste = travaux();
+  return liste.filter(function(t){ return t.id === etat.travail; })[0] || liste[0] || null;
+}
+function lignesDe(id){ return etat.passages.filter(function(p){ return p.devoir === id; }); }
+
+function classeExiste(nom){
+  return etat.classes.some(function(c){ return plat(c.nom) === plat(nom); });
+}
+/* La classe filtrée pour un travail. Au premier affichage : son niveau, s'il existe
+   dans l'établissement — un travail de 5e s'ouvre sur la 5e. */
+function classeDe(t){
+  if(etat.classe[t.id] === undefined) etat.classe[t.id] = t.niveau && classeExiste(t.niveau) ? t.niveau : '';
+  return etat.classe[t.id];
+}
+function lienDe(t){
+  if(!t.url || !etat.code) return '';
+  return t.url + (t.url.indexOf('?') < 0 ? '?' : '&') + 'c=' + encodeURIComponent(etat.code);
+}
+
+/* ---- Peinture ------------------------------------------------------------ */
+function peindreTravaux(){
+  var courant = leTravail();
+  $('#travaux').innerHTML = travaux().map(function(t){
+    var l = lignesDe(t.id), finis = l.filter(function(p){ return p.termine; }).length;
+    var meta = [t.matiere, t.niveau, t.duree].filter(Boolean).join(' · ');
+    return '<button class="travail' + (courant && t.id === courant.id ? ' on' : '') + '" data-travail="' + esc(t.id) + '"' +
+      (courant && t.id === courant.id ? ' aria-current="true"' : '') + '>' +
+      '<span class="ic" aria-hidden="true">' + esc(t.ic || '📄') + '</span>' +
+      '<span class="corps"><span class="titre">' + esc(t.titre) + '</span>' +
+      (meta ? '<span class="meta">' + esc(meta) + '</span>' : '<span class="meta">&nbsp;</span>') +
+      (l.length
+        ? '<span class="compte">' + pluriel(l.length, 'élève', 'élèves') + ' · <b>' + pluriel(finis, 'terminé', 'terminés') + '</b></span>'
+        : '<span class="compte zero">Pas encore ouvert</span>') +
+      '</span></button>';
+  }).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-travail]'), function(b){
+    b.addEventListener('click', function(){
+      etat.travail = b.getAttribute('data-travail');
+      try{ history.replaceState(null, '', '#' + etat.travail); }catch(e){}
+      peindre();
+    });
+  });
+}
+
+function barreEtapes(p, t){
+  var n = Math.max(1, p.etapes || 1), h = '';
+  for(var i = 0; i < n; i++){
+    var nom = t.etapes && t.etapes.length === n ? t.etapes[i] : 'Étape ' + (i + 1);
+    h += '<i class="' + (i < p.etape ? 'on' : '') + '" title="' + esc(nom) + '"></i>';
+  }
+  /* « Où il en est » en clair : le nom de la prochaine étape, quand le catalogue le connaît. */
+  var suite = !p.termine && t.etapes && t.etapes.length === n && p.etape < n
+    ? '<span class="ou">à faire : ' + esc(t.etapes[p.etape]) + '</span>' : '';
+  return '<span class="etapes">' + h + '</span><span class="nb">' + p.etape + ' / ' + n + '</span>' + suite;
+}
+
+function ligne(p, t, doublons){
+  var pc = p.score_max ? Math.round(p.score * 100 / p.score_max) : 0;
+  var txt = p.termine ? '<span class="pastille fini">Terminé</span>'
+          : p.etape > 0 ? '<span class="pastille cours">En cours</span>'
+          : '<span class="pastille ouvert">Ouvert</span>';
+  var k = plat(p.classe) + '|' + plat(p.prenom);
+  var meme = doublons[k] > 1
+    ? ' <span class="double" title="Même prénom dans la même classe : deux élèves, ou le même élève sur deux téléphones.">×' + doublons[k] + '</span>' : '';
+  return '<tr>' +
+    '<td class="prenom">' + esc(p.prenom) + meme + '</td>' +
+    '<td>' + esc(p.classe || '—') + '</td>' +
+    '<td>' + txt + '</td>' +
+    '<td>' + barreEtapes(p, t) + '</td>' +
+    '<td class="score"><b>' + p.score + '</b> / ' + p.score_max +
+      (p.score_max && p.etape > 0 ? ' <small>' + pc + ' %</small>' : '') + '</td>' +
+    '<td class="quand">' + esc(quand(p.maj_le)) + '</td>' +
+    '<td><button class="btn petit" data-suppr="' + esc(p.id) + '" title="Effacer cette ligne" aria-label="Effacer la ligne de ' +
+      esc(p.prenom) + '">🗑</button></td>' +
+  '</tr>';
+}
+
+function peindreFiche(){
+  var t = leTravail();
+  if(!t){
+    $('#fiche').innerHTML = '<div class="rien">Aucun travail au catalogue. Ajoute-en un dans <code>scripts/travaux.js</code>.</div>';
+    return;
+  }
+  var tous = lignesDe(t.id), classe = classeDe(t);
+  var lignes = tous.filter(function(p){ return !classe || plat(p.classe) === plat(classe); });
+  var url = lienDe(t), meta = [t.matiere, t.niveau, t.duree].filter(Boolean).join(' · ');
+
+  var doublons = {};
+  tous.forEach(function(p){ var k = plat(p.classe) + '|' + plat(p.prenom); doublons[k] = (doublons[k] || 0) + 1; });
+
+  /* Les classes en filtre : celles de l'établissement, dans son ordre, puis celles qui
+     n'existeraient plus mais ont encore des lignes. */
+  var noms = etat.classes.map(function(c){ return c.nom; });
+  tous.forEach(function(p){ if(p.classe && !noms.some(function(n){ return plat(n) === plat(p.classe); })) noms.push(p.classe); });
+  var avec = {}; tous.forEach(function(p){ avec[plat(p.classe)] = (avec[plat(p.classe)] || 0) + 1; });
+  var puces = '<button class="puce' + (!classe ? ' on' : '') + '" data-classe="">Toutes</button>' +
+    noms.filter(function(n){ return avec[plat(n)] || plat(n) === plat(classe) || plat(n) === plat(t.niveau); })
+      .map(function(n){
+        return '<button class="puce' + (plat(classe) === plat(n) ? ' on' : '') + '" data-classe="' + esc(n) + '">' +
+          esc(n) + (avec[plat(n)] ? ' · ' + avec[plat(n)] : '') + '</button>';
+      }).join('');
+
+  var finis = lignes.filter(function(p){ return p.termine; }).length;
+
+  /* Pas encore vus : les comptes élèves de la classe dont le prénom n'est dans aucune ligne. */
+  var vus = {}; lignes.forEach(function(p){ vus[plat(p.prenom)] = true; });
+  var inscrits = classe ? etat.eleves.filter(function(e){
+    return e.role === 'eleve' && e.actif !== false && plat(e.classe) === plat(classe); }) : [];
+  var manquants = inscrits.filter(function(e){ return !vus[plat(e.prenom)]; });
+
+  $('#fiche').innerHTML =
+    '<div class="fiche-tete"><h2>' + esc(t.ic || '') + ' ' + esc(t.titre) + '</h2>' +
+      (meta ? '<span class="meta">' + esc(meta) + '</span>' : '') + '</div>' +
+    '<p class="resume">' + esc(t.resume || '') + '</p>' +
+
+    (url
+      ? '<label for="lien">Le lien à donner aux élèves</label>' +
+        '<div class="lien"><input id="lien" readonly value="' + esc(url) + '">' +
+        '<button class="btn primaire" id="bCopier">Copier</button>' +
+        '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener">Ouvrir</a></div>' +
+        '<p class="note">Sans compte : l\'élève écrit son prénom, choisit sa classe, et commence. Ce lien est celui de ton ' +
+        'établissement. Les lignes s\'effacent toutes seules ' + esc(String(etat.conservationMois)) +
+        ' mois après la dernière activité.</p>'
+      : (t.inconnu ? '' : '<div class="msg ko">Pas de lien à distribuer : <code>url</code> est vide pour ce travail dans scripts/travaux.js.</div>')) +
+
+    '<div class="filtres">' + puces +
+      '<span class="qui">' + (lignes.length
+        ? pluriel(lignes.length, 'élève a ouvert le travail', 'élèves ont ouvert le travail') + ' · ' +
+          pluriel(finis, 'l\'a terminé', 'l\'ont terminé')
+        : '') + '</span></div>' +
+
+    (lignes.length
+      ? '<div class="cadre"><table><thead><tr>' +
+        '<th>Prénom</th><th>Classe</th><th>État</th><th>Jusqu\'où</th><th>Score</th><th>Dernière activité</th><th></th>' +
+        '</tr></thead><tbody>' + lignes.map(function(p){ return ligne(p, t, doublons); }).join('') + '</tbody></table></div>'
+      : '<div class="rien">' + (tous.length
+          ? 'Aucun élève de ' + esc(classe) + ' n\'a encore ouvert ce travail.'
+          : 'Personne n\'a encore ouvert ce travail.<br>Donne le lien aux élèves : ils apparaissent ici dès leur prénom écrit.') + '</div>') +
+
+    (classe && inscrits.length
+      ? '<div class="manque"><b>Pas encore vus en ' + esc(classe) + ' (' + manquants.length + ' sur ' + inscrits.length + ')</b> ' +
+        (manquants.length
+          ? manquants.map(function(e){ return '<span>' + esc(e.prenom) + ' ' + esc(String(e.nom || '').charAt(0)) + '.</span>'; }).join('')
+          : '<em>Tous les prénoms de la classe sont là.</em>') +
+        '<p class="note">Comparé aux prénoms des comptes de la classe dans l\'Atelier. Un surnom ou une faute de frappe fausse cette liste.</p></div>'
+      : (!classe && lignes.length ? '<p class="note">Choisis une classe pour voir qui ne l\'a pas encore ouvert.</p>' : '')) +
+
+    '<div class="actes">' +
+      '<button class="btn" id="bActualiser">↻ Actualiser</button>' +
+      (lignes.length ? '<button class="btn danger pousse" id="bVider">🗑 Effacer ' +
+        (classe ? 'les lignes de ' + esc(classe) : 'toutes les lignes') + '</button>' : '') +
+    '</div>';
+
+  brancherFiche(t, classe, lignes);
+}
+
+function brancherFiche(t, classe, lignes){
+  Array.prototype.forEach.call(document.querySelectorAll('#fiche [data-classe]'), function(b){
+    b.addEventListener('click', function(){ etat.classe[t.id] = b.getAttribute('data-classe') || ''; peindreFiche(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#fiche [data-suppr]'), function(b){
+    b.addEventListener('click', function(){
+      var id = b.getAttribute('data-suppr');
+      var p = etat.passages.filter(function(x){ return x.id === id; })[0];
+      if(!p || !confirm('Effacer la ligne de ' + p.prenom + ' (' + (p.classe || 'sans classe') + ') ?\n\n' +
+        'Si l\'élève rouvre le travail sur le même téléphone, sa ligne reviendra avec son score.')) return;
+      api('DELETE', '/api/prof/devoirs', { id: id }).then(function(){ return charger(true); }).catch(function(e){ alert(e.message); });
+    });
+  });
+  if($('#bCopier')) $('#bCopier').addEventListener('click', function(){
+    var champ = $('#lien'), bouton = this;
+    var fait = function(){ bouton.textContent = 'Copié ✓'; setTimeout(function(){ bouton.textContent = 'Copier'; }, 1800); };
+    var aLaMain = function(){ champ.focus(); champ.select(); try{ if(document.execCommand('copy')) fait(); }catch(e){} };
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(champ.value).then(fait, aLaMain);
+    else aLaMain();
+  });
+  if($('#lien')) $('#lien').addEventListener('focus', function(){ this.select(); });
+  $('#bActualiser').addEventListener('click', function(){ charger(true); });
+  if($('#bVider')) $('#bVider').addEventListener('click', function(){
+    if(!confirm('Effacer ' + pluriel(lignes.length, 'ligne', 'lignes') + ' de « ' + t.titre + ' »' + (classe ? ' en ' + classe : '') + ' ?\n\n' +
+      'Les scores sont perdus côté suivi. Les élèves gardent leur avancée sur leur téléphone.')) return;
+    var corps = { devoir: t.id };
+    if(classe) corps.classe = classe;
+    api('DELETE', '/api/prof/devoirs', corps).then(function(){ return charger(true); }).catch(function(e){ alert(e.message); });
+  });
+}
+
+function peindre(){ peindreTravaux(); peindreFiche(); }
+
+/* ---- Chargement ---------------------------------------------------------- */
+function charger(force){
+  return Promise.all([api('GET', '/api/prof/devoirs'), api('GET', '/api/prof/tableau')]).then(function(r){
+    /* Rien de neuf : on ne repeint pas — un rafraîchissement toutes les 30 s qui
+       redessine tout ferait sauter le défilement et la sélection du lien. */
+    var nouvelle = JSON.stringify([r[0], r[1].classes, r[1].eleves.map(function(e){ return [e.prenom, e.nom, e.classe, e.role, e.actif]; })]);
+    if(nouvelle === empreinte && force !== true) return;
+    empreinte = nouvelle;
+    etat.passages = r[0].passages || [];
+    etat.code = r[0].code || '';
+    etat.conservationMois = r[0].conservationMois || 12;
+    etat.eleves = r[1].eleves || [];
+    etat.classes = r[1].classes || [];
+    if(r[1].etablissement){ $('#etab').textContent = r[1].etablissement; $('#etab').hidden = false; }
+    $('#vide').hidden = true; $('#suivi').hidden = false;
+    peindre();
+  }).catch(function(e){
+    if(e.statut === 401){ sortir('Ta session a expiré. Reconnecte-toi.'); return; }
+    $('#suivi').hidden = true; $('#vide').hidden = false;
+    $('#vide').textContent = e.statut === 404
+      ? 'Le serveur ne connaît pas encore le travail à la maison : l\'API doit être redéployée (api/README.md § 2.4).'
+      : 'Suivi indisponible : ' + e.message;
+  });
+}
+
+/* ---- Connexion ----------------------------------------------------------- */
+function montrerPorte(message){
+  $('#vide').hidden = true; $('#suivi').hidden = true; $('#porte').hidden = false;
+  $('#bQuitter').hidden = true; $('#qui').textContent = ''; $('#etab').hidden = true;
+  $('#porteMsg').innerHTML = message ? '<div class="msg ko">' + esc(message) + '</div>' : '';
+  $('#pId').focus();
+}
+
+function sortir(message){
+  if(minuteur){ clearInterval(minuteur); minuteur = null; }
+  demarre = false; empreinte = '';
+  montrerPorte(message);
+}
+
+function entrer(){
+  var el = Store.eleve();
+  if(!el) return montrerPorte();
+  if(el.role !== 'prof'){
+    /* Un élève ou l'administrateur connecté sur ce poste : ce n'est pas sa page. On lui
+       propose la porte plutôt que de le laisser devant un refus du serveur. */
+    return montrerPorte(el.role === 'admin'
+      ? 'Le compte administrateur ne voit pas les élèves. Connecte-toi avec ton compte enseignant.'
+      : 'Cette page est réservée aux enseignants.');
+  }
+  if(demarre) return;
+  demarre = true;
+  $('#porte').hidden = true; $('#vide').hidden = false; $('#vide').textContent = 'Chargement…';
+  $('#qui').textContent = el.prenom + ' ' + el.nom;
+  $('#bQuitter').hidden = false;
+  etat.travail = decodeURIComponent(location.hash.replace(/^#/, '')) || null;
+  charger(true);
+  minuteur = setInterval(function(){ if(!document.hidden) charger(); }, RYTHME);
+}
+
+$('#porte').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var id = $('#pId').value.trim(), mdp = $('#pMdp').value;
+  if(!id || !mdp){ $('#porteMsg').innerHTML = '<div class="msg ko">Écris ton identifiant et ton mot de passe.</div>'; return; }
+  var b = $('#pEntrer'); b.disabled = true; b.textContent = 'Connexion…';
+  Store.connexion(id, mdp).then(function(){
+    $('#pMdp').value = '';
+    entrer();
+  }).catch(function(e){
+    $('#porteMsg').innerHTML = '<div class="msg ko">' + esc(e.message || 'Connexion impossible.') + '</div>';
+  }).then(function(){ b.disabled = false; b.textContent = 'Se connecter'; });
+});
+
+$('#bQuitter').addEventListener('click', function(){
+  Store.deconnexion().then(function(){ sortir(); }, function(){ sortir(); });
+});
+
+if(!Store.enLigne()){
+  $('#vide').textContent = 'Aucun serveur configuré (scripts/config.js) : le suivi demande une API.';
+}else{
+  /* store.js vérifie la session en tâche de fond ; on attend son verdict. */
+  var vu = false;
+  Store.surEtat(function(e){
+    if(e === 'expire' && demarre){ sortir('Ta session a expiré. Reconnecte-toi.'); return; }
+    if(vu) return;
+    if(e === 'ok' || e === 'invite' || e === 'expire'){ vu = true; setTimeout(entrer, 0); }
+  });
+  /* Filet : si aucun état ne tombe (réseau muet), on montre quand même la porte. */
+  setTimeout(function(){ if(!vu){ vu = true; entrer(); } }, 5000);
+}
+</script>
+</body>
+</html>

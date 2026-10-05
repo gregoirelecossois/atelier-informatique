@@ -207,41 +207,6 @@
   .boite .na-coche{display:flex;align-items:center;gap:8px;font-size:.9rem;margin:0 0 12px;cursor:pointer}
   .boite .na-coche input{width:18px;height:18px;margin:0;accent-color:var(--rouge)}
 
-  /* ---- travail à la maison ---- */
-  .dv-lien{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .boite .dv-lien input{flex:1 1 260px;min-width:0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem}
-  .dv-lien .btn{text-decoration:none}
-  .dv-note{color:var(--gris);font-size:.8rem;margin:8px 0 0;line-height:1.4}
-  .dv-titre{font-size:1.05rem;margin:18px 0 10px}
-  .dv-devoirs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 10px}
-  .dv-filtres{margin:0 0 12px}
-  .dv-filtres .qui{margin-left:auto}
-  .dv-cadre{overflow-x:auto;border:2px solid var(--trait);border-radius:14px}
-  .dv-table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:640px}
-  .dv-table th{text-align:left;background:#f1f5fa;padding:8px 12px;font-family:Fredoka,system-ui,sans-serif;
-        font-weight:600;font-size:.82rem;color:var(--gris);white-space:nowrap}
-  .dv-table td{padding:8px 12px;border-top:1px solid var(--trait);vertical-align:middle;white-space:nowrap}
-  .dv-prenom{font-weight:800;font-size:.98rem}
-  .dv-double{font-size:.72rem;font-weight:800;color:#a16207;background:#fff7e0;border-radius:999px;padding:1px 7px;cursor:help}
-  .dv-pastille{font-size:.74rem;font-weight:800;border-radius:999px;padding:3px 10px}
-  .dv-pastille.fini{background:#eaf7ef;color:#15803d}
-  .dv-pastille.cours{background:#fff7e0;color:#854d0e}
-  .dv-pastille.ouvert{background:#f1f5fa;color:var(--gris)}
-  .dv-etapes{display:inline-flex;gap:3px;vertical-align:middle;margin-right:8px}
-  .dv-etapes i{width:18px;height:10px;border-radius:3px;background:#e2e9f1}
-  .dv-etapes i.on{background:var(--vert)}
-  .dv-nb{font-weight:800;font-variant-numeric:tabular-nums;color:var(--gris);font-size:.82rem}
-  .dv-score{font-variant-numeric:tabular-nums;color:var(--gris)}
-  .dv-score b{color:var(--encre);font-size:1.05rem}
-  .dv-score small{font-weight:800;margin-left:4px}
-  .dv-quand{color:var(--gris);font-size:.82rem}
-  .dv-vide{padding:34px 20px;border:2px dashed var(--trait);border-radius:14px}
-  .dv-manque{margin-top:14px;padding:12px 14px;border-radius:14px;background:#fff7e0;font-size:.88rem;line-height:1.9}
-  .dv-manque b{margin-right:6px}
-  .dv-manque span{display:inline-block;background:#fff;border:2px solid #f3dfa4;border-radius:999px;
-        padding:0 10px;margin:0 4px 4px 0;font-weight:800}
-  .dv-manque .dv-note{margin-top:4px}
-
   @media (max-width:560px){ .grille{grid-template-columns:1fr} .barre h1{font-size:1.05rem}
     .na-ligne{grid-template-columns:1fr auto;gap:6px 12px} .na-ligne select{grid-column:1 / -1}
     .na-partants ul{columns:1} }
@@ -261,7 +226,6 @@
   <span class="qui" id="qui"></span>
   <a class="btn" href="index.html">🏠 Accueil</a>
   <button class="btn" id="bNouveau">＋ Nouveau compte</button>
-  <button class="btn" id="bDevoirs" title="Qui a fait le travail donné à la maison, et jusqu'où">📱 Travail à la maison</button>
   <button class="btn" id="bPronote">📋 Importer de Pronote</button>
   <button class="btn" id="bAnnee" title="Faire passer les élèves dans la classe supérieure">🎓 Nouvelle année</button>
   <button class="btn" id="bQuitter">Déconnexion</button>
@@ -966,7 +930,6 @@ $('#tri').addEventListener('change', function(){ etat.tri = this.value; peindre(
 $('#bNouveau').addEventListener('click', fenetreNouveau);
 $('#bPronote').addEventListener('click', function(){ window.ImportPronote.ouvrir(); });
 $('#bAnnee').addEventListener('click', function(){ window.NouvelleAnnee.ouvrir(); });
-$('#bDevoirs').addEventListener('click', function(){ window.Devoirs.ouvrir(); });
 $('#bQuitter').addEventListener('click', function(){
   minuteurs.forEach(clearInterval);
   Store.deconnexion().then(function(){ location.href = 'index.html'; });
@@ -981,9 +944,8 @@ if(!Store.enLigne()){
   setTimeout(demarrer, 5000);
 }
 </script>
-<!-- Après le script de la page : l'import, la nouvelle année et le travail à la maison se servent de ses api(), ouvrir(), etat… -->
+<!-- Après le script de la page : l'import et la nouvelle année se servent de ses api(), ouvrir(), etat… -->
 <script src="scripts/import-pronote.js"></script>
 <script src="scripts/nouvelle-annee.js"></script>
-<script src="scripts/devoirs.js"></script>
 </body>
 </html>
