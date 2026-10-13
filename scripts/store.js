@@ -150,6 +150,15 @@ var masqueOte = false;
    sur un poste neuf verrait sa progression remise à zéro par son propre démarrage. */
 var baseConnue = !amorcageBloquant;
 
+/* Vrai tant que la lecture du serveur, au démarrage, n'est pas revenue — même quand le
+   cache du poste existe (baseConnue). Ce cache peut être ancien, ou ne pas contenir une
+   clé : la page y écrit alors aussitôt sa valeur par défaut (ms_curlevel=1, la
+   progression vide de « Le PC »…). Partie au bout de 2,5 s, cette écriture écrasait la
+   vraie progression dès que le serveur mettait un peu de temps à se réveiller. Pendant
+   la lecture, on garde donc les écritures sans les envoyer ; à la réponse, le serveur
+   l'emporte sur toute clé qu'il connaît (cf. appliquerServeur). */
+var lectureEnCours = !!(CLOUD && session);
+
 if(amorcageBloquant){
   try{
     var st = document.createElement('style');
@@ -262,6 +271,13 @@ function req(methode, chemin, corps, opts){
   if(session && session.jeton) init.headers['Authorization'] = 'Bearer ' + session.jeton;
   if(corps !== undefined){ init.headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(corps); }
   if(opts.keepalive) init.keepalive = true;
+  /* Une lecture qui ne revient jamais retiendrait les écritures indéfiniment : au-delà
+     du délai, on abandonne comme pour une panne réseau. */
+  if(opts.delai && typeof AbortController === 'function'){
+    var ctrl = new AbortController();
+    init.signal = ctrl.signal;
+    setTimeout(function(){ ctrl.abort(); }, opts.delai);
+  }
 
   return fetch(API + chemin, init).then(function(rep){
     return rep.text().then(function(txt){
@@ -280,6 +296,7 @@ function req(methode, chemin, corps, opts){
 /* Session refusée par le serveur (expirée, compte supprimé ou désactivé) : on
    retombe proprement en mode invité plutôt que d'insister avec un jeton mort. */
 function sessionPerdue(){
+  lectureEnCours = false;
   poserSession(null);
   mem = null; sale = {}; supprimees = {}; baseConnue = true;
   poserEtat('expire');
@@ -304,6 +321,7 @@ function riens(){
 
 function programmerEnvoi(){
   if(!mem || !session) return;
+  if(lectureEnCours) return;   /* rien ne part avant d'avoir lu le serveur */
   if(!premierSale) premierSale = Date.now();
   poserEtat('envoi');
   var reste = Math.max(0, Math.min(ATTENTE, premierSale + PLAFOND - Date.now()));
@@ -314,7 +332,7 @@ function programmerEnvoi(){
 function envoyer(opts){
   opts = opts || {};
   if(minuteur){ clearTimeout(minuteur); minuteur = null; }
-  if(!mem || !session) return Promise.resolve();
+  if(!mem || !session || lectureEnCours) return Promise.resolve();
   if(riens()){ premierSale = 0; poserEtat('ok'); return Promise.resolve(); }
   if(enVol){ aRefaire = true; return Promise.resolve(); }
 
@@ -357,10 +375,21 @@ function appliquerServeur(donnees, version){
   /* Les écritures locales pas encore envoyées sont plus récentes que ce que répond
      le serveur : on les remet par-dessus. Sauf au tout premier chargement d'un poste
      neuf (baseConnue faux), où « local » ne veut rien dire d'autre que « valeurs par
-     défaut du jeu » : là, le serveur a raison sur toute la ligne. */
+     défaut du jeu » : là, le serveur a raison sur toute la ligne.
+     Même chose, clé par clé, pour ce qui a été écrit PENDANT la lecture du démarrage
+     (lectureEnCours) : c'est la page qui démarrait sur un cache ancien. Le serveur
+     l'emporte sur toute clé qu'il connaît ; une clé qu'il ignore est neuve, on la
+     garde et on l'envoie. */
+  var connue = function(k){ return Object.prototype.hasOwnProperty.call(donnees,k) && donnees[k] !== null; };
   if(baseConnue){
-    for(k in sale) if(sale[k]) garde[k] = Object.prototype.hasOwnProperty.call(mem||{},k) ? mem[k] : null;
-    for(k in supprimees) if(supprimees[k]) garde[k] = null;
+    for(k in sale) if(sale[k]){
+      if(lectureEnCours && connue(k)){ delete sale[k]; continue; }
+      garde[k] = Object.prototype.hasOwnProperty.call(mem||{},k) ? mem[k] : null;
+    }
+    for(k in supprimees) if(supprimees[k]){
+      if(lectureEnCours && connue(k)){ delete supprimees[k]; continue; }
+      garde[k] = null;
+    }
   }else{
     sale = {}; supprimees = {};
   }
@@ -378,15 +407,20 @@ function appliquerServeur(donnees, version){
 
 function hydrater(){
   if(!CLOUD || !session) return Promise.resolve(false);
-  return req('GET', '/api/moi').then(function(r){
+  return req('GET', '/api/moi', undefined, { delai: 30000 }).then(function(r){
     if(r.eleve) poserSession({ jeton: session.jeton, eleve: r.eleve });
     var change = appliquerServeur(r.progression || {}, r.version || 0);
+    lectureEnCours = false;
     poserEtat(riens() ? 'ok' : 'envoi');
     if(!riens()) programmerEnvoi();
     return change;
   }).catch(function(err){
     if(err.statut === 401 || err.statut === 403){ sessionPerdue(); return false; }
+    /* Serveur injoignable : on ne saura pas mieux avant longtemps. Les écritures
+       retenues repartent comme avant, avec la reprise en douceur d'envoyer(). */
+    lectureEnCours = false;
     poserEtat('hors-ligne');
+    if(baseConnue && !riens()) programmerEnvoi();
     return false;
   });
 }
@@ -547,6 +581,7 @@ function connexion(identifiant, motdepasse){
       poserSession({ jeton: r.jeton, eleve: r.eleve });
       mem = {}; sale = {}; supprimees = {}; versionServeur = 0; baseConnue = true;
       appliquerServeur(r.progression || {}, r.version || 0);
+      lectureEnCours = false;   /* la réponse de connexion EST la lecture du serveur */
       poserEtat('ok');
       return { eleve: r.eleve };
     });

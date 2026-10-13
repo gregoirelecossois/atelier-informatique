@@ -17,6 +17,13 @@ if(!window.Store || !Store.enLigne()) return;
 var CFG = window.ATELIER_CONFIG || {};
 var Z = 2147481500;   /* sous les trophées (2147482000), au-dessus de tout le jeu */
 
+/* Code du DevKit (raccourcis de préparation, bouton « 🛠️ Dev » en bas à droite des pages).
+   Il est vérifié dans chacun des six ateliers, dans index.html, et dans « Le PC »
+   (src/ui/DevKit.tsx, dépôt le-pc) : le changer, c'est le changer partout. Ce n'est
+   pas un secret — un garde-fou pour que la classe ne saute pas les niveaux par
+   hasard —, mais on ne le montre qu'à un compte enseignant. */
+var CODE_DEVKIT = 'dev35';
+
 /* ---------------------------------------------------------------------------
    1. Habillage
    --------------------------------------------------------------------------- */
@@ -58,6 +65,9 @@ function css(){
   '.atl-btn.primary{background:#2563eb;color:#fff;}',
   '.atl-btn.ghost{background:#eef3f9;color:#3c4d61;}',
   '.atl-btn.danger{background:#fee2e2;color:#b91c1c;}',
+  '.atl-devkit{margin:-2px 0 12px;padding:10px 14px;border-radius:12px;background:#fff8e6;border:1px dashed #e0a416;'+
+    'color:#5d4a12;font-size:.86rem;line-height:1.4;}',
+  '.atl-devkit b{font-family:ui-monospace,Consolas,monospace;font-size:1.05rem;letter-spacing:.06em;color:#22303f;}',
   '.atl-note{margin:16px 0 0;font-size:.79rem;color:#7b8b9d;line-height:1.45;text-align:center;}',
   '.atl-rgpd{margin:12px 0 0;font-size:.76rem;color:#7b8b9d;line-height:1.5;}',
   '.atl-rgpd summary{cursor:pointer;font-weight:800;color:#5d6f83;text-align:center;}',
@@ -181,14 +191,23 @@ function vueCompte(){
          la fenêtre de compte d'un enseignant ou d'un administrateur connecté. Le serveur
          vérifie le rôle de son côté, ces boutons ne sont que des raccourcis. */
       (el.role === 'prof'
-        ? '<a class="atl-btn primaire" href="'+esc(CFG.tableauBord || 'prof.html')+'" '+
+        ? '<a class="atl-btn primary" href="'+esc(CFG.tableauBord || 'prof.html')+'" '+
           'style="display:block;text-align:center;'+
           'text-decoration:none;margin-bottom:9px">📊 Suivi des élèves</a>'
         : '')+
       (el.role === 'admin'
-        ? '<a class="atl-btn primaire" href="'+esc(CFG.espaceAdmin || 'admin.html')+'" '+
+        ? '<a class="atl-btn primary" href="'+esc(CFG.espaceAdmin || 'admin.html')+'" '+
           'style="display:block;text-align:center;'+
           'text-decoration:none;margin-bottom:9px">🏫 Établissements</a>'
+        : '')+
+      /* Le code du DevKit, caché derrière un clic : la fenêtre peut être ouverte devant
+         la classe, au vidéoprojecteur. */
+      (el.role === 'prof' || el.role === 'admin'
+        ? '<button type="button" class="atl-btn ghost" data-a="devkit" style="width:100%;margin-bottom:9px">'+
+            '🛠️ Afficher le code du DevKit</button>'+
+          '<div class="atl-devkit" data-a="code" hidden>Code du DevKit : <b>'+esc(CODE_DEVKIT)+'</b><br>'+
+            'À taper après un clic sur « 🛠️ Dev », en bas à droite des ateliers, et dans '+
+            'l\'accès enseignant de « Le PC » (point discret en bas à gauche de son accueil).</div>'
         : '')+
       '<button type="button" class="atl-btn ghost" data-a="mdp" style="width:100%;margin-bottom:9px">'+
         '🔑 Changer mon mot de passe</button>'+
@@ -201,6 +220,12 @@ function vueCompte(){
 
   back.querySelector('[data-a=fermer]').onclick = fermer;
   back.querySelector('[data-a=mdp]').onclick = function(){ vueMotDePasse(false); };
+  var bDev = back.querySelector('[data-a=devkit]');
+  if(bDev) bDev.onclick = function(){
+    var code = back.querySelector('[data-a=code]');
+    code.hidden = !code.hidden;
+    bDev.textContent = code.hidden ? '🛠️ Afficher le code du DevKit' : '🛠️ Masquer le code du DevKit';
+  };
   back.querySelector('[data-a=sortir]').onclick = function(){
     var b = this; b.disabled = true; b.textContent = 'Sauvegarde…';
     Store.deconnexion().then(function(){ location.reload(); });
