@@ -233,8 +233,12 @@
 <script src="scripts/config.js"></script>
 <script src="scripts/store.js"></script>
 <!-- Le catalogue des travaux, publié par le dépôt travaux-maison (même domaine). S'il ne
-     charge pas, la page montre quand même les lignes reçues, sous leur identifiant brut. -->
-<script src="https://gregoirelecossois.github.io/travaux-maison/catalogue.js"></script>
+     charge pas, la page montre quand même les lignes reçues, sous leur identifiant brut.
+     Toujours la DERNIÈRE version : GitHub Pages fait garder ce fichier 10 minutes par le
+     navigateur, et un travail tout juste publié n'apparaissait pas dans le suivi. Le
+     « ?v= » change à chaque ouverture ; document.write garde le chargement synchrone,
+     dont dépend la suite de la page (même origine : aucun navigateur ne le bloque). -->
+<script>document.write('<script src="https://gregoirelecossois.github.io/travaux-maison/catalogue.js?v=' + Date.now() + '"><\/script>');</script>
 
 <script>
 'use strict';
