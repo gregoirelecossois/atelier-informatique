@@ -618,14 +618,28 @@ Des pages d'exercices pour téléphone, que l'élève fait chez lui. La premièr
 par le dépôt `le-pc` (`maison.html`, « Le PC à la maison » : cinq missions, une petite
 leçon puis un jeu, vingt minutes au plus) ; d'autres peuvent s'ajouter dans l'année.
 
-**Les élèves n'ont qu'un lien pour toute l'année : la page d'entrée `maison.html?c=CODE`**
-de ce dépôt. Ils y écrivent leur prénom et touchent leur classe une fois ; ensuite, à
-chaque visite, ils voient une tuile par travail de `scripts/travaux.js` destiné à leur
-classe (`niveaux`), avec leur avancée. Ajouter un travail au catalogue fait apparaître sa
-tuile : le lien ne change jamais. La page d'entrée n'appelle aucune route d'écriture —
-elle range l'élève dans le navigateur (`maison_eleve_v1`), et chaque page de travail,
-publiée sur le même domaine `gregoirelecossois.github.io`, le relit là au lieu de
-redemander (voir le README de `le-pc`).
+**La page d'entrée et le catalogue vivent dans leur propre dépôt, `travaux-maison`**
+(`index.html`, `catalogue.js`, et les pages de travaux qui ne prolongent aucune
+application). Ajouter un travail se fait là-bas, sans toucher à ce dépôt-ci. Restent ici
+le serveur et la page de suivi enseignant, qui charge le catalogue depuis
+`https://gregoirelecossois.github.io/travaux-maison/catalogue.js`.
+
+**Les élèves n'ont qu'un lien pour toute l'année : `travaux-maison/?c=CODE`.** Ils y
+écrivent leur prénom et touchent leur classe une fois. Si un ou plusieurs comptes de
+l'Atelier portent ce prénom dans cette classe, la page demande **« Es-tu bien Léa M. ? »**
+(ou « Lequel es-tu ? » entre deux homonymes). Oui : le compte est retenu sur le
+téléphone, chaque envoi le porte, et la page retrouve l'avancée du compte même sur un
+autre téléphone. Non, ou personne à proposer : l'élève continue sous le prénom tapé,
+comme avant. Ensuite, à chaque visite, il voit ses travaux (ceux du catalogue destinés à
+sa classe) rangés en **« À faire »** et **« Déjà fait »** — ou, s'il a tout fini, « Bravo,
+tu es à jour », avec de quoi refaire un travail s'il le veut. Un élève inscrit sur un
+téléphone avant cette question se la voit poser une fois, à sa visite suivante.
+
+La page d'entrée range l'élève dans le navigateur (`maison_eleve_v1`), et chaque page de
+travail, publiée sur le même domaine `gregoirelecossois.github.io`, le relit là au lieu
+de redemander. L'ancienne adresse, `atelier-informatique/maison.html?c=CODE`, renvoie vers
+la nouvelle : les liens déjà distribués marchent encore, et rien n'est perdu (même
+domaine, donc même navigateur).
 
 **Le suivi a sa propre page, `travail-maison.html`**, distincte du tableau de bord de
 l'Atelier (`prof.html`) : ce ne sont ni les mêmes élèves — un prénom tapé n'est pas un
@@ -637,20 +651,23 @@ une session ouverte sur l'une des deux pages vaut pour l'autre (même domaine, m
   allumée, les élèves de cette classe voient la tuile ; un clic allume ou éteint, c'est
   enregistré aussitôt pour l'établissement (`devoirs_attributions`), sans toucher au
   catalogue. Tant que personne n'a cliqué, ce sont les classes par défaut de
-  `scripts/travaux.js` (« par défaut »). Puis, pour le travail choisi, par classe, qui l'a
+  `catalogue.js` (« par défaut »). Puis, pour le travail choisi, par classe, qui l'a
   ouvert, jusqu'où, avec quel score, et « Pas encore vus » — les comptes de la classe
   qu'aucune ligne ne relie ;
 - **Par élève** : une classe, ses comptes en lignes, les travaux en colonnes. C'est là
   qu'on voit qu'un élève a fait le PC mais pas le vélo, quel que soit le prénom tapé.
 
 **L'élève n'a ni identifiant ni mot de passe.** Il ouvre le lien, écrit son prénom, touche
-sa classe, et commence. C'est le but : à la maison, un mot de passe oublié est un devoir
+sa classe, dit « C'est moi » si la page lui propose son compte, et commence. C'est le but : à la maison, un mot de passe oublié est un devoir
 non fait. La contrepartie est écrite ici pour qu'elle ne surprenne personne :
 
 - **ce suivi dit qui a travaillé, il ne certifie rien.** Rien n'empêche un élève de taper
   le prénom d'un autre. C'est un cahier de texte, pas une évaluation ;
-- deux élèves du même prénom dans la même classe donnent deux lignes que le serveur ne
-  peut pas départager : elles restent « à relier » (la page les marque « ×2 ») ;
+- « C'est moi » n'est pas une preuve non plus : n'importe qui ayant le lien peut choisir
+  « Léa M. ». Ce n'est pas un mot de passe, c'est un raccourci pour ranger ;
+- deux élèves du même prénom dans la même classe : la page d'entrée leur demande
+  « Lequel es-tu ? ». Faute de réponse (élève inscrit sans réseau, ou qui a répondu
+  « Aucun »), leurs lignes restent « à relier » (la page de suivi les marque « ×2 ») ;
 - un prénom qui ne correspond à aucun compte (surnom, faute de frappe) reste « à relier »
   tant que l'enseignant ne l'a pas fait.
 
@@ -662,8 +679,16 @@ compte** de l'Atelier (`compte_id`) ; toutes les lignes reliées au même compte
 score ; d'un travail à l'autre, côte à côte dans la vue « Par élève ». Un « Mohamad » au
 premier devoir et un « Mohamed » au suivant finissent sous le même compte.
 
-**Le serveur relie tout seul, seulement quand il n'y a aucun doute** (`relierToutSeul`),
-à chaque envoi tant que personne n'a tranché :
+**L'élève relie lui-même**, en répondant « C'est moi » sur la page d'entrée : chaque
+envoi porte alors le `compte` choisi, et le serveur relie la ligne (`lien = 'eleve'`) —
+s'il s'agit bien d'un élève actif de la classe choisie, portant le prénom tapé
+(`compteConfirme`). Ce sont les mêmes conditions que la liaison automatique ci-dessous :
+l'élève ne fait que départager des homonymes. Sa réponse passe devant une liaison
+devinée par le serveur, jamais devant une décision de l'enseignant. Le suivi la marque
+« ✓ élève ».
+
+Sinon, **le serveur relie tout seul, seulement quand il n'y a aucun doute**
+(`relierToutSeul`), à chaque envoi tant que personne n'a tranché :
 
 1. le **même téléphone** a déjà une ligne reliée, **sous le même prénom tapé** → ce
    compte (`lien = 'appareil'`). L'identifiant du téléphone (`appareil`) est tiré au
@@ -674,8 +699,8 @@ premier devoir et un « Mohamed » au suivant finissent sous le même compte.
 Sinon la ligne reste « à relier », et le suivi propose — sans jamais relier sans clic — le
 compte d'une autre ligne du même téléphone **dans la même classe** (un téléphone de
 famille passe d'un frère à une sœur), ou un prénom très proche et sans ex æquo. Une
-décision de l'enseignant (`lien = 'prof'`), y compris « délier », n'est jamais défaite par
-le serveur. Une fausse liaison serait pire qu'une liaison manquante : elle mélangerait
+décision de l'enseignant (`lien = 'prof'`), y compris « délier », n'est jamais défaite, ni
+par le serveur ni par l'élève. Une fausse liaison serait pire qu'une liaison manquante : elle mélangerait
 les devoirs de deux élèves sans que rien ne le signale.
 
 Un compte supprimé délie ses lignes sans les effacer : elles redeviennent un prénom, et
@@ -695,20 +720,31 @@ n'accepte que des lettres — pas de champ libre ici non plus.
 > finalité, données, rattachement à un compte, durée (`DEVOIRS_MOIS`). Toute évolution de
 > ce suivi — une donnée de plus, une durée changée — doit y être reportée. La page d'entrée
 > l'annonce à l'élève avant qu'il n'écrive son prénom : « Ton professeur verra ton prénom,
-> ta classe et ton score, et pourra les relier à ton compte de l'Atelier. Rien d'autre. »
+> ta classe et ton score. Si tu as un compte à l'Atelier, la page te demandera si c'est
+> bien toi. Rien d'autre. »
+>
+> ⚠ **Depuis la question « Es-tu bien Léa M. ? », des données SORTENT sans connexion.**
+> Quiconque a le lien peut, en essayant des prénoms et des classes, apprendre qu'un élève
+> de ce prénom existe dans cette classe, l'**initiale de son nom** (jamais le nom entier),
+> et, pour ce compte, quels travaux il a faits (`/api/devoir/avancees` : des étapes, pas de
+> score). C'est ce qui a été jugé acceptable pour ne pas imposer de mot de passe à la
+> maison ; c'est borné par le code du lien, la classe, et le rythme par adresse IP. **À
+> reporter dans la mention d'information et la fiche de registre.**
 
 ### Le lien, et le code qu'il porte
 
 ```
-https://gregoirelecossois.github.io/atelier-informatique/maison.html?c=CODE
+https://gregoirelecossois.github.io/travaux-maison/?c=CODE
 ```
+
+(L'ancienne adresse, `atelier-informatique/maison.html?c=CODE`, y renvoie.)
 
 `CODE` est propre à l'établissement (`etablissements.code_devoir`), créé la première fois
 qu'un enseignant ouvre « Travail à la maison ». C'est lui qui rattache un téléphone à ce
 collège et à aucun autre : **l'établissement reste la frontière**, y compris sans
 connexion. La page de suivi affiche le lien complet, avec un bouton « Copier ». La page
 d'entrée le garde dans le navigateur et le transmet à chaque tuile (`url` de
-`scripts/travaux.js` + `?c=CODE`) ; une page de travail ouverte sans code le reprend là.
+`catalogue.js` + `?c=CODE`) ; une page de travail ouverte sans code le reprend là.
 
 Sans code, ou avec un code inconnu, les pages fonctionnent en **entraînement** : les jeux
 marchent, rien n'est envoyé, et c'est dit à l'élève.
@@ -718,13 +754,16 @@ marchent, rien n'est envoyé, et c'est dit à l'élève.
 | Route | Qui | Rôle |
 |---|---|---|
 | `GET /api/devoir/classes?c=CODE` | sans connexion | les noms des classes, et `attributions` : `{devoir: [classes]}` pour les travaux dont l'enseignant a changé les classes |
-| `POST /api/devoir/passage` | sans connexion | `{c, id, appareil?, devoir, prenom, classe, etape, etapes, score, max}` — l'état complet, rejouable |
+| `POST /api/devoir/qui` | sans connexion | `{c, prenom, classe}` → `{eleves: [{compte, prenom, nom}]}` : les comptes actifs de la classe qui portent ce prénom, `nom` = « Léa M. » (l'initiale, ou juste assez de lettres pour distinguer deux homonymes). N'écrit rien |
+| `POST /api/devoir/avancees` | sans connexion | `{c, prenom, classe, compte}` → `{avancees: {devoir: {etape, etapes, termine}}}` pour ce compte, toutes lignes confondues ; 404 si le compte n'est pas (ou plus) un élève de cette classe portant ce prénom. N'écrit rien |
+| `POST /api/devoir/passage` | sans connexion | `{c, id, appareil?, compte?, devoir, prenom, classe, etape, etapes, score, max}` — l'état complet, rejouable ; `compte` = celui que l'élève a confirmé |
 | `GET /api/prof/devoirs` | enseignant | le code du lien et les lignes de **son** établissement, avec `compte_id`, `lien` et une `suggestion` |
 | `DELETE /api/prof/devoirs` | enseignant | `{id}` une ligne, `{ids}` ces lignes, ou `{devoir, classe?}` toute une série |
 | `PUT /api/prof/devoirs/lien` | enseignant | `{ids, compte}` relie ces lignes à ce compte (`null` : à personne) ; journalisé |
 | `PUT /api/prof/devoirs/attribution` | enseignant | `{devoir, classes}` ce travail est donné à ces classes, et à elles seules (`[]` : à aucune) ; journalisé |
 
-Ce sont les **seules routes qui écrivent sans authentification**. Ce qui les borne : le
+Ce sont les **seules routes ouvertes sans authentification** (et `passage`, la seule qui
+écrive). Ce qui les borne : le
 code, un rythme par adresse IP (240 appels par dix minutes), une classe qui doit exister
 dans l'établissement, un prénom fait de lettres, et un plafond de lignes par établissement
 (`DEVOIRS_MAX`, 3000 par défaut — au-delà, les nouveaux élèves ne sont plus enregistrés,
@@ -733,17 +772,19 @@ leur page continue de fonctionner). Un score ou une étape ne redescendent jamai
 
 ### Ajouter un autre travail dans l'année
 
-Rien à changer côté serveur, rien à redéployer : la colonne `devoir` porte un identifiant
-libre, et le serveur range ce qu'on lui envoie.
+**Dans le dépôt `travaux-maison`** — son `CLAUDE.md` et son `README.md` détaillent la
+marche à suivre. Rien à changer côté serveur, rien à redéployer : la colonne `devoir`
+porte un identifiant libre, et le serveur range ce qu'on lui envoie.
 
 1. **La page d'exercices**, publiée sur `gregoirelecossois.github.io` (le même domaine que
    la page d'entrée, pour lire l'élève dans le navigateur ; et listé dans `ORIGINES`). Elle
    relit `maison_eleve_v1`, lit le code dans son adresse (`?c=CODE`, à défaut celui gardé
    par l'entrée), envoie son état (`POST /api/devoir/passage`) avec **son propre
-   identifiant** dans `devoir` (`velo-1`, `scratch-1`…) et l'`appareil`, et écrit son
-   avancée dans `maison_avancees_v1` pour la tuile. `src/maison/suivi.ts`, dans le dépôt
-   `le-pc`, est le modèle à reprendre.
-2. **Une entrée dans `scripts/travaux.js`** : identifiant, titre, classes visées par
+   identifiant** dans `devoir` (`velo-1`, `scratch-1`…), l'`appareil` et le `compte`, et
+   écrit son avancée dans `maison_avancees_v1` pour la tuile. Dans `travaux-maison`,
+   `commun/maison.js` fait tout cela ; dans une application React, `src/maison/suivi.ts`
+   du dépôt `le-pc` est le modèle à reprendre.
+2. **Une entrée dans `catalogue.js`** (dépôt `travaux-maison`) : identifiant, titre, classes visées par
    défaut (`niveaux`), adresse, nom des étapes. Sa tuile apparaît chez les élèves de ces
    classes, et sa fiche dans `travail-maison.html` — où l'on change ensuite les classes
    d'un clic, sans revenir au catalogue. `masque: true` retire la tuile partout sans perdre
