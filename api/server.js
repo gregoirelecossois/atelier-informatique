@@ -31,11 +31,13 @@
  *   GET    /api/makecode/modeles            modèles proposés à sa classe (prof : tous)
  *   GET    /api/makecode/modele/:id         un modèle, compressé, pour en partir
  *
- * Routes ouvertes SANS connexion — le travail à la maison (page d'entrée maison.html, puis
- * une page par devoir, comme le-pc/maison.html). Le code de l'établissement, porté par le
- * lien donné aux élèves, tient lieu de portée :
+ * Routes ouvertes SANS connexion — le travail à la maison (page d'entrée du dépôt
+ * travaux-maison, puis une page par devoir, comme le-pc/maison.html). Le code de
+ * l'établissement, porté par le lien donné aux élèves, tient lieu de portée :
  *   GET    /api/devoir/classes?c=CODE       les noms des classes, et à quelles classes va chaque travail
- *   POST   /api/devoir/passage              {c, id, appareil?, devoir, prenom, classe, etape…} → où il en est
+ *   POST   /api/devoir/qui                  {c, prenom, classe} → les comptes qui pourraient être lui (« Léa M. »)
+ *   POST   /api/devoir/avancees             {c, prenom, classe, compte} → où en est ce compte, travail par travail
+ *   POST   /api/devoir/passage              {c, id, appareil?, compte?, devoir, prenom, classe, etape…} → où il en est
  *
  * Routes réservées au rôle « prof » — le tableau de bord, et travail-maison.html :
  *   GET    /api/prof/tableau                tous les comptes + leur avancement résumé
@@ -1408,10 +1410,7 @@ async function devoirPassage(req) {
   if (!DEVOIR_ID_OK.test(id) || !DEVOIR_NOM_OK.test(devoir)) throw new Refus(400, 'Envoi incomplet.');
   if (!DEVOIR_PRENOM_OK.test(prenom)) throw new Refus(400, 'Écris ton prénom avec des lettres seulement.');
 
-  const classe = await db.une(
-    'select id from classes where etablissement_id = $1 and lower(nom) = lower($2)',
-    [etab, String(corps.classe || '').trim()]);
-  if (!classe) throw new Refus(400, 'Classe inconnue.');
+  const classe = await classeDuLien(etab, corps.classe);
 
   const entier = (v, max) => {
     const n = parseInt(v, 10);
@@ -1449,11 +1448,103 @@ async function devoirPassage(req) {
             maj_le = now()
      returning lien`,
     [id, etab, devoir, prenom, classe.id, etape, etapes, score, max, termine, appareil]);
-  /* Tant que personne n'a tranché, on retente à chaque envoi : un compte créé entre-temps
-     dans l'Atelier finit par être trouvé. L'élève n'en voit rien — ni le nom du compte,
-     ni même qu'il en existe un : la réponse est la même dans tous les cas. */
-  if (ligne && ligne.lien == null) await relierToutSeul(id, etab, classe.id, prenom, appareil);
+  /* L'élève a dit « C'est moi » sur la page d'entrée (voir devoirQui) : ce compte, s'il
+     est bien de cette classe et porte ce prénom. Sa parole passe devant une liaison que
+     le serveur a devinée, jamais devant une décision de l'enseignant (`lien = 'prof'`). */
+  const confirme = await compteConfirme(etab, classe.id, prenom, corps.compte);
+  if (confirme && ligne && ligne.lien !== 'prof') {
+    await db.q(`update devoirs_passages set compte_id = $2, lien = 'eleve' where id = $1 and (lien is null or lien <> 'prof')`,
+      [id, confirme]);
+  } else if (ligne && ligne.lien == null) {
+    /* Tant que personne n'a tranché, on retente à chaque envoi : un compte créé entre-temps
+       dans l'Atelier finit par être trouvé. L'élève n'en voit rien : la réponse est la
+       même dans tous les cas. */
+    await relierToutSeul(id, etab, classe.id, prenom, appareil);
+  }
   return { ok: true };
+}
+
+/* La classe choisie sur la page d'entrée, par son nom, dans l'établissement du lien. */
+async function classeDuLien(etab, nom) {
+  const classe = await db.une(
+    'select id from classes where etablissement_id = $1 and lower(nom) = lower($2)',
+    [etab, String(nom || '').trim()]);
+  if (!classe) throw new Refus(400, 'Classe inconnue.');
+  return classe;
+}
+
+function prenomDuLien(brut) {
+  const prenom = String(brut || '').normalize('NFC').replace(/\s+/g, ' ').trim();
+  if (!DEVOIR_PRENOM_OK.test(prenom)) throw new Refus(400, 'Écris ton prénom avec des lettres seulement.');
+  return prenom;
+}
+
+/* Le compte que l'élève dit être le sien, s'il tient : élève actif de CETTE classe, et
+   portant CE prénom (accents, casse et tirets ignorés). Sinon null — sans dire pourquoi.
+   Cocher « C'est moi » n'en apprend donc pas plus que de taper le prénom : ce sont les
+   mêmes conditions que la liaison automatique, l'élève départage seulement deux
+   homonymes de la même classe. */
+async function compteConfirme(etab, classeId, prenom, brut) {
+  const id = Number(brut);
+  if (!Number.isInteger(id) || id <= 0) return null;
+  const c = await db.une(
+    `select id, prenom from comptes
+      where id = $1 and etablissement_id = $2 and classe_id = $3 and role = 'eleve' and actif`,
+    [id, etab, classeId]);
+  return c && prenomPlat(c.prenom) === prenomPlat(prenom) ? c.id : null;
+}
+
+/* « Léa » en 5e → les comptes qui pourraient être elle, pour qu'elle dise « C'est moi ».
+   Ce qui sort : le prénom du compte et l'INITIALE du nom (« Léa M. »), jamais le nom
+   entier — quelqu'un qui a le lien et essaie des prénoms n'obtient pas de nom de
+   famille. Deux Léa dont les noms commencent pareil : juste assez de lettres pour les
+   distinguer (« Léa Ma. », « Léa Mo. »). Seulement les comptes de la classe choisie. */
+async function devoirQui(req) {
+  devoirRythme(req);
+  const corps = await lireCorps(req);
+  const etab = await etablissementDuCode(corps.c);
+  const prenom = prenomDuLien(corps.prenom);
+  const classe = await classeDuLien(etab, corps.classe);
+  const r = await db.q(
+    `select id, prenom, nom from comptes
+      where etablissement_id = $1 and classe_id = $2 and role = 'eleve' and actif
+      order by lower(nom), id`,
+    [etab, classe.id]);
+  const cle = prenomPlat(prenom);
+  const trouves = r.rows.filter((c) => prenomPlat(c.prenom) === cle);
+  const noms = trouves.map((c) => String(c.nom || '').trim());
+  return {
+    eleves: trouves.map((c, i) => {
+      const nom = noms[i];
+      let n = 1;
+      while (n < nom.length && noms.some((x, j) => j !== i && x.slice(0, n).toLowerCase() === nom.slice(0, n).toLowerCase())) n++;
+      const debut = nom.slice(0, n);
+      return { compte: c.id, prenom: c.prenom,
+               nom: c.prenom + (debut ? ' ' + debut.charAt(0).toUpperCase() + debut.slice(1).toLowerCase() + '.' : '') };
+    })
+  };
+}
+
+/* Où en est un compte, travail par travail, toutes lignes confondues (deux téléphones,
+   deux prénoms tapés) : pour que la page d'entrée dise « fait » ou « à faire » même sur
+   un autre téléphone. Il faut redonner le prénom et la classe : on n'obtient l'avancée
+   que d'un élève qu'on aurait de toute façon trouvé par devoirQui. Pas de score — juste
+   les étapes faites. */
+async function devoirAvancees(req) {
+  devoirRythme(req);
+  const corps = await lireCorps(req);
+  const etab = await etablissementDuCode(corps.c);
+  const prenom = prenomDuLien(corps.prenom);
+  const classe = await classeDuLien(etab, corps.classe);
+  const compte = await compteConfirme(etab, classe.id, prenom, corps.compte);
+  if (!compte) throw new Refus(404, 'Élève introuvable.');
+  const r = await db.q(
+    `select devoir, max(etape)::int as etape, max(etapes)::int as etapes, bool_or(termine) as termine
+       from devoirs_passages
+      where etablissement_id = $1 and compte_id = $2
+      group by devoir`,
+    [etab, compte]);
+  return { avancees: Object.fromEntries(r.rows.map((x) => [x.devoir, { etape: x.etape, etapes: x.etapes, termine: x.termine }])) };
 }
 
 /* « Léa », « LÉA », « lea » ; « Jean-Noël », « jean noel » : le même prénom. */
@@ -1666,6 +1757,8 @@ const ROUTES = [
   ['GET',    '/api/makecode/modele/:id',       mcModele],
 
   ['GET',    '/api/devoir/classes',            devoirClasses],
+  ['POST',   '/api/devoir/qui',                devoirQui],
+  ['POST',   '/api/devoir/avancees',           devoirAvancees],
   ['POST',   '/api/devoir/passage',            devoirPassage],
 
   ['GET',    '/api/prof/tableau',              profTableau],

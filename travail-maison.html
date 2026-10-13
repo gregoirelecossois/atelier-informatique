@@ -12,8 +12,9 @@
      sont ni les mêmes élèves (un prénom tapé n'est pas un compte — on peut ensuite l'y
      relier, ici), ni la même question : les deux ne partagent donc pas un écran.
 
-     Les élèves, eux, entrent par maison.html, la page d'entrée de l'année, dont le lien
-     s'affiche en haut de celle-ci.
+     Les élèves, eux, entrent par la page d'entrée de l'année, qui vit dans son propre
+     dépôt (travaux-maison) et dont le lien s'affiche en haut de celle-ci. Le catalogue des
+     travaux vient de là-bas aussi : ajouter un travail ne touche plus à ce dépôt-ci.
 
      Ce qu'elles partagent, c'est la porte : on entre ici avec son identifiant
      d'enseignant de l'Atelier, et une session ouverte sur l'une vaut pour l'autre
@@ -228,7 +229,9 @@
 
 <script src="scripts/config.js"></script>
 <script src="scripts/store.js"></script>
-<script src="scripts/travaux.js"></script>
+<!-- Le catalogue des travaux, publié par le dépôt travaux-maison (même domaine). S'il ne
+     charge pas, la page montre quand même les lignes reçues, sous leur identifiant brut. -->
+<script src="https://gregoirelecossois.github.io/travaux-maison/catalogue.js"></script>
 
 <script>
 'use strict';
@@ -237,7 +240,7 @@
    Cette page ne stocke rien et ne décide rien : elle peint ce que répondent
    /api/prof/devoirs (les lignes reçues, le code du lien) et /api/prof/tableau
    (les comptes de l'établissement). Le catalogue des travaux vient de
-   scripts/travaux.js.
+   catalogue.js, dans le dépôt travaux-maison.
 
    Un travail = une valeur de `devoir`. La page affiche ceux du catalogue,
    plus tout identifiant inconnu pour lequel des lignes existent.
@@ -250,6 +253,8 @@
    même si l'élève a tapé « Mohamad » ici et « Mohamed » là.
    ========================================================================= */
 var RYTHME = 30000;
+/* La page d'entrée des élèves (dépôt travaux-maison) : c'est elle que le lien ouvre. */
+var ENTREE_MAISON = 'https://gregoirelecossois.github.io/travaux-maison/';
 
 var etat = {
   passages: [], code: '', conservationMois: 12, attributions: {},
@@ -320,7 +325,7 @@ function travaux(){
     connus[p.devoir] = true;
     /* Un travail qui envoie des lignes sans être au catalogue : on l'affiche quand même. */
     liste.push({ id: p.devoir, titre: p.devoir, ic: '📄', matiere: '', niveaux: [], duree: '',
-                 resume: 'Ce travail n\'est pas décrit dans scripts/travaux.js : il s\'affiche sous son identifiant.',
+                 resume: 'Ce travail n\'est pas décrit dans catalogue.js (dépôt travaux-maison) : il s\'affiche sous son identifiant.',
                  url: '', etapes: [], inconnu: true });
   });
   return liste;
@@ -361,10 +366,11 @@ function classeDe(t){
   }
   return etat.classe[t.id];
 }
-/* LE lien des élèves, le même toute l'année : la page d'entrée, à côté de celle-ci. */
+/* LE lien des élèves, le même toute l'année : la page d'entrée du dépôt travaux-maison.
+   (L'ancien, atelier-informatique/maison.html?c=…, y renvoie : il marche encore.) */
 function lienEntree(){
   if(!etat.code) return '';
-  return new URL('maison.html', location.href).href.replace(/[?#].*$/, '') + '?c=' + encodeURIComponent(etat.code);
+  return ENTREE_MAISON + '?c=' + encodeURIComponent(etat.code);
 }
 function eleves(){
   return etat.eleves.filter(function(e){ return e.role === 'eleve'; });
@@ -456,10 +462,13 @@ function celluleEleve(g, doublons){
     var tapes = {}, autres = [];
     g.lignes.forEach(function(p){ if(plat(p.prenom) !== plat(g.eleve.prenom) && !tapes[plat(p.prenom)]){ tapes[plat(p.prenom)] = 1; autres.push(p.prenom); } });
     var auto = g.lignes.every(function(p){ return p.lien === 'prenom' || p.lien === 'appareil'; });
+    var parEleve = !auto && g.lignes.every(function(p){ return p.lien === 'eleve' || p.lien === 'prenom' || p.lien === 'appareil'; });
     var detail = (autres.length ? 'a écrit « ' + autres.map(esc).join(' », « ') + ' »' : '') +
       (g.lignes.length > 1 ? (autres.length ? ' · ' : '') + pluriel(g.lignes.length, 'envoi fusionné', 'envois fusionnés') : '');
     return '<td class="eleve"><span class="prenom">' + esc(nomLong(g.eleve)) + '</span>' +
-      ' <span class="relie" title="' + (auto ? 'Relié automatiquement au compte de l\'Atelier' : 'Relié par toi au compte de l\'Atelier') + '">✓' + (auto ? ' auto' : '') + '</span>' +
+      ' <span class="relie" title="' + (auto ? 'Relié automatiquement au compte de l\'Atelier'
+          : parEleve ? 'L\'élève a confirmé « C\'est moi » sur la page d\'entrée'
+          : 'Relié par toi au compte de l\'Atelier') + '">✓' + (auto ? ' auto' : parEleve ? ' élève' : '') + '</span>' +
       ' <button class="crayon" data-editer="' + esc(g.cle) + '" title="Changer l\'élève relié" aria-label="Changer l\'élève relié à cette ligne">✎</button>' +
       (detail ? '<span class="ou">' + detail + '</span>' : '') +
       (g.lignes.length > 1 ? '<span class="envois">' + g.lignes.map(function(p){
@@ -490,8 +499,9 @@ function peindreLien(){
       '<div class="lien"><input id="lien" readonly value="' + esc(url) + '">' +
       '<button class="btn primaire" id="bCopier">Copier</button>' +
       '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener">Ouvrir</a></div>' +
-      '<p class="note">L\'élève y écrit son prénom et choisit sa classe une seule fois, puis trouve une tuile par travail ' +
-      'prévu pour sa classe. Ajouter un travail dans <code>scripts/travaux.js</code> fait apparaître sa tuile, sans nouveau lien. ' +
+      '<p class="note">L\'élève y écrit son prénom et choisit sa classe une seule fois ; si un compte de l\'Atelier porte ce prénom ' +
+      'dans sa classe, la page lui demande « Es-tu bien Léa M. ? ». Il trouve ensuite ses travaux, rangés en « À faire » et « Déjà fait ». ' +
+      'Ajouter un travail dans <code>catalogue.js</code> (dépôt travaux-maison) fait apparaître sa tuile, sans nouveau lien. ' +
       'Les lignes s\'effacent toutes seules ' + esc(String(etat.conservationMois)) + ' mois après la dernière activité.</p>'
     : '<div class="msg ko">Le code du lien n\'a pas pu être créé.</div>';
   if($('#bCopier')) $('#bCopier').addEventListener('click', function(){
@@ -561,7 +571,7 @@ function pastilles(t){
                          : 'Cliquer pour donner ce travail aux ' + esc(c) + '.') + '">' + esc(c) + '</button>';
     }).join('') +
     (!actives.length && !t.masque ? '<span class="aucune">aucune classe : caché aux élèves</span>' : '') +
-    (!choisi(t) && !t.masque ? '<span class="defaut" title="Les classes prévues dans scripts/travaux.js. Ton premier clic les remplace.">par défaut</span>' : '') +
+    (!choisi(t) && !t.masque ? '<span class="defaut" title="Les classes prévues dans catalogue.js (dépôt travaux-maison). Ton premier clic les remplace.">par défaut</span>' : '') +
     '</div>';
 }
 
@@ -627,7 +637,7 @@ function peindreFiche(){
   $('#fiche').hidden = etat.vue !== 'travail';
   if(etat.vue !== 'travail') return;
   if(!t){
-    $('#fiche').innerHTML = '<div class="rien">Aucun travail au catalogue. Ajoute-en un dans <code>scripts/travaux.js</code>.</div>';
+    $('#fiche').innerHTML = '<div class="rien">Aucun travail au catalogue. Ajoute-en un dans <code>catalogue.js</code> (dépôt travaux-maison).</div>';
     return;
   }
   var groupes = grouper(lignesDe(t.id)), classe = classeDe(t);
@@ -662,7 +672,7 @@ function peindreFiche(){
       (meta ? '<span class="meta">' + esc(meta) + '</span>' : '') +
       (t.masque ? '<span class="meta">caché aux élèves</span>' : '') + '</div>' +
     '<p class="resume">' + esc(t.resume || '') + '</p>' +
-    (!t.url && !t.inconnu ? '<div class="msg ko">Pas de tuile chez les élèves : <code>url</code> est vide pour ce travail dans scripts/travaux.js.</div>' : '') +
+    (!t.url && !t.inconnu ? '<div class="msg ko">Pas de tuile chez les élèves : <code>url</code> est vide pour ce travail dans catalogue.js.</div>' : '') +
 
     '<div class="filtres">' + puces +
       '<span class="qui">' + (vus.length

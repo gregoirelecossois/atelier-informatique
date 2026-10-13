@@ -216,7 +216,7 @@ alter table etablissements add column if not exists passage_le timestamptz;
 -- Travail à la maison (« devoirs »), SANS compte.
 --
 -- Des pages d'exercices pour téléphone, ouvertes depuis une page d'entrée unique
--- (atelier-informatique/maison.html), où l'élève entre par son prénom et sa classe, sans
+-- (dépôt travaux-maison), où l'élève entre par son prénom et sa classe, sans
 -- identifiant ni mot de passe : à la maison, un mot de passe oublié est un devoir non
 -- fait. Ce n'est donc PAS un compte : une ligne par téléphone et par devoir, que l'élève
 -- écrase au fil de son avancée. L'enseignant peut ensuite la relier à un compte
@@ -259,10 +259,11 @@ create index if not exists devoirs_passages_etab_idx on devoirs_passages(etablis
 --   compte_id  le compte relié ; null = pas (ou plus) relié. Un compte supprimé délie ses
 --              lignes sans les effacer : elles redeviennent un simple prénom.
 --   lien       qui a décidé : null = personne encore (le serveur peut relier tout seul),
---              'prenom' / 'appareil' = relié automatiquement, 'prof' = décidé par
---              l'enseignant — y compris « relié à personne ». Une décision de l'enseignant
---              n'est jamais défaite par le serveur.
---   appareil   identifiant tiré au hasard par la page d'entrée (maison.html), le même pour
+--              'prenom' / 'appareil' = relié automatiquement, 'eleve' = l'élève a dit
+--              « C'est moi » sur la page d'entrée, 'prof' = décidé par l'enseignant — y
+--              compris « relié à personne ». Une décision de l'enseignant n'est jamais
+--              défaite, ni par le serveur ni par l'élève.
+--   appareil   identifiant tiré au hasard par la page d'entrée, le même pour
 --              tous les devoirs faits sur ce téléphone. Il ne sort jamais vers le tableau :
 --              il sert seulement à reconnaître, au devoir suivant, un élève déjà relié.
 alter table devoirs_passages add column if not exists compte_id int references comptes(id) on delete set null;
