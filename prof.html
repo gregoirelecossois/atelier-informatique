@@ -135,6 +135,10 @@
   .niv button.ici{background:var(--bleu);border-color:var(--bleu);color:#fff}
   .niv button.bloque{background:#f6f8fb;color:#a9b8c8}
   .niv button.ouvert{box-shadow:0 0 0 3px rgba(37,99,235,.22)}
+  /* Application liée : chapitre ouvert par le professeur, en attente de la prochaine
+     ouverture de l'application par l'élève */
+  .niv button.attente{border-style:dashed;border-color:#16a34a;color:#15803d}
+  .retour-app .msg{margin:10px 0 0}
   .missions{margin:6px 0 2px;padding:8px 10px;background:#f4f8fd;border-radius:10px}
   .missions .etiq{display:block;font-size:.74rem;font-weight:800;color:var(--gris);margin-bottom:5px}
   .missions .lignem{display:flex;flex-wrap:wrap;gap:4px}
@@ -581,7 +585,7 @@ function blocApps(d){
     var enAttente = d[a.debloquer];
 
     var boutons = a.chapitres.map(function(c, i){
-      var cl = faits[c.id] ? ' class="fait"' : '';
+      var cl = faits[c.id] ? ' class="fait"' : (enAttente && i + 1 <= +enAttente ? ' class="attente"' : '');
       return '<button data-app="' + a.id + '" data-c="' + (i + 1) + '"' + cl +
         ' title="' + esc(c.nom + (faits[c.id] ? ' — terminé' : '') +
           ' · ouvrir les chapitres 1 à ' + (i + 1)) + '">' + (i + 1) + '</button>';
@@ -595,7 +599,11 @@ function blocApps(d){
       (jamais ? ' <b>Il ne l\'a encore jamais ouverte.</b>' : '') +
       (enAttente ? ' <b>Ouverture jusqu\'au chapitre ' + esc(enAttente) +
         ' en attente</b> — il ne s\'est pas reconnecté depuis.' : '') + '</p>' +
-      '<div class="at"><div class="niv">' + boutons + '</div></div></div>';
+      '<div class="at"><div class="niv">' + boutons + '</div></div>' +
+      /* Le retour s'affiche ICI, sous les numéros : le bloc est en bas d'une longue
+         fiche, et le message général (#msg, tout en haut) restait hors de vue sur un
+         portable — le clic semblait ne rien faire. */
+      '<div class="retour-app" aria-live="polite"></div></div>';
   }).join('');
 }
 
@@ -675,14 +683,26 @@ function ficheEleve(id){
         if(!app) return;
         var majs = {};
         majs[app.debloquer] = String(n);
+        var bloc = bt.closest('.bloc');
+        var retour = function(cl, html){ bloc.querySelector('.retour-app').innerHTML = '<div class="msg ' + cl + '">' + html + '</div>'; };
         api('PUT', '/api/prof/eleve/' + id + '/progression', { majs: majs })
           .then(function(){
-            dire('ok', esc(app.nom) + ' : chapitres 1 à ' + n + ' ouverts à <b>' + esc(e.prenom) +
-              '</b>.<br>Ils s\'appliqueront à sa prochaine ouverture de l\'application. ' +
+            bloc.querySelectorAll('.niv button[data-app]').forEach(function(x){
+              var k = +x.getAttribute('data-c');
+              x.classList.toggle('attente', k <= n && !x.classList.contains('fait'));
+            });
+            retour('ok', '✅ ' + esc(app.nom) + ' : chapitres 1 à ' + n + ' ouverts à <b>' + esc(e.prenom) +
+              '</b> (pointillés = en attente).<br>Ils s\'appliqueront à sa prochaine ouverture de l\'application. ' +
               'Rien n\'est retiré : ce qu\'il a déjà réussi reste acquis.');
             return chargerTableau();
           })
-          .catch(echec);
+          .catch(function(err){
+            var m = err.message || 'Échec.';
+            /* Serveur pas redéployé depuis l'arrivée de « Le PC » : il refuse la clé. */
+            retour('ko', esc(m) + (/hors périmètre/.test(m)
+              ? '<br>Le serveur ne connaît pas encore cette application : il faut le redéployer ' +
+                '(api/README.md, § 2.4).' : ''));
+          });
       };
     });
 
