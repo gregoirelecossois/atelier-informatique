@@ -42,6 +42,10 @@
  *   changerMdp(nouveau, ancien)  Promise → {eleve} (l'élève choisit son mot de passe)
  *   pousser()                    force l'envoi immédiat des changements en attente
  *   etat()                       'local' | 'invite' | 'ok' | 'envoi' | 'hors-ligne' | 'expire'
+ *   serveurLu()                  la lecture du démarrage est-elle revenue ? (vrai sans compte)
+ *                                Une page qui attend `store:maj` doit d'abord poser cette
+ *                                question : avec un serveur rapide, l'événement peut être
+ *                                parti avant que son code ne soit chargé.
  *   surEtat(cb)                  s'abonne aux changements d'état (rappelé aussitôt)
  */
 window.Store = (function(){
@@ -627,6 +631,7 @@ return {
   connexion: connexion, deconnexion: deconnexion, changerMdp: changerMdp,
   pousser: function(){ return envoyer(); },
   etat: etat, surEtat: surEtat,
+  serveurLu: function(){ return !lectureEnCours; },
   prefixes: PREFIXES,
   _m: repli   /* compatibilité : les ateliers remettaient `store._m={}` dans wipe() */
 };
