@@ -96,6 +96,8 @@
   .fiche-tete{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:4px}
   .fiche-tete h2{font-size:1.4rem}
   .fiche-tete .essayer{margin-left:auto;align-self:center;text-decoration:none}
+  .pour .essayer{margin-left:auto;text-decoration:none}
+  .pour .defaut + .essayer{margin-left:8px}
   .fiche-tete .meta{font-size:.8rem;font-weight:800;color:var(--gris);background:#f1f5fa;border-radius:999px;padding:2px 10px}
   .fiche .resume{color:var(--gris);font-weight:700;font-size:.9rem;margin:0 0 16px}
   .fiche label{display:block;font-weight:800;font-size:.78rem;margin:0 0 4px}
@@ -256,9 +258,10 @@
 var RYTHME = 30000;
 /* La page d'entrée des élèves (dépôt travaux-maison) : c'est elle que le lien ouvre. */
 var ENTREE_MAISON = 'https://gregoirelecossois.github.io/travaux-maison/';
-/* « Essayer » : la même page, et chaque travail, en mode professeur (?prof=1) — tous les
-   travaux, rien n'est envoyé ni gardé. Ouvrir le lien des élèves inscrirait l'enseignant
-   comme un élève, et sa ligne arriverait ici. */
+/* « ▶ Essayer » : le travail s'ouvre ici même, en mode professeur (?prof=1) — rien n'est
+   envoyé ni gardé, et son lien « retour » ramène à cette page, sur la fiche du travail.
+   (Ouvrir le lien des élèves inscrirait l'enseignant comme un élève, et sa ligne arriverait
+   ici : d'où l'absence de bouton « Ouvrir » à côté de « Copier ».) */
 function essai(url){ return url + (url.indexOf('?') < 0 ? '?' : '&') + 'prof=1'; }
 
 var etat = {
@@ -502,12 +505,10 @@ function peindreLien(){
   $('#entree').innerHTML = url
     ? '<label for="lien">Le lien à donner aux élèves — le même toute l\'année</label>' +
       '<div class="lien"><input id="lien" readonly value="' + esc(url) + '">' +
-      '<button class="btn primaire" id="bCopier">Copier</button>' +
-      '<a class="btn" href="' + esc(essai(ENTREE_MAISON)) + '" target="_blank" rel="noopener" ' +
-        'title="La page des élèves en mode professeur : tous les travaux, rien n’est envoyé">👀 Essayer</a></div>' +
+      '<button class="btn primaire" id="bCopier">Copier</button></div>' +
       '<p class="note">L\'élève y écrit son prénom et choisit sa classe une seule fois ; si un compte de l\'Atelier porte ce prénom ' +
       'dans sa classe, la page lui demande « Es-tu bien Léa M. ? ». Il trouve ensuite ses travaux, rangés en « À faire » et « Déjà fait ». ' +
-      '« Essayer » ouvre cette page pour toi, en mode professeur : tous les travaux, à refaire autant que tu veux, sans rien envoyer. ' +
+      '« ▶ Essayer » ouvre un travail pour toi, comme un élève : à refaire autant que tu veux, sans rien envoyer, puis il te ramène ici. ' +
       'Ajouter un travail dans <code>catalogue.js</code> (dépôt travaux-maison) fait apparaître sa tuile, sans nouveau lien. ' +
       'Les lignes s\'effacent toutes seules ' + esc(String(etat.conservationMois)) + ' mois après la dernière activité.</p>'
     : '<div class="msg ko">Le code du lien n\'a pas pu être créé.</div>';
@@ -579,6 +580,7 @@ function pastilles(t){
     }).join('') +
     (!actives.length && !t.masque ? '<span class="aucune">aucune classe : caché aux élèves</span>' : '') +
     (!choisi(t) && !t.masque ? '<span class="defaut" title="Les classes prévues dans catalogue.js (dépôt travaux-maison). Ton premier clic les remplace.">par défaut</span>' : '') +
+    '<a class="btn petit essayer" href="' + esc(essai(t.url)) + '" title="Faire ce travail comme un élève : rien n’est envoyé">▶ Essayer</a>' +
     '</div>';
 }
 
@@ -678,8 +680,8 @@ function peindreFiche(){
     '<div class="fiche-tete"><h2>' + esc(t.ic || '') + ' ' + esc(t.titre) + '</h2>' +
       (meta ? '<span class="meta">' + esc(meta) + '</span>' : '') +
       (t.masque ? '<span class="meta">caché aux élèves</span>' : '') +
-      (t.url ? '<a class="btn petit essayer" href="' + esc(essai(t.url)) + '" target="_blank" rel="noopener" ' +
-        'title="Faire ce travail comme un élève, en mode professeur : rien n’est envoyé">▶ Essayer ce travail</a>' : '') + '</div>' +
+      (t.url ? '<a class="btn petit essayer" href="' + esc(essai(t.url)) + '" ' +
+        'title="Faire ce travail comme un élève : rien n’est envoyé">▶ Essayer ce travail</a>' : '') + '</div>' +
     '<p class="resume">' + esc(t.resume || '') + '</p>' +
     (!t.url && !t.inconnu ? '<div class="msg ko">Pas de tuile chez les élèves : <code>url</code> est vide pour ce travail dans catalogue.js.</div>' : '') +
 
