@@ -415,7 +415,9 @@ function vueConnexion(){
     var i = id.value.trim(), m = mdp.value;
     if(!i || !m){ erreur('Remplis ton identifiant et ton mot de passe.'); return; }
     btn.disabled = true; btn.textContent = 'Connexion…'; err.innerHTML = '';
-    Store.connexion(i, m).then(function(){
+    /* `rechargement` : d'ici au rechargement, la page n'écrit plus rien sur le compte
+       (cf. `fige` dans store.js). */
+    Store.connexion(i, m, { rechargement: true }).then(function(){
       location.reload();
     }).catch(function(e){
       btn.disabled = false; btn.textContent = 'Se connecter';

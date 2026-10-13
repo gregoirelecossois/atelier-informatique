@@ -37,7 +37,8 @@
  *   enLigne()                    une API est-elle configurée ?
  *   eleve()                      {id, identifiant, prenom, nom, classe, role,
  *                                etablissement} ou null — tel que le serveur l'a renvoyé
- *   connexion(identifiant, mdp)  Promise → {eleve}
+ *   connexion(identifiant, mdp, {rechargement})  Promise → {eleve} — avec `rechargement`,
+ *                                la page se recharge ensuite : plus rien ne s'écrit d'ici là
  *   deconnexion()                Promise
  *   changerMdp(nouveau, ancien)  Promise → {eleve} (l'élève choisit son mot de passe)
  *   pousser()                    force l'envoi immédiat des changements en attente
@@ -163,6 +164,14 @@ var baseConnue = !amorcageBloquant;
    l'emporte sur toute clé qu'il connaît (cf. appliquerServeur). */
 var lectureEnCours = !!(CLOUD && session);
 
+/* Vrai entre une connexion suivie d'un rechargement (la pastille) et ce rechargement.
+   La page affiche encore ce qu'elle avait chargé SANS compte — la partie du poste, ou
+   rien. Si elle réagit à la connexion (« Le PC » recopie le prénom du compte, ce qui
+   réécrit toute sa progression), cette écriture partait sur le compte au départ de la
+   page et effaçait sa vraie progression : visible dès qu'un réseau lent laisse à la page
+   le temps de réagir avant le rechargement. Plus rien ne s'écrit donc d'ici là. */
+var fige = false;
+
 if(amorcageBloquant){
   try{
     var st = document.createElement('style');
@@ -195,6 +204,7 @@ function get(k){
 }
 
 function set(k,v){
+  if(fige) return;
   v = String(v);
   if(mem){
     if(mem[k] === v) return;
@@ -208,6 +218,7 @@ function set(k,v){
 }
 
 function del(k){
+  if(fige) return;
   if(mem){
     if(!Object.prototype.hasOwnProperty.call(mem,k) && !sale[k]) return;
     delete mem[k]; delete sale[k];
@@ -222,6 +233,7 @@ function del(k){
 /* Efface toutes les clés d'un préfixe. Balayage par préfixe et non par liste : une
    liste finit toujours par oublier une clé ajoutée plus tard. */
 function wipe(pfx){
+  if(fige) return;
   var i, k;
   if(mem){
     var touche = false;
@@ -336,7 +348,7 @@ function programmerEnvoi(){
 function envoyer(opts){
   opts = opts || {};
   if(minuteur){ clearTimeout(minuteur); minuteur = null; }
-  if(!mem || !session || lectureEnCours) return Promise.resolve();
+  if(!mem || !session || lectureEnCours || fige) return Promise.resolve();
   if(riens()){ premierSale = 0; poserEtat('ok'); return Promise.resolve(); }
   if(enVol){ aRefaire = true; return Promise.resolve(); }
 
@@ -578,10 +590,12 @@ if(CLOUD){
 /* ---------------------------------------------------------------------------
    11. Connexion / déconnexion
    --------------------------------------------------------------------------- */
-function connexion(identifiant, motdepasse){
+function connexion(identifiant, motdepasse, opts){
   if(!CLOUD) return Promise.reject(new Error('Aucun serveur configuré.'));
   return req('POST', '/api/connexion', { identifiant: identifiant, motdepasse: motdepasse })
     .then(function(r){
+      /* Avant poserEtat('ok') : c'est lui qui prévient la page de la connexion. */
+      if(opts && opts.rechargement) fige = true;
       poserSession({ jeton: r.jeton, eleve: r.eleve });
       mem = {}; sale = {}; supprimees = {}; versionServeur = 0; baseConnue = true;
       appliquerServeur(r.progression || {}, r.version || 0);
