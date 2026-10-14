@@ -31,6 +31,10 @@ window.ATELIER_CONFIG = {
      Même raison d'être absolue que ci-dessus. Vide → lien relatif « admin.html ». */
   espaceAdmin: 'https://gregoirelecossois.github.io/atelier-informatique/admin.html',
 
+  /* Adresse du suivi du travail à la maison. Même raison d'être absolue que ci-dessus.
+     Vide → lien relatif « travail-maison.html ». */
+  suiviDevoirs: 'https://gregoirelecossois.github.io/atelier-informatique/travail-maison.html',
+
   /* true  → un élève non connecté voit un avertissement bien visible.
      false → l'avertissement reste discret (utile en démo ou en classe sans comptes). */
   insisterConnexion: true

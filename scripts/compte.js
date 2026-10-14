@@ -193,7 +193,10 @@ function vueCompte(){
       (el.role === 'prof'
         ? '<a class="atl-btn primary" href="'+esc(CFG.tableauBord || 'prof.html')+'" '+
           'style="display:block;text-align:center;'+
-          'text-decoration:none;margin-bottom:9px">📊 Suivi des élèves</a>'
+          'text-decoration:none;margin-bottom:9px">📊 Suivi des élèves</a>'+
+          '<a class="atl-btn primary" href="'+esc(CFG.suiviDevoirs || 'travail-maison.html')+'" '+
+          'style="display:block;text-align:center;'+
+          'text-decoration:none;margin-bottom:9px">📱 Suivi des devoirs</a>'
         : '')+
       (el.role === 'admin'
         ? '<a class="atl-btn primary" href="'+esc(CFG.espaceAdmin || 'admin.html')+'" '+
