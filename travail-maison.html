@@ -355,11 +355,14 @@ function classesMaison(){
   }).filter(Boolean);
 }
 /* À qui va ce travail : le choix de l'enseignant s'il en a fait un (rangé sur le serveur),
-   sinon les classes par défaut du catalogue (`niveaux`, [] = toutes). */
+   sinon les classes par défaut du catalogue (`niveaux`). Pas de `niveaux`, ou [] : aucune
+   classe — un nouveau travail n'est donné à personne tant qu'un enseignant ne l'a pas
+   donné à ses classes. */
 function choisi(t){ return Array.isArray(etat.attributions[t.id]); }
+function aDesDefauts(t){ return Array.isArray(t.niveaux) && t.niveaux.length > 0; }
 function niveauxDe(t){
   if(choisi(t)) return etat.attributions[t.id];
-  return Array.isArray(t.niveaux) && t.niveaux.length ? t.niveaux : classesMaison();
+  return aDesDefauts(t) ? t.niveaux : [];
 }
 function pourClasse(t, classe){
   return niveauxDe(t).some(function(x){ return plat(x) === plat(classe); });
@@ -583,7 +586,7 @@ function pastilles(t){
                          : 'Cliquer pour donner ce travail aux ' + esc(c) + '.') + '">' + esc(c) + '</button>';
     }).join('') +
     (!actives.length && !t.masque ? '<span class="aucune">aucune classe : caché aux élèves</span>' : '') +
-    (!choisi(t) && !t.masque ? '<span class="defaut" title="Les classes prévues dans catalogue.js (dépôt travaux-maison). Ton premier clic les remplace.">par défaut</span>' : '') +
+    (!choisi(t) && aDesDefauts(t) && !t.masque ? '<span class="defaut" title="Les classes prévues dans catalogue.js (dépôt travaux-maison). Ton premier clic les remplace.">par défaut</span>' : '') +
     '<a class="btn petit essayer" href="' + esc(essai(t.url)) + '" title="Faire ce travail comme un élève : rien n’est envoyé">▶ Essayer</a>' +
     '</div>';
 }
