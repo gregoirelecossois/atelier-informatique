@@ -784,10 +784,11 @@ porte un identifiant libre, et le serveur range ce qu'on lui envoie.
    écrit son avancée dans `maison_avancees_v1` pour la tuile. Dans `travaux-maison`,
    `commun/maison.js` fait tout cela ; dans une application React, `src/maison/suivi.ts`
    du dépôt `le-pc` est le modèle à reprendre.
-2. **Une entrée dans `catalogue.js`** (dépôt `travaux-maison`) : identifiant, titre, classes visées par
-   défaut (`niveaux`), adresse, nom des étapes. Sa tuile apparaît chez les élèves de ces
-   classes, et sa fiche dans `travail-maison.html` — où l'on change ensuite les classes
-   d'un clic, sans revenir au catalogue. `masque: true` retire la tuile partout sans perdre
+2. **Une entrée dans `catalogue.js`** (dépôt `travaux-maison`) : identifiant, titre,
+   `niveaux: []`, adresse, nom des étapes. Sa fiche apparaît dans `travail-maison.html`
+   de chaque établissement, donnée à aucune classe : chaque enseignant la donne aux
+   siennes d'un clic, et la tuile apparaît alors chez leurs élèves. (Les premiers travaux
+   gardent des classes par défaut dans `niveaux`, d'avant cette règle.) `masque: true` retire la tuile partout sans perdre
    les résultats.
 
 Un travail qui envoie des lignes **sans** être au catalogue s'affiche quand même, sous son
