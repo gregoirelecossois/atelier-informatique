@@ -152,6 +152,8 @@
   .badge{background:#fff7e0;color:#854d0e;border-radius:999px;padding:1px 8px;font-size:.74rem;margin-left:4px}
   .puce.on .badge{background:#fde68a}
   .travail.masque{opacity:.6}
+  /* Révision facultative (`facultatif: true` dans catalogue.js) : pas un devoir. */
+  .facultatif{background:#fff7e0;color:#854d0e;border-radius:999px;padding:1px 8px;font-size:.74rem;font-weight:800;white-space:nowrap}
 
   /* ---- pour quelles classes : une pastille par classe, allumée = la tuile s'affiche ---- */
   .pour{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px dashed var(--trait)}
@@ -514,7 +516,7 @@ function peindreLien(){
       '<div class="lien"><input id="lien" readonly value="' + esc(url) + '">' +
       '<button class="btn primaire" id="bCopier">Copier</button></div>' +
       '<p class="note">L\'élève y écrit son prénom et choisit sa classe une seule fois ; si un compte de l\'Atelier porte ce prénom ' +
-      'dans sa classe, la page lui demande « Es-tu bien Léa M. ? ». Il trouve ensuite ses travaux, rangés en « À faire » et « Déjà fait ». ' +
+      'dans sa classe, la page lui demande « Es-tu bien Léa M. ? ». Il trouve ensuite ses travaux, rangés en « À faire » et « Déjà fait » ; les révisions facultatives sont à part, dans « Pour réviser », et ne comptent pas comme travail à faire. ' +
       '« ▶ Essayer » ouvre un travail pour toi, comme un élève : à refaire autant que tu veux, sans rien envoyer, puis il te ramène ici. ' +
       'Ajouter un travail dans <code>catalogue.js</code> (dépôt travaux-maison) fait apparaître sa tuile, sans nouveau lien. ' +
       'Les lignes s\'effacent toutes seules ' + esc(String(etat.conservationMois)) + ' mois après la dernière activité.</p>'
@@ -551,7 +553,7 @@ function peindreTravaux(){
       '<button class="ouvrir" data-travail="' + esc(t.id) + '"' + (on ? ' aria-current="true"' : '') + '>' +
       '<span class="ic" aria-hidden="true">' + esc(t.ic || '📄') + '</span>' +
       '<span class="corps"><span class="titre">' + esc(t.titre) + '</span>' +
-      '<span class="meta">' + (meta ? esc(meta) : '&nbsp;') + (t.masque ? ' · <b>caché aux élèves</b>' : '') + '</span>' +
+      '<span class="meta">' + (meta ? esc(meta) : '&nbsp;') + (t.facultatif ? ' <span class="facultatif">🎯 révision facultative</span>' : '') + (t.masque ? ' · <b>caché aux élèves</b>' : '') + '</span>' +
       (g.length
         ? '<span class="compte">' + pluriel(g.length, 'élève', 'élèves') + ' · <b>' + pluriel(finis, 'terminé', 'terminés') + '</b></span>'
         : '<span class="compte zero">Pas encore ouvert</span>') +
@@ -686,6 +688,7 @@ function peindreFiche(){
   $('#fiche').innerHTML =
     '<div class="fiche-tete"><h2>' + esc(t.ic || '') + ' ' + esc(t.titre) + '</h2>' +
       (meta ? '<span class="meta">' + esc(meta) + '</span>' : '') +
+      (t.facultatif ? '<span class="facultatif" title="Les élèves la voient à part, dans « Pour réviser », hors « À faire ».">🎯 révision facultative</span>' : '') +
       (t.masque ? '<span class="meta">caché aux élèves</span>' : '') +
       (t.url ? '<a class="btn petit essayer" href="' + esc(essai(t.url)) + '" ' +
         'title="Faire ce travail comme un élève : rien n’est envoyé">▶ Essayer ce travail</a>' : '') + '</div>' +
@@ -714,6 +717,7 @@ function peindreFiche(){
           ? manquants.map(function(e){ return '<span>' + esc(nomCourt(e)) + '</span>'; }).join('')
           : '<em>Tous les élèves de la classe sont là.</em>') +
         '<p class="note">Les comptes de la classe dans l\'Atelier qu\'aucune ligne ne relie.' +
+          (t.facultatif ? ' Révision facultative : ne pas l\'avoir ouverte n\'est pas un oubli.' : '') +
           (arelier ? ' Il reste ' + pluriel(arelier, 'ligne', 'lignes') + ' à relier : un élève de cette liste s\'y cache peut-être.' : '') + '</p></div>'
       : (!classe && vus.length ? '<p class="note">Choisis une classe pour voir qui ne l\'a pas encore ouvert.</p>' : '')) +
 
@@ -781,7 +785,7 @@ function peindreEleves(){
 
     (comptes.length && cols.length
       ? '<div class="cadre"><table class="grille"><thead><tr><th>Élève</th>' +
-          cols.map(function(t){ return '<th title="' + esc(t.titre) + '">' + esc(t.ic || '📄') + ' ' + esc(t.titre) + '</th>'; }).join('') +
+          cols.map(function(t){ return '<th title="' + esc(t.titre) + (t.facultatif ? ' (révision facultative)' : '') + '">' + esc(t.ic || '📄') + ' ' + esc(t.titre) + (t.facultatif ? ' <span class="facultatif">facultatif</span>' : '') + '</th>'; }).join('') +
         '</tr></thead><tbody>' + comptes.map(function(e){
           return '<tr><td class="prenom">' + esc(e.nom) + ' ' + esc(e.prenom) + (e.actif === false ? ' <small>(désactivé)</small>' : '') + '</td>' +
             cols.map(function(t){ return cellule(e, t); }).join('') + '</tr>';
